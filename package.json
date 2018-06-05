@@ -1,0 +1,64 @@
+{
+  "name": "map-transform",
+  "version": "0.1.0",
+  "description": "Map and transform objects with mapping definitions",
+  "main": "index.js",
+  "author": "Kjell-Morten Bratsberg Thorsen <post@kjellmorten.no>",
+  "license": "ISC",
+  "keywords": [
+    "map",
+    "transform",
+    "javascript",
+    "object",
+    "path"
+  ],
+  "scripts": {
+    "start": "tsc && node index.js",
+    "test": "tsc && nyc --reporter=text-summary ava",
+    "pretest:watch": "tsc",
+    "test:watch": "ava --watch & tsc --watch",
+    "dev": "npm run test:watch",
+    "prebuild": "npm run lint && npm run test",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "nyc:report": "nyc report",
+    "lint": "standard *.ts"
+  },
+  "ava": {
+    "files": [
+      "dist/**/*-test.js",
+      "tests/**/*-test.js",
+      "tests/helpers/*.js"
+    ],
+    "sources": [
+      "dist/**/!(*-test).js",
+      "index.js"
+    ]
+  },
+  "nyc": {
+    "exclude": [
+      "**/*-test.js",
+      "tests/helpers/*.js"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/integreat-io/map-transform.git"
+  },
+  "engines": {
+    "node": ">= 8.6",
+    "npm": ">= 5.4"
+  },
+  "bugs": {
+    "url": "https://github.com/integreat-io/map-transform/issues"
+  },
+  "homepage": "https://github.com/integreat-io/map-transform#readme",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "babel-preset-env": "^1.7.0",
+    "coveralls": "^3.0.1",
+    "nyc": "^12.0.2",
+    "tslint": "^5.10.0",
+    "tslint-config-standard": "^7.0.0",
+    "typescript": "^2.9.1"
+  }
+}

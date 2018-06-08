@@ -74,6 +74,28 @@ test('should use default value', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set missing values to undefined when no default', (t) => {
+  const mapping = {
+    fields: {
+      title: {
+        path: 'content.heading'
+      }
+    }
+  }
+  const data = [
+    { content: {} },
+    { content: { heading: 'From data' } }
+  ]
+  const expected = [
+    { title: undefined },
+    { title: 'From data' }
+  ]
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with object path', (t) => {
   const mapping = {
     fields: {

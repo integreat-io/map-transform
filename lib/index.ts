@@ -35,15 +35,15 @@ const setFieldValue = (fromLens: R.Lens, toLens: R.Lens, setDefault: (def: any) 
 
 // [String, a] -> Boolean -> (b -> b -> b)
 const createFieldMapper = ([fieldId, fieldMapping]: IFieldMappingTuple) => {
-  const { path, default: defaultFrom, defaultRev } = normalizeFieldMapping(fieldMapping)
+  const { path, default: def, defaultRev } = normalizeFieldMapping(fieldMapping)
   const fromLens = R.lensPath(path.split('.'))
   const toLens = R.lensPath(fieldId.split('.'))
-  const setDefaultFrom = R.defaultTo(defaultFrom)
-  const setDefaultTo = R.defaultTo(defaultRev)
+  const setDefault = R.defaultTo(def)
+  const setDefaultRev = R.defaultTo(defaultRev)
 
   return (isRev: boolean): IFieldMapper => (isRev)
-    ? setFieldValue(toLens, fromLens, setDefaultTo)
-    : setFieldValue(fromLens, toLens, setDefaultFrom)
+    ? setFieldValue(toLens, fromLens, setDefaultRev)
+    : setFieldValue(fromLens, toLens, setDefault)
 }
 
 // [(a -> a -> a)] -> g a

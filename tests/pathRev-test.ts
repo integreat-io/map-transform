@@ -50,7 +50,7 @@ test('should reverse map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use defaultTo value', (t) => {
+test('should use defaultRev value', (t) => {
   const mapping = {
     fields: {
       title: {
@@ -66,6 +66,28 @@ test('should use defaultTo value', (t) => {
   ]
   const expected = [
     { content: { heading: 'Default heading' } },
+    { content: { heading: 'From data' } }
+  ]
+
+  const ret = mapTransform(mapping).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set missing value to undefined when no defaultRev', (t) => {
+  const mapping = {
+    fields: {
+      title: {
+        path: 'content.heading'
+      }
+    }
+  }
+  const data = [
+    {},
+    { title: 'From data' }
+  ]
+  const expected = [
+    { content: { heading: undefined } },
     { content: { heading: 'From data' } }
   ]
 

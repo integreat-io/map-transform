@@ -52,7 +52,11 @@
     "url": "https://github.com/integreat-io/map-transform/issues"
   },
   "homepage": "https://github.com/integreat-io/map-transform#readme",
+  "dependencies": {
+    "ramda": "^0.25.0"
+  },
   "devDependencies": {
+    "@types/ramda": "^0.25.32",
     "ava": "^0.25.0",
     "babel-preset-env": "^1.7.0",
     "coveralls": "^3.0.1",

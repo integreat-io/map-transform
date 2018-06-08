@@ -1,0 +1,99 @@
+import test from 'ava'
+
+import mapTransform from '../lib'
+
+test('should map simple object', (t) => {
+  const mapping = {
+    fields: {
+      title: 'content.heading',
+      author: 'meta.writer.username'
+    }
+  }
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } }
+  }
+  const expected = {
+    title: 'The heading',
+    author: 'johnf'
+  }
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map array of objects', (t) => {
+  const mapping = {
+    fields: {
+      title: 'content.heading',
+      author: 'meta.writer.username'
+    }
+  }
+  const data = [
+    {
+      content: { heading: 'The heading' },
+      meta: { writer: { username: 'johnf' } }
+    },
+    {
+      content: { heading: 'Second heading' },
+      meta: { writer: { username: 'maryk' } }
+    }
+  ]
+  const expected = [
+    { title: 'The heading', author: 'johnf' },
+    { title: 'Second heading', author: 'maryk' }
+  ]
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use default value', (t) => {
+  const mapping = {
+    fields: {
+      title: {
+        path: 'content.heading',
+        default: 'Default heading'
+      }
+    }
+  }
+  const data = [
+    { content: {} },
+    { content: { heading: 'From data' } }
+  ]
+  const expected = [
+    { title: 'Default heading' },
+    { title: 'From data' }
+  ]
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use object path', (t) => {
+  const mapping = {
+    fields: {
+      title: { path: 'content.heading' }
+    },
+    path: 'content.articles'
+  }
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
+  const expected = {
+    content: {
+      articles: [
+        { title: 'Heading 1' },
+        { title: 'Heading 2' }
+      ]
+    }
+  }
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})

@@ -2,7 +2,7 @@ import test from 'ava'
 
 import mapTransform from '../lib'
 
-test('should map simple object', (t) => {
+test('should reverse map simple object', (t) => {
   const mapping = {
     fields: {
       title: 'content.heading',
@@ -10,20 +10,20 @@ test('should map simple object', (t) => {
     }
   }
   const data = {
-    content: { heading: 'The heading' },
-    meta: { writer: { username: 'johnf' } }
-  }
-  const expected = {
     title: 'The heading',
     author: 'johnf'
   }
+  const expected = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } }
+  }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(mapping).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map array of objects', (t) => {
+test('should reverse map array of objects', (t) => {
   const mapping = {
     fields: {
       title: 'content.heading',
@@ -31,6 +31,10 @@ test('should map array of objects', (t) => {
     }
   }
   const data = [
+    { title: 'The heading', author: 'johnf' },
+    { title: 'Second heading', author: 'maryk' }
+  ]
+  const expected = [
     {
       content: { heading: 'The heading' },
       meta: { writer: { username: 'johnf' } }
@@ -40,52 +44,44 @@ test('should map array of objects', (t) => {
       meta: { writer: { username: 'maryk' } }
     }
   ]
-  const expected = [
-    { title: 'The heading', author: 'johnf' },
-    { title: 'Second heading', author: 'maryk' }
-  ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(mapping).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use default value', (t) => {
+test('should use defaultTo value', (t) => {
   const mapping = {
     fields: {
       title: {
         path: 'content.heading',
-        default: 'Default heading',
-        defaultRev: 'Wrong way'
+        default: 'Wrong way',
+        defaultRev: 'Default heading'
       }
     }
   }
   const data = [
-    { content: {} },
-    { content: { heading: 'From data' } }
-  ]
-  const expected = [
-    { title: 'Default heading' },
+    {},
     { title: 'From data' }
   ]
+  const expected = [
+    { content: { heading: 'Default heading' } },
+    { content: { heading: 'From data' } }
+  ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(mapping).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map with object path', (t) => {
+test('should reverse map with object path', (t) => {
   const mapping = {
     fields: {
       title: { path: 'content.heading' }
     },
     path: 'content.articles'
   }
-  const data = [
-    { content: { heading: 'Heading 1' } },
-    { content: { heading: 'Heading 2' } }
-  ]
-  const expected = {
+  const data = {
     content: {
       articles: [
         { title: 'Heading 1' },
@@ -93,8 +89,12 @@ test('should map with object path', (t) => {
       ]
     }
   }
+  const expected = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(mapping).rev(data)
 
   t.deepEqual(ret, expected)
 })

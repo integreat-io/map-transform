@@ -133,6 +133,43 @@ Install from npm:
 npm install map-transform --save
 ```
 
+### Mapping definition
+
+```javascript
+{
+  fields: {
+    <path string>: {
+      path: <path string>,
+      default: <any value>,
+      defaultRev: <any value>
+    }
+  },
+  path: <path string>,
+  pathTo: <path string>
+}
+```
+
+There are four path strings here, which are dot paths like `'documents.content'`.
+
+First of all, if there's the `path` property on the root object is set, it is
+used to retrieve an object or an array of objects from the source data. When
+this `path` is not set, the source data is just used as is.
+
+Then the `path` property of each field is used to retrieve field values from
+the object(s) returned from the root `path`, using the value of `default` when
+the path does not match a value in the source data.
+
+Next, the path string used as keys for the object in `fields`, is used to set
+each field value on the target object(s).
+
+Finally, if a `pathTo` is set on the root object, the object or array of objects
+we have at this point is set at this path on an empty object and returned.
+
+When using the `rev()` method, this is performed in the opposite order, and
+`defaultRev` is used as default value instead of `default`.
+
+There is a shortcut when defining fields without default values. The `fields` object `{'title': 'content.headline'}` is exactly the same as `{'title': {path: 'content.headling'}}`.
+
 ### Running the tests
 
 The tests can be run with `npm test`.

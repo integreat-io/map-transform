@@ -7,6 +7,14 @@ type ISingleMapper = (data: IData) => IData
 type IFieldMapper = (target: IData, data: IData) => IData
 type IFieldMappingTuple = [string, string | IFieldMapping]
 
+interface IMapperWithRev extends IMapper {
+  rev: IMapper
+}
+
+const _ = (R as any).__
+
+const emptyPath = R.lensPath([])
+
 // (a -> b) -> a | [a] -> b | [b]
 const mapAny = (mapFn: (mappee: any) => any) => (mapee: any) => (mapee && typeof mapee.map === 'function')
   ? mapee.map(mapFn) : mapFn(mapee)
@@ -17,49 +25,66 @@ const normalizeFieldMapping = (fieldMapping: string | IFieldMapping): IFieldMapp
     ? { path: fieldMapping }
     : fieldMapping
 
-// [String, a] -> (b -> b -> b)
-const createFieldMapper = ([fieldId, fieldMapping]: IFieldMappingTuple): IFieldMapper => {
-  const { path, default: def } = normalizeFieldMapping(fieldMapping)
-  const fromLens = R.lensPath(path.split('.'))
-  const toLens = R.lensPath(fieldId.split('.'))
-  const defaultTo = R.defaultTo(def)
-
-  return (target, data) => R.set(
+// Lens -> Lens -> (a -> (b -> a | b)) => (c -> c -> c)
+const setFieldValue = (fromLens: R.Lens, toLens: R.Lens, setDefault: (def: any) => any): IFieldMapper =>
+  (target, data) => R.set(
     toLens,
-    defaultTo(R.view(fromLens, data)),
+    setDefault(R.view(fromLens, data)),
     target
   )
+
+// [String, a] -> Boolean -> (b -> b -> b)
+const createFieldMapper = ([fieldId, fieldMapping]: IFieldMappingTuple) => {
+  const { path, default: defaultFrom, defaultRev } = normalizeFieldMapping(fieldMapping)
+  const fromLens = R.lensPath(path.split('.'))
+  const toLens = R.lensPath(fieldId.split('.'))
+  const setDefaultFrom = R.defaultTo(defaultFrom)
+  const setDefaultTo = R.defaultTo(defaultRev)
+
+  return (isRev: boolean): IFieldMapper => (isRev)
+    ? setFieldValue(toLens, fromLens, setDefaultTo)
+    : setFieldValue(fromLens, toLens, setDefaultFrom)
 }
 
 // [(a -> a -> a)] -> g a
 const pipeMapperFns = (mapperFns: IFieldMapper[]): ISingleMapper =>
   (data) => mapperFns.reduce((target, fn) => fn(target, data), {})
 
-// a -> (b -> b)
-const setAtObjectPath = (path?: string): IMapper => {
-  if (!path) {
-    return (data) => data
-  }
+// Lens -> (a -> a)
+const setAtObjectPath = (lens: R.Lens): IMapper => R.set(lens, _, {}) as IMapper
 
-  const lens = R.lensPath(path.split('.'))
+// Lens -> (a -> a)
+const getFromObjectPath = (lens: R.Lens): IMapper => R.view(lens)
 
-  return (data) => {
-    return R.set(lens, data, {})
-  }
-}
+const createObjectMapper = R.compose(
+  pipeMapperFns,
+  R.map(R.applyTo(false))
+)
+
+const createRevObjectMapper = R.compose(
+  pipeMapperFns,
+  R.reverse as (arr: IFieldMapper[]) => IFieldMapper[],
+  R.map(R.applyTo(true))
+)
 
 /**
  * Will return a function that executes the mapping defined in `mapping`.
  * @param {Object} mapping - A mapping definition
  * @returns {function} A mapper function
  */
-export default function mapTransform ({ fields, path }: IMapping): IMapper {
-  const mapperFn = pipeMapperFns(
-    R.toPairs(fields).map(createFieldMapper)
+export default function mapTransform ({ fields, path }: IMapping): IMapperWithRev {
+  const fieldMappers = R.toPairs(fields).map(createFieldMapper)
+  const objectPath = (path) ? R.lensPath(path.split('.')) : emptyPath
+
+  const mapper = R.compose(
+    setAtObjectPath(objectPath),
+    mapAny(createObjectMapper(fieldMappers))
   )
 
-  return R.compose(
-    setAtObjectPath(path),
-    mapAny(mapperFn)
+  const revMapper = R.compose(
+    mapAny(createRevObjectMapper(fieldMappers)),
+    getFromObjectPath(objectPath)
   )
+
+  return Object.assign(mapper, { rev: revMapper })
 }

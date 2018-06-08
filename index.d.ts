@@ -3,7 +3,8 @@ declare function mapTransform (mapping: object): (data: object) => object
 
 export interface IFieldMapping {
   path: string,
-  default?: any
+  default?: any,
+  defaultRev?: any
 }
 
 export interface IMapping {
@@ -15,8 +16,10 @@ export interface IMapping {
 
 type IDataProperty = string | number | object
 
-export interface IData {
+interface IDataWithProps {
   [key: string]: IDataProperty | IDataProperty[]
 }
+
+export type IData = IDataWithProps | {}
 
 export default mapTransform

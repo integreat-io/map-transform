@@ -168,7 +168,7 @@ we have at this point is set at this path on an empty object and returned.
 When using the `rev()` method, this is performed in the opposite order, and
 `defaultRev` is used as default value instead of `default`.
 
-There is a shortcut when defining fields without default values. The `fields` object `{'title': 'content.headline'}` is exactly the same as `{'title': {path: 'content.headling'}}`.
+There is a shortcut when defining fields without default values. The `fields` object `{'title': 'content.heading'}` is exactly the same as `{'title': {path: 'content.heading'}}`.
 
 ### Running the tests
 

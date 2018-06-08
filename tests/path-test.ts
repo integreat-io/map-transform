@@ -103,6 +103,31 @@ test('should map with object path', (t) => {
     },
     path: 'content.articles'
   }
+  const data = {
+    content: {
+      articles: [
+        { content: { heading: 'Heading 1' } },
+        { content: { heading: 'Heading 2' } }
+      ]
+    }
+  }
+  const expected = [
+    { title: 'Heading 1' },
+    { title: 'Heading 2' }
+  ]
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with object pathTo', (t) => {
+  const mapping = {
+    fields: {
+      title: { path: 'content.heading' }
+    },
+    pathTo: 'content.articles'
+  }
   const data = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }

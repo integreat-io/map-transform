@@ -11,7 +11,8 @@ export interface IMapping {
   fields: {
     [key: string]: string | IFieldMapping
   },
-  path?: string
+  path?: string,
+  pathTo?: string
 }
 
 type IDataProperty = string | number | object

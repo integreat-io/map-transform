@@ -50,6 +50,27 @@ test('should reverse map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map with array path', (t) => {
+  const mapping = {
+    fields: {
+      title: 'content.heading',
+      author: 'meta.writer[0].username'
+    }
+  }
+  const data = {
+    title: 'The heading',
+    author: 'johnf'
+  }
+  const expected = {
+    content: { heading: 'The heading' },
+    meta: { writer: [{ username: 'johnf' }] }
+  }
+
+  const ret = mapTransform(mapping).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use defaultRev value', (t) => {
   const mapping = {
     fields: {

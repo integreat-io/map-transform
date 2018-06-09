@@ -50,6 +50,27 @@ test('should map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with array path', (t) => {
+  const mapping = {
+    fields: {
+      title: 'content.heading',
+      author: 'meta.writers[0].username'
+    }
+  }
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writers: [ { username: 'johnf' }, { username: 'maryk' } ] }
+  }
+  const expected = {
+    title: 'The heading',
+    author: 'johnf'
+  }
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use default value', (t) => {
   const mapping = {
     fields: {

@@ -1,5 +1,6 @@
 import * as R from 'ramda'
 import { IMapping, IFieldMapping, IData } from '../index.d'
+import lensPath from './lensPath'
 
 type IDataOrArray = IData | IData[]
 type IMapper = (data: IDataOrArray) => IDataOrArray
@@ -12,8 +13,6 @@ interface IMapperWithRev extends IMapper {
 }
 
 const _ = (R as any).__
-
-const emptyPath = R.lensPath([])
 
 // (a -> b) -> a | [a] -> b | [b]
 const mapAny = (mapFn: (mappee: any) => any) => (mapee: any) => (mapee && typeof mapee.map === 'function')
@@ -36,8 +35,8 @@ const setFieldValue = (fromLens: R.Lens, toLens: R.Lens, setDefault: (def: any) 
 // [String, a] -> Boolean -> (b -> b -> b)
 const createFieldMapper = ([fieldId, fieldMapping]: IFieldMappingTuple) => {
   const { path, default: def, defaultRev } = normalizeFieldMapping(fieldMapping)
-  const fromLens = R.lensPath(path.split('.'))
-  const toLens = R.lensPath(fieldId.split('.'))
+  const fromLens = lensPath(path)
+  const toLens = lensPath(fieldId)
   const setDefault = R.defaultTo(def)
   const setDefaultRev = R.defaultTo(defaultRev)
 
@@ -74,8 +73,8 @@ const createRevObjectMapper = R.compose(
  */
 export default function mapTransform ({ fields, path, pathTo }: IMapping): IMapperWithRev {
   const fieldMappers = R.toPairs(fields).map(createFieldMapper)
-  const objectPath = (path) ? R.lensPath(path.split('.')) : emptyPath
-  const objectPathTo = (pathTo) ? R.lensPath(pathTo.split('.')) : emptyPath
+  const objectPath = lensPath(path)
+  const objectPathTo = lensPath(pathTo)
 
   const mapper = R.compose(
     setAtObjectPath(objectPathTo),

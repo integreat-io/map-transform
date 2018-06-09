@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { IFieldMapping, IFieldMapper } from '../index.d'
+import { IFieldMapping, IFieldMapper } from '../../index.d'
 import lensPath from './lensPath'
 
 type IFieldMappingTuple = [string, string | IFieldMapping]

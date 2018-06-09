@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { IMapping, IData, IFieldMapper } from '../index.d'
+import { IMapping, IData, IFieldMapper } from '../../index.d'
 import lensPath from './lensPath'
 import createFieldMapper from './createFieldMapper'
 

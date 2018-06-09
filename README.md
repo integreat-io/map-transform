@@ -1,11 +1,17 @@
 # MapTransform
+
 Map and transform objects with mapping definitions.
 
+[![npm Version](https://img.shields.io/npm/v/map-transform.svg)](https://www.npmjs.com/package/map-transform)
+[![Build Status](https://travis-ci.org/integreat-io/map-transform.svg?branch=master)](https://travis-ci.org/integreat-io/map-transform)
+[![Coverage Status](https://coveralls.io/repos/github/integreat-io/map-transform/badge.svg?branch=master)](https://coveralls.io/github/integreat-io/map-transform?branch=master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/fbb6638a32ee5c5f60b7/maintainability)](https://codeclimate.com/github/integreat-io/map-transform/maintainability)
+
 Behind this boring name hides a powerful object transformer. There are a lot of
-these around, but MapTransform's main differentiator is the mapping object,
-which is a simple JavaScript object that defines every part of a transformation
-up front, and by defining a mapping from one object, you would also define a
-mapping back to the original format (with some gotchas).
+these around, but MapTransform's main differentiator is the mapping definition
+object, which is a simple JavaScript object that defines every part of a
+transformation up front, and by defining a mapping from one object, you would
+also define a mapping back to the original format (with some gotchas).
 
 Let's look at a simple example:
 

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Map and transform objects with mapping definitions",
   "main": "index.js",
+  "types": "index.d.ts",
   "author": "Kjell-Morten Bratsberg Thorsen <post@kjellmorten.no>",
   "license": "ISC",
   "keywords": [
@@ -18,10 +19,11 @@
     "pretest:watch": "tsc",
     "test:watch": "ava --watch & tsc --watch",
     "dev": "npm run test:watch",
-    "prebuild": "npm run lint && npm run test",
+    "build": "tsc",
+    "prepare": "npm run build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "nyc:report": "nyc report",
-    "lint": "standard *.ts"
+    "lint": "tslint --project tsconfig.json --config tslint.json"
   },
   "ava": {
     "files": [

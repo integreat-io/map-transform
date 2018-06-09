@@ -1,5 +1,6 @@
 version: "2"
 exclude_patterns:
 - "**/*-test.js"
-- "tests/"
+- "**/*-test.ts"
+- "lib/tests/"
 - "node_modules/"

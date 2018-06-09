@@ -1,12 +1,11 @@
 import * as R from 'ramda'
-import { IMapping, IFieldMapping, IData } from '../index.d'
+import { IMapping, IData, IFieldMapper } from '../index.d'
 import lensPath from './lensPath'
+import createFieldMapper from './createFieldMapper'
 
 type IDataOrArray = IData | IData[]
 type IMapper = (data: IDataOrArray) => IDataOrArray
 type ISingleMapper = (data: IData) => IData
-type IFieldMapper = (target: IData, data: IData) => IData
-type IFieldMappingTuple = [string, string | IFieldMapping]
 
 interface IMapperWithRev extends IMapper {
   rev: IMapper
@@ -17,33 +16,6 @@ const _ = (R as any).__
 // (a -> b) -> a | [a] -> b | [b]
 const mapAny = (mapFn: (mappee: any) => any) => (mapee: any) => (mapee && typeof mapee.map === 'function')
   ? mapee.map(mapFn) : mapFn(mapee)
-
-// String | b -> b
-const normalizeFieldMapping = (fieldMapping: string | IFieldMapping): IFieldMapping =>
-  (typeof fieldMapping === 'string')
-    ? { path: fieldMapping }
-    : fieldMapping
-
-// Lens -> Lens -> (a -> (b -> a | b)) => (c -> c -> c)
-const setFieldValue = (fromLens: R.Lens, toLens: R.Lens, setDefault: (def: any) => any): IFieldMapper =>
-  (target, data) => R.set(
-    toLens,
-    setDefault(R.view(fromLens, data)),
-    target
-  )
-
-// [String, a] -> Boolean -> (b -> b -> b)
-const createFieldMapper = ([fieldId, fieldMapping]: IFieldMappingTuple) => {
-  const { path, default: def, defaultRev } = normalizeFieldMapping(fieldMapping)
-  const fromLens = lensPath(path)
-  const toLens = lensPath(fieldId)
-  const setDefault = R.defaultTo(def)
-  const setDefaultRev = R.defaultTo(defaultRev)
-
-  return (isRev: boolean): IFieldMapper => (isRev)
-    ? setFieldValue(toLens, fromLens, setDefaultRev)
-    : setFieldValue(fromLens, toLens, setDefault)
-}
 
 // [(a -> a -> a)] -> g a
 const pipeMapperFns = (mapperFns: IFieldMapper[]): ISingleMapper =>

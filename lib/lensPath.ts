@@ -23,4 +23,6 @@ const preparePath = (path: string): (string | number)[] =>
  * @param {string} path - A path string in dot notation
  * @returns {Lens} A Ramda lens
  */
-export default (path?: string) => (path) ? R.lensPath(preparePath(path)) : empty
+const lensPath = (path?: string): R.Lens => (path) ? R.lensPath(preparePath(path)) : empty
+
+export default lensPath

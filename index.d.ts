@@ -23,4 +23,6 @@ interface IDataWithProps {
 
 export type IData = IDataWithProps | {}
 
+export type IFieldMapper = (target: IData, data: IData) => IData
+
 export default mapTransform

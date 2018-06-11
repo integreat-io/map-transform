@@ -1,5 +1,3 @@
-import * as R from 'ramda'
-
 import test from 'ava'
 
 import mapTransform from '../lib'
@@ -67,6 +65,22 @@ test('should map with array path', (t) => {
     title: 'The heading',
     author: 'johnf'
   }
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with empty field key', (t) => {
+  const mapping = {
+    fields: {
+      '': 'content'
+    }
+  }
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = { heading: 'The heading' }
 
   const ret = mapTransform(mapping)(data)
 

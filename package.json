@@ -17,7 +17,7 @@
     "start": "tsc && node index.js",
     "test": "tsc && nyc --reporter=text-summary ava",
     "pretest:watch": "tsc",
-    "test:watch": "ava --watch & tsc --watch",
+    "test:watch": "tsc --watch & ava --watch",
     "dev": "npm run test:watch",
     "build": "tsc",
     "prepare": "npm run build",

@@ -62,8 +62,8 @@ export default function mapTransform (mapping?: IMapping | null): IMapperWithRev
   const { fields, path, pathTo, pathRev, pathToRev } = mapping
   const pathLens = lensPath(path)
   const pathToLens = lensPath(pathTo)
-  const pathRevLens = (pathRev) ? lensPath(pathRev) : pathLens
-  const pathToRevLens = (pathToRev) ? lensPath(pathToRev) : pathToLens
+  const pathRevLens = (typeof pathRev !== 'undefined') ? lensPath(pathRev) : pathLens
+  const pathToRevLens = (typeof pathToRev !== 'undefined') ? lensPath(pathToRev) : pathToLens
 
   const fieldMappers = (fields) ? R.toPairs(fields).map(createFieldMapper) : []
   const objectMapper = createObjectMapper(fieldMappers)

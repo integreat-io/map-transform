@@ -1,13 +1,13 @@
 import * as R from 'ramda'
-import { IFieldMapping, IFieldMapper } from '../../index.d'
+import { IFieldMapping, IFieldMapper, IPath } from '../../index.d'
 import lensPath from './lensPath'
 
-type IFieldMappingTuple = [string, string | IFieldMapping]
+type IFieldMappingTuple = [string, IPath | IFieldMapping]
 type IFieldMapperGetter = (isRev: boolean) => IFieldMapper
 
 // String | b -> b
-const normalizeFieldMapping = (fieldMapping: string | IFieldMapping): IFieldMapping =>
-  (typeof fieldMapping === 'string')
+const normalizeFieldMapping = (fieldMapping: IPath | IFieldMapping): IFieldMapping =>
+  (!fieldMapping || typeof fieldMapping === 'string')
     ? { path: fieldMapping }
     : fieldMapping
 

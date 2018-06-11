@@ -71,6 +71,22 @@ test('should reverse map with array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map with no path', (t) => {
+  const mapping = {
+    fields: {
+      '': 'content'
+    }
+  }
+  const data = { heading: 'The heading' }
+  const expected = {
+    content: { heading: 'The heading' }
+  }
+
+  const ret = mapTransform(mapping).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use defaultRev value', (t) => {
   const mapping = {
     fields: {
@@ -191,6 +207,30 @@ test('should reverse map with object pathRev and pathToRev', (t) => {
       ]
     }
   }
+
+  const ret = mapTransform(mapping).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should reverse map with empty pathRev and pathToRev', (t) => {
+  const mapping = {
+    fields: {
+      title: { path: 'content.heading' }
+    },
+    path: 'wrong.path',
+    pathRev: null,
+    pathTo: 'wrong.path',
+    pathToRev: null
+  }
+  const data = [
+    { title: 'Heading 1' },
+    { title: 'Heading 2' }
+  ]
+  const expected = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
 
   const ret = mapTransform(mapping).rev(data)
 

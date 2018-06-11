@@ -1,20 +1,22 @@
 // Definitions file for map-transform
 declare function mapTransform (mapping: object): (data: object) => object
 
+export type IPath = string | null
+
 export interface IFieldMapping {
-  path: string,
+  path: IPath,
   default?: any,
   defaultRev?: any
 }
 
 export interface IMapping {
   fields?: {
-    [key: string]: string | IFieldMapping
+    [key: string]: IPath | IFieldMapping
   },
-  path?: string,
-  pathRev?: string,
-  pathTo?: string,
-  pathToRev?: string
+  path?: IPath,
+  pathRev?: IPath,
+  pathTo?: IPath,
+  pathToRev?: IPath
 }
 
 type IDataProperty = string | number | object

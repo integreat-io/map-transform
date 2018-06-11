@@ -151,7 +151,9 @@ npm install map-transform --save
     }
   },
   path: <path string>,
-  pathTo: <path string>
+  pathRev: <path string>,
+  pathTo: <path string>,
+  pathToRev: <path string>
 }
 ```
 
@@ -172,9 +174,14 @@ Finally, if a `pathTo` is set on the root object, the object or array of objects
 we have at this point is set at this path on an empty object and returned.
 
 When using the `rev()` method, this is performed in the opposite order, and
-`defaultRev` is used as default value instead of `default`.
+`defaultRev` is used as default value instead of `default`. If a `pathToRev` is
+specified, it is used instead of `pathTo` when extracting _from_ the data (to is
+now from - as confusing as that is), and a `pathRev` is used instead of `path` to
+set the data on an empty object just before returning it.
 
-There is a shortcut when defining fields without default values. The `fields` object `{'title': 'content.heading'}` is exactly the same as `{'title': {path: 'content.heading'}}`.
+There is a shortcut when defining fields without default values. The `fields`
+object `{'title': 'content.heading'}` is exactly the same as `{'title': {path:
+'content.heading'}}`.
 
 ### Running the tests
 

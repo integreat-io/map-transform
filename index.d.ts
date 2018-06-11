@@ -12,7 +12,9 @@ export interface IMapping {
     [key: string]: string | IFieldMapping
   },
   path?: string,
-  pathTo?: string
+  pathRev?: string,
+  pathTo?: string,
+  pathToRev?: string
 }
 
 type IDataProperty = string | number | object

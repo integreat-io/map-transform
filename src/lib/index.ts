@@ -43,21 +43,23 @@ const createRevObjectMapper = R.compose(
  * @param {Object} mapping - A mapping definition
  * @returns {function} A mapper function
  */
-export default function mapTransform ({ fields, path, pathTo }: IMapping): IMapperWithRev {
+export default function mapTransform ({ fields, path, pathTo, pathRev, pathToRev }: IMapping): IMapperWithRev {
   const fieldMappers = R.toPairs(fields).map(createFieldMapper)
-  const objectPath = lensPath(path)
-  const objectPathTo = lensPath(pathTo)
+  const pathLens = lensPath(path)
+  const pathToLens = lensPath(pathTo)
+  const pathRevLens = (pathRev) ? lensPath(pathRev) : pathLens
+  const pathToRevLens = (pathToRev) ? lensPath(pathToRev) : pathToLens
 
   const mapper = R.compose(
-    setAtObjectPath(objectPathTo),
+    setAtObjectPath(pathToLens),
     mapAny(createObjectMapper(fieldMappers)),
-    getFromObjectPath(objectPath)
+    getFromObjectPath(pathLens)
   )
 
   const revMapper = R.compose(
-    setAtObjectPath(objectPath),
+    setAtObjectPath(pathRevLens),
     mapAny(createRevObjectMapper(fieldMappers)),
-    getFromObjectPath(objectPathTo)
+    getFromObjectPath(pathToRevLens)
   )
 
   return Object.assign(mapper, { rev: revMapper })

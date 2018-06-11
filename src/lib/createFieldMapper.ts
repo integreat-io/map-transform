@@ -2,11 +2,11 @@ import * as R from 'ramda'
 import { IFieldMapping, IFieldMapper, IPath } from '../../index.d'
 import lensPath from './lensPath'
 
-type IFieldMappingTuple = [string, IPath | IFieldMapping]
+type IFieldMappingTuple = [string, IPath | IFieldMapping | null]
 type IFieldMapperGetter = (isRev: boolean) => IFieldMapper
 
 // String | b -> b
-const normalizeFieldMapping = (fieldMapping: IPath | IFieldMapping): IFieldMapping =>
+const normalizeFieldMapping = (fieldMapping: IPath | IFieldMapping | null): IFieldMapping =>
   (!fieldMapping || typeof fieldMapping === 'string')
     ? { path: fieldMapping }
     : fieldMapping

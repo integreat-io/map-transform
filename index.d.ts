@@ -8,7 +8,7 @@ export interface IFieldMapping {
 }
 
 export interface IMapping {
-  fields: {
+  fields?: {
     [key: string]: string | IFieldMapping
   },
   path?: string,

@@ -30,15 +30,21 @@ const setAtObjectPath = (lens: R.Lens): IMapper => R.set(lens, _, {}) as IMapper
 // Lens -> (a -> a)
 const getFromObjectPath = (lens: R.Lens): IMapper => R.view(lens)
 
+const mapFieldsOrPassObject = (isRev: boolean) => R.ifElse(
+  R.isEmpty,
+  R.always([R.nthArg(1)]),
+  R.map(R.applyTo(isRev))
+)
+
 const createObjectMapper = R.compose(
   pipeMapperFns,
-  R.map(R.applyTo(false))
+  mapFieldsOrPassObject(false)
 )
 
 const createRevObjectMapper = R.compose(
   pipeMapperFns,
   R.reverse as (arr: IFieldMapper[]) => IFieldMapper[],
-  R.map(R.applyTo(true))
+  mapFieldsOrPassObject(true)
 )
 
 /**
@@ -54,21 +60,24 @@ export default function mapTransform (mapping?: IMapping | null): IMapperWithRev
   }
 
   const { fields, path, pathTo, pathRev, pathToRev } = mapping
-  const fieldMappers = R.toPairs(fields).map(createFieldMapper)
   const pathLens = lensPath(path)
   const pathToLens = lensPath(pathTo)
   const pathRevLens = (pathRev) ? lensPath(pathRev) : pathLens
   const pathToRevLens = (pathToRev) ? lensPath(pathToRev) : pathToLens
 
+  const fieldMappers = (fields) ? R.toPairs(fields).map(createFieldMapper) : []
+  const objectMapper = createObjectMapper(fieldMappers)
+  const revObjectMapper = createRevObjectMapper(fieldMappers)
+
   const mapper = R.compose(
     setAtObjectPath(pathToLens),
-    mapAny(createObjectMapper(fieldMappers)),
+    mapAny(objectMapper),
     getFromObjectPath(pathLens)
   )
 
   const revMapper = R.compose(
     setAtObjectPath(pathRevLens),
-    mapAny(createRevObjectMapper(fieldMappers)),
+    mapAny(revObjectMapper),
     getFromObjectPath(pathToRevLens)
   )
 

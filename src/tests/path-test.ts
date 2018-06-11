@@ -169,8 +169,21 @@ test('should map with object pathTo', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return null when no mapping', (t) => {
+test('should return data when no mapping', (t) => {
   const mapping = null
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
+  const expected = data
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return data when no fields', (t) => {
+  const mapping = {}
   const data = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }

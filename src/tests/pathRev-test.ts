@@ -196,3 +196,16 @@ test('should reverse map with object pathRev and pathToRev', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should return null when no mapping', (t) => {
+  const mapping = null
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
+  const expected = data
+
+  const ret = mapTransform(mapping).rev(data)
+
+  t.deepEqual(ret, expected)
+})

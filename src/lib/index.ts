@@ -13,6 +13,9 @@ interface IMapperWithRev extends IMapper {
 
 const _ = (R as any).__
 
+const noTransform: IMapper = (data: IDataOrArray) => data
+const noTransformWithRev: IMapperWithRev = Object.assign(noTransform, { rev: (data: IDataOrArray) => data })
+
 // (a -> b) -> a | [a] -> b | [b]
 const mapAny = (mapFn: (mappee: any) => any) => (mapee: any) => (mapee && typeof mapee.map === 'function')
   ? mapee.map(mapFn) : mapFn(mapee)
@@ -40,10 +43,17 @@ const createRevObjectMapper = R.compose(
 
 /**
  * Will return a function that executes the mapping defined in `mapping`.
+ * When no mapping is provided, an identity function is returned.
+ *
  * @param {Object} mapping - A mapping definition
  * @returns {function} A mapper function
  */
-export default function mapTransform ({ fields, path, pathTo, pathRev, pathToRev }: IMapping): IMapperWithRev {
+export default function mapTransform (mapping?: IMapping | null): IMapperWithRev {
+  if (!mapping) {
+    return noTransformWithRev
+  }
+
+  const { fields, path, pathTo, pathRev, pathToRev } = mapping
   const fieldMappers = R.toPairs(fields).map(createFieldMapper)
   const pathLens = lensPath(path)
   const pathToLens = lensPath(pathTo)

@@ -1,3 +1,5 @@
+import * as R from 'ramda'
+
 import test from 'ava'
 
 import mapTransform from '../lib'
@@ -161,6 +163,19 @@ test('should map with object pathTo', (t) => {
       ]
     }
   }
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return null when no mapping', (t) => {
+  const mapping = null
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
+  const expected = data
 
   const ret = mapTransform(mapping)(data)
 

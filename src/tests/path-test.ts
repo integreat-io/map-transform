@@ -50,7 +50,7 @@ test('should map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with array path', (t) => {
+test('should map with array index path', (t) => {
   const mapping = {
     fields: {
       title: 'content.heading',
@@ -64,6 +64,27 @@ test('should map with array path', (t) => {
   const expected = {
     title: 'The heading',
     author: 'johnf'
+  }
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with array all path', (t) => {
+  const mapping = {
+    fields: {
+      title: 'content.heading',
+      authors: 'meta.writers[].id'
+    }
+  }
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writers: [ { id: 'johnf' }, { id: 'maryk' } ] }
+  }
+  const expected = {
+    title: 'The heading',
+    authors: ['johnf', 'maryk']
   }
 
   const ret = mapTransform(mapping)(data)
@@ -174,6 +195,31 @@ test('should map with object pathTo', (t) => {
       articles: [
         { title: 'Heading 1' },
         { title: 'Heading 2' }
+      ]
+    }
+  }
+
+  const ret = mapTransform(mapping)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with array pathTo', (t) => {
+  const mapping = {
+    fields: {
+      title: { path: 'content.heading' }
+    },
+    pathTo: 'content.articles[].item'
+  }
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
+  const expected = {
+    content: {
+      articles: [
+        { item: { title: 'Heading 1' } },
+        { item: { title: 'Heading 2' } }
       ]
     }
   }

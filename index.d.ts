@@ -21,11 +21,13 @@ export interface IMapping {
 
 type IDataProperty = string | number | object
 
-interface IDataWithProps {
+export interface IDataWithProps {
   [key: string]: IDataProperty | IDataProperty[]
 }
 
 export type IData = IDataWithProps | {}
+
+export type IDataOrProp = IData | string | number
 
 export type IFieldMapper = (target: IData, data: IData) => IData
 

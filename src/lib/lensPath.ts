@@ -1,17 +1,9 @@
 import * as R from 'ramda'
 import { IPath } from '../../index.d'
+import pathGetter from './pathGetter'
+import pathSetter from './pathSetter'
 
 export const empty = R.lens(R.identity, R.identity)
-
-// String -> String | Number
-const parseIntIf = (val: string) => {
-  const num = Number.parseInt(val)
-  return (Number.isNaN(num)) ? val : num
-}
-
-// String -> (String | Number)[]
-const preparePath = (path: IPath): (string | number)[] =>
-  path.split(/\[|]?\./).map((val: string) => parseIntIf(val))
 
 /**
  * Take a path string and return a Ramda lens. If path is null or undefined, an
@@ -24,6 +16,7 @@ const preparePath = (path: IPath): (string | number)[] =>
  * @param {string} path - A path string in dot notation
  * @returns {Lens} A Ramda lens
  */
-const lensPath = (path?: IPath | null): R.Lens => (path) ? R.lensPath(preparePath(path)) : empty
+const lensPath = (path?: IPath | null): R.Lens =>
+  (path) ? R.lens(pathGetter(path), pathSetter(path)) : empty
 
 export default lensPath

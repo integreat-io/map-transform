@@ -3,8 +3,19 @@ declare function mapTransform (mapping: object): (data: object) => object
 
 export type IPath = string
 
+export interface SimpleTransformFunction {
+  (value: any): any
+}
+export interface TransformFunction extends SimpleTransformFunction {
+  rev?: SimpleTransformFunction
+}
+
+export type Transform = TransformFunction | TransformFunction[]
+
 export interface IFieldMapping {
   path: IPath | null,
+  transform?: Transform,
+  transformRev?: Transform,
   default?: any,
   defaultRev?: any
 }

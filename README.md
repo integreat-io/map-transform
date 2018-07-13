@@ -147,13 +147,17 @@ npm install map-transform --save
     <path string>: {
       path: <path string>,
       default: <any value>,
-      defaultRev: <any value>
+      defaultRev: <any value>,
+      transform: <transform pipeline>,
+      transformRev: <transform pipeline>
     }
   },
   path: <path string>,
   pathRev: <path string>,
   pathTo: <path string>,
-  pathToRev: <path string>
+  pathToRev: <path string>,
+  transform: <transform pipeline>,
+  transformRev: <transform pipeline>
 }
 ```
 
@@ -182,6 +186,27 @@ set the data on an empty object just before returning it.
 There is a shortcut when defining fields without default values. The `fields`
 object `{'title': 'content.heading'}` is exactly the same as `{'title': {path:
 'content.heading'}}`.
+
+The `transform` and `transformRev` props will transform a field or an object,
+and should be set to a transform function or an array of transform functions.
+A transform function is a pure function that accepts a value and returns a
+value, and whatever happens between that is up to the transform function. An
+array of transform functions will be run from left to right, and each function
+will be called with the return value from the previous function. The return
+value of the final function is set used as the field value or the object.
+
+Note that MapTransform does not put any restriction on the transform functions,
+so it is up to you to make sure the transformations make sense for the field or
+object it is used on.
+
+A special feature of the transform pipeline, is that a transform function might
+have another transform function specified on a `rev` prop, that should do the
+opposite of the base function. When specifying a `transform` pipeline and no
+`transformRev`, MapTransform will create a reverse pipeline from the `rev`
+functions on the `transform` pipeline, which will be executed from right to
+left. This might be handy in some cases, as you might have reusable transform
+functions that will know how to reverse their transformations, and by defining
+a transform pipeline, you also define the reverse option.
 
 ### Running the tests
 

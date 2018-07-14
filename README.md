@@ -157,7 +157,8 @@ npm install map-transform --save
   pathTo: <path string>,
   pathToRev: <path string>,
   transform: <transform pipeline>,
-  transformRev: <transform pipeline>
+  transformRev: <transform pipeline>,
+  filter: <filter pipeline>
 }
 ```
 
@@ -188,12 +189,13 @@ object `{'title': 'content.heading'}` is exactly the same as `{'title': {path:
 'content.heading'}}`.
 
 The `transform` and `transformRev` props will transform a field or an object,
-and should be set to a transform function or an array of transform functions.
-A transform function is a pure function that accepts a value and returns a
-value, and whatever happens between that is up to the transform function. An
-array of transform functions will be run from left to right, and each function
-will be called with the return value from the previous function. The return
-value of the final function is set used as the field value or the object.
+and should be set to a transform function or an array of transform functions,
+also called a transform pipeline. A transform function is a pure function that
+accepts a value and returns a value, and whatever happens between that is up to
+the transform function. An array of transform functions will be run from left to
+right, and each function will be called with the return value from the previous
+function. The return value of the final function is set used as the field value
+or the object.
 
 Note that MapTransform does not put any restriction on the transform functions,
 so it is up to you to make sure the transformations make sense for the field or
@@ -207,6 +209,14 @@ functions on the `transform` pipeline, which will be executed from right to
 left. This might be handy in some cases, as you might have reusable transform
 functions that will know how to reverse their transformations, and by defining
 a transform pipeline, you also define the reverse option.
+
+The `filter` prop lets you filter the transformed objects before they are set
+on `pathTo` (if present) and returned. The filter pipeline is a filter function
+or an array of filter functions, where each function accepts the transformed
+object and returns true to include it and false to filter it out of the final
+result. When several filter functions are set, all of them must return true for
+the item to be included. The `filter` is used on reverse mapping as well,
+directly after the items are extracted from any `pathTo`.
 
 ### Running the tests
 

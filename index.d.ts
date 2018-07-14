@@ -12,6 +12,12 @@ export interface TransformFunction extends SimpleTransformFunction {
 
 export type Transform = TransformFunction | TransformFunction[]
 
+export interface FilterFunction {
+  (value: any): boolean
+}
+
+export type FilterPipeline = FilterFunction | FilterFunction[]
+
 export interface IFieldMapping {
   path: IPath | null,
   transform?: Transform,
@@ -29,7 +35,8 @@ export interface IMapping {
   pathTo?: IPath | null,
   pathToRev?: IPath | null,
   transform?: Transform,
-  transformRev?: Transform
+  transformRev?: Transform,
+  filter?: FilterPipeline
 }
 
 type IDataProperty = string | number | object

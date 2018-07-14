@@ -27,7 +27,9 @@ export interface IMapping {
   path?: IPath | null,
   pathRev?: IPath | null,
   pathTo?: IPath | null,
-  pathToRev?: IPath | null
+  pathToRev?: IPath | null,
+  transform?: Transform,
+  transformRev?: Transform
 }
 
 type IDataProperty = string | number | object

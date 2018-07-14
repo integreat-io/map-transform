@@ -1,6 +1,7 @@
 import * as R from 'ramda'
-import { IFieldMapping, IFieldMapper, IPath, TransformFunction, Transform } from '../../index.d'
+import { IFieldMapping, IFieldMapper, IPath, TransformFunction } from '../../index.d'
 import lensPath from './lensPath'
+import { pipeTransform, pipeTransformRev } from './transformPipeline'
 
 type IFieldMappingTuple = [string, IPath | IFieldMapping | null]
 type IFieldMapperGetter = (isRev: boolean) => IFieldMapper
@@ -23,29 +24,6 @@ const setFieldValue = (
     setDefault(transformFn(R.view(fromLens, data))),
     target
   )
-
-const pipeTransform = (transform?: Transform) => (Array.isArray(transform))
-  ? ((transform.length > 0) ? R.call(R.pipe, ...transform) : R.identity)
-  : (transform || R.identity)
-
-const extractRev = (fn: TransformFunction) => fn && fn.rev || undefined
-
-const extractRevArray = R.pipe(
-  R.map(extractRev),
-  R.filter(R.complement(R.isNil)),
-  (arr) => arr.reverse()
-)
-
-const extractRevPipeline = R.ifElse(
-  Array.isArray,
-  extractRevArray,
-  extractRev
-)
-
-const pipeTransformRev = (transformRev?: Transform, transform?: Transform) =>
-  (transformRev || !transform)
-    ? pipeTransform(transformRev)
-    : pipeTransform(extractRevPipeline(transform))
 
 /**
  * Create a function that returns a field mapper function. Call with `false` to

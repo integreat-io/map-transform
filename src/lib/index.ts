@@ -2,6 +2,7 @@ import * as R from 'ramda'
 import { IMapping, IData, IFieldMapper } from '../../index.d'
 import lensPath from './lensPath'
 import createFieldMapper from './createFieldMapper'
+import { pipeTransform, pipeTransformRev } from './transformPipeline'
 
 type IDataOrArray = IData | IData[]
 type IMapper = (data: IDataOrArray) => IDataOrArray
@@ -59,7 +60,8 @@ export default function mapTransform (mapping?: IMapping | null): IMapperWithRev
     return noTransformWithRev
   }
 
-  const { fields, path, pathTo, pathRev, pathToRev } = mapping
+  const { fields, path, pathTo, pathRev, pathToRev, transform, transformRev }
+    = mapping
   const pathLens = lensPath(path)
   const pathToLens = lensPath(pathTo)
   const pathRevLens = (typeof pathRev !== 'undefined') ? lensPath(pathRev) : pathLens
@@ -68,16 +70,18 @@ export default function mapTransform (mapping?: IMapping | null): IMapperWithRev
   const fieldMappers = (fields) ? R.toPairs(fields).map(createFieldMapper) : []
   const objectMapper = createObjectMapper(fieldMappers)
   const revObjectMapper = createRevObjectMapper(fieldMappers)
+  const transformFn = pipeTransform(transform)
+  const transformRevFn = pipeTransformRev(transformRev, transform)
 
   const mapper = R.compose(
     setAtObjectPath(pathToLens),
-    mapAny(objectMapper),
+    mapAny(R.compose(transformFn, objectMapper)),
     getFromObjectPath(pathLens)
   )
 
   const revMapper = R.compose(
     setAtObjectPath(pathRevLens),
-    mapAny(revObjectMapper),
+    mapAny(R.compose(revObjectMapper, transformRevFn)),
     getFromObjectPath(pathToRevLens)
   )
 

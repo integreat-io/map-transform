@@ -5,15 +5,17 @@ import {
   MapperFunctionWithRev
 } from './utils/createMapper'
 import { PathString } from './utils/lensPath'
-import { MappingDefinition } from './utils/createFieldMapper'
+import { MappingDef } from './utils/normalizeMapping'
 import { TransformPipeline } from './utils/transformPipeline'
 import { FilterPipeline } from './utils/filterPipeline'
 
 namespace mapTransform {
+  export interface Shape {
+    [key: string]: PathString | MappingDef | Shape | null
+  }
+
   export interface Definition {
-    mapping?: {
-      [key: string]: PathString | MappingDefinition | null
-    },
+    mapping?: Shape,
     path?: PathString | null,
     pathRev?: PathString | null,
     pathTo?: PathString | null,

@@ -5,6 +5,7 @@ import { lensPath } from './lensPath'
 import { createFieldMapper, FieldMapperFunction } from './createFieldMapper'
 import { pipeTransform, pipeTransformRev } from './transformPipeline'
 import { pipeFilter, FilterFunction } from './filterPipeline'
+import { normalizeMapping } from './normalizeMapping'
 
 interface BaseMapperFunction {
   (data: Data | null): Data | null
@@ -62,7 +63,7 @@ export const createMapper = (def: Definition): MapperFunctionWithRev => {
   const pathRevLens = (typeof pathRev !== 'undefined') ? lensPath(pathRev) : pathLens
   const pathToRevLens = (typeof pathToRev !== 'undefined') ? lensPath(pathToRev) : pathToLens
 
-  const fieldMappers = (mapping) ? R.toPairs(mapping).map(createFieldMapper) : []
+  const fieldMappers = (mapping) ? normalizeMapping(mapping).map(createFieldMapper) : []
   const objectMapper = createObjectMapper(fieldMappers)
   const revObjectMapper = createRevObjectMapper(fieldMappers)
   const transformFn = pipeTransform(transform)

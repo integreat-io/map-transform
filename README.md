@@ -19,7 +19,7 @@ Let's look at a simple example:
 ```javascript
 import mapTransform from 'map-transform'
 
-const mapping = {
+const def = {
   mapping: {
     'title': 'content.headline',
     'author': 'meta.writer.username'
@@ -27,7 +27,7 @@ const mapping = {
   path: 'sections[0].articles'
 }
 
-const mapper = mapTransform(mapping)
+const mapper = mapTransform(def)
 
 // `mapper` is now a function that will always map as defined by `mapping`
 
@@ -169,12 +169,11 @@ First of all, if there's the `path` property on the root object is set, it is
 used to retrieve an object or an array of objects from the source data. When
 this `path` is not set, the source data is just used as is.
 
-Then the `path` property of each field is used to retrieve field values from
-the object(s) returned from the root `path`, using the value of `default` when
-the path does not match a value in the source data.
+Then the `path` property of each object on `mapping`, is used to retrieve field values from the object(s) returned from the root `path`, using the value of
+`default` when the path does not match a value in the source data.
 
 Next, the path string used as keys for the object in `mapping`, is used to set
-each field value on the target object(s).
+each value on the target object(s).
 
 Finally, if a `pathTo` is set on the root object, the object or array of objects
 we have at this point is set at this path on an empty object and returned.
@@ -218,6 +217,51 @@ object and returns true to include it and false to filter it out of the final
 result. When several filter functions are set, all of them must return true for
 the item to be included. The `filter` is used on reverse mapping as well,
 directly after the items are extracted from any `pathTo`.
+
+The `mapping` object defines the shape of the target item(s) to map _to_, with
+options for how values _from_ the source object should be mapped to it. Another
+way of specifying this shape, is simply supplying it as nested objects. In the following example, `def1` and `def2` are two ways of defining the exact same
+mapping, it's simply a matter of taste:
+
+```
+const def1 = {
+  mapping: {
+    'attributes.title': {path: 'headline', default: 'Untitled'},
+    'attributes.text': 'content.text'
+  }
+}
+
+const def2 = {
+  mapping: {
+    attributes: {
+      title: {path: 'headline', default: 'Untitled'},
+      text: 'content.text'
+    }
+  }
+}
+```
+
+The only difference is that `path` is a reserved property name in mapping
+definitions unless it is set directly on the `mapping` object, so to map to an
+object with a `path` property, you will have to use the dot notation.
+
+```
+// NOT okay:
+const def3 = {
+  mapping: {
+    attributes: {
+      path: { path: 'meta.path'}
+    }
+  }
+}
+
+// Okay:
+const def4 = {
+  mapping: {
+    'attributes.path': { path: 'meta.path' }
+  }
+}
+```
 
 ### Running the tests
 

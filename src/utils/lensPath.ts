@@ -1,7 +1,8 @@
 import * as R from 'ramda'
-import { IPath } from '../../index.d'
 import pathGetter from './pathGetter'
 import pathSetter from './pathSetter'
+
+export type PathString = string
 
 export const empty = R.lens(R.identity, R.identity)
 
@@ -16,7 +17,5 @@ export const empty = R.lens(R.identity, R.identity)
  * @param {string} path - A path string in dot notation
  * @returns {Lens} A Ramda lens
  */
-const lensPath = (path?: IPath | null): R.Lens =>
+export const lensPath = (path?: PathString | null): R.Lens =>
   (path) ? R.lens(pathGetter(path), pathSetter(path)) : empty
-
-export default lensPath

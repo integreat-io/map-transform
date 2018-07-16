@@ -1,7 +1,7 @@
 import test from 'ava'
-import { TransformFunction } from '../..'
+import { TransformFunction } from '../utils/transformPipeline'
 
-import mapTransform from '../lib'
+import mapTransform = require('..')
 
 // Helpers
 

@@ -5,6 +5,7 @@ Map and transform objects with mapping definitions.
 [![npm Version](https://img.shields.io/npm/v/map-transform.svg)](https://www.npmjs.com/package/map-transform)
 [![Build Status](https://travis-ci.org/integreat-io/map-transform.svg?branch=master)](https://travis-ci.org/integreat-io/map-transform)
 [![Coverage Status](https://coveralls.io/repos/github/integreat-io/map-transform/badge.svg?branch=master)](https://coveralls.io/github/integreat-io/map-transform?branch=master)
+[![Dependencies Status](https://tidelift.com/badges/github/integreat-io/map-transform?style=flat)](https://tidelift.com/subscriber/github/integreat-io/repositories/map-transform)
 [![Maintainability](https://api.codeclimate.com/v1/badges/fbb6638a32ee5c5f60b7/maintainability)](https://codeclimate.com/github/integreat-io/map-transform/maintainability)
 
 Behind this boring name hides a powerful object transformer. There are a lot of

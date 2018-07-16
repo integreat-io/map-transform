@@ -1,13 +1,25 @@
 import * as R from 'ramda'
-import { IFieldMapping, IFieldMapper, IPath, TransformFunction } from '../../index.d'
-import lensPath from './lensPath'
-import { pipeTransform, pipeTransformRev } from './transformPipeline'
+import { Data } from '..'
+import { lensPath, PathString } from './lensPath'
+import { pipeTransform, pipeTransformRev, TransformFunction, TransformPipeline } from './transformPipeline'
 
-type IFieldMappingTuple = [string, IPath | IFieldMapping | null]
-type IFieldMapperGetter = (isRev: boolean) => IFieldMapper
+export interface FieldDefinition {
+  path: PathString | null,
+  transform?: TransformPipeline,
+  transformRev?: TransformPipeline,
+  default?: any,
+  defaultRev?: any
+}
+
+export interface FieldMapperFunction {
+  (target: Data, data: Data): Data
+}
+type GetFieldMapperFunction = (isRev: boolean) => FieldMapperFunction
+
+type CreateFieldArgTuple = [string, PathString | FieldDefinition | null]
 
 // String | b -> b
-const normalizeFieldMapping = (fieldMapping: IPath | IFieldMapping | null): IFieldMapping =>
+const normalizeFieldMapping = (fieldMapping: PathString | FieldDefinition | null): FieldDefinition =>
   (!fieldMapping || typeof fieldMapping === 'string')
     ? { path: fieldMapping }
     : fieldMapping
@@ -18,7 +30,7 @@ const setFieldValue = (
   toLens: R.Lens,
   transformFn: TransformFunction,
   setDefault: (def: any) => any
-): IFieldMapper =>
+): FieldMapperFunction =>
   (target, data) => R.set(
     toLens,
     setDefault(transformFn(R.view(fromLens, data))),
@@ -35,7 +47,7 @@ const setFieldValue = (
  * @returns {function} A function that returns a default or reverse mapper when
  * called with `false` or `true`
  */
-const createFieldMapper = ([fieldId, fieldMapping]: IFieldMappingTuple): IFieldMapperGetter => {
+export const createFieldMapper = ([fieldId, fieldMapping]: CreateFieldArgTuple): GetFieldMapperFunction => {
   const { path, default: def, defaultRev, transform, transformRev }
     = normalizeFieldMapping(fieldMapping)
   const fromLens = lensPath(path)
@@ -49,5 +61,3 @@ const createFieldMapper = ([fieldId, fieldMapping]: IFieldMappingTuple): IFieldM
     ? setFieldValue(toLens, fromLens, transformRevFn, setDefaultRev)
     : setFieldValue(fromLens, toLens, transformFn, setDefault)
 }
-
-export default createFieldMapper

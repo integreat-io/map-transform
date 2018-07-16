@@ -1,6 +1,5 @@
 src/
-*-test.js
-*.map
+*-test*
 .*
 tsconfig.json
 tslint.json

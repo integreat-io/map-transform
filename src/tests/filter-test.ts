@@ -1,7 +1,7 @@
 import test from 'ava'
-import { FilterFunction } from '../..'
+import { FilterFunction } from '../utils/filterPipeline'
 
-import mapTransform from '../lib'
+import mapTransform = require('..')
 
 // Helpers
 

@@ -1,0 +1,5 @@
+# Just warn about deprecated development dependencies
+ci:
+  development:
+    tests:
+      deprecated: warn

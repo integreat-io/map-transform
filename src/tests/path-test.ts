@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import mapTransform from '../lib'
+import mapTransform = require('..')
 
 test('should map simple object', (t) => {
   const mapping = {

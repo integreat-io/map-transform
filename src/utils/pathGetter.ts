@@ -1,31 +1,32 @@
 import * as R from 'ramda'
-import { IPath, IDataWithProps, IDataOrProp } from '../../index.d'
+import * as mapAny from 'map-any'
+import { Data, DataWithProps } from '..'
+import { PathString } from './lensPath'
 
-export interface IGetter {
-  (object?: IDataWithProps | null): IDataOrProp
-}
-
-const parseIntIf = (val: string) => {
+const numberOrString = (val: string): string | number => {
   const num = Number.parseInt(val)
   return (Number.isNaN(num)) ? val : num
 }
 
-const split = (str: IPath): (string | number)[] =>
-  str.split(/\[|]?\.|]/).filter((str) => str !== '').map(parseIntIf)
+const split = (str: PathString): (string | number)[] =>
+  str.split(/\[|]?\.|]/).filter((str) => str !== '').map(numberOrString)
 
-const getProp = (prop: string | number, object?: IDataWithProps) =>
+const getProp = (prop: string) => (object?: DataWithProps) =>
   (object) ? object[prop] : undefined
 
+const getArrayIndex = (index: number) => (arr?: Data) =>
+  (Array.isArray(arr)) ? arr[index] : undefined
+
 const getter = (prop: string | number) =>
-  (object?: IDataWithProps): IDataOrProp | undefined =>
-    (Array.isArray(object) && typeof prop === 'string')
-      ? object.map(getter(prop)) : getProp(prop, object)
+  (typeof prop === 'number') ? getArrayIndex(prop) : mapAny(getProp(prop))
 
 const getGetters = R.compose(
   R.binary(R.apply(R.pipe)),
   R.map(getter),
   split
 )
+
+type GetFunction = (object?: Data | null) => Data
 
 /**
  * Get the value at `path` in `object`.
@@ -36,7 +37,7 @@ const getGetters = R.compose(
  * @param {string} path - The path to get
  * @returns {function} A function accepting an object to get the value from.
  */
-export default function pathGetter (path: IPath | null): IGetter {
+export default function pathGetter (path: PathString | null): GetFunction {
   return (path)
     ? R.ifElse(
         R.isNil,

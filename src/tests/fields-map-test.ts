@@ -17,8 +17,8 @@ enclose.rev = (str: string) => (str.startsWith('(') && str.endsWith(')'))
 // Tests
 
 test('should map field with one transform function', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: {
         path: 'content.heading',
         transform: appendEllipsis
@@ -32,14 +32,14 @@ test('should map field with one transform function', (t) => {
     title: 'The heading ...'
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map field with array of transform functions', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: {
         path: 'content.heading',
         transform: [ appendEllipsis, upperCase ]
@@ -53,14 +53,14 @@ test('should map field with array of transform functions', (t) => {
     title: 'THE HEADING ...'
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should apply transform functions from left to right', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       titleLength: {
         path: 'content.heading',
         transform: [ appendEllipsis, getLength ]
@@ -74,14 +74,14 @@ test('should apply transform functions from left to right', (t) => {
     titleLength: 15
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should not fail with empty transform array', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: {
         path: 'content.heading',
         transform: []
@@ -95,14 +95,14 @@ test('should not fail with empty transform array', (t) => {
     title: 'The heading'
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should reverse map with transform functions from transformRev', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: {
         path: 'content.heading',
         transform: [ upperCase ],
@@ -117,14 +117,14 @@ test('should reverse map with transform functions from transformRev', (t) => {
     content: { heading: '11 ...' }
   }
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should reverse map with transform function from rev props', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: {
         path: 'content.heading',
         transform: appendEllipsis
@@ -138,14 +138,14 @@ test('should reverse map with transform function from rev props', (t) => {
     content: { heading: 'The heading' }
   }
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should reverse map with several transform functions from rev props', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: {
         path: 'content.heading',
         transform: [ appendEllipsis, upperCase, enclose ]
@@ -159,7 +159,7 @@ test('should reverse map with several transform functions from rev props', (t) =
     content: { heading: 'The heading' }
   }
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })

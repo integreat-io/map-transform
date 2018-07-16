@@ -3,7 +3,7 @@ import { Data } from '..'
 import { lensPath, PathString } from './lensPath'
 import { pipeTransform, pipeTransformRev, TransformFunction, TransformPipeline } from './transformPipeline'
 
-export interface FieldDefinition {
+export interface MappingDefinition {
   path: PathString | null,
   transform?: TransformPipeline,
   transformRev?: TransformPipeline,
@@ -16,10 +16,10 @@ export interface FieldMapperFunction {
 }
 type GetFieldMapperFunction = (isRev: boolean) => FieldMapperFunction
 
-type CreateFieldArgTuple = [string, PathString | FieldDefinition | null]
+type CreateFieldArgTuple = [string, PathString | MappingDefinition | null]
 
 // String | b -> b
-const normalizeFieldMapping = (fieldMapping: PathString | FieldDefinition | null): FieldDefinition =>
+const normalizeFieldMapping = (fieldMapping: PathString | MappingDefinition | null): MappingDefinition =>
   (!fieldMapping || typeof fieldMapping === 'string')
     ? { path: fieldMapping }
     : fieldMapping

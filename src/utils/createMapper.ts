@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as mapAny from 'map-any'
-import { MapperDefinition, Data } from '..'
+import { Definition, Data } from '..'
 import { lensPath } from './lensPath'
 import { createFieldMapper, FieldMapperFunction } from './createFieldMapper'
 import { pipeTransform, pipeTransformRev } from './transformPipeline'
@@ -55,19 +55,19 @@ const createRevObjectMapper = R.compose(
   mapFieldsOrPassObject(true)
 )
 
-export const createMapper = (mapping: MapperDefinition): MapperFunctionWithRev => {
-  const { fields, pathRev, pathToRev, transform } = mapping
-  const pathLens = lensPath(mapping.path)
-  const pathToLens = lensPath(mapping.pathTo)
+export const createMapper = (def: Definition): MapperFunctionWithRev => {
+  const { mapping, pathRev, pathToRev, transform } = def
+  const pathLens = lensPath(def.path)
+  const pathToLens = lensPath(def.pathTo)
   const pathRevLens = (typeof pathRev !== 'undefined') ? lensPath(pathRev) : pathLens
   const pathToRevLens = (typeof pathToRev !== 'undefined') ? lensPath(pathToRev) : pathToLens
 
-  const fieldMappers = (fields) ? R.toPairs(fields).map(createFieldMapper) : []
+  const fieldMappers = (mapping) ? R.toPairs(mapping).map(createFieldMapper) : []
   const objectMapper = createObjectMapper(fieldMappers)
   const revObjectMapper = createRevObjectMapper(fieldMappers)
   const transformFn = pipeTransform(transform)
-  const transformRevFn = pipeTransformRev(mapping.transformRev, transform)
-  const filterFn = pipeFilter(mapping.filter)
+  const transformRevFn = pipeTransformRev(def.transformRev, transform)
+  const filterFn = pipeFilter(def.filter)
 
   const mapper = R.compose(
     setAtObjectPath(pathToLens),

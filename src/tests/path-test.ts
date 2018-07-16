@@ -3,8 +3,8 @@ import test from 'ava'
 import mapTransform = require('..')
 
 test('should map simple object', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writer.username'
     }
@@ -18,14 +18,14 @@ test('should map simple object', (t) => {
     author: 'johnf'
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map array of objects', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writer.username'
     }
@@ -45,14 +45,14 @@ test('should map array of objects', (t) => {
     { title: 'Second heading', author: 'maryk' }
   ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map with array index path', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writers[0].username'
     }
@@ -66,14 +66,14 @@ test('should map with array index path', (t) => {
     author: 'johnf'
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map with array all path', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       authors: 'meta.writers[].id'
     }
@@ -87,14 +87,14 @@ test('should map with array all path', (t) => {
     authors: ['johnf', 'maryk']
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map with empty field key', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       '': 'content'
     }
   }
@@ -103,14 +103,14 @@ test('should map with empty field key', (t) => {
   }
   const expected = { heading: 'The heading' }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should use default value', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: {
         path: 'content.heading',
         default: 'Default heading',
@@ -127,14 +127,14 @@ test('should use default value', (t) => {
     { title: 'From data' }
   ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should set missing values to undefined when no default', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: {
         path: 'content.heading'
       }
@@ -149,14 +149,14 @@ test('should set missing values to undefined when no default', (t) => {
     { title: 'From data' }
   ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map with object path', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: { path: 'content.heading' }
     },
     path: 'content.articles'
@@ -174,14 +174,14 @@ test('should map with object path', (t) => {
     { title: 'Heading 2' }
   ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map with object pathTo', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: { path: 'content.heading' }
     },
     pathTo: 'content.articles'
@@ -199,14 +199,14 @@ test('should map with object pathTo', (t) => {
     }
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map with array pathTo', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: { path: 'content.heading' }
     },
     pathTo: 'content.articles[].item'
@@ -224,33 +224,33 @@ test('should map with array pathTo', (t) => {
     }
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should return data when no mapping', (t) => {
-  const mapping = null
+  const def = null
   const data = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }
   ]
   const expected = data
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return data when no fields', (t) => {
-  const mapping = {}
+test('should return data when no mapping', (t) => {
+  const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }
   ]
   const expected = data
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

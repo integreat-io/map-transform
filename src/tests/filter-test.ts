@@ -14,8 +14,8 @@ const noAlso: FilterFunction = (item: {title: string}) =>
 // Tests
 
 test('should filter out item', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading'
     },
     filter: noHeading
@@ -25,14 +25,14 @@ test('should filter out item', (t) => {
   }
   const expected = null
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should filter out items in array', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading'
     },
     filter: noHeading
@@ -46,14 +46,14 @@ test('should filter out items in array', (t) => {
     { title: 'Just this' }
   ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should filter with array of filters', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading'
     },
     filter: [ noHeading, noAlso ]
@@ -68,14 +68,14 @@ test('should filter with array of filters', (t) => {
     { title: 'Just this' }
   ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should keep all when filter is empty array', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading'
     },
     filter: []
@@ -89,14 +89,14 @@ test('should keep all when filter is empty array', (t) => {
     { title: 'Just this' }
   ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should filter on reverse mapping', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading'
     },
     filter: [ noHeading, noAlso ]
@@ -111,14 +111,14 @@ test('should filter on reverse mapping', (t) => {
     { content: { heading: 'Just this' } }
   ]
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should set filtered items on pathTo', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading'
     },
     filter: noHeading,
@@ -134,14 +134,14 @@ test('should set filtered items on pathTo', (t) => {
     ]
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should filter items from pathTo for reverse mapping', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading'
     },
     filter: [ noHeading ],
@@ -157,7 +157,7 @@ test('should filter items from pathTo for reverse mapping', (t) => {
     { content: { heading: 'Just this' } }
   ]
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })

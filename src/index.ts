@@ -5,14 +5,14 @@ import {
   MapperFunctionWithRev
 } from './utils/createMapper'
 import { PathString } from './utils/lensPath'
-import { FieldDefinition } from './utils/createFieldMapper'
+import { MappingDefinition } from './utils/createFieldMapper'
 import { TransformPipeline } from './utils/transformPipeline'
 import { FilterPipeline } from './utils/filterPipeline'
 
 namespace mapTransform {
-  export interface MapperDefinition {
-    fields?: {
-      [key: string]: PathString | FieldDefinition | null
+  export interface Definition {
+    mapping?: {
+      [key: string]: PathString | MappingDefinition | null
     },
     path?: PathString | null,
     pathRev?: PathString | null,
@@ -42,7 +42,7 @@ const noTransformWithRev: MapperFunctionWithRev = Object.assign(noTransform, { r
  * @param {Object} definition - A mapping definition
  * @returns {function} A mapper function
  */
-function mapTransform (definition?: mapTransform.MapperDefinition | null): MapperFunctionWithRev {
+function mapTransform (definition?: mapTransform.Definition | null): MapperFunctionWithRev {
   return (definition) ? createMapper(definition) : noTransformWithRev
 }
 

@@ -28,8 +28,8 @@ const setAuthorName: TransformFunction = (item: {author: string}) => ({
 // Tests
 
 test('should map simple object with one transform function', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writer.username'
     },
@@ -44,14 +44,14 @@ test('should map simple object with one transform function', (t) => {
     author: 'johnf'
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should map simple object with array of transform functions', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writer.username'
     },
@@ -67,14 +67,14 @@ test('should map simple object with array of transform functions', (t) => {
     active: true
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should reverse map simple object with transformRev', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writer.username',
       authorName: 'meta.writer.name'
@@ -91,14 +91,14 @@ test('should reverse map simple object with transformRev', (t) => {
     meta: { writer: { username: 'johnf', name: 'Johnf.' } }
   }
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should reverse map simple object with transform rev props', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writer.username'
     },
@@ -113,14 +113,14 @@ test('should reverse map simple object with transform rev props', (t) => {
     meta: { writer: { username: 'johnf' } }
   }
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should transform after path and before pathTo', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writer.username'
     },
@@ -143,14 +143,14 @@ test('should transform after path and before pathTo', (t) => {
     }
   }
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should reverse transform after pathTo and before path', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       author: 'meta.writer.username',
       authorName: 'meta.writer.name'
@@ -175,14 +175,14 @@ test('should reverse transform after pathTo and before path', (t) => {
     }
   }
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should transform with array', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading'
     },
     transform: [ setActive ]
@@ -196,14 +196,14 @@ test('should transform with array', (t) => {
     { title: 'Another heading', active: true }
   ]
 
-  const ret = mapTransform(mapping)(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should reverse transform with array', (t) => {
-  const mapping = {
-    fields: {
+  const def = {
+    mapping: {
       title: 'content.heading',
       active: 'content.active'
     },
@@ -218,7 +218,7 @@ test('should reverse transform with array', (t) => {
     { content: { heading: 'Another heading', active: false } }
   ]
 
-  const ret = mapTransform(mapping).rev(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })

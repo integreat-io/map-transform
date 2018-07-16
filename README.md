@@ -20,7 +20,7 @@ Let's look at a simple example:
 import mapTransform from 'map-transform'
 
 const mapping = {
-  fields: {
+  mapping: {
     'title': 'content.headline',
     'author': 'meta.writer.username'
   },
@@ -144,7 +144,7 @@ npm install map-transform --save
 
 ```javascript
 {
-  fields: {
+  mapping: {
     <path string>: {
       path: <path string>,
       default: <any value>,
@@ -173,7 +173,7 @@ Then the `path` property of each field is used to retrieve field values from
 the object(s) returned from the root `path`, using the value of `default` when
 the path does not match a value in the source data.
 
-Next, the path string used as keys for the object in `fields`, is used to set
+Next, the path string used as keys for the object in `mapping`, is used to set
 each field value on the target object(s).
 
 Finally, if a `pathTo` is set on the root object, the object or array of objects
@@ -185,7 +185,7 @@ specified, it is used instead of `pathTo` when extracting _from_ the data (to is
 now from - as confusing as that is), and a `pathRev` is used instead of `path` to
 set the data on an empty object just before returning it.
 
-There is a shortcut when defining fields without default values. The `fields`
+There is a shortcut when defining mappings without default values. The `mapping`
 object `{'title': 'content.heading'}` is exactly the same as `{'title': {path:
 'content.heading'}}`.
 

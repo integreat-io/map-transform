@@ -96,6 +96,26 @@ test('should reverse map with object path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map data as is when no mapping', (t) => {
+  const def = {
+    path: 'content'
+  }
+  const data = {
+    title: 'The heading',
+    author: 'johnf'
+  }
+  const expected = {
+    content: {
+      title: 'The heading',
+      author: 'johnf'
+    }
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should reverse map with object pathTo', (t) => {
   const def = {
     mapping: {

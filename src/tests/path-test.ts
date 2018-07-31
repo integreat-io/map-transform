@@ -183,6 +183,22 @@ test('should map with root array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map data as is when no mapping', (t) => {
+  const def = {
+    path: 'content'
+  }
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = {
+    heading: 'The heading'
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with object pathTo', (t) => {
   const def = {
     mapping: {

@@ -183,7 +183,7 @@ test('should map with array pathTo', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return data when no mapping', (t) => {
+test('should return data when no mapping def', (t) => {
   const def = null
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -196,7 +196,7 @@ test('should return data when no mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return data when no mapping', (t) => {
+test('should return data when mapping def is empty', (t) => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },

@@ -254,3 +254,33 @@ test('should return data when mapping def is empty', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should return null when no data is given', (t) => {
+  const def = {
+    mapping: {
+      title: 'content.heading'
+    }
+  }
+
+  const ret = mapTransform(def)(null)
+
+  t.is(ret, null)
+})
+
+test('should return null when path points to a non-existing prop', (t) => {
+  const def = {
+    mapping: {
+      title: 'title'
+    },
+    path: 'missing'
+  }
+  const data = {
+    content: {
+      title: 'Entry 1'
+    }
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.is(ret, null)
+})

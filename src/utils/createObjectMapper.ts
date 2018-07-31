@@ -18,7 +18,9 @@ const setAtObjectPath = (lens: R.Lens): MapperFunction => R.set(lens, _, {}) as 
 
 // [(a -> a -> a)] -> g a
 const reduceMapperFns = (mapperFns: FieldMapperFunction[]): MapperFunction =>
-  (data) => mapperFns.reduce((target, fn) => fn(target, data), {})
+  (data) => (R.isNil(data))
+    ? null
+    : mapperFns.reduce((target, fn) => fn(target, data), {})
 
 // Lens -> (a -> a)
 const getFromObjectPath = (lens: R.Lens): MapperFunction => R.view(lens)

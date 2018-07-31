@@ -5,42 +5,33 @@ import { pipeTransform, pipeTransformRev, TransformFunction } from './transformP
 import { MappingDefNormalized } from './normalizeMapping'
 
 export interface FieldMapperFunction {
-  (target: Data, data: Data): Data
+  (target: Data, data: Data | null): Data
 }
-type GetFieldMapperFunction = (isRev: boolean) => FieldMapperFunction
 
 // Lens -> Lens -> (a -> b) -> (c -> (d -> c | d)) => (e -> e -> e)
-const setFieldValue = (
-  fromLens: R.Lens,
-  toLens: R.Lens,
-  transformFn: TransformFunction,
-  setDefault: (def: any) => any
-): FieldMapperFunction =>
-  (target, data) => R.set(
-    toLens,
-    setDefault(transformFn(R.view(fromLens, data))),
-    target
-  )
+const setFieldValue = (fromLens: R.Lens, toLens: R.Lens, transformFn: TransformFunction): FieldMapperFunction => (target, data) => {
+  const value = R.view(fromLens, data)
+  return (value === undefined)
+    ? target
+    : R.set(toLens, transformFn(value), target)
+}
+const setDefaultValue = (toLens: R.Lens, defaultValue: any): FieldMapperFunction => R.over(toLens, R.defaultTo(defaultValue))
 
 /**
- * Create a function that returns a field mapper function. Call with `false` to
- * get a default mapper – mapping from the source to the target, and call with
- * `true` to get a reverse mapper going the other way.
- *
- * @param {Array} fieldMappingTuple - An array of the pathTo and the
- * fieldMapping definition
- * @returns {function} A function that returns a default or reverse mapper when
- * called with `false` or `true`
+ * Create an object with field mapper functions. The default mapper – mapping
+ * _from_ the source _to_ the target is at the `map` property, and the reverse
+ * mapper is at `mapRev`.
  */
-export const createFieldMapper = (def: MappingDefNormalized): GetFieldMapperFunction => {
+export const createFieldMapper = (def: MappingDefNormalized) => {
   const fromLens = lensPath(def.path)
   const toLens = lensPath(def.pathTo)
-  const setDefault = R.defaultTo(def.default)
-  const setDefaultRev = R.defaultTo(def.defaultRev)
   const transformFn = pipeTransform(def.transform)
   const transformRevFn = pipeTransformRev(def.transformRev, def.transform)
 
-  return (isRev) => (isRev)
-    ? setFieldValue(toLens, fromLens, transformRevFn, setDefaultRev)
-    : setFieldValue(fromLens, toLens, transformFn, setDefault)
+  return {
+    map: setFieldValue(fromLens, toLens, transformFn),
+    mapRev: setFieldValue(toLens, fromLens, transformRevFn),
+    complete: setDefaultValue(toLens, def.default),
+    completeRev: setDefaultValue(fromLens, def.defaultRev)
+  }
 }

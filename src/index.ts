@@ -1,7 +1,6 @@
 import * as R from 'ramda'
 import {
   createMapper,
-  MapperFunction,
   MapperFunctionWithRev
 } from './utils/createMapper'
 import { PathString } from './utils/lensPath'
@@ -34,8 +33,16 @@ namespace mapTransform {
   export type Data = DataWithProps | DataWithProps[] | DataProperty | DataProperty[]
 }
 
-const noTransform: MapperFunction = (data: mapTransform.Data | null) => data
-const noTransformWithRev: MapperFunctionWithRev = Object.assign(noTransform, { rev: R.identity })
+const identityMapper: MapperFunctionWithRev = Object.assign(
+  (data: mapTransform.Data | null) => data,
+  {
+    noDefaults: R.identity,
+    rev: Object.assign(
+      (data: mapTransform.Data | null) => data,
+      { noDefaults: R.identity }
+    )
+  }
+)
 
 /**
  * Will return a function that executes the mapping defined in `mapping`.
@@ -45,7 +52,7 @@ const noTransformWithRev: MapperFunctionWithRev = Object.assign(noTransform, { r
  * @returns {function} A mapper function
  */
 function mapTransform (definition?: mapTransform.Definition | null): MapperFunctionWithRev {
-  return (definition) ? createMapper(definition) : noTransformWithRev
+  return (definition) ? createMapper(definition) : identityMapper
 }
 
 export = mapTransform

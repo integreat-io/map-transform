@@ -263,6 +263,13 @@ const def4 = {
 }
 ```
 
+In some cases, you might want to include only values that are present in the
+source and not use `default` and `defaultRev`. To do this, call
+`mapTransform(def).noDefaults(data)` or
+`mapTransform(def).rev.noDefaults(data)`. Any property that is not found in
+the data will not be set in the resulting object, neither with default value
+nor `undefined`.
+
 ### Running the tests
 
 The tests can be run with `npm test`.

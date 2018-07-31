@@ -9,7 +9,11 @@
     "noEmitOnError": false,
     "strict": true,
     "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
     "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "alwaysStrict": true,
     "removeComments": true,
     "baseUrl": ".",
     "paths": {

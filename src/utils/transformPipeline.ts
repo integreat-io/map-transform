@@ -23,12 +23,17 @@ const extractRevPipeline = R.ifElse(
   extractRev
 )
 
-export const pipeTransform = (transform?: TransformPipeline) => (Array.isArray(transform))
-  ? ((transform.length > 0) ? R.call(R.pipe, ...transform) : R.identity)
-  : (transform || R.identity)
+export const pipeTransform = (
+  transform?: TransformPipeline
+): TransformFunction =>
+  (Array.isArray(transform))
+    ? ((transform.length > 0) ? R.call(R.pipe, ...transform) : R.identity)
+    : (transform || R.identity)
 
-export const pipeTransformRev =
-  (transformRev?: TransformPipeline, transform?: TransformPipeline) =>
-    (transformRev || !transform)
-      ? pipeTransform(transformRev)
-      : pipeTransform(extractRevPipeline(transform))
+export const pipeTransformRev = (
+  transformRev?: TransformPipeline,
+  transform?: TransformPipeline
+): TransformFunction =>
+  (transformRev || !transform)
+    ? pipeTransform(transformRev)
+    : pipeTransform(extractRevPipeline(transform))

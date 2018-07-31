@@ -87,52 +87,6 @@ test('should reverse map with no path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use defaultRev value', (t) => {
-  const def = {
-    mapping: {
-      title: {
-        path: 'content.heading',
-        default: 'Wrong way',
-        defaultRev: 'Default heading'
-      }
-    }
-  }
-  const data = [
-    {},
-    { title: 'From data' }
-  ]
-  const expected = [
-    { content: { heading: 'Default heading' } },
-    { content: { heading: 'From data' } }
-  ]
-
-  const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should set missing value to undefined when no defaultRev', (t) => {
-  const def = {
-    mapping: {
-      title: {
-        path: 'content.heading'
-      }
-    }
-  }
-  const data = [
-    {},
-    { title: 'From data' }
-  ]
-  const expected = [
-    { content: { heading: undefined } },
-    { content: { heading: 'From data' } }
-  ]
-
-  const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should reverse map with object path', (t) => {
   const def = {
     mapping: {

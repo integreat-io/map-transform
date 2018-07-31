@@ -133,6 +133,52 @@ test('should map with object path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with object array path', (t) => {
+  const def = {
+    mapping: {
+      title: { path: 'content.heading' }
+    },
+    path: 'content.articles[]'
+  }
+  const data = {
+    content: {
+      articles: [
+        { content: { heading: 'Heading 1' } },
+        { content: { heading: 'Heading 2' } }
+      ]
+    }
+  }
+  const expected = [
+    { title: 'Heading 1' },
+    { title: 'Heading 2' }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with root array path', (t) => {
+  const def = {
+    mapping: {
+      title: { path: 'content.heading' }
+    },
+    path: '[]'
+  }
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
+  const expected = [
+    { title: 'Heading 1' },
+    { title: 'Heading 2' }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with object pathTo', (t) => {
   const def = {
     mapping: {

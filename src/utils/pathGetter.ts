@@ -4,7 +4,7 @@ import { Data, DataWithProps } from '..'
 import { PathString } from './lensPath'
 
 const numberOrString = (val: string): string | number => {
-  const num = Number.parseInt(val)
+  const num = Number.parseInt(val, 10)
   return (Number.isNaN(num)) ? val : num
 }
 
@@ -21,7 +21,11 @@ const getter = (prop: string | number) =>
   (typeof prop === 'number') ? getArrayIndex(prop) : mapAny(getProp(prop))
 
 const getGetters = R.compose(
-  R.binary(R.apply(R.pipe)),
+  R.ifElse(
+    R.isEmpty,
+    R.always(R.identity),
+    R.apply(R.pipe)
+  ),
   R.map(getter),
   split
 )

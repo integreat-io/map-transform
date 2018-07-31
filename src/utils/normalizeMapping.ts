@@ -41,7 +41,8 @@ const normalizeShape = (mapping: Shape, pathTo: string[] = []):
 
 export function normalizeMapping (mapping: Shape | MappingDef[]):
     MappingDefNormalized[] {
-  return (Array.isArray(mapping))
+  const normalized = (Array.isArray(mapping))
     ? mapping.map(normalize)
     : normalizeShape(mapping)
+  return normalized.filter((m) => m.path !== null && m.pathTo !== null)
 }

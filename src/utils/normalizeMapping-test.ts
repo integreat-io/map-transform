@@ -32,13 +32,22 @@ test('should normalize from path shortcut', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should normalize with null as shortcut', (t) => {
+test('should skip fields with no definition', (t) => {
   const mapping = {
     title: null
   }
-  const expected = [
-    { pathTo: 'title', path: null }
-  ]
+  const expected: any[] = []
+
+  const ret = normalizeMapping(mapping)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip fields with no pathTo', (t) => {
+  const mapping = {
+    '': 'content.heading'
+  }
+  const expected: any[] = []
 
   const ret = normalizeMapping(mapping)
 
@@ -90,7 +99,8 @@ test('should normalize mapping object', (t) => {
   const transformRev = (value: string) => value + ' rev'
   const mapping = [
     {
-      path: '',
+      pathTo: 'title',
+      path: 'heading',
       transform,
       transformRev,
       default: 'Untitled',
@@ -99,8 +109,8 @@ test('should normalize mapping object', (t) => {
   ]
   const expected = [
     {
-      pathTo: null,
-      path: null,
+      pathTo: 'title',
+      path: 'heading',
       transform,
       transformRev,
       default: 'Untitled',

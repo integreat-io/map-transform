@@ -50,6 +50,26 @@ test('should map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not map fields without paths', (t) => {
+  const def = {
+    mapping: {
+      title: null,
+      author: 'meta.writer.username'
+    }
+  }
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } }
+  }
+  const expected = {
+    author: 'johnf'
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with array index path', (t) => {
   const def = {
     mapping: {
@@ -86,22 +106,6 @@ test('should map with array all path', (t) => {
     title: 'The heading',
     authors: ['johnf', 'maryk']
   }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should map with empty field key', (t) => {
-  const def = {
-    mapping: {
-      '': 'content'
-    }
-  }
-  const data = {
-    content: { heading: 'The heading' }
-  }
-  const expected = { heading: 'The heading' }
 
   const ret = mapTransform(def)(data)
 

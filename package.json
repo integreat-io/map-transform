@@ -26,12 +26,12 @@
   },
   "ava": {
     "compileEnhancements": false,
-		"extensions": [
-			"ts"
-		],
-		"require": [
-			"ts-node/register/transpile-only"
-		],
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register/transpile-only"
+    ],
     "files": [
       "src/**/*-test.ts"
     ],
@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@types/deep-freeze": "^0.1.1",
-    "@types/ramda": "^0.25.35",
+    "@types/ramda": "^0.25.36",
     "ava": "1.0.0-beta.6",
     "babel-preset-env": "^1.7.0",
     "coveralls": "^3.0.2",

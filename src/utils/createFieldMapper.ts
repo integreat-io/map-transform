@@ -11,10 +11,9 @@ export interface FieldMapperFunction {
 // Lens -> Lens -> (a -> b) -> (c -> (d -> c | d)) => (e -> e -> e)
 const setFieldValue = (fromLens: R.Lens, toLens: R.Lens, transformFn: TransformFunction): FieldMapperFunction => (target, data) => {
   const value = R.view(fromLens, data)
-  return (value === undefined)
-    ? target
-    : R.set(toLens, transformFn(value), target)
+  return (typeof value === undefined) ? target : R.set(toLens, transformFn(value), target)
 }
+
 const setDefaultValue = (toLens: R.Lens, defaultValue: any): FieldMapperFunction => R.over(toLens, R.defaultTo(defaultValue))
 
 /**

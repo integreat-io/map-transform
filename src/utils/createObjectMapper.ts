@@ -36,29 +36,36 @@ const mapFieldsOrPassObject = (rev: boolean, noDefaults: boolean) => R.ifElse(
     : R.compose(mapper[getCompleteProp(rev)], mapper[getMapProp(rev)]))
 )
 
-const mapObject = (rev: boolean, noDefaults: boolean, fieldMappers: object, transformFn: TransformFunction) => {
+const mapObject = (
+  rev: boolean,
+  noDefaults: boolean,
+  fieldMappers: object,
+  transformFromFn: TransformFunction,
+  transformToFn: TransformFunction
+) => {
   const createFieldMappers = R.compose(
     reduceMapperFns,
     mapFieldsOrPassObject(rev, noDefaults)
   )
 
   return (rev)
-    ? R.compose(createFieldMappers(fieldMappers), transformFn)
-    : R.compose(transformFn, createFieldMappers(fieldMappers))
+    ? R.compose(transformFromFn, createFieldMappers(fieldMappers), transformToFn)
+    : R.compose(transformToFn, createFieldMappers(fieldMappers), transformFromFn)
 }
 
 export const createObjectMapper = (
-  fieldMappers: object,
   pathFromLens: R.Lens,
-  pathToLens: R.Lens,
-  transformFn: TransformFunction,
   filterFromFn: R.Pred,
+  transformFromFn: TransformFunction,
+  fieldMappers: object,
+  transformToFn: TransformFunction,
   filterToFn: R.Pred,
-  rev: boolean
+  pathToLens: R.Lens,
+  isRev: boolean
 ) => (noDefaults = false): MapperFunction => R.compose(
     setAtObjectPath(pathToLens),
     filterAny(filterToFn),
-    mapAny(mapObject(rev, noDefaults, fieldMappers, transformFn)),
+    mapAny(mapObject(isRev, noDefaults, fieldMappers, transformFromFn, transformToFn)),
     filterAny(filterFromFn),
     getFromObjectPath(pathFromLens)
   )

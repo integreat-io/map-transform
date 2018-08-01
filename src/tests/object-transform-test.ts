@@ -222,3 +222,115 @@ test('should reverse transform with array', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should map with transformTo function', (t) => {
+  const def = {
+    mapping: {
+      title: 'content.heading',
+      author: 'meta.writer.username'
+    },
+    transformTo: appendAuthorToTitle
+  }
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } }
+  }
+  const expected = {
+    title: 'The heading - by johnf',
+    author: 'johnf'
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should reverse map with transformToRev', (t) => {
+  const def = {
+    mapping: {
+      title: 'content.heading',
+      author: 'meta.writer.username',
+      authorName: 'meta.writer.name'
+    },
+    transformTo: [ appendAuthorToTitle, setActive ],
+    transformToRev: [ setAuthorName ]
+  }
+  const data = {
+    title: 'The heading',
+    author: 'johnf'
+  }
+  const expected = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf', name: 'Johnf.' } }
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with transformFrom function', (t) => {
+  const def = {
+    mapping: {
+      title: 'content.heading',
+      enabled: 'active'
+    },
+    transformFrom: setActive
+  }
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = {
+    title: 'The heading',
+    enabled: true
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should reverse map with transformFrom function', (t) => {
+  const def = {
+    mapping: {
+      title: 'content.heading'
+    },
+    transformFrom: setActive
+  }
+  const data = {
+    title: 'The heading'
+  }
+  const expected = {
+    content: {
+      heading: 'The heading'
+    },
+    active: false
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should reverse map with transformFromRev function', (t) => {
+  const def = {
+    mapping: {
+      title: 'content.heading'
+    },
+    transformFrom: setActive,
+    transformFromRev: setActive
+  }
+  const data = {
+    title: 'The heading'
+  }
+  const expected = {
+    content: {
+      heading: 'The heading'
+    },
+    active: true
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})

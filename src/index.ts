@@ -13,15 +13,29 @@ namespace mapTransform {
     [key: string]: PathString | MappingDef | Shape | null
   }
 
-  export interface Definition {
+  export interface DefinitionNormalized {
+    pathFrom?: PathString | null,
+    pathFromRev?: PathString | null,
+    filterFrom?: FilterPipeline,
+    filterFromRev?: FilterPipeline,
+    transformFrom?: TransformPipeline,
+    transformFromRev?: TransformPipeline,
     mapping?: Shape,
+    transformTo?: TransformPipeline,
+    transformToRev?: TransformPipeline,
+    filterTo?: FilterPipeline,
+    filterToRev?: FilterPipeline,
+    pathTo?: PathString | null,
+    pathToRev?: PathString | null
+  }
+
+  export interface Definition extends DefinitionNormalized {
     path?: PathString | null,
     pathRev?: PathString | null,
-    pathTo?: PathString | null,
-    pathToRev?: PathString | null,
     transform?: TransformPipeline,
     transformRev?: TransformPipeline,
-    filter?: FilterPipeline
+    filter?: FilterPipeline,
+    filterRev?: FilterPipeline,
   }
 
   type DataProperty = string | number | boolean | object

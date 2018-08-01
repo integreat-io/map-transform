@@ -270,6 +270,22 @@ source and not use `default` and `defaultRev`. To do this, call
 the data will not be set in the resulting object, neither with default value
 nor `undefined`.
 
+Filters, transforms, and mappings are applied in the following order:
+- pathFrom (alias: path)
+- filterFrom
+- transformFrom
+- mapping
+  - path
+  - transform
+  - pathTo (the prop)
+- transformTo (alias: transform)
+- filterTo (alias: filter)
+- pathTo
+
+When reverse mapping, the order is the exact opposite, but keep in mind that
+transform pipelines will use the `.rev()` functions instead, and everything
+except the mapping may have a reverse version, e.g. `filterToRev`.
+
 ### Running the tests
 
 The tests can be run with `npm test`.

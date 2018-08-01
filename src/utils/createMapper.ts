@@ -1,5 +1,4 @@
-import * as R from 'ramda'
-import { Definition, Data } from '..'
+import { Definition, DefinitionNormalized, Data } from '..'
 import { lensPath } from './lensPath'
 import { createObjectMapper } from './createObjectMapper'
 import { createFieldMapper } from './createFieldMapper'
@@ -24,36 +23,65 @@ export interface MapperFunctionWithRev extends MapperFunctionWithNoDefaults {
   rev: MapperFunctionWithNoDefaults
 }
 
-export const createMapper = (def: Definition): MapperFunctionWithRev => {
-  const { mapping, pathRev, pathToRev, transform } = def
-  const pathFromLens = lensPath(def.path)
-  const pathToLens = lensPath(def.pathTo)
-  const pathFromRevLens = (typeof pathRev !== 'undefined') ? lensPath(pathRev) : pathFromLens
-  const pathToRevLens = (typeof pathToRev !== 'undefined') ? lensPath(pathToRev) : pathToLens
+const resolveAliases = (def: Definition): DefinitionNormalized => ({
+  pathFrom: def.path || def.pathFrom,
+  pathFromRev: (typeof def.pathRev !== 'undefined') ? def.pathRev : def.pathFromRev,
+  filterFrom: def.filterFrom,
+  filterFromRev: def.filterFromRev,
+  transformFrom: def.transformFrom,
+  transformFromRev: def.transformFromRev,
+  mapping: def.mapping,
+  transformTo: def.transform || def.transformTo,
+  transformToRev: def.transformRev || def.transformToRev,
+  filterTo: def.filter || def.filterTo,
+  filterToRev: (typeof def.filterRev !== 'undefined') ? def.filterRev : def.filterToRev,
+  pathTo: def.pathTo,
+  pathToRev: def.pathToRev
+})
 
-  const fieldMappers = (mapping) ? normalizeMapping(mapping).map(createFieldMapper) : []
-  const transformFn = pipeTransform(transform)
-  const transformRevFn = pipeTransformRev(def.transformRev, transform)
-  const filterFn = pipeFilter(def.filter)
+const setupNormAndRev = <T, U>(fn: (arg: U) => T, norm: U, rev: U): [T, T] => {
+  const normRes = fn(norm)
+  const revRes = (typeof rev !== 'undefined') ? fn(rev) : normRes
+  return [normRes, revRes]
+}
+
+export const createMapper = (def: Definition): MapperFunctionWithRev => {
+  const d = resolveAliases(def)
+
+  const [pathFromLens, pathFromRevLens] = setupNormAndRev(lensPath, d.pathFrom, d.pathFromRev)
+  const [filterFromFn, filterFromRevFn] = setupNormAndRev(pipeFilter, d.filterFrom, d.filterFromRev)
+
+  const transformFromFn = pipeTransform(d.transformFrom)
+  const transformFromRevFn = pipeTransformRev(d.transformFromRev, d.transformFrom)
+
+  const fieldMappers = (d.mapping) ? normalizeMapping(d.mapping).map(createFieldMapper) : []
+
+  const transformToFn = pipeTransform(d.transformTo)
+  const transformToRevFn = pipeTransformRev(d.transformToRev, d.transformTo)
+
+  const [filterToFn, filterToRevFn] = setupNormAndRev(pipeFilter, d.filterTo, d.filterToRev)
+  const [pathToLens, pathToRevLens] = setupNormAndRev(lensPath, d.pathTo, d.pathToRev)
 
   const createMapper = createObjectMapper(
-    fieldMappers,
     pathFromLens,
+    filterFromFn,
+    transformFromFn,
+    fieldMappers,
+    transformToFn,
+    filterToFn,
     pathToLens,
-    transformFn,
-    R.T,
-    filterFn,
-    false
+    false // isRev
   )
 
   const createRevMapper = createObjectMapper(
-    fieldMappers,
     pathToRevLens,
+    filterToRevFn,
+    transformFromRevFn,
+    fieldMappers,
+    transformToRevFn,
+    filterFromRevFn,
     pathFromRevLens,
-    transformRevFn,
-    filterFn,
-    R.T,
-    true
+    true // isRev
   )
 
   return Object.assign(createMapper(), {

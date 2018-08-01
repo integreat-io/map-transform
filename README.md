@@ -144,6 +144,12 @@ npm install map-transform --save
 
 ```javascript
 {
+  filterFrom: <filter pipeline>,
+  filterFromRev: <filter pipeline>,
+  pathFrom: <path string>,
+  pathFromRev: <path string>,
+  transformFrom: <transform pipeline>,
+  transformFromRev: <transform pipeline>,
   mapping: {
     <path string>: {
       path: <path string>,
@@ -153,21 +159,25 @@ npm install map-transform --save
       transformRev: <transform pipeline>
     }
   },
-  path: <path string>,
-  pathRev: <path string>,
+  transformTo: <transform pipeline>,
+  transformToRev: <transform pipeline>,
+  filterTo: <filter pipeline>,
+  filterToRev: <filter pipeline>,
   pathTo: <path string>,
-  pathToRev: <path string>,
-  transform: <transform pipeline>,
-  transformRev: <transform pipeline>,
-  filter: <filter pipeline>
+  pathToRev: <path string>
 }
 ```
 
-There are four path strings here, which are dot paths like `'documents.content'`.
+(The order of the props hints at the order in which they are applied during the
+mapping process.)
 
-First of all, if there's the `path` property on the root object is set, it is
-used to retrieve an object or an array of objects from the source data. When
-this `path` is not set, the source data is just used as is.
+There are four path strings here (plus the ones ending in 'Rev'), which are dot
+paths like e.g. `'documents.content'`.
+
+First of all, if there's the `pathFrom` property on the root object is set, with
+`path` as a handy alias. It is used to retrieve an object or an array of objects
+from the source data. When this `path` is not set, the source data is just used
+as is.
 
 Then the `path` property of each object on `mapping`, is used to retrieve field values from the object(s) returned from the root `path`, using the value of
 `default` when the path does not match a value in the source data.
@@ -181,21 +191,26 @@ we have at this point is set at this path on an empty object and returned.
 When using the `rev()` method, this is performed in the opposite order, and
 `defaultRev` is used as default value instead of `default`. If a `pathToRev` is
 specified, it is used instead of `pathTo` when extracting _from_ the data (to is
-now from - as confusing as that is), and a `pathRev` is used instead of `path` to
-set the data on an empty object just before returning it.
+now from - as confusing as that is), and a `pathRev` or `pathFromRev` is used
+instead of `path` or `pathRev` to set the data on an empty object just before
+returning it.
 
 There is a shortcut when defining mappings without default values. The `mapping`
 object `{'title': 'content.heading'}` is exactly the same as `{'title': {path:
 'content.heading'}}`.
 
-The `transform` and `transformRev` props will transform a field or an object,
-and should be set to a transform function or an array of transform functions,
-also called a transform pipeline. A transform function is a pure function that
-accepts a value and returns a value, and whatever happens between that is up to
-the transform function. An array of transform functions will be run from left to
-right, and each function will be called with the return value from the previous
-function. The return value of the final function is set used as the field value
-or the object.
+The `transformTo` and `transformToRev` props, with `transform` and
+`transformRev` as aliases, will transform a field or an object, and should be
+set to a transform function or an array of transform functions, also called a
+transform pipeline. A transform function is a pure function that accepts a value
+and returns a value, and whatever happens between that is up to the transform
+function. An array of transform functions will be run from left to right, and
+each function will be called with the return value from the previous function.
+The return value of the final function is set used as the field value or the
+object.
+
+There's also `tranformFrom` and `transformFromRev`, which are applied just
+before the field mapping (or after in a reverse mapping).
 
 Note that MapTransform does not put any restriction on the transform functions,
 so it is up to you to make sure the transformations make sense for the field or
@@ -210,13 +225,18 @@ left. This might be handy in some cases, as you might have reusable transform
 functions that will know how to reverse their transformations, and by defining
 a transform pipeline, you also define the reverse option.
 
-The `filter` prop lets you filter the transformed objects before they are set
-on `pathTo` (if present) and returned. The filter pipeline is a filter function
-or an array of filter functions, where each function accepts the transformed
-object and returns true to include it and false to filter it out of the final
-result. When several filter functions are set, all of them must return true for
-the item to be included. The `filter` is used on reverse mapping as well,
-directly after the items are extracted from any `pathTo`.
+The filter props lets you filter the transformed objects at different stages in
+the process. The most common is perhaps `filterTo`, with the alias `filter`,
+that will be applied just before the transformed data is set on `pathTo`
+(if present). The filter pipeline is a filter function or an array of filter
+functions, where each function accepts the object as it is at that time in the
+mapping process, and returns true to include it and false to filter it out of
+the final result. When several filter functions are set, all of them must return
+true for the item to be included.
+
+The filter pipelines are used on reverse mapping as well, in the opposite order.
+They all have reverse counterparts with the 'Rev' postfix, and these might be
+set to `null` to keep a filter pipeline from being applied on reverse mapping.
 
 The `mapping` object defines the shape of the target item(s) to map _to_, with
 options for how values _from_ the source object should be mapped to it. Another

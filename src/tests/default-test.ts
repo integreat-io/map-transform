@@ -118,6 +118,26 @@ test('should not use default values', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not set missing prop to undefined', (t) => {
+  const def = {
+    mapping: {
+      title: 'content.heading'
+    }
+  }
+  const data = [
+    { content: {} },
+    { content: { heading: 'From data' } }
+  ]
+  const expected = [
+    {},
+    { title: 'From data' }
+  ]
+
+  const ret = mapTransform(def).noDefaults(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not use default values on rev', (t) => {
   const def = {
     mapping: {

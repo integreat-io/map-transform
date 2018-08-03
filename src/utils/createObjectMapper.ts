@@ -13,8 +13,13 @@ const filterObj = (filterFn: FilterFunction, x: any) =>
 const filterAny = (filterFn: FilterFunction) => (x: any) =>
   (x && typeof x.filter === 'function') ? x.filter(filterFn) : filterObj(filterFn, x)
 
-// Lens -> (a -> a)
-const setAtObjectPath = (lens: R.Lens): MapperFunction => R.set(lens, _, {}) as MapperFunction
+// Lens -> (a -> b)
+// Note: Setting a path on null, will return the result from the set operation
+// without setting it on any object. This is useful as we don't know whether
+// we'll get an object or an array. It does not comply with the Ramda spec,
+// however, hence the `as any` casting. Maybe it would be better to bypass the
+// Ramda lens altogether, and use the getter and setter methods directly.
+const setAtObjectPath = (lens: R.Lens): MapperFunction => R.set(lens, _, null) as any
 
 // [(a -> a -> a)] -> g a
 const reduceMapperFns = (mapperFns: FieldMapperFunction[]): MapperFunction =>

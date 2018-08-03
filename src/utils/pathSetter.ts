@@ -59,7 +59,7 @@ const getSetters = R.compose(
   split
 )
 
-type SetFunction = (value: Data, object: Data) => Data
+type SetFunction = (value: Data, object: Data | null) => Data
 
 /**
  * Set `value` at `path` in `object`. Note that a new object is returned, and
@@ -74,6 +74,8 @@ type SetFunction = (value: Data, object: Data) => Data
 export default function pathSetter (path: PathString): SetFunction {
   const setters = getSetters(path)
 
-  return (value: Data, object: Data) =>
-    R.mergeDeepRight(object, setters(value))
+  return (value, object) => {
+    const data = setters(value)
+    return (object) ? R.mergeDeepRight(object, data) : data
+  }
 }

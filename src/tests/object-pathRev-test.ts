@@ -27,6 +27,52 @@ test('should reverse map with object path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with object array path', (t) => {
+  const def = {
+    mapping: {
+      title: { path: 'content.heading' }
+    },
+    path: 'content.articles[]'
+  }
+  const data = [
+    { title: 'Heading 1' },
+    { title: 'Heading 2' }
+  ]
+  const expected = {
+    content: {
+      articles: [
+        { content: { heading: 'Heading 1' } },
+        { content: { heading: 'Heading 2' } }
+      ]
+    }
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with root array path', (t) => {
+  const def = {
+    mapping: {
+      title: { path: 'content.heading' }
+    },
+    path: '[]'
+  }
+  const data = [
+    { title: 'Heading 1' },
+    { title: 'Heading 2' }
+  ]
+  const expected = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } }
+  ]
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should reverse map data as is when no mapping', (t) => {
   const def = {
     path: 'content'

@@ -1,11 +1,10 @@
 import * as R from 'ramda'
-import { Data } from '..'
-import { PathString } from './lensPath'
+import { Data, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
   (isAfterOpenArray) ? `*${part}` : part
 
-const pathSplitter = function* (path: PathString) {
+const pathSplitter = function* (path: Path) {
   const regEx = /([^[\].]+|\[\w*])/g
   let match
   let isAfterOpenArray = false
@@ -18,7 +17,7 @@ const pathSplitter = function* (path: PathString) {
   } while (match !== null)
 }
 
-const split = (path: PathString): string[] => [...pathSplitter(path)]
+const split = (path: Path): string[] => [...pathSplitter(path)]
 
 const setOnObject = (prop: string) => (value: Data): Data =>
   ({ [prop]: value })
@@ -71,7 +70,7 @@ type SetFunction = (value: Data, object: Data | null) => Data
  * @param {string} path - The path to set the value at
  * @returns {function} A setter function accepting a value and a target object
  */
-export default function pathSetter (path: PathString): SetFunction {
+export default function pathSetter (path: Path): SetFunction {
   const setters = getSetters(path)
 
   return (value, object) => {

@@ -13,7 +13,7 @@ const noAlso: FilterFunction = (item: {title: string}) =>
 
 // Tests
 
-test('should filter out item', (t) => {
+test.skip('should filter out item', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -30,7 +30,7 @@ test('should filter out item', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter out items in array', (t) => {
+test.skip('should filter out items in array', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -51,7 +51,7 @@ test('should filter out items in array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter with array of filters', (t) => {
+test.skip('should filter with array of filters', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -73,7 +73,7 @@ test('should filter with array of filters', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should keep all when filter is empty array', (t) => {
+test.skip('should keep all when filter is empty array', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -94,7 +94,7 @@ test('should keep all when filter is empty array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set filtered items on pathTo', (t) => {
+test.skip('should set filtered items on pathTo', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -117,7 +117,7 @@ test('should set filtered items on pathTo', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter items from pathTo for reverse mapping', (t) => {
+test.skip('should filter items from pathTo for reverse mapping', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -140,7 +140,7 @@ test('should filter items from pathTo for reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter with filterTo', (t) => {
+test.skip('should filter with filterTo', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -157,7 +157,7 @@ test('should filter with filterTo', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter on reverse mapping', (t) => {
+test.skip('should filter on reverse mapping', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -179,7 +179,7 @@ test('should filter on reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter with filterRev on reverse mapping', (t) => {
+test.skip('should filter with filterRev on reverse mapping', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -203,7 +203,7 @@ test('should filter with filterRev on reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter with filterToRev on reverse mapping', (t) => {
+test.skip('should filter with filterToRev on reverse mapping', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -227,7 +227,7 @@ test('should filter with filterToRev on reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter with filterFrom', (t) => {
+test.skip('should filter with filterFrom', (t) => {
   const def = {
     mapping: {
       heading: 'title'
@@ -245,7 +245,7 @@ test('should filter with filterFrom', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter with filterFrom on reverse mapping', (t) => {
+test.skip('should filter with filterFrom on reverse mapping', (t) => {
   const def = {
     mapping: {
       heading: 'title'
@@ -263,7 +263,7 @@ test('should filter with filterFrom on reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should filter with filterFromRev on reverse mapping', (t) => {
+test.skip('should filter with filterFromRev on reverse mapping', (t) => {
   const def = {
     mapping: {
       heading: 'title'

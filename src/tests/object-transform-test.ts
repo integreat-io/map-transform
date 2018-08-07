@@ -27,7 +27,7 @@ const setAuthorName: TransformFunction = (item: {author: string}) => ({
 
 // Tests
 
-test('should map simple object with one transform function', (t) => {
+test.skip('should map simple object with one transform function', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -49,7 +49,7 @@ test('should map simple object with one transform function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map simple object with array of transform functions', (t) => {
+test.skip('should map simple object with array of transform functions', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -72,7 +72,7 @@ test('should map simple object with array of transform functions', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map simple object with transformRev', (t) => {
+test.skip('should reverse map simple object with transformRev', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -96,7 +96,7 @@ test('should reverse map simple object with transformRev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map simple object with transform rev props', (t) => {
+test.skip('should reverse map simple object with transform rev props', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -118,7 +118,7 @@ test('should reverse map simple object with transform rev props', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should transform after path and before pathTo', (t) => {
+test.skip('should transform after path and before pathTo', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -148,7 +148,7 @@ test('should transform after path and before pathTo', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse transform after pathTo and before path', (t) => {
+test.skip('should reverse transform after pathTo and before path', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -180,7 +180,7 @@ test('should reverse transform after pathTo and before path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should transform with array', (t) => {
+test.skip('should transform with array', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -201,7 +201,7 @@ test('should transform with array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse transform with array', (t) => {
+test.skip('should reverse transform with array', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -223,7 +223,7 @@ test('should reverse transform with array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with transformTo function', (t) => {
+test.skip('should map with transformTo function', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -245,7 +245,7 @@ test('should map with transformTo function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with transformToRev', (t) => {
+test.skip('should reverse map with transformToRev', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -269,7 +269,7 @@ test('should reverse map with transformToRev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with transformFrom function', (t) => {
+test.skip('should map with transformFrom function', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -290,7 +290,7 @@ test('should map with transformFrom function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with transformFrom function', (t) => {
+test.skip('should reverse map with transformFrom function', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -312,7 +312,7 @@ test('should reverse map with transformFrom function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with transformFromRev function', (t) => {
+test.skip('should reverse map with transformFromRev function', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'

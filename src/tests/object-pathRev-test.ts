@@ -2,7 +2,7 @@ import test from 'ava'
 
 import * as mapTransform from '..'
 
-test('should reverse map with object path', (t) => {
+test.skip('should reverse map with object path', (t) => {
   const def = {
     mapping: {
       title: { path: 'content.heading' }
@@ -27,7 +27,7 @@ test('should reverse map with object path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with object array path', (t) => {
+test.skip('should map with object array path', (t) => {
   const def = {
     mapping: {
       title: { path: 'content.heading' }
@@ -52,7 +52,7 @@ test('should map with object array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with root array path', (t) => {
+test.skip('should map with root array path', (t) => {
   const def = {
     mapping: {
       title: { path: 'content.heading' }
@@ -73,7 +73,7 @@ test('should map with root array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map data as is when no mapping', (t) => {
+test.skip('should reverse map data as is when no mapping', (t) => {
   const def = {
     path: 'content'
   }
@@ -93,7 +93,7 @@ test('should reverse map data as is when no mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with object pathFrom', (t) => {
+test.skip('should reverse map with object pathFrom', (t) => {
   const def = {
     mapping: {
       title: { path: 'content.heading' }
@@ -112,7 +112,7 @@ test('should reverse map with object pathFrom', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with object pathTo', (t) => {
+test.skip('should reverse map with object pathTo', (t) => {
   const def = {
     mapping: {
       title: { path: 'content.heading' }
@@ -137,7 +137,7 @@ test('should reverse map with object pathTo', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with object pathRev and pathToRev', (t) => {
+test.skip('should reverse map with object pathRev and pathToRev', (t) => {
   const def = {
     mapping: {
       title: { path: 'content.heading' }
@@ -167,7 +167,7 @@ test('should reverse map with object pathRev and pathToRev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with object pathFromRev', (t) => {
+test.skip('should reverse map with object pathFromRev', (t) => {
   const def = {
     mapping: {
       title: { path: 'content.heading' }
@@ -191,7 +191,7 @@ test('should reverse map with object pathFromRev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with empty pathRev and pathToRev', (t) => {
+test.skip('should reverse map with empty pathRev and pathToRev', (t) => {
   const def = {
     mapping: {
       title: { path: 'content.heading' }
@@ -215,7 +215,7 @@ test('should reverse map with empty pathRev and pathToRev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return data when no mapping def', (t) => {
+test.skip('should return data when no mapping def', (t) => {
   const def = null
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -228,7 +228,7 @@ test('should return data when no mapping def', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return data when mapping def is empty', (t) => {
+test.skip('should return data when mapping def is empty', (t) => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },

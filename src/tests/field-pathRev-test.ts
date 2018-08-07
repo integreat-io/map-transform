@@ -2,7 +2,7 @@ import test from 'ava'
 
 import * as mapTransform from '..'
 
-test('should reverse map simple object', (t) => {
+test.skip('should reverse map simple object', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -23,7 +23,7 @@ test('should reverse map simple object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map array of objects', (t) => {
+test.skip('should reverse map array of objects', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',
@@ -50,7 +50,7 @@ test('should reverse map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with array path', (t) => {
+test.skip('should reverse map with array path', (t) => {
   const def = {
     mapping: {
       title: 'content.heading',

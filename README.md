@@ -9,23 +9,27 @@ Map and transform objects with mapping definitions.
 [![Maintainability](https://api.codeclimate.com/v1/badges/fbb6638a32ee5c5f60b7/maintainability)](https://codeclimate.com/github/integreat-io/map-transform/maintainability)
 
 Behind this boring name hides a powerful object transformer. There are a lot of
-these around, but MapTransform's main differentiator is the mapping definition
-object, which is a simple JavaScript object that defines every part of a
-transformation up front, and by defining a mapping from one object, you would
-also define a mapping back to the original format (with some gotchas).
+these around, but MapTransform has some differentating features:
+- You pretty much define the transformation by creating the JavaScript object
+you want as a result, setting paths and transformation functions, etc. where
+they apply.
+- There's a concept of a transform pipeline, that your data is passed through,
+and you define pipelines anywhere you'd like on the target object.
+- By defining a mapping from one object to another, you have at the same time
+defined a mapping back to the original format (with some gotchas).
 
 Let's look at a simple example:
 
 ```javascript
 import mapTransform from 'map-transform'
 
-const def = {
-  mapping: {
-    'title': 'content.headline',
-    'author': 'meta.writer.username'
-  },
-  path: 'sections[0].articles'
-}
+const def = [
+  'sections[0].articles',
+  {
+    title: 'content.headline',
+    author: 'meta.writer.username'
+  }
+]
 
 const mapper = mapTransform(def)
 
@@ -142,6 +146,9 @@ npm install map-transform --save
 
 ### Mapping definition
 
+**Note:** This description is obsolete. All the same features (and more) will be
+available in version 0.2, but with different syntax.
+
 ```javascript
 {
   filterFrom: <filter pipeline>,
@@ -179,7 +186,8 @@ First of all, if there's the `pathFrom` property on the root object is set, with
 from the source data. When this `path` is not set, the source data is just used
 as is.
 
-Then the `path` property of each object on `mapping`, is used to retrieve field values from the object(s) returned from the root `path`, using the value of
+Then the `path` property of each object on `mapping`, is used to retrieve field
+values from the object(s) returned from the root `path`, using the value of
 `default` when the path does not match a value in the source data.
 
 Next, the path string used as keys for the object in `mapping`, is used to set
@@ -198,6 +206,15 @@ returning it.
 There is a shortcut when defining mappings without default values. The `mapping`
 object `{'title': 'content.heading'}` is exactly the same as `{'title': {path:
 'content.heading'}}`.
+
+The `path` properties below the `mapping` object will relate to the data
+extracted and transformed (see below) by the definition properties on the root
+object. If you need to get values from the original data object, prefix the path
+with a `$`. E.g. when mapping items from `content.items[]`, a field may still
+have a path like `$meta.author.id` to retrieve a value from the root of the
+original data. Note that `$` paths will never be used to set values, as this
+could lead to many items setting the same root property, which would be
+unpredictable.
 
 The `transformTo` and `transformToRev` props, with `transform` and
 `transformRev` as aliases, will transform a field or an object, and should be
@@ -240,7 +257,8 @@ set to `null` to keep a filter pipeline from being applied on reverse mapping.
 
 The `mapping` object defines the shape of the target item(s) to map _to_, with
 options for how values _from_ the source object should be mapped to it. Another
-way of specifying this shape, is simply supplying it as nested objects. In the following example, `def1` and `def2` are two ways of defining the exact same
+way of specifying this shape, is simply supplying it as nested objects. In the
+following example, `def1` and `def2` are two ways of defining the exact same
 mapping, it's simply a matter of taste:
 
 ```

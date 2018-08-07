@@ -1,16 +1,13 @@
 import test from 'ava'
 
-import mapTransform = require('..')
+import { mapTransform, alt, value } from '..'
 
 test('should use default value', (t) => {
   const def = {
-    mapping: {
-      title: {
-        path: 'content.heading',
-        default: 'Default heading',
-        defaultRev: 'Wrong way'
-      }
-    }
+    title: [
+      'content.heading',
+      alt(value('Default heading'))
+    ]
   }
   const data = [
     { content: {} },
@@ -28,11 +25,7 @@ test('should use default value', (t) => {
 
 test('should set missing values to undefined when no default', (t) => {
   const def = {
-    mapping: {
-      title: {
-        path: 'content.heading'
-      }
-    }
+    title: 'content.heading'
   }
   const data = [
     { content: {} },
@@ -48,7 +41,7 @@ test('should set missing values to undefined when no default', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use defaultRev value', (t) => {
+test.skip('should use defaultRev value', (t) => {
   const def = {
     mapping: {
       title: {
@@ -72,7 +65,7 @@ test('should use defaultRev value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set missing value to undefined when no defaultRev', (t) => {
+test.skip('should set missing value to undefined when no defaultRev', (t) => {
   const def = {
     mapping: {
       title: {
@@ -94,7 +87,7 @@ test('should set missing value to undefined when no defaultRev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not use default values', (t) => {
+test.skip('should not use default values', (t) => {
   const def = {
     mapping: {
       title: {
@@ -118,7 +111,7 @@ test('should not use default values', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not set missing prop to undefined', (t) => {
+test.skip('should not set missing prop to undefined', (t) => {
   const def = {
     mapping: {
       title: 'content.heading'
@@ -138,7 +131,7 @@ test('should not set missing prop to undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not use default values on rev', (t) => {
+test.skip('should not use default values on rev', (t) => {
   const def = {
     mapping: {
       title: {

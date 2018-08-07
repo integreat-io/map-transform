@@ -1,40 +1,56 @@
 import test from 'ava'
-import { TransformFunction } from '../utils/transformPipeline'
 
-import mapTransform = require('..')
+import { mapTransform, transform, TransformFunction, Data } from '..'
 
 // Helpers
 
-const appendAuthorToTitle: TransformFunction =
-  (item: {title: string, author: string}) =>
-    ({ ...item, title: `${item.title} - by ${item.author}` })
-appendAuthorToTitle.rev = (item: {title: string, author: string}) =>
-  ({
-    ...item,
-    title: (item.title.endsWith(` - by ${item.author}`))
-      ? item.title.substr(0, item.title.length - 6 - item.author.length)
-      : item.title
-  })
+const isObject = (item: Data): item is object => (!!item && typeof item === 'object')
 
-const setActive: TransformFunction = (item: {}) =>
-  ({ ...item, active: true })
-setActive.rev = (item: {}) => ({ ...item, active: false })
+const createTitle = (item: { title: string, author: string }) => `${item.title} - by ${item.author}`
+
+const appendAuthorToTitle: TransformFunction = (item) => (isObject(item))
+    ? { ...item, title: createTitle(item as any) }
+    : item
+
+// appendAuthorToTitle.rev = (item: {title: string, author: string}) =>
+//   ({
+//     ...item,
+//     title: (item.title.endsWith(` - by ${item.author}`))
+//       ? item.title.substr(0, item.title.length - 6 - item.author.length)
+//       : item.title
+//   })
+
+const setActive: TransformFunction = (item) => (isObject(item))
+  ? { ...item, active: true }
+  : item
+
+// setActive.rev = (item: {}) => ({ ...item, active: false })
 
 const setAuthorName: TransformFunction = (item: {author: string}) => ({
   ...item,
   authorName: `${item.author[0].toUpperCase()}${item.author.substr(1)}.`
 })
 
+const appendEllipsis: TransformFunction = (str) => (typeof str === 'string') ? str + ' ...' : str
+// appendEllipsis.rev = (str: string) =>
+//   (str.endsWith(' ...')) ? str.substr(0, str.length - 4) : str
+// const upperCase: TransformFunction = (str: string) => str.toUpperCase()
+const getLength: TransformFunction = (str) => (typeof str === 'string') ? str.length : 0
+// const enclose: TransformFunction = (str: string) => `(${str})`
+// enclose.rev = (str: string) => (str.startsWith('(') && str.endsWith(')'))
+//   ? str.substr(1, str.length - 2) : str
+
+
 // Tests
 
-test.skip('should map simple object with one transform function', (t) => {
-  const def = {
-    mapping: {
+test('should map simple object with one transform function', (t) => {
+  const def = [
+    {
       title: 'content.heading',
       author: 'meta.writer.username'
     },
-    transform: appendAuthorToTitle
-  }
+    transform(appendAuthorToTitle)
+  ]
   const data = {
     content: { heading: 'The heading' },
     meta: { writer: { username: 'johnf' } }
@@ -49,14 +65,15 @@ test.skip('should map simple object with one transform function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should map simple object with array of transform functions', (t) => {
-  const def = {
-    mapping: {
+test('should map simple object with several transform functions', (t) => {
+  const def = [
+    {
       title: 'content.heading',
       author: 'meta.writer.username'
     },
-    transform: [ appendAuthorToTitle, setActive ]
-  }
+    transform(appendAuthorToTitle),
+    transform(setActive)
+  ]
   const data = {
     content: { heading: 'The heading' },
     meta: { writer: { username: 'johnf' } }
@@ -118,15 +135,16 @@ test.skip('should reverse map simple object with transform rev props', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should transform after path and before pathTo', (t) => {
+test('should transform beofre data is set on outer path', (t) => {
   const def = {
-    mapping: {
-      title: 'content.heading',
-      author: 'meta.writer.username'
-    },
-    transform: appendAuthorToTitle,
-    path: 'result.data',
-    pathTo: 'attributes'
+    attributes: [
+      'result.data',
+      {
+        title: 'content.heading',
+        author: 'meta.writer.username'
+      },
+      transform(appendAuthorToTitle)
+    ]
   }
   const data = {
     result: {
@@ -223,60 +241,14 @@ test.skip('should reverse transform with array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should map with transformTo function', (t) => {
-  const def = {
-    mapping: {
-      title: 'content.heading',
-      author: 'meta.writer.username'
-    },
-    transformTo: appendAuthorToTitle
-  }
-  const data = {
-    content: { heading: 'The heading' },
-    meta: { writer: { username: 'johnf' } }
-  }
-  const expected = {
-    title: 'The heading - by johnf',
-    author: 'johnf'
-  }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test.skip('should reverse map with transformToRev', (t) => {
-  const def = {
-    mapping: {
-      title: 'content.heading',
-      author: 'meta.writer.username',
-      authorName: 'meta.writer.name'
-    },
-    transformTo: [ appendAuthorToTitle, setActive ],
-    transformToRev: [ setAuthorName ]
-  }
-  const data = {
-    title: 'The heading',
-    author: 'johnf'
-  }
-  const expected = {
-    content: { heading: 'The heading' },
-    meta: { writer: { username: 'johnf', name: 'Johnf.' } }
-  }
-
-  const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test.skip('should map with transformFrom function', (t) => {
-  const def = {
-    mapping: {
+test('should transform before mapping', (t) => {
+  const def = [
+    transform(setActive),
+    {
       title: 'content.heading',
       enabled: 'active'
-    },
-    transformFrom: setActive
-  }
+    }
+  ]
   const data = {
     content: { heading: 'The heading' }
   }
@@ -331,6 +303,28 @@ test.skip('should reverse map with transformFromRev function', (t) => {
   }
 
   const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply transform functions from left to right', (t) => {
+  const def = [
+    {
+      titleLength: [
+        'content.heading',
+        transform(appendEllipsis),
+        transform(getLength)
+      ]
+    }
+  ]
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = {
+    titleLength: 15
+  }
+
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

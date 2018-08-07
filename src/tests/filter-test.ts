@@ -1,42 +1,42 @@
 import test from 'ava'
-import { FilterFunction } from '../utils/filterPipeline'
 
-import * as mapTransform from '..'
+import { mapTransform, filter, FilterFunction, Data } from '..'
 
 // Helpers
 
-const noHeading: FilterFunction = (item: {title: string}) =>
-  !(/heading/gi).test(item.title)
+const isObject = (item: Data): item is object => (!!item && typeof item === 'object')
 
-const noAlso: FilterFunction = (item: {title: string}) =>
-  !(/also/gi).test(item.title)
+const noHeading: FilterFunction = (item) =>
+  (isObject(item)) && !(/heading/gi).test((item as any).title)
+
+const noAlso: FilterFunction = (item) => (isObject(item)) && !(/also/gi).test((item as any).title)
 
 // Tests
 
-test.skip('should filter out item', (t) => {
-  const def = {
-    mapping: {
+test('should filter out item', (t) => {
+  const def = [
+    {
       title: 'content.heading'
     },
-    filter: noHeading
-  }
+    filter(noHeading)
+  ]
   const data = {
     content: { heading: 'The heading' }
   }
-  const expected = null
+  const expected = undefined
 
   const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test.skip('should filter out items in array', (t) => {
-  const def = {
-    mapping: {
+test('should filter out items in array', (t) => {
+  const def = [
+    {
       title: 'content.heading'
     },
-    filter: noHeading
-  }
+    filter(noHeading)
+  ]
   const data = [
     { content: { heading: 'The heading' } },
     { content: { heading: 'Just this' } },
@@ -51,13 +51,14 @@ test.skip('should filter out items in array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should filter with array of filters', (t) => {
-  const def = {
-    mapping: {
+test('should filter with several filters', (t) => {
+  const def = [
+    {
       title: 'content.heading'
     },
-    filter: [ noHeading, noAlso ]
-  }
+    filter(noHeading),
+    filter(noAlso)
+  ]
   const data = [
     { content: { heading: 'The heading' } },
     { content: { heading: 'Just this' } },
@@ -73,34 +74,14 @@ test.skip('should filter with array of filters', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should keep all when filter is empty array', (t) => {
+test('should set filtered items on path', (t) => {
   const def = {
-    mapping: {
-      title: 'content.heading'
-    },
-    filter: []
-  }
-  const data = [
-    { content: { heading: 'The heading' } },
-    { content: { heading: 'Just this' } }
-  ]
-  const expected = [
-    { title: 'The heading' },
-    { title: 'Just this' }
-  ]
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test.skip('should set filtered items on pathTo', (t) => {
-  const def = {
-    mapping: {
-      title: 'content.heading'
-    },
-    filter: noHeading,
-    pathTo: 'items[]'
+    'items[]': [
+      {
+        title: 'content.heading'
+      },
+      filter(noHeading)
+    ]
   }
   const data = [
     { content: { heading: 'The heading' } },
@@ -136,23 +117,6 @@ test.skip('should filter items from pathTo for reverse mapping', (t) => {
   ]
 
   const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test.skip('should filter with filterTo', (t) => {
-  const def = {
-    mapping: {
-      title: 'content.heading'
-    },
-    filterTo: noHeading
-  }
-  const data = {
-    content: { heading: 'The heading' }
-  }
-  const expected = null
-
-  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -203,42 +167,20 @@ test.skip('should filter with filterRev on reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should filter with filterToRev on reverse mapping', (t) => {
-  const def = {
-    mapping: {
-      title: 'content.heading'
-    },
-    filterTo: [ noHeading, noAlso ],
-    filterToRev: [ noHeading ]
-  }
-  const data = [
-    { title: 'The heading' },
-    { title: 'Just this' },
-    { title: 'Another heading' },
-    { title: 'Also this' }
-  ]
-  const expected = [
-    { content: { heading: 'Just this' } },
-    { content: { heading: 'Also this' } }
-  ]
-
-  const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test.skip('should filter with filterFrom', (t) => {
-  const def = {
-    mapping: {
+test('should filter before mapping', (t) => {
+  const def = [
+    'content',
+    filter(noHeading),
+    {
       heading: 'title'
-    },
-    pathFrom: 'content',
-    filterFrom: noHeading
-  }
+    }
+  ]
   const data = {
     content: { title: 'The heading' }
   }
-  const expected = null
+  const expected = {
+    heading: undefined
+  }
 
   const ret = mapTransform(def)(data)
 

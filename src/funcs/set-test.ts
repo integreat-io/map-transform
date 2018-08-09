@@ -1,56 +1,24 @@
 import test from 'ava'
-import get from './get'
 
-import set from './set'
+import { set } from './getSet'
 
 // Tests
 
-test('should get value from context and set on path', (t) => {
+test('should set value on path', (t) => {
+  const data = { user: 'johnf' }
   const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
-    value: undefined
+    root: data,
+    context: data,
+    value: 'johnf'
   }
   const expected = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    root: data,
+    context: data,
     value: { meta: { author: 'johnf' } }
   }
-  const ret = set('meta.author', get('user'))(state)
+  const ret = set('meta.author')(state)
 
   t.deepEqual(ret, expected)
-})
-
-test('should set on existing value', (t) => {
-  const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
-    value: { meta: { sections: ['news'] } }
-  }
-  const expected = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
-    value: { meta: { author: 'johnf', sections: ['news'] } }
-  }
-  const ret = set('meta.author', get('user'))(state)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should get value from array and set on path', (t) => {
-  const state = {
-    root: [{ user: 'johnf' }, { user: 'maryk' }],
-    context: [{ user: 'johnf' }, { user: 'maryk' }],
-    value: undefined
-  }
-  const expectedValue = [
-    { meta: { author: 'johnf' } },
-    { meta: { author: 'maryk' } }
-  ]
-
-  const ret = set('meta.author', get('user'))(state)
-
-  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should set undefined', (t) => {
@@ -59,12 +27,29 @@ test('should set undefined', (t) => {
     context: {},
     value: undefined
   }
-  const expected = {
-    root: {},
-    context: {},
-    value: { meta: { author: undefined } }
+  const expectedValue = { meta: { author: undefined } }
+
+  const ret = set('meta.author')(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should get from path when reverse mapping', (t) => {
+  const data = { user: 'johnf' }
+  const state = {
+    root: data,
+    context: data,
+    value: { meta: { author: 'johnf' } },
+    rev: true
   }
-  const ret = set('meta.author', get('user'))(state)
+  const expected = {
+    root: data,
+    context: data,
+    value: 'johnf',
+    rev: true,
+    arr: false
+  }
+  const ret = set('meta.author')(state)
 
   t.deepEqual(ret, expected)
 })

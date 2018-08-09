@@ -26,10 +26,12 @@ const setActive: TransformFunction = (item) => (isObject(item))
 
 // setActive.rev = (item: {}) => ({ ...item, active: false })
 
-const setAuthorName: TransformFunction = (item: {author: string}) => ({
-  ...item,
-  authorName: `${item.author[0].toUpperCase()}${item.author.substr(1)}.`
-})
+// const prepareAuthorName = ({ author }: { author: string }) =>
+//   `${author[0].toUpperCase()}${author.substr(1)}.`
+//
+// const setAuthorName: TransformFunction = (item) => (isObject(item))
+//   ? ({ ...item, authorName: prepareAuthorName(item as any) })
+//   : item
 
 const appendEllipsis: TransformFunction = (str) => (typeof str === 'string') ? str + ' ...' : str
 // appendEllipsis.rev = (str: string) =>
@@ -39,7 +41,6 @@ const getLength: TransformFunction = (str) => (typeof str === 'string') ? str.le
 // const enclose: TransformFunction = (str: string) => `(${str})`
 // enclose.rev = (str: string) => (str.startsWith('(') && str.endsWith(')'))
 //   ? str.substr(1, str.length - 2) : str
-
 
 // Tests
 
@@ -90,15 +91,15 @@ test('should map simple object with several transform functions', (t) => {
 })
 
 test.skip('should reverse map simple object with transformRev', (t) => {
-  const def = {
-    mapping: {
+  const def = [
+    // transform: [ appendAuthorToTitle, setActive ],
+    // transformRev: [ setAuthorName ],
+    {
       title: 'content.heading',
       author: 'meta.writer.username',
       authorName: 'meta.writer.name'
-    },
-    transform: [ appendAuthorToTitle, setActive ],
-    transformRev: [ setAuthorName ]
-  }
+    }
+  ]
   const data = {
     title: 'The heading',
     author: 'johnf'
@@ -114,13 +115,14 @@ test.skip('should reverse map simple object with transformRev', (t) => {
 })
 
 test.skip('should reverse map simple object with transform rev props', (t) => {
-  const def = {
-    mapping: {
+  const def = [
+    transform(appendAuthorToTitle),
+    transform(setActive),
+    {
       title: 'content.heading',
       author: 'meta.writer.username'
-    },
-    transform: [ appendAuthorToTitle, setActive ]
-  }
+    }
+  ]
   const data = {
     title: 'The heading - by johnf',
     author: 'johnf'
@@ -168,15 +170,16 @@ test('should transform beofre data is set on outer path', (t) => {
 
 test.skip('should reverse transform after pathTo and before path', (t) => {
   const def = {
-    mapping: {
-      title: 'content.heading',
-      author: 'meta.writer.username',
-      authorName: 'meta.writer.name'
-    },
-    transform: [ appendAuthorToTitle, setActive ],
-    transformRev: [ setAuthorName ],
-    path: 'result.data',
-    pathTo: 'attributes'
+    attributes: [
+      'result.data',
+      {
+        title: 'content.heading',
+        author: 'meta.writer.username',
+        authorName: 'meta.writer.name'
+      }
+      // transform: [ appendAuthorToTitle, setActive ],
+      // transformRev: [ setAuthorName ]
+    ]
   }
   const data = {
     attributes: {
@@ -199,12 +202,12 @@ test.skip('should reverse transform after pathTo and before path', (t) => {
 })
 
 test.skip('should transform with array', (t) => {
-  const def = {
-    mapping: {
+  const def = [
+    // transform: [ setActive ],
+    {
       title: 'content.heading'
-    },
-    transform: [ setActive ]
-  }
+    }
+  ]
   const data = [
     { content: { heading: 'The heading' } },
     { content: { heading: 'Another heading' } }
@@ -220,13 +223,13 @@ test.skip('should transform with array', (t) => {
 })
 
 test.skip('should reverse transform with array', (t) => {
-  const def = {
-    mapping: {
+  const def = [
+    // transform: [ setActive ],
+    {
       title: 'content.heading',
       active: 'content.active'
-    },
-    transform: [ setActive ]
-  }
+    }
+  ]
   const data = [
     { title: 'The heading', active: true },
     { title: 'Another heading', active: true }
@@ -263,12 +266,12 @@ test('should transform before mapping', (t) => {
 })
 
 test.skip('should reverse map with transformFrom function', (t) => {
-  const def = {
-    mapping: {
+  const def = [
+    // transformFrom: setActive,
+    {
       title: 'content.heading'
-    },
-    transformFrom: setActive
-  }
+    }
+  ]
   const data = {
     title: 'The heading'
   }
@@ -285,13 +288,13 @@ test.skip('should reverse map with transformFrom function', (t) => {
 })
 
 test.skip('should reverse map with transformFromRev function', (t) => {
-  const def = {
-    mapping: {
+  const def = [
+    {
       title: 'content.heading'
-    },
-    transformFrom: setActive,
-    transformFromRev: setActive
-  }
+    }
+    // transformFrom: setActive,
+    // transformFromRev: setActive
+  ]
   const data = {
     title: 'The heading'
   }

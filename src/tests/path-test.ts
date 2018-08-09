@@ -143,6 +143,26 @@ test('should map with array index in middle of path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should return undefined from non-matching path with array index in middle', (t) => {
+  const def = [
+    'content.articles[0].content.heading'
+  ]
+  const data = {
+    content: {
+      articles: {
+        content: {
+          heading: 'Heading 1'
+        }
+      }
+    }
+  }
+  const expected = undefined
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not map fields without paths', (t) => {
   const def = {
     title: null,

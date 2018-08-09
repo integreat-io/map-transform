@@ -1,6 +1,6 @@
 import test from 'ava'
 import value from './value'
-import get from './get'
+import { get } from './getSet'
 
 import mutate from './mutate'
 
@@ -64,10 +64,8 @@ test('should set value to undefined when no map functions', (t) => {
 
 test('should treat string as path', (t) => {
   const def = {
-    item: {
-      attributes: {
-        title: 'headline'
-      }
+    content: {
+      title: 'headline'
     }
   }
   const state = {
@@ -76,10 +74,8 @@ test('should treat string as path', (t) => {
     value: { headline: 'The title' }
   }
   const expectedValue = {
-    item: {
-      attributes: {
-        title: 'The title'
-      }
+    content: {
+      title: 'The title'
     }
   }
 
@@ -108,6 +104,93 @@ test('should treat array as map pipe', (t) => {
       }
     }
   }
+
+  const ret = mutate(def)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should mutate object with value array', (t) => {
+  const data = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
+  const def = {
+    data: {
+      'items[]': [
+        {
+          title: get('headline')
+        }
+      ]
+    }
+  }
+  const state = {
+    root: data,
+    context: data,
+    value: data
+  }
+  const expectedValue = {
+    data: {
+      items: [
+        { title: 'Entry 1' },
+        { title: 'Entry 2' }
+      ]
+    }
+  }
+
+  const ret = mutate(def)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should reverse map', (t) => {
+  const def = {
+    content: {
+      title: 'headline'
+    }
+  }
+  const state = {
+    root: {},
+    context: {},
+    value: {
+      content: {
+        title: 'The title'
+      }
+    },
+    rev: true
+  }
+  const expectedValue = { headline: 'The title' }
+
+  const ret = mutate(def)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should reverse map with value array', (t) => {
+  const data = {
+    data: {
+      items: [
+        { title: 'Entry 1' },
+        { title: 'Entry 2' }
+      ]
+    }
+  }
+  const def = {
+    data: {
+      items: [
+        {
+          title: get('headline')
+        }
+      ]
+    }
+  }
+  const state = {
+    root: data,
+    context: data,
+    value: data,
+    rev: true
+  }
+  const expectedValue = [
+    { headline: 'Entry 1' },
+    { headline: 'Entry 2' }
+  ]
 
   const ret = mutate(def)(state)
 

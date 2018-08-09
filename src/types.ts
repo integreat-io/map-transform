@@ -9,7 +9,9 @@ export type Data = Prop | Prop[]
 export interface State {
   root: Data,
   context: Data,
-  value: Data
+  value: Data,
+  rev?: boolean,
+  arr?: boolean
 }
 
 export type Path = string
@@ -28,4 +30,8 @@ export type MapDefinition = MapObject | MapFunction | MapPipe | Path | null
 
 export interface DataMapper {
   (data: Data): Data
+}
+
+export interface DataMapperWithRev extends DataMapper {
+  rev: DataMapper
 }

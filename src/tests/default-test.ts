@@ -1,4 +1,5 @@
 import test from 'ava'
+import { get } from '../funcs/getSet'
 
 import { mapTransform, alt, value } from '..'
 
@@ -16,6 +17,27 @@ test('should use default value', (t) => {
   const expected = [
     { title: 'Default heading' },
     { title: 'From data' }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use default value in array', (t) => {
+  const def = {
+    id: [
+      'id',
+      alt(get('key'))
+    ]
+  }
+  const data = [
+    { id: 'id1', key: 'key1' },
+    { key: 'key2' }
+  ]
+  const expected = [
+    { id: 'id1' },
+    { id: 'key2' }
   ]
 
   const ret = mapTransform(def)(data)
@@ -106,7 +128,7 @@ test.skip('should not use default values', (t) => {
     { title: 'From data' }
   ]
 
-  const ret = mapTransform(def).noDefaults(data)
+  const ret = mapTransform(def)(data) // .noDefaults(data)
 
   t.deepEqual(ret, expected)
 })
@@ -126,7 +148,7 @@ test.skip('should not set missing prop to undefined', (t) => {
     { title: 'From data' }
   ]
 
-  const ret = mapTransform(def).noDefaults(data)
+  const ret = mapTransform(def)(data) // .noDefaults
 
   t.deepEqual(ret, expected)
 })
@@ -150,7 +172,7 @@ test.skip('should not use default values on rev', (t) => {
     { content: { heading: 'From data' } }
   ]
 
-  const ret = mapTransform(def).rev.noDefaults(data)
+  const ret = mapTransform(def).rev(data) // .noDefaults
 
   t.deepEqual(ret, expected)
 })

@@ -1,5 +1,5 @@
 import test from 'ava'
-import get from './get'
+import { get } from './getSet'
 
 import pipe from './pipe'
 
@@ -47,4 +47,24 @@ test('should treat object as map object', (t) => {
   const ret = pipe(def)(state)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+test('should reverse map pipe on reverse mapping', (t) => {
+  const def = [get('data'), get('name')]
+  const state = {
+    root: 'John F.',
+    context: 'John F.',
+    value: 'John F.',
+    rev: true
+  }
+  const expected = {
+    root: 'John F.',
+    context: 'John F.',
+    value: { data: { name: 'John F.' } },
+    rev: true
+  }
+
+  const ret = pipe(def)(state)
+
+  t.deepEqual(ret, expected)
 })

@@ -8,8 +8,9 @@ Map and transform objects with mapping definitions.
 [![Dependencies Status](https://tidelift.com/badges/github/integreat-io/map-transform?style=flat)](https://tidelift.com/subscriber/github/integreat-io/repositories/map-transform)
 [![Maintainability](https://api.codeclimate.com/v1/badges/fbb6638a32ee5c5f60b7/maintainability)](https://codeclimate.com/github/integreat-io/map-transform/maintainability)
 
-Behind this boring name hides a powerful object transformer. There are a lot of
-these around, but MapTransform has some differentating features:
+Behind this boring name hides a powerful object transformer.
+
+Some highlighted features:
 - You pretty much define the transformation by creating the JavaScript object
 you want as a result, setting paths and transformation functions, etc. where
 they apply.
@@ -21,114 +22,109 @@ defined a mapping back to the original format (with some gotchas).
 Let's look at a simple example:
 
 ```javascript
-import mapTransform from 'map-transform'
+const { mapTransform } = require('map-transform')
 
-const def = [
-  'sections[0].articles',
-  {
-    title: 'content.headline',
-    author: 'meta.writer.username'
-  }
-]
-
-const mapper = mapTransform(def)
-
-// `mapper` is now a function that will always map as defined by `mapping`
-
-const data = {
-  sections: [
+// You have this object
+const source = {
+  data: [
     {
-      articles: [
-        {
-          content: {
-            headline: 'Shocking news!',
-            abstract: 'An insignificant event was hyped by the media.',
-            date: '2018-05-31T18:43:01Z'
-          },
-          meta: {
-            writer: {
-              name: 'Fred Johnson',
-              username: 'fredj'
-            }
-          }
-        },
-        {
-          content: {
-            headline: 'Even more shocking news!',
-            abstract: 'The hyped event turned out to be significant after all.',
-            date: '2018-05-31T19:01:17Z'
-          },
-          meta: {
-            writer: {
-              name: 'Martha Redding',
-              username: 'marthar'
-            }
-          }
+      content: {
+        name: 'An interesting piece',
+        meta: {
+          author: 'fredj',
+          date: 1533750490952
         }
-      ]
+      }
     }
   ]
 }
 
-const mappedData = mapper(data)
-// --> [
-//   {
-//     title: 'Shocking news!',
-//     author: 'fredj'
-//   },
-//   {
-//     title: 'Even more shocking news!',
-//     author: 'marthar'
-//   }
-// ]
+// You describe the object you want
+const def = {
+  title: 'data[0].content.name',
+  author: 'data[0].content.meta.author',
+  date: 'data[0].content.meta.date'
+}
+
+// You feed it to mapTransform and get a map function
+const mapper = mapTransform(def)
+
+// Now, run the source object through the mapper and get what you want
+const target = mapper(source)
+// --> {
+//   title: 'An interesting piece',
+//   author: 'fredj',
+//   date: 1533750490952
+// }
+
+// And run it in reverse to get to what you started with:
+const sourc2 = mapper.rev(target)
+// -> {
+  data: [
+    {
+      content: {
+        name: 'An interesting piece'
+      },
+      meta: {
+        author: 'fredj',
+        date: 1533750490952
+      }
+    },
+  ]
+}
 ```
 
-A mapper function may also be run the other way, by calling `mapper.rev(data)`:
+You may improve this with pipelines, expressed through arrays. For instance,
+retrieve the `content` object first, so you don't have to write the entiry
+path for every attribute:
 
 ```javascript
-// Using the same mapper as in the first example:
-
-const data = [
+const def2 = [
+  'data[0].content',
   {
-    title: 'Shocking news!',
-    author: 'fredj'
-  },
-  {
-    title: 'Even more shocking news!',
-    author: 'marthar'
+    title: 'name',
+    author: 'meta.author',
+    date: 'meta.date'
   }
 ]
 
-const revData = mapper.rev(data)
+const target2 = mapTransform(def2)(source)
 // --> {
-//   sections: [
-//     {
-//       articles: [
-//         {
-//           content: {
-//             headline: 'Shocking news!'
-//           },
-//           meta: {
-//             writer: {
-//               username: 'fredj'
-//             }
-//           }
-//         },
-//         {
-//           content: {
-//             headline: 'Even more shocking news!',
-//           },
-//           meta: {
-//             writer: {
-//               username: 'marthar'
-//             }
-//           }
-//         }
-//       ]
-//     }
-//   ]
+//   title: 'An interesting piece',
+//   author: 'fredj',
+//   date: 1533750490952
 // }
 ```
+
+Maybe you want the actual date instead of the microseconds since the seventies:
+
+```javascript
+const { transform } = require('map-transform')
+
+// Write a transform function, that accepts a value and returns a value
+const msToDate = (ms) => (new Date(ms)).toISOString()
+
+const def3 = [
+  'data[0].content',
+  {
+    title: 'name',
+    author: 'meta.author',
+    date: [ 'meta.date', transform(msToDate) ]
+  }
+]
+
+const target3 = mapTransform(def3)(source)
+// --> {
+//   title: 'An interesting piece',
+//   author: 'fredj',
+//   date: '2018-08-08T17:48:10.952Z'
+// }
+
+// You may also reverse this, as long as you write a reverse version of
+// `msToDate`
+```
+
+... and so on.
 
 ## Getting started
 

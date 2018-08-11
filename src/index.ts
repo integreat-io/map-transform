@@ -1,7 +1,8 @@
 import { compose } from 'ramda'
 import { MapDefinition, DataMapperWithRev } from './types'
-import { mapFunctionFromDef } from './utils/definitionHelpers'
-import { populateState, populateRevState, getValue } from './utils/stateHelpers'
+import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
+import { populateState, populateRevState, getStateValue } from './utils/stateHelpers'
+import objectToMapFunction from './utils/objectToMapFunction'
 
 export { default as alt } from './funcs/alt'
 export { default as value } from './funcs/value'
@@ -10,12 +11,12 @@ export { default as filter, FilterFunction } from './funcs/filter'
 export { Data } from './types'
 
 export function mapTransform (def: MapDefinition): DataMapperWithRev {
-  const mapFn = mapFunctionFromDef(def)
+  const mapFn = (isMapObject(def)) ? objectToMapFunction(def) : mapFunctionFromDef(def)
 
   return Object.assign(
-    compose(getValue, mapFn, populateState),
+    compose(getStateValue, mapFn, populateState),
     {
-      rev: compose(getValue, mapFn, populateRevState)
+      rev: compose(getStateValue, mapFn, populateRevState)
     }
   )
 }

@@ -110,36 +110,6 @@ test('should treat array as map pipe', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should mutate object with value array', (t) => {
-  const data = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
-  const def = {
-    data: {
-      'items[]': [
-        {
-          title: get('headline')
-        }
-      ]
-    }
-  }
-  const state = {
-    root: data,
-    context: data,
-    value: data
-  }
-  const expectedValue = {
-    data: {
-      items: [
-        { title: 'Entry 1' },
-        { title: 'Entry 2' }
-      ]
-    }
-  }
-
-  const ret = mutate(def)(state)
-
-  t.deepEqual(ret.value, expectedValue)
-})
-
 test('should reverse map', (t) => {
   const def = {
     content: {

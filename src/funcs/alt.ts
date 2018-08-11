@@ -1,6 +1,6 @@
 import * as mapAny from 'map-any'
 import { State, Data, MapFunction, MapDefinition } from '../types'
-import { setValue, getValue } from '../utils/stateHelpers'
+import { setStateValue, getStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
 const getOne = (context: Data | Data[], index?: number) =>
@@ -8,13 +8,13 @@ const getOne = (context: Data | Data[], index?: number) =>
 
 const getValueOrDefault = (state: State, runAlt: MapFunction) => (value: Data, index?: number) =>
   (typeof value === 'undefined')
-    ? getValue(runAlt({ ...state, value: getOne(state.context, index) }))
+    ? getStateValue(runAlt({ ...state, value: getOne(state.context, index) }))
     : value
 
 export default function alt (fn: MapDefinition): MapFunction {
   const runAlt = mapFunctionFromDef(fn)
 
-  return (state: State) => setValue(
+  return (state: State) => setStateValue(
     state,
     mapAny(getValueOrDefault(state, runAlt), state.value)
   )

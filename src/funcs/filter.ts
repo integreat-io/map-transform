@@ -1,6 +1,6 @@
 import { compose, unless, always, ifElse, filter as filterR, identity } from 'ramda'
 import { MapFunction, Data, State } from '../types'
-import { getValue } from '../utils/stateHelpers'
+import { getStateValue } from '../utils/stateHelpers'
 
 export interface FilterFunction {
   (data: Data): boolean
@@ -17,7 +17,7 @@ export default function filter (fn: FilterFunction): MapFunction {
       filterR(fn),
       unless(fn, always(undefined))
     ),
-    getValue
+    getStateValue
   )
 
   return (state: State) => ({

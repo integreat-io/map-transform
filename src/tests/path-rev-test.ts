@@ -21,7 +21,7 @@ test('should reverse map simple object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should reverse map array of objects', (t) => {
+test('should reverse map array of objects', (t) => {
   const def = {
     title: 'content.heading',
     author: 'meta.writer.username'
@@ -229,7 +229,7 @@ test('should return data when no mapping def and reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should return undefined when mapping def is empty', (t) => {
+test('should return undefined when mapping def is empty', (t) => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },

@@ -143,6 +143,31 @@ test('should map with array index in middle of path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with value array', (t) => {
+  const def = {
+    data: {
+      'items[]': [
+        {
+          title: 'headline'
+        }
+      ]
+    }
+  }
+  const data = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
+  const expected = {
+    data: {
+      items: [
+        { title: 'Entry 1' },
+        { title: 'Entry 2' }
+      ]
+    }
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return undefined from non-matching path with array index in middle', (t) => {
   const def = [
     'content.articles[0].content.heading'
@@ -240,6 +265,37 @@ test('should map with nested mappings', (t) => {
       ]
     }
   }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map array of objects', (t) => {
+  const def = {
+    content: {
+      heading: 'title'
+    },
+    meta: {
+      writer: {
+        username: 'author'
+      }
+    }
+  }
+  const data = [
+    { title: 'The heading', author: 'johnf' },
+    { title: 'Second heading', author: 'maryk' }
+  ]
+  const expected = [
+    {
+      content: { heading: 'The heading' },
+      meta: { writer: { username: 'johnf' } }
+    },
+    {
+      content: { heading: 'Second heading' },
+      meta: { writer: { username: 'maryk' } }
+    }
+  ]
 
   const ret = mapTransform(def)(data)
 

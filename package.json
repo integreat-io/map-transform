@@ -64,15 +64,15 @@
   },
   "devDependencies": {
     "@types/deep-freeze": "^0.1.1",
-    "@types/ramda": "^0.25.36",
-    "ava": "1.0.0-beta.6",
+    "@types/ramda": "^0.25.38",
+    "ava": "1.0.0-beta.8",
     "babel-preset-env": "^1.7.0",
     "coveralls": "^3.0.2",
     "deep-freeze": "0.0.1",
-    "nyc": "^12.0.2",
-    "ts-node": "^7.0.0",
+    "nyc": "^13.0.1",
+    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
-    "tslint-config-standard": "^7.1.0",
-    "typescript": "^3.0.1"
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.0.3"
   }
 }

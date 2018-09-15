@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, filter, FilterFunction, Data } from '..'
+import { mapTransform, filter, fwd, rev, FilterFunction, Data } from '..'
 
 // Helpers
 
@@ -145,14 +145,38 @@ test('should filter on reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should filter with filterRev on reverse mapping', (t) => {
+test('should use directional filters - going forward', (t) => {
   const def = [
     {
       title: 'content.heading'
     },
-    filter(noHeadingTitle),
-    filter(noAlso),
-    filter(noHeadingTitle) // filterRev
+    fwd(filter(noAlso)),
+    rev(filter(noHeadingTitle))
+  ]
+  const data = [
+    { content: { heading: 'The heading' } },
+    { content: { heading: 'Just this' } },
+    { content: { heading: 'Another heading' } },
+    { content: { heading: 'Also this' } }
+  ]
+  const expected = [
+    { title: 'The heading' },
+    { title: 'Just this' },
+    { title: 'Another heading' }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use directional filters - going reverse', (t) => {
+  const def = [
+    {
+      title: 'content.heading'
+    },
+    fwd(filter(noAlso)),
+    rev(filter(noHeadingTitle))
   ]
   const data = [
     { title: 'The heading' },

@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform } from '..'
+import { mapTransform, get, set, fwd, rev } from '..'
 
 test('should reverse map simple object', (t) => {
   const def = {
@@ -138,16 +138,16 @@ test('should reverse map with nested mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should reverse map with object pathRev and pathToRev', (t) => {
-  const def = {
-    mapping: {
-      title: { path: 'content.heading' }
+test('should reverse map with directional paths', (t) => {
+  const def = [
+    fwd(get('wrong.path')),
+    rev(get('content.articles')),
+    {
+      title: 'content.heading'
     },
-    path: 'wrong.path',
-    pathRev: 'content.articles',
-    pathTo: 'wrong.path',
-    pathToRev: 'items'
-  }
+    fwd(set('wrong.path')),
+    rev(set('items'))
+  ]
   const data = {
     items: [
       { title: 'Heading 1' },
@@ -162,54 +162,6 @@ test.skip('should reverse map with object pathRev and pathToRev', (t) => {
       ]
     }
   }
-
-  const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test.skip('should reverse map with object pathFromRev', (t) => {
-  const def = {
-    mapping: {
-      title: { path: 'content.heading' }
-    },
-    pathFrom: 'wrong.path',
-    pathFromRev: 'content.articles'
-  }
-  const data = [
-    { title: 'Heading 1' }
-  ]
-  const expected = {
-    content: {
-      articles: [
-        { content: { heading: 'Heading 1' } }
-      ]
-    }
-  }
-
-  const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test.skip('should reverse map with empty pathRev and pathToRev', (t) => {
-  const def = {
-    mapping: {
-      title: { path: 'content.heading' }
-    },
-    path: 'wrong.path',
-    pathRev: null,
-    pathTo: 'wrong.path',
-    pathToRev: null
-  }
-  const data = [
-    { title: 'Heading 1' },
-    { title: 'Heading 2' }
-  ]
-  const expected = [
-    { content: { heading: 'Heading 1' } },
-    { content: { heading: 'Heading 2' } }
-  ]
 
   const ret = mapTransform(def).rev(data)
 

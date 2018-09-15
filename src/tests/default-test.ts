@@ -1,7 +1,7 @@
 import test from 'ava'
 import { get } from '../funcs/getSet'
 
-import { mapTransform, alt, value } from '..'
+import { mapTransform, alt, value, fwd, rev } from '..'
 
 test('should use default value', (t) => {
   const def = {
@@ -63,15 +63,35 @@ test('should set missing values to undefined when no default', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should use defaultRev value', (t) => {
+test('should use directional default value - forward', (t) => {
   const def = {
-    mapping: {
-      title: {
-        path: 'content.heading',
-        default: 'Wrong way',
-        defaultRev: 'Default heading'
-      }
-    }
+    title: [
+      'content.heading',
+      fwd(alt(value('Default heading'))),
+      rev(alt(value('Wrong way')))
+    ]
+  }
+  const data = [
+    {},
+    { content: { heading: 'From data' } }
+  ]
+  const expected = [
+    { title: 'Default heading' },
+    { title: 'From data' }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use directional default value - reverse', (t) => {
+  const def = {
+    title: [
+      'content.heading',
+      fwd(alt(value('Wrong way'))),
+      rev(alt(value('Default heading')))
+    ]
   }
   const data = [
     {},
@@ -87,37 +107,12 @@ test.skip('should use defaultRev value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should set missing value to undefined when no defaultRev', (t) => {
-  const def = {
-    mapping: {
-      title: {
-        path: 'content.heading'
-      }
-    }
-  }
-  const data = [
-    {},
-    { title: 'From data' }
-  ]
-  const expected = [
-    { content: { heading: undefined } },
-    { content: { heading: 'From data' } }
-  ]
-
-  const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test.skip('should not use default values', (t) => {
   const def = {
-    mapping: {
-      title: {
-        path: 'content.heading',
-        default: 'Default heading',
-        defaultRev: 'Wrong way'
-      }
-    }
+    title: [
+      'content.heading',
+      alt(value('Default heading'))
+    ]
   }
   const data = [
     { content: {} },
@@ -135,9 +130,7 @@ test.skip('should not use default values', (t) => {
 
 test.skip('should not set missing prop to undefined', (t) => {
   const def = {
-    mapping: {
-      title: 'content.heading'
-    }
+    title: 'content.heading'
   }
   const data = [
     { content: {} },
@@ -155,13 +148,10 @@ test.skip('should not set missing prop to undefined', (t) => {
 
 test.skip('should not use default values on rev', (t) => {
   const def = {
-    mapping: {
-      title: {
-        path: 'content.heading',
-        default: 'Wrong way',
-        defaultRev: 'Default heading'
-      }
-    }
+    title: [
+      'content.heading',
+      alt(value('Default heading'))
+    ]
   }
   const data = [
     {},

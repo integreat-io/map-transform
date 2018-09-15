@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform } from '..'
+import { mapTransform, get, set, fwd, rev } from '..'
 
 test('should map with object path', (t) => {
   const def = [
@@ -264,6 +264,36 @@ test('should map with nested mappings', (t) => {
         { title: 'Heading 2' }
       ]
     }
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should forward map with directional paths', (t) => {
+  const def = [
+    fwd(get('content.articles')),
+    rev(get('wrong.path')),
+    {
+      title: 'content.heading'
+    },
+    fwd(set('items')),
+    rev(set('wrong.path'))
+  ]
+  const data = {
+    content: {
+      articles: [
+        { content: { heading: 'Heading 1' } },
+        { content: { heading: 'Heading 2' } }
+      ]
+    }
+  }
+  const expected = {
+    items: [
+      { title: 'Heading 1' },
+      { title: 'Heading 2' }
+    ]
   }
 
   const ret = mapTransform(def)(data)

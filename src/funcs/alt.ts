@@ -14,8 +14,10 @@ const getValueOrDefault = (state: State, runAlt: MapFunction) => (value: Data, i
 export default function alt (fn: MapDefinition): MapFunction {
   const runAlt = mapFunctionFromDef(fn)
 
-  return (state: State) => setStateValue(
-    state,
-    mapAny(getValueOrDefault(state, runAlt), state.value)
-  )
+  return (state: State) => (state.onlyMapped)
+    ? state
+    : setStateValue(
+      state,
+      mapAny(getValueOrDefault(state, runAlt), state.value)
+    )
 }

@@ -43,6 +43,25 @@ test('should do nothing when value is set', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should do nothing when onlyMapped is true', (t) => {
+  const state = {
+    root: { user: 'johnf' },
+    context: { user: 'johnf' },
+    value: undefined,
+    onlyMapped: true
+  }
+  const expected = {
+    root: { user: 'johnf' },
+    context: { user: 'johnf' },
+    value: undefined,
+    onlyMapped: true
+  }
+
+  const ret = alt(getUser)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should treat string as path', (t) => {
   const state = {
     root: { user: 'johnf' },

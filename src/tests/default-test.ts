@@ -107,7 +107,7 @@ test('should use directional default value - reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should not use default values', (t) => {
+test('should not use default values', (t) => {
   const def = {
     title: [
       'content.heading',
@@ -119,16 +119,16 @@ test.skip('should not use default values', (t) => {
     { content: { heading: 'From data' } }
   ]
   const expected = [
-    {},
+    undefined,
     { title: 'From data' }
   ]
 
-  const ret = mapTransform(def)(data) // .noDefaults(data)
+  const ret = mapTransform(def).onlyMappedValues(data)
 
   t.deepEqual(ret, expected)
 })
 
-test.skip('should not set missing prop to undefined', (t) => {
+test('should not set missing prop to undefined', (t) => {
   const def = {
     title: 'content.heading'
   }
@@ -137,16 +137,16 @@ test.skip('should not set missing prop to undefined', (t) => {
     { content: { heading: 'From data' } }
   ]
   const expected = [
-    {},
+    undefined,
     { title: 'From data' }
   ]
 
-  const ret = mapTransform(def)(data) // .noDefaults
+  const ret = mapTransform(def).onlyMappedValues(data)
 
   t.deepEqual(ret, expected)
 })
 
-test.skip('should not use default values on rev', (t) => {
+test('should not use default values on rev', (t) => {
   const def = {
     title: [
       'content.heading',
@@ -158,11 +158,11 @@ test.skip('should not use default values on rev', (t) => {
     { title: 'From data' }
   ]
   const expected = [
-    {},
+    undefined,
     { content: { heading: 'From data' } }
   ]
 
-  const ret = mapTransform(def).rev(data) // .noDefaults
+  const ret = mapTransform(def).onlyMappedValues.rev(data)
 
   t.deepEqual(ret, expected)
 })

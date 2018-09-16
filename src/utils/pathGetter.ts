@@ -29,7 +29,7 @@ const getGetters = R.compose(
   split
 )
 
-type GetFunction = (object?: Data | null) => Data
+export type GetFunction = (object?: Data | null) => Data
 
 /**
  * Get the value at `path` in `object`.

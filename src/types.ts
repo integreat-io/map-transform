@@ -11,6 +11,7 @@ export interface State {
   context: Data,
   value: Data,
   rev?: boolean,
+  onlyMapped?: boolean,
   arr?: boolean
 }
 
@@ -34,4 +35,8 @@ export interface DataMapper {
 
 export interface DataMapperWithRev extends DataMapper {
   rev: DataMapper
+}
+
+export interface MapTransform extends DataMapperWithRev {
+  onlyMappedValues: DataMapperWithRev
 }

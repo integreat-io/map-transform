@@ -1,4 +1,4 @@
-import * as R from 'ramda'
+import { mergeDeepRight, compose, binary, map, apply } from 'ramda'
 import { Data, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
@@ -52,13 +52,13 @@ const setter = (prop: string) => {
   }
 }
 
-const getSetters = R.compose(
-  R.binary(R.apply(R.compose)),
-  R.map(setter),
+const getSetters = compose(
+  binary(apply(compose)),
+  map(setter),
   split
 )
 
-type SetFunction = (value: Data, object?: Data | null) => Data
+export type SetFunction = (value: Data, object?: Data | null) => Data
 
 /**
  * Set `value` at `path` in `object`. Note that a new object is returned, and
@@ -75,6 +75,6 @@ export default function pathSetter (path: Path): SetFunction {
 
   return (value, object = null) => {
     const data = setters(value)
-    return (object) ? R.mergeDeepRight(object, data) : data
+    return (object) ? mergeDeepRight(object, data) : data
   }
 }

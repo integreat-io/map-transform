@@ -53,15 +53,10 @@ test('should map with object shape', (t) => {
 })
 
 test('should map undefined to undefined', (t) => {
-  const def = {
-    attributes: {
-      title: 'content.heading',
-      text: 'content.copy'
-    },
-    relationships: {
-      author: 'meta.writer.username'
-    }
-  }
+  const def = [
+    'items[]',
+    { title: 'content.heading' }
+  ]
   const data = undefined
   const expected = undefined
 
@@ -73,13 +68,9 @@ test('should map undefined to undefined', (t) => {
 test('should map undefined from path to undefined', (t) => {
   const def = [
     'items[]',
-    {
-      attributes: {
-        title: 'content.heading'
-      }
-    }
+    { title: 'content.heading' }
   ]
-  const data = {}
+  const data = { items: undefined }
   const expected = undefined
 
   const ret = mapTransform(def)(data)

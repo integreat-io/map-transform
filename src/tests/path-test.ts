@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev } from '..'
+import { mapTransform, get, set, fwd, rev, root } from '..'
 
 test('should map with object path', (t) => {
   const def = [
@@ -160,6 +160,36 @@ test('should map with value array', (t) => {
         { title: 'Entry 1' },
         { title: 'Entry 2' }
       ]
+    }
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with root operation', (t) => {
+  const def = [
+    'content',
+    {
+      attributes: {
+        title: 'heading'
+      },
+      relationships: {
+        author: root('meta.writer.username')
+      }
+    }
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } }
+  }
+  const expected = {
+    attributes: {
+      title: 'The heading'
+    },
+    relationships: {
+      author: 'johnf'
     }
   }
 

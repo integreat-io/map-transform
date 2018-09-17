@@ -5,6 +5,7 @@ import { populateState, getStateValue } from './utils/stateHelpers'
 import objectToMapFunction from './utils/objectToMapFunction'
 
 export { get, set } from './funcs/getSet'
+export { default as root } from './funcs/root'
 export { default as alt } from './funcs/alt'
 export { default as value } from './funcs/value'
 export { default as transform, TransformFunction } from './funcs/transform'

@@ -539,8 +539,44 @@ that the transform object is best in cases where you describe a target object
 with several properties, while get and set operations is best suited to define
 root paths for objects or arrays.
 
-The get operation aslo has a shortcut in transform pipelines: Simply provide the
+The get operation also has a shortcut in transform pipelines: Simply provide the
 path as a string, and will be treated as `get(path)`.
+
+#### `root(pipeline)` operation
+
+When you pass a pipeline to the root operation, the pipeline will be apply to
+the data that was original passed to the pipeline. Note that the result of a
+root pipeline will still be applied at the point you are in the parent pipeline,
+so this is not a way to alter data out of the pipeline.
+
+Let's look at an example:
+```javascript
+import { mapTransform, root } from 'map-transform'
+
+const def15 = [
+  'articles[]',
+  {
+    id: 'id',
+    title: 'headline',
+    section: root('meta.section')
+  }
+]
+
+const date = {
+  articles: [ { id: '1', headline: 'An article' }, /* ... */ ],
+  meta: { section: 'news' }
+}
+
+mapTransform(def15)(data)
+// --> [
+//   { id: '1', title: 'An article', section: 'news' }
+//   /* ... */
+// ]
+```
+
+As you see, every item in the `articles[]` array, will be mapped with the
+`section` property from the `meta` object. This would not be available to the
+items without the root operation.
 
 ### Reverse mapping
 

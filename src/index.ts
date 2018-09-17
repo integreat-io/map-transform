@@ -21,11 +21,11 @@ export function mapTransform (def: MapDefinition): MapTransform {
   return Object.assign(
     composeMapFunction(mapFn, {}),
     {
-      rev: composeMapFunction(mapFn, { rev: true }),
-      onlyMappedValues: Object.assign(
-        composeMapFunction(mapFn, { onlyMapped: true }),
+      onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),
+      rev: Object.assign(
+        composeMapFunction(mapFn, { rev: true }),
         {
-          rev: composeMapFunction(mapFn, { rev: true, onlyMapped: true })
+          onlyMappedValues: composeMapFunction(mapFn, { rev: true, onlyMapped: true })
         }
       )
     }

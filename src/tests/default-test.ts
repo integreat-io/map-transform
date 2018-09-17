@@ -162,7 +162,7 @@ test('should not use default values on rev', (t) => {
     { content: { heading: 'From data' } }
   ]
 
-  const ret = mapTransform(def).onlyMappedValues.rev(data)
+  const ret = mapTransform(def).rev.onlyMappedValues(data)
 
   t.deepEqual(ret, expected)
 })

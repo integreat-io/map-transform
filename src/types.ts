@@ -33,10 +33,10 @@ export interface DataMapper {
   (data: Data): Data
 }
 
-export interface DataMapperWithRev extends DataMapper {
-  rev: DataMapper
+export interface DataMapperWithOnlyMappedValues extends DataMapper {
+  onlyMappedValues: DataMapper
 }
 
-export interface MapTransform extends DataMapperWithRev {
-  onlyMappedValues: DataMapperWithRev
+export interface MapTransform extends DataMapperWithOnlyMappedValues {
+  rev: DataMapperWithOnlyMappedValues
 }

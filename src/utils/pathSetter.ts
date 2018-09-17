@@ -1,11 +1,10 @@
-import * as R from 'ramda'
-import { Data } from '..'
-import { PathString } from './lensPath'
+import { mergeDeepRight, compose, binary, map, apply } from 'ramda'
+import { Data, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
   (isAfterOpenArray) ? `*${part}` : part
 
-const pathSplitter = function* (path: PathString) {
+const pathSplitter = function* (path: Path) {
   const regEx = /([^[\].]+|\[\w*])/g
   let match
   let isAfterOpenArray = false
@@ -18,7 +17,7 @@ const pathSplitter = function* (path: PathString) {
   } while (match !== null)
 }
 
-const split = (path: PathString): string[] => [...pathSplitter(path)]
+const split = (path: Path): string[] => [...pathSplitter(path)]
 
 const setOnObject = (prop: string) => (value: Data): Data =>
   ({ [prop]: value })
@@ -53,13 +52,13 @@ const setter = (prop: string) => {
   }
 }
 
-const getSetters = R.compose(
-  R.binary(R.apply(R.compose)),
-  R.map(setter),
+const getSetters = compose(
+  binary(apply(compose)),
+  map(setter),
   split
 )
 
-type SetFunction = (value: Data, object: Data) => Data
+export type SetFunction = (value: Data, object?: Data | null) => Data
 
 /**
  * Set `value` at `path` in `object`. Note that a new object is returned, and
@@ -71,9 +70,11 @@ type SetFunction = (value: Data, object: Data) => Data
  * @param {string} path - The path to set the value at
  * @returns {function} A setter function accepting a value and a target object
  */
-export default function pathSetter (path: PathString): SetFunction {
+export default function pathSetter (path: Path): SetFunction {
   const setters = getSetters(path)
 
-  return (value: Data, object: Data) =>
-    R.mergeDeepRight(object, setters(value))
+  return (value, object = null) => {
+    const data = setters(value)
+    return (object) ? mergeDeepRight(object, data) : data
+  }
 }

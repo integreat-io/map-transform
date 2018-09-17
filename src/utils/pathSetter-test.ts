@@ -107,6 +107,27 @@ test('should set value at path with array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set array at path with array', (t) => {
+  const path = 'meta.authors[]'
+  const object = {}
+  const expected = {
+    meta: {
+      authors: ['johnf', 'maryk']
+    }
+  }
+  const ret = pathSetter(path)(['johnf', 'maryk'], object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set array at path with only array brackets', (t) => {
+  const path = '[]'
+  const expected = ['johnf', 'maryk']
+  const ret = pathSetter(path)(['johnf', 'maryk'], null)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set value array at path with indexed array', (t) => {
   const path = 'meta.authors[0].id'
   const object = {}

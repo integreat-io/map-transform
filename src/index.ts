@@ -1,72 +1,34 @@
-import * as R from 'ramda'
-import {
-  createMapper,
-  MapperFunctionWithRev
-} from './utils/createMapper'
-import { PathString } from './utils/lensPath'
-import { MappingDef } from './utils/normalizeMapping'
-import { TransformPipeline } from './utils/transformPipeline'
-import { FilterPipeline } from './utils/filterPipeline'
+import { compose } from 'ramda'
+import { MapDefinition, MapTransform, MapFunction, State } from './types'
+import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
+import { populateState, getStateValue } from './utils/stateHelpers'
+import objectToMapFunction from './utils/objectToMapFunction'
 
-namespace mapTransform {
-  export interface Shape {
-    [key: string]: PathString | MappingDef | Shape | null
-  }
+export { get, set } from './funcs/getSet'
+export { default as root } from './funcs/root'
+export { default as alt } from './funcs/alt'
+export { default as value } from './funcs/value'
+export { default as transform, TransformFunction } from './funcs/transform'
+export { default as filter, FilterFunction } from './funcs/filter'
+export { fwd, rev } from './funcs/directionals'
+export { Data } from './types'
 
-  export interface DefinitionNormalized {
-    pathFrom?: PathString | null,
-    pathFromRev?: PathString | null,
-    filterFrom?: FilterPipeline,
-    filterFromRev?: FilterPipeline,
-    transformFrom?: TransformPipeline,
-    transformFromRev?: TransformPipeline,
-    mapping?: Shape,
-    transformTo?: TransformPipeline,
-    transformToRev?: TransformPipeline,
-    filterTo?: FilterPipeline,
-    filterToRev?: FilterPipeline,
-    pathTo?: PathString | null,
-    pathToRev?: PathString | null
-  }
+const composeMapFunction = (mapFn: MapFunction, initialState: Partial<State>) =>
+  compose(getStateValue, mapFn, populateState(initialState))
 
-  export interface Definition extends DefinitionNormalized {
-    path?: PathString | null,
-    pathRev?: PathString | null,
-    transform?: TransformPipeline,
-    transformRev?: TransformPipeline,
-    filter?: FilterPipeline,
-    filterRev?: FilterPipeline,
-  }
+export function mapTransform (def: MapDefinition): MapTransform {
+  const mapFn = (isMapObject(def)) ? objectToMapFunction(def) : mapFunctionFromDef(def)
 
-  type DataProperty = string | number | boolean | object
-
-  export interface DataWithProps {
-    [key: string]: DataProperty | DataProperty[]
-  }
-
-  export type Data = DataWithProps | DataWithProps[] | DataProperty | DataProperty[]
+  return Object.assign(
+    composeMapFunction(mapFn, {}),
+    {
+      onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),
+      rev: Object.assign(
+        composeMapFunction(mapFn, { rev: true }),
+        {
+          onlyMappedValues: composeMapFunction(mapFn, { rev: true, onlyMapped: true })
+        }
+      )
+    }
+  )
 }
-
-const identityMapper: MapperFunctionWithRev = Object.assign(
-  (data: mapTransform.Data | null) => data,
-  {
-    noDefaults: R.identity,
-    rev: Object.assign(
-      (data: mapTransform.Data | null) => data,
-      { noDefaults: R.identity }
-    )
-  }
-)
-
-/**
- * Will return a function that executes the mapping defined in `mapping`.
- * When no mapping is provided, an identity function is returned.
- *
- * @param {Object} definition - A mapping definition
- * @returns {function} A mapper function
- */
-function mapTransform (definition?: mapTransform.Definition | null): MapperFunctionWithRev {
-  return (definition) ? createMapper(definition) : identityMapper
-}
-
-export = mapTransform

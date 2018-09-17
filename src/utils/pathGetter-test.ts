@@ -76,12 +76,12 @@ test('should return object when empty path', (t) => {
   t.deepEqual(ret, object)
 })
 
-test('should return null when object is null', (t) => {
+test('should return undefined when object is null', (t) => {
   const path = 'meta.author'
 
   const ret = pathGetter(path)(null)
 
-  t.is(ret, null)
+  t.is(ret, undefined)
 })
 
 test('should return undefined when path is not found', (t) => {

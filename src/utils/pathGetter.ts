@@ -1,17 +1,16 @@
 import * as R from 'ramda'
 import * as mapAny from 'map-any'
-import { Data, DataWithProps } from '..'
-import { PathString } from './lensPath'
+import { Data, ObjectWithProps, Path } from '../types'
 
 const numberOrString = (val: string): string | number => {
   const num = Number.parseInt(val, 10)
   return (Number.isNaN(num)) ? val : num
 }
 
-const split = (str: PathString): (string | number)[] =>
+const split = (str: Path): (string | number)[] =>
   str.split(/\[|]?\.|]/).filter((str) => str !== '').map(numberOrString)
 
-const getProp = (prop: string) => (object?: DataWithProps) =>
+const getProp = (prop: string) => (object?: ObjectWithProps) =>
   (object) ? object[prop] : undefined
 
 const getArrayIndex = (index: number) => (arr?: Data) =>
@@ -30,7 +29,7 @@ const getGetters = R.compose(
   split
 )
 
-type GetFunction = (object?: Data | null) => Data
+export type GetFunction = (object?: Data | null) => Data
 
 /**
  * Get the value at `path` in `object`.
@@ -41,12 +40,8 @@ type GetFunction = (object?: Data | null) => Data
  * @param {string} path - The path to get
  * @returns {function} A function accepting an object to get the value from.
  */
-export default function pathGetter (path: PathString | null): GetFunction {
+export default function pathGetter (path: Path | null): GetFunction {
   return (path)
-    ? R.ifElse(
-        R.isNil,
-        R.identity,
-        getGetters(path)
-      )
+    ? getGetters(path)
     : R.identity
 }

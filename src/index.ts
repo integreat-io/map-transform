@@ -1,5 +1,5 @@
 import { compose } from 'ramda'
-import { MapDefinition, MapTransform, MapFunction, State } from './types'
+import { MapDefinition, MapTransform, MapFunction, State, Data } from './types'
 import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
 import objectToMapFunction from './utils/objectToMapFunction'
@@ -13,8 +13,10 @@ export { default as filter, FilterFunction } from './funcs/filter'
 export { fwd, rev } from './funcs/directionals'
 export { Data } from './types'
 
-const composeMapFunction = (mapFn: MapFunction, initialState: Partial<State>) =>
-  compose(getStateValue, mapFn, populateState(initialState))
+const composeMapFunction = (mapFn: MapFunction, initialState: Partial<State>) => {
+  const map = compose(getStateValue, mapFn, populateState(initialState))
+  return (data: Data) => (typeof data === 'undefined') ? undefined : map(data)
+}
 
 export function mapTransform (def: MapDefinition): MapTransform {
   const mapFn = (isMapObject(def)) ? objectToMapFunction(def) : mapFunctionFromDef(def)

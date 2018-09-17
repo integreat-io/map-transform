@@ -205,3 +205,15 @@ test('should not use default values on rev', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should return undefined for undefined', (t) => {
+  const def = {
+    title: 'content.heading'
+  }
+  const data = undefined
+  const expected = undefined
+
+  const ret = mapTransform(def).onlyMappedValues(data)
+
+  t.deepEqual(ret, expected)
+})

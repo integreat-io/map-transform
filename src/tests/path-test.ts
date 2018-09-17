@@ -52,6 +52,41 @@ test('should map with object shape', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map undefined to undefined', (t) => {
+  const def = {
+    attributes: {
+      title: 'content.heading',
+      text: 'content.copy'
+    },
+    relationships: {
+      author: 'meta.writer.username'
+    }
+  }
+  const data = undefined
+  const expected = undefined
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map undefined from path to undefined', (t) => {
+  const def = [
+    'items[]',
+    {
+      attributes: {
+        title: 'content.heading'
+      }
+    }
+  ]
+  const data = {}
+  const expected = undefined
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map array with object path', (t) => {
   const def = [
     'content.articles',
@@ -71,6 +106,18 @@ test('should map array with object path', (t) => {
     { title: 'Heading 1' },
     { title: 'Heading 2' }
   ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map empty array as empty array', (t) => {
+  const def = {
+    title: 'content.heading'
+  }
+  const data: any[] = []
+  const expected: any[] = []
 
   const ret = mapTransform(def)(data)
 
@@ -396,25 +443,6 @@ test('should try to map even when no data is given', (t) => {
   }
 
   const ret = mapTransform(def)(null)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should try to map even when path points to a non-existing prop', (t) => {
-  const def = [
-    'missing',
-    { title: 'title' }
-  ]
-  const data = {
-    content: {
-      title: 'Entry 1'
-    }
-  }
-  const expected = {
-    title: undefined
-  }
-
-  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

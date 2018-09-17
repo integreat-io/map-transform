@@ -205,9 +205,7 @@ test('should filter before mapping', (t) => {
   const data = {
     content: { title: 'The heading' }
   }
-  const expected = {
-    heading: undefined
-  }
+  const expected = undefined
 
   const ret = mapTransform(def)(data)
 

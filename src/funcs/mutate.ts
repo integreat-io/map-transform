@@ -6,11 +6,13 @@ import objectToMapFunction from '../utils/objectToMapFunction'
 export default function mutate (def: MapDefinition): MapFunction {
   const runMutation = objectToMapFunction(def)
 
-  return (state: State): State => setStateValue(
-    state,
-    mapAny(
-      (value) => getStateValue(runMutation(setStateValue(state, value))),
-      state.value
+  return (state: State): State => (typeof state.value === 'undefined')
+    ? state
+    : setStateValue(
+      state,
+      mapAny(
+        (value) => getStateValue(runMutation(setStateValue(state, value))),
+        state.value
+      )
     )
-  )
 }

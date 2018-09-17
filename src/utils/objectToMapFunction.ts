@@ -1,20 +1,24 @@
 import { compose, mergeDeepRight } from 'ramda'
 import { MapDefinition, MapFunction, MapPipe, Path, State, Data } from '../types'
-import { setStateValue, pipeMapFns, liftState, lowerState } from '../utils/stateHelpers'
+import { setStateValue, pipeMapFns, liftState, lowerState } from './stateHelpers'
 import { set } from '../funcs/getSet'
 import pipe from '../funcs/pipe'
 import { isMapObject } from './definitionHelpers'
 
 const appendToPath = (path: string[], fragment: string) => [...path, fragment]
 
-const mergeToArray = (arr: Data[]) => (val: Data, index: number) => mergeDeepRight(arr[index], val)
+const merge = (left: Data, right: Data) => (typeof left === 'undefined' && typeof right === 'undefined')
+  ? undefined
+  : mergeDeepRight(left, right)
+
+const mergeToArray = (arr: Data[]) => (val: Data, index: number) => merge(arr[index], val)
 
 const runAndMergeState = (fn: MapFunction) => (state: State): State => {
   const nextState = fn(lowerState(state))
 
   return (Array.isArray(nextState.value))
     ? setStateValue(state, (Array.isArray(state.value)) ? nextState.value.map(mergeToArray(state.value)) : nextState.value)
-    : setStateValue(state, mergeDeepRight(state.value, nextState.value))
+    : setStateValue(state, merge(state.value, nextState.value))
 }
 
 const concatToArray = (existing: MapPipe | Path | MapFunction, setFn: MapFunction) =>

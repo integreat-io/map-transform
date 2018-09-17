@@ -58,7 +58,7 @@ const target = mapper(source)
 // }
 
 // And run it in reverse to get to what you started with:
-const sourc2 = mapper.rev(target)
+const source2 = mapper.rev(target)
 // -> {
   data: [
     {
@@ -99,7 +99,9 @@ const target2 = mapTransform(def2)(source)
 Maybe you want the actual date instead of the microseconds since the seventies:
 
 ```javascript
-const { transform } = require('map-transform')
+const { mapTransform, transform } = require('map-transform')
+
+// ....
 
 // Write a transform function, that accepts a value and returns a value
 const msToDate = (ms) => (new Date(ms)).toISOString()
@@ -121,7 +123,7 @@ const target3 = mapTransform(def3)(source)
 // }
 
 // You may also reverse this, as long as you write a reverse version of
-// `msToDate`
+// `msToDate` and provide as a second argument to the `trasform()` function.
 ```
 
 ... and so on.
@@ -132,7 +134,7 @@ const target3 = mapTransform(def3)(source)
 
 Requires node v8.6.
 
-### Installing and using
+### Installing
 
 Install from npm:
 
@@ -140,185 +142,484 @@ Install from npm:
 npm install map-transform --save
 ```
 
-### Mapping definition
+## Usage
 
-**Note:** This description is obsolete. All the same features (and more) will be
-available in version 0.2, but with different syntax.
+### The transform object
+
+Think of the transform object as a description of the object structure you want.
+
+#### Keys on the transform object
+In essence, the keys on the transform object will be the keys on the target
+object. You may, however, specifiy a key with dot notation, which will be split
+out to child objects on the target. You can also specify the child objects
+directly on the transform object, so in most cases this is just a matter of
+taste.
 
 ```javascript
-{
-  filterFrom: <filter pipeline>,
-  filterFromRev: <filter pipeline>,
-  pathFrom: <path string>,
-  pathFromRev: <path string>,
-  transformFrom: <transform pipeline>,
-  transformFromRev: <transform pipeline>,
-  mapping: {
-    <path string>: {
-      path: <path string>,
-      default: <any value>,
-      defaultRev: <any value>,
-      transform: <transform pipeline>,
-      transformRev: <transform pipeline>
-    }
-  },
-  transformTo: <transform pipeline>,
-  transformToRev: <transform pipeline>,
-  filterTo: <filter pipeline>,
-  filterToRev: <filter pipeline>,
-  pathTo: <path string>,
-  pathToRev: <path string>
-}
-```
-
-(The order of the props hints at the order in which they are applied during the
-mapping process.)
-
-There are four path strings here (plus the ones ending in 'Rev'), which are dot
-paths like e.g. `'documents.content'`.
-
-First of all, if there's the `pathFrom` property on the root object is set, with
-`path` as a handy alias. It is used to retrieve an object or an array of objects
-from the source data. When this `path` is not set, the source data is just used
-as is.
-
-Then the `path` property of each object on `mapping`, is used to retrieve field
-values from the object(s) returned from the root `path`, using the value of
-`default` when the path does not match a value in the source data.
-
-Next, the path string used as keys for the object in `mapping`, is used to set
-each value on the target object(s).
-
-Finally, if a `pathTo` is set on the root object, the object or array of objects
-we have at this point is set at this path on an empty object and returned.
-
-When using the `rev()` method, this is performed in the opposite order, and
-`defaultRev` is used as default value instead of `default`. If a `pathToRev` is
-specified, it is used instead of `pathTo` when extracting _from_ the data (to is
-now from - as confusing as that is), and a `pathRev` or `pathFromRev` is used
-instead of `path` or `pathRev` to set the data on an empty object just before
-returning it.
-
-There is a shortcut when defining mappings without default values. The `mapping`
-object `{'title': 'content.heading'}` is exactly the same as `{'title': {path:
-'content.heading'}}`.
-
-The `path` properties below the `mapping` object will relate to the data
-extracted and transformed (see below) by the definition properties on the root
-object. If you need to get values from the original data object, prefix the path
-with a `$`. E.g. when mapping items from `content.items[]`, a field may still
-have a path like `$meta.author.id` to retrieve a value from the root of the
-original data. Note that `$` paths will never be used to set values, as this
-could lead to many items setting the same root property, which would be
-unpredictable.
-
-The `transformTo` and `transformToRev` props, with `transform` and
-`transformRev` as aliases, will transform a field or an object, and should be
-set to a transform function or an array of transform functions, also called a
-transform pipeline. A transform function is a pure function that accepts a value
-and returns a value, and whatever happens between that is up to the transform
-function. An array of transform functions will be run from left to right, and
-each function will be called with the return value from the previous function.
-The return value of the final function is set used as the field value or the
-object.
-
-There's also `tranformFrom` and `transformFromRev`, which are applied just
-before the field mapping (or after in a reverse mapping).
-
-Note that MapTransform does not put any restriction on the transform functions,
-so it is up to you to make sure the transformations make sense for the field or
-object it is used on.
-
-A special feature of the transform pipeline, is that a transform function might
-have another transform function specified on a `rev` prop, that should do the
-opposite of the base function. When specifying a `transform` pipeline and no
-`transformRev`, MapTransform will create a reverse pipeline from the `rev`
-functions on the `transform` pipeline, which will be executed from right to
-left. This might be handy in some cases, as you might have reusable transform
-functions that will know how to reverse their transformations, and by defining
-a transform pipeline, you also define the reverse option.
-
-The filter props lets you filter the transformed objects at different stages in
-the process. The most common is perhaps `filterTo`, with the alias `filter`,
-that will be applied just before the transformed data is set on `pathTo`
-(if present). The filter pipeline is a filter function or an array of filter
-functions, where each function accepts the object as it is at that time in the
-mapping process, and returns true to include it and false to filter it out of
-the final result. When several filter functions are set, all of them must return
-true for the item to be included.
-
-The filter pipelines are used on reverse mapping as well, in the opposite order.
-They all have reverse counterparts with the 'Rev' postfix, and these might be
-set to `null` to keep a filter pipeline from being applied on reverse mapping.
-
-The `mapping` object defines the shape of the target item(s) to map _to_, with
-options for how values _from_ the source object should be mapped to it. Another
-way of specifying this shape, is simply supplying it as nested objects. In the
-following example, `def1` and `def2` are two ways of defining the exact same
-mapping, it's simply a matter of taste:
-
-```
 const def1 = {
-  mapping: {
-    'attributes.title': {path: 'headline', default: 'Untitled'},
-    'attributes.text': 'content.text'
-  }
+  'data.entry.title': 'heading'
 }
 
 const def2 = {
-  mapping: {
-    attributes: {
-      title: {path: 'headline', default: 'Untitled'},
-      text: 'content.text'
+  data: {
+    entry: {
+      title: 'heading'
     }
   }
 }
+
+// def1 and def2 are identical, and will result in an object like this:
+// {
+//   data: {
+//     entry: {
+//       title: 'The actual heading'
+//     }
+//   }
+// }
 ```
 
-The only difference is that `path` is a reserved property name in mapping
-definitions unless it is set directly on the `mapping` object, so to map to an
-object with a `path` property, you will have to use the dot notation.
+You may also add brackets to keys, to ensure that you will end up with an array.
+If MapTransform happens upon an array in the source data, it will map it and
+set an array where each item is mapped according to the mapping object. But to
+ensure that you get an array, even when the source data contains only an object,
+suffix the key with `[]`.
 
-```
-// NOT okay:
+```javascript
 const def3 = {
-  mapping: {
-    attributes: {
-      path: { path: 'meta.path'}
+  'data.entries[]': {
+    title: 'heading'
+  }
+}
+
+// def3 will always give you entries as an array:
+// {
+//   data: {
+//     entries: [
+//       {title: 'The actual heading'}
+//     ]
+//   }
+// }
+```
+
+#### Values on the transform object
+
+The values on the transform objects define how to retrieve and transform data
+from the source object, before it is set on the target object.
+
+As you have already seen, you may set a **transform object** as the value, which
+will result in child objects on the target, but at some point, you'll have to
+define how to get data from the source object.
+
+The simplest form is a **dot notation path**, that describes what prop(s) to pick
+from the source object for this particular target key. It will retrieve whatever
+is at this path on the source object.
+
+```javascript
+const def4 = {
+  title: 'data.item.heading'
+}
+
+const source1 = {
+  data: {
+    item: {
+      id: 'item1',
+      heading: 'The actual heading',
+      intro: 'The actual intro'
     }
   }
 }
 
-// Okay:
-const def4 = {
-  mapping: {
-    'attributes.path': { path: 'meta.path' }
+// `mapTransform(def4)(source1)` will transform to:
+// {
+//   title: 'The actual heading'
+// }
+```
+
+The target object will only include values from the source object that is
+"mentioned" by the mapping object.
+
+The paths for the source data may also include brackets to indicate arrays in
+the data. It is usually not necessary, as MapTransform will map any array it
+finds, but it may be good to indicate what you expect from the source data, and
+it may be important if you plan to reverse transform the mapping object.
+
+Another feature of the bracket notation, is that you may pick a single item from
+an array by indicating the array index in the brackets.
+
+```javascript
+const def5 = {
+  title: 'data.items[0].heading'
+}
+
+// def5 will pull the heading from the first item in the `items` array, and will
+// not return any array:
+// {
+//   title: 'The actual heading'
+// }
+```
+
+Finally, a transform object value may be set to a
+[**transform pipeline**](#transform-pipeline), or one function that could go in
+the transform pipeline (which the dot notation path really is, and – come to
+think of it – the transform object itself too). This is explained in detail
+below.
+
+### Transform pipeline
+
+The idea of the transform pipeline, is that you describe a set of
+transformations that will be applied to the data given to it, so that the
+data will come out on the other "end" of the pipeline in another format. You may
+also insert data on the other end of the pipeline, and get it out in the
+original format again (although with a potential loss of data, if not all
+properties are transformed). This is what you do in a
+[reverse mapping](#reverse-mapping).
+
+One way to put it is that the pipeline describes the difference between the two
+possible states of the data, and allows you to go back and forth between them.
+Or you can just view it as operations applied in the order they are defined – or
+back again.
+
+You define a pipeline as an array that may hold dot notation paths, transform
+objects and transform operations of different kinds (see below). If the pipeline
+holds only one of these, you may actually skip the array. This is a handy
+shortcut in some cases.
+
+Here's an example pipeline that will retrieve an array of objects from the path
+`data.items[]`, map each object to an object with the props `id`, `title`, and
+`sections` (`title` is shortened to max 20 chars and `sections` will be an array
+of ids pulled from an array of section objects), and finally filter away all
+items with no values in the `sections` prop.
+
+```javascript
+import { transform, filter } from 'map-transform'
+
+const def6 = [
+  'data.items[]',
+  {
+    id: 'articleNo',
+    title: ['headline', transform(maxLength(20))],
+    sections: 'meta.sections[].id'
+  },
+  filter(onlyItemsWithSection)
+]
+```
+
+(Note that in this example, both `maxLength` and `onlyItemsWithSection` are
+custom functions for this case, but their implementation is not provided.)
+
+#### `transform(fn, fnRev)` operation
+
+The simple beauty of the `transform()` operation, is that it will apply whatever
+function you provide it with to the data at that point in the pipeline. It's
+completely up to you to write the function that does the transformation.
+
+You may supply a second function (`fnRev`), that will be used when
+[reverse mapping](#reverse-mapping). If you only supplies one function, it will
+be used in both directions. You may supply `null` for either of these, to make
+it uni-directional, but it might be clearer to use `fwd()` or `rev()` operations
+for this.
+
+The functions you write for the transform operation should accept the source
+data as its only argument, and return the result of the relevant transformation.
+The data may be an object, a string, a number, a boolean, or an array of these.
+It's really just up to you to write the appropriate function and use it at the
+right place in a transform pipeline.
+
+A simple transform function could, for instance, try to parse an integer from
+whatever you give it. This would be very useful in the pipeline for a property
+expecting numeric values, but MapTransform would not protest should you use it
+on an object. You would probably just not get the end result you expected.
+
+```javascript
+import { mapTransform, transform } from 'map-transform'
+
+const ensureInteger = (data) => Number.parseInt(data, 10) || 0
+const def7 = {
+  count: ['statistics.views', transform(ensureInteger)]
+}
+
+const data = {
+  statistics: {
+    view: '18',
+    // ...
   }
+}
+
+mapTransform(def7)(data)
+// --> {
+//   count: 18
+// }
+```
+
+This is also a good example of a transformation that only makes sense in one
+direction. This will still work in reverse, ending in almost the same object
+that was provided, but with a numeric `view` property. You may supply a
+reverse transform function called `ensureString`, if it makes sense in your
+particular case.
+
+The functions you provide for the transform operation are expected to be pure,
+i.e. they should not have any side effects. This means they should
+1. not alter the data their are given, and
+2. not rely on any state outside the function
+
+Principle 1 is an absolute requirement, and principle 2 should only be violated
+when it is what you would expect for the particular case. As an example of the
+latter, say you write the function `toAge`, that would return the number of
+years since a given year or date. You would have to use the current date to be
+able to do this, even though it would be a violation of principle 2.
+
+That said, you should always search for ways to satisfy both principles. Instead
+of a `toAge` function, you could instead write a curried `yearsSince` function,
+that would accept the current date (or any date) as the first argument. This
+would be a truly pure function.
+
+Example transformation pipeline with a `yearsSince` function:
+```javascript
+const def8 = {
+  age: ['birthyear', yearsSince(new Date())]
 }
 ```
 
-In some cases, you might want to include only values that are present in the
-source and not use `default` and `defaultRev`. To do this, call
-`mapTransform(def).noDefaults(data)` or
-`mapTransform(def).rev.noDefaults(data)`. Any property that is not found in
-the data will not be set in the resulting object, neither with default value
-nor `undefined`.
+#### `filter(fn)` operation
 
-Filters, transforms, and mappings are applied in the following order:
-- pathFrom (alias: path)
-- filterFrom
-- transformFrom
-- mapping
-  - path
-  - transform
-  - pathTo (the prop)
-- transformTo (alias: transform)
-- filterTo (alias: filter)
-- pathTo
+Just like the transform operation, the filter operation will apply whatever
+function you give it to the data at that point in the transform pipeline, but
+instead of transformed data, you return a boolean value indicating whether to
+keep the data or not. If you return `true` the data continues through the
+pipeline, if you return `false` it is removed.
 
-When reverse mapping, the order is the exact opposite, but keep in mind that
-transform pipelines will use the `.rev()` functions instead, and everything
-except the mapping may have a reverse version, e.g. `filterToRev`.
+When filtering an array, the function is applied to each data item in the array,
+like a normal filter function, and a new array with only the items that your
+function returns `true` for. For data that is not in an array, a `false` value
+from your function will simply mean that it is replaced with `undefined`.
+
+The filter operation only accepts one argument, which is applied in both
+directions through the pipeline. You'll have to use `fwd()` or `rev()`
+operations to make it uni-directional.
+
+Functions passed to the filter operation, should also be pure, but could, when
+it is expected and absolutely necessary, rely on states outside the function.
+See the explanation of this under the transform operation above.
+
+Example of a filter, where only data of active members are returned:
+```javascript
+import { mapTransform, filter } from 'map-transform'
+
+const onlyActives = (data) => data.active
+const def9 = [
+  'members'
+  {
+    name: 'name',
+    active: 'hasPayed'
+  },
+  filter(onlyActives)
+]
+```
+
+#### `value(data)` operation
+The data given to the value operation, will be inserted in the pipeline in place
+of any data that is already present at that point. The data may be an object,
+a string, a number, a boolean, or an array of the above.
+
+This could be useful for:
+- Setting a fixed value on a property in the target data
+- Providing a default value to the alt operation
+
+Example of both:
+```javascript
+import { value, alt } from 'map-transform'
+
+const def10 = {
+  id: 'data.customerNo',
+  type: value('customer'),
+  name: ['data.name', alt(value('Anonymous'))]
+}
+```
+
+#### `alt(pipeline)` operation
+The alt operation will apply the function or pipeline it is given when the data
+already in the pipeline is `undefined`. This is how you provide default values
+in MapTransform. The pipeline may be as simple as a `value()` operation, a dot
+notation path into the source data, or a full pipeline of several operations.
+
+```javascript
+import { alt, transform, value } from 'map-transform'
+const currentDate = (data) => new Date()
+const formatDate = (data) => { /* implementation not included */ }
+
+const def11 = {
+  id: 'data.id',
+  name: ['data.name', alt(value('Anonymous'))],
+  updatedAt: [
+    'data.updateDate',
+    alt('data.createDate'),
+    alt(transform(currentDate)),
+    transform(formatDate)
+  ]
+}
+```
+
+In the example above, we first try to set the `updatedAt` prop to the data found
+at `data.updateDate` in the source data. If that does not exist (i.e. we get
+`undefined`), the alt operation kicks in and try the path `data.createDate`. If
+we still have `undefined`, the second alt will call a transform operation with
+the `currentDate` function, that simply returns the current date as a JS object.
+Finally, another transform operation pipes whatever data we get from all of this
+through the `formatDate` function.
+
+#### `fwd(pipeline)` and `rev(pipeline)` operation
+
+All operations in MapTransform will apply in both directions, although some of
+them will behave a bit different dependending on the direction. If you want an
+operation to only apply to one direction, you need to wrap it in a `fwd()` or
+`rev()` operation. The `fwd()` operation will only apply its pipeline when we're
+going forward, i.e. mapping in the normal direction, and its pipeline will be
+skipped when we're mapping in reverse. The `rev()` operation will only apply its
+pipeline when we're mapping in reverse.
+
+```javascript
+import { fwd, rev, transform } from 'map-transform'
+const increment = (data) => data + 1
+const decrement = (data) => data - 1
+
+const def12 = {
+  order: ['index', fwd(transform(increment)), rev(transform(decrement))]
+}
+```
+
+In the example above, we increment a zero-based index in the source data to get
+a one-based order prop. When reverse mapping, we decrement the order prop to get
+back to the zero-based index.
+
+Note that the `order` pipeline in the example above could also have been written
+as `['index', transform(increment, decrement)]`, as the transform operation
+supports seperate forward and reverse functions, when it is given two functions.
+In this case you may choose what you think is clearer, but in other cases, the
+`fwd()` and `rev()` operations are your only friends.
+
+#### `get(path)` and `set(path)` operation
+Both the `get()` and `set()` operations accepts a dot notation path to act on.
+The get operation will pull the data at the path in the source data, and insert
+it in the pipeline, while the set operation will take what's in the pipeline
+and set it on the given path at a new object.
+
+One reason they come as a pair, is that they will switch roles for reverse
+mapping. Their names might make this a bit confusing, but in reverse, the get
+operation will set and the set operation will get.
+
+```javascript
+import { get, set } from 'map-transform'
+
+const def13 = [
+  get('data.items[].content'),
+  set('content[]')
+]
+```
+
+In the example above, the get operation will return an array of whatever is in
+the `content` prop at each item in the `data.items[]` array. The set operation
+will then create a new object with the array from the pipeline on the `content`
+prop. Reverse map this end result, and you'll get what you started with, as the
+get and set operations switch roles.
+
+You may notice that the example above could have been written with a transform
+object, and you're absolutely right. The tranform object is actually an
+alternative to using get and set operations, and will be converted to get and
+set operations behind the curtains.
+
+This example results in the exact same pipeline as the example above:
+```javascript
+const def14 = {
+  'content[]': 'data.items[].content'
+}
+```
+
+It's simply a matter of taste and of what's easiest in each case. We believe
+that the transform object is best in cases where you describe a target object
+with several properties, while get and set operations is best suited to define
+root paths for objects or arrays.
+
+The get operation aslo has a shortcut in transform pipelines: Simply provide the
+path as a string, and will be treated as `get(path)`.
+
+### Reverse mapping
+
+When you define a transform pipeline for MapTransform, you also define the
+reverse transformation, i.e. you can run data in both direction through the
+pipeline. This comes "for free" for simple mappings, but might require some
+extra work for more complex mappings with transform operations, alt operations,
+etc.
+
+You should also keep in mind that, depending on your defined pipeline, the
+mapping may result in data loss, as only the data that is mapped to the target
+object is kept. This may be obvious, but it's an important fact to remember if
+you plan to map back and forth between two states – all values must be mapped to
+be able to map back to the original data.
+
+Let's see an example of reverse mapping:
+```javascript
+import { mapTransform, alt, value } from 'map-transform'
+
+const def14 = [
+  'data.customers[]',
+  {
+    id: 'customerNo',
+    name: ['fullname', alt(value('Anonymous'))]
+  }
+]
+
+const dataInTargetState = [
+  { id: 'cust1', name: 'Fred Johnsen' },
+  { id: 'cust2', name: 'Lucy Knight' },
+  { id: 'cust3' }
+]
+
+const dataInSourceState = mapTransform(def14).rev(dataInTargetState)
+// --> {
+  // data: {
+  //   customers: [
+  //     { customerNo: 'cust1', fullname: 'Fred Johnsen' },
+  //     { customerNo: 'cust2', fullname: 'Lucy Knight' },
+  //     { customerNo: 'cust3', fullname: 'Anonymous' },
+  //   ]
+  // }
+// }
+```
+
+### Mapping without fallbacks
+
+MapTransform will try its best to map the data it gets to the state you want,
+and will always set all properties, even though the mapping you defined result
+in `undefined`. You may include alt operations to provide default or fallback
+values for these cases.
+
+But sometimes, you want just the data that is actually present in the source
+data, without defaults or properties set to `undefined`. MapTransform's
+`onlyMappedValues()` method gives you this.
+
+```javascript
+import { mapTransform, alt, value } from 'map-transform'
+
+const def15 = {
+  id: 'customerNo',
+  name: ['fullname', alt(value('Anonymous'))]
+}
+
+const mapper = mapTransform(def15)
+
+mapper({ customerNo: 'cust4' })
+// --> { id: 'cust4', name: 'Anonymous' }
+
+mapper.onlyMappedValues({ customerNo: 'cust4' })
+// --> { id: 'cust4' }
+
+mapper.onlyMappedValues({ customerNo: 'cust5', fullname: 'Alex Troy' })
+// --> { id: 'cust5', name: 'Alex Troy' }
+
+// The method is also available for reverse mapping
+mapper.rev.onlyMappedValues({ id: 'cust4' })
+// -> { customerNo: 'cust4' }
+```
 
 ### Running the tests
 

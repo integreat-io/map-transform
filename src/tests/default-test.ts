@@ -45,6 +45,45 @@ test('should use default value in array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should use default value in reverse', (t) => {
+  const def = {
+    title: [
+      'content.heading',
+      alt(value('Default heading'))
+    ]
+  }
+  const data = [
+    {},
+    { title: 'From data' }
+  ]
+  const expected = [
+    { content: { heading: 'Default heading' } },
+    { content: { heading: 'From data' } }
+  ]
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use alternative path', (t) => {
+  const def = {
+    title: [ 'heading', alt('headline') ]
+  }
+  const data = [
+    { heading: 'Entry 1' },
+    { headline: 'Entry 2' }
+  ]
+  const expected = [
+    { title: 'Entry 1' },
+    { title: 'Entry 2' }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set missing values to undefined when no default', (t) => {
   const def = {
     title: 'content.heading'

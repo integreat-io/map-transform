@@ -167,7 +167,26 @@ test('should not use default values', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not set missing prop to undefined', (t) => {
+test('should map with missing data', (t) => {
+  const def = [
+    'data',
+    {
+      id: 'id',
+      attributes: 'attributes',
+      relationships: 'relationships'
+    }
+  ]
+  const data = { data: { id: 'item', type: 'other' } }
+  const expected = {
+    id: 'item'
+  }
+
+  const ret = mapTransform(def).onlyMappedValues(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not set missing prop to undefined in array', (t) => {
   const def = {
     title: 'content.heading'
   }

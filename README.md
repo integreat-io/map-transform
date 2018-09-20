@@ -580,6 +580,46 @@ As you see, every item in the `articles[]` array, will be mapped with the
 `section` property from the `meta` object. This would not be available to the
 items without the root operation.
 
+#### `compare(path, value)` helper
+
+This is a helper intended for use with the `filter()` operation. You pass a dot
+notation path and a value (string, number, boolean) to `compare()`, and it
+returns a function that you can pass to `filter()` for filtering away data that
+does not not have the value set at the provided path. If the path points to an
+array, the value is expected to be one of the values in the array.
+
+Here's an example where only data where role is set to 'admin' will be kept:
+```javascript
+import { filter, compare } from 'map-transform'
+
+const def14 = [
+  {
+    name: 'name',
+    role: 'role'
+  },
+  filter(compare('role', 'admin'))
+]
+```
+
+#### `not(value)` helper
+
+`not()` will return `false` when value if truthy and `true` when value is falsy.
+This is useful for making the `filter()` operation do the opposite of what the
+filter function implies.
+
+Here we filter away all data where role is set to 'admin':
+```javascript
+import { filter, compare } from 'map-transform'
+
+const def15 = [
+  {
+    name: 'name',
+    role: 'role'
+  },
+  filter(not(compare('role', 'admin')))
+]
+```
+
 ### Reverse mapping
 
 When you define a transform pipeline for MapTransform, you also define the
@@ -598,7 +638,7 @@ Let's see an example of reverse mapping:
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def14 = [
+const def16 = [
   'data.customers[]',
   {
     id: 'customerNo',
@@ -638,7 +678,7 @@ data, without defaults or properties set to `undefined`. MapTransform's
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def15 = {
+const def17 = {
   id: 'customerNo',
   name: ['fullname', alt(value('Anonymous'))]
 }

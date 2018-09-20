@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, filter, fwd, rev, FilterFunction, Data } from '..'
+import { mapTransform, filter, fwd, rev, compare, not, FilterFunction, Data } from '..'
 
 // Helpers
 
@@ -226,6 +226,45 @@ test('should filter with filter before mapping on reverse mapping', (t) => {
   const expected = { content: undefined }
 
   const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should filter with compare helper', (t) => {
+  const def = [
+    {
+      title: 'heading',
+      meta: {
+        section: 'section'
+      }
+    },
+    filter(compare('meta.section', 'news'))
+  ]
+  const data = { heading: 'The heading', section: 'fashion' }
+  const expected = undefined
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should filter with not and compare helpers', (t) => {
+  const def = [
+    {
+      title: 'heading',
+      meta: {
+        section: 'section'
+      }
+    },
+    filter(not(compare('meta.section', 'news')))
+  ]
+  const data = { heading: 'The heading', section: 'fashion' }
+  const expected = {
+    title: 'The heading',
+    meta: { section: 'fashion' }
+  }
+
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

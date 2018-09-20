@@ -84,6 +84,26 @@ test('should use alternative path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should use alternative path with dot notation', (t) => {
+  const def = {
+    attributes: {
+      title: [ 'content.heading', alt('content.headline') ]
+    }
+  }
+  const data = [
+    { content: { heading: 'Entry 1' } },
+    { content: { headline: 'Entry 2' } }
+  ]
+  const expected = [
+    { attributes: { title: 'Entry 1' } },
+    { attributes: { title: 'Entry 2' } }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set missing values to undefined when no default', (t) => {
   const def = {
     title: 'content.heading'

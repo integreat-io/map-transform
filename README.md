@@ -436,6 +436,8 @@ const def10 = {
 }
 ```
 
+The operation will not set anything when mapping with `.onlyMappedValues()`.
+
 #### `alt(pipeline)` operation
 The alt operation will apply the function or pipeline it is given when the data
 already in the pipeline is `undefined`. This is how you provide default values

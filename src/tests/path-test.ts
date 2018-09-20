@@ -71,7 +71,7 @@ test('should map undefined from path to undefined', (t) => {
     { title: 'content.heading' }
   ]
   const data = { items: undefined }
-  const expected = undefined
+  const expected: any[] = []
 
   const ret = mapTransform(def)(data)
 
@@ -134,6 +134,25 @@ test('should map with object array path', (t) => {
     { title: 'Heading 1' },
     { title: 'Heading 2' }
   ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map null as empty array', (t) => {
+  const def = [
+    'content.articles[]',
+    {
+      title: 'content.heading'
+    }
+  ]
+  const data = {
+    content: {
+      articles: null
+    }
+  }
+  const expected: any[] = []
 
   const ret = mapTransform(def)(data)
 

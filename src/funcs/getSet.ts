@@ -3,11 +3,11 @@ import { MapFunction, State, Path } from '../types'
 import getter, { GetFunction } from '../utils/pathGetter'
 import setter, { SetFunction } from '../utils/pathSetter'
 
-const getValue = (get: GetFunction, state: State): State => {
+const getValue = (get: GetFunction, isArray: boolean, state: State): State => {
   const value = mapAny(get, state.value)
   const arr = !Array.isArray(state.value) && Array.isArray(value)
 
-  return { ...state, value, arr }
+  return { ...state, value: (isArray && !value) ? [] : value, arr }
 }
 
 const setValue = (set: SetFunction, isArray: boolean, state: State): State => {
@@ -23,7 +23,7 @@ const getOrSet = (isGet: boolean) => (path: Path): MapFunction => {
   const isArray = path.endsWith('[]')
 
   return (state: State): State => (isGet ? !state.rev : state.rev)
-    ? getValue(getFn, state)
+    ? getValue(getFn, isArray, state)
     : setValue(setFn, isArray, state)
 }
 

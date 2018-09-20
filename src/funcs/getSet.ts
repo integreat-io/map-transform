@@ -5,7 +5,7 @@ import setter, { SetFunction } from '../utils/pathSetter'
 
 const getValue = (get: GetFunction, isArray: boolean, state: State): State => {
   const value = mapAny(get, state.value)
-  const arr = !Array.isArray(state.value) && Array.isArray(value)
+  const arr = isArray || (!Array.isArray(state.value) && Array.isArray(value))
 
   return { ...state, value: (isArray && !value) ? [] : value, arr }
 }

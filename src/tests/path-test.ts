@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, root } from '..'
+import { mapTransform, get, set, fwd, rev, root, alt, value } from '..'
 
 test('should map with object path', (t) => {
   const def = [
@@ -65,7 +65,7 @@ test('should map undefined to undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map undefined from path to undefined', (t) => {
+test('should map undefined from path to empty array', (t) => {
   const def = [
     'items[]',
     { title: 'content.heading' }
@@ -126,13 +126,38 @@ test('should map with object array path', (t) => {
     content: {
       articles: [
         { content: { heading: 'Heading 1' } },
-        { content: { heading: 'Heading 2' } }
+        { content: { heading: 'Heading 2' } },
+        { content: { heading: 'Heading 3' } }
       ]
     }
   }
   const expected = [
     { title: 'Heading 1' },
-    { title: 'Heading 2' }
+    { title: 'Heading 2' },
+    { title: 'Heading 3' }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should handle array paths in object mappings', (t) => {
+  const def = [
+    {
+      id: 'key',
+      relationships: {
+        sections: 'sections[]'
+      }
+    }
+  ]
+  const data = [
+    { key: 'ent1', sections: ['news', 'sports'] },
+    { key: 'ent2' }
+  ]
+  const expected = [
+    { id: 'ent1', relationships: { sections: ['news', 'sports'] } },
+    { id: 'ent2', relationships: { sections: [] } }
   ]
 
   const ret = mapTransform(def)(data)

@@ -1,4 +1,5 @@
 import test from 'ava'
+import * as sinon from 'sinon'
 
 import transform, { TransformFunction } from './transform'
 
@@ -76,7 +77,7 @@ test('should run dedicated transform in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not mind dedicated reverse transform going forward', (t) => {
+test('should not mind reverse transform going forward', (t) => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -93,4 +94,42 @@ test('should not mind dedicated reverse transform going forward', (t) => {
   const ret = transform(upper, lower)(state)
 
   t.deepEqual(ret, expected)
+})
+
+test('should pass rev and onlyMapped to transform function', (t) => {
+  const fn = sinon.stub().returnsArg(0)
+  const state = {
+    root: { title: 'Entry 1' },
+    context: { title: 'Entry 1' },
+    value: 'Entry 1',
+    rev: false,
+    onlyMapped: true
+  }
+  const expected = {
+    rev: false,
+    onlyMappedValues: true
+  }
+
+  transform(fn)(state)
+
+  t.deepEqual(fn.args[0][1], expected)
+})
+
+test('should pass rev and onlyMapped to rev transform function', (t) => {
+  const fn = sinon.stub().returnsArg(0)
+  const state = {
+    root: { title: 'Entry 1' },
+    context: { title: 'Entry 1' },
+    value: 'Entry 1',
+    rev: true,
+    onlyMapped: false
+  }
+  const expected = {
+    rev: true,
+    onlyMappedValues: false
+  }
+
+  transform(upper, fn)(state)
+
+  t.deepEqual(fn.args[0][1], expected)
 })

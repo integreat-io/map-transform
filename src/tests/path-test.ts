@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, root, alt, value } from '..'
+import { mapTransform, get, set, fwd, rev, root, plug } from '..'
 
 test('should map with object path', (t) => {
   const def = [
@@ -407,6 +407,18 @@ test('should forward map with directional paths', (t) => {
       { title: 'Heading 2' }
     ]
   }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set to undefined when moving forward', (t) => {
+  const def = {
+    title: [fwd(plug()), rev('content.heading')]
+  }
+  const data = { content: { heading: 'Heading 1' } }
+  const expected = { title: undefined }
 
   const ret = mapTransform(def)(data)
 

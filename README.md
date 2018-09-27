@@ -580,6 +580,24 @@ As you see, every item in the `articles[]` array, will be mapped with the
 `section` property from the `meta` object. This would not be available to the
 items without the root operation.
 
+#### `plug()` operation
+
+All the `plug()` operation does is set clear the value in the pipeline - it
+plugs it. The value will be set to `undefined` regardless of what has happened
+before that point. Any `alt()` operations etc. coming after the plug will still
+have an effect.
+
+This main use case for this is to clear the value going one way. E.g. if you
+need a value when you map in reverse, but don't want it going forward, plug it
+with `fwd(plug())`. You will also need it in a pipeline where the only operation
+is uni-directional (i.e. using `fwd()` or `rev()`). An empty pipeline (which is
+what a uni-directional pipeline will be in the other direction), will return
+the data you give it, which is usually not what you want in these cases.
+The solution is to plug it in the other direction.
+
+You could have accomplished the same with `value(undefined)`, but this will not
+work for `onlyMappedValues()`. `plug()` will do its trick in all cases.
+
 #### `compare(path, value)` helper
 
 This is a helper intended for use with the `filter()` operation. You pass a dot

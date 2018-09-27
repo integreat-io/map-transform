@@ -2,6 +2,9 @@ import * as mapAny from 'map-any'
 import { MapFunction, State, Path } from '../types'
 import getter, { GetFunction } from '../utils/pathGetter'
 import setter, { SetFunction } from '../utils/pathSetter'
+import root from './root'
+import plug from './plug'
+import { divide } from './directionals'
 
 const getValue = (get: GetFunction, isArray: boolean, state: State): State => {
   const value = mapAny(get, state.value)
@@ -18,6 +21,12 @@ const setValue = (set: SetFunction, isArray: boolean, state: State): State => {
 }
 
 const getOrSet = (isGet: boolean) => (path: Path): MapFunction => {
+  if (path && path.startsWith('$')) {
+    return (isGet)
+      ? divide(root(get(path.substr(1))), plug())
+      : divide(plug(), root(set(path.substr(1))))
+  }
+
   const getFn = getter(path)
   const setFn = setter(path)
   const isArray = path.endsWith('[]')

@@ -168,6 +168,30 @@ test('should reverse map with directional paths', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map with root path', (t) => {
+  const def = [
+    {
+      title: 'item.heading',
+      '$meta.section': 'section'
+    },
+    set('content')
+  ]
+  const data = {
+    content: { title: 'The heading' },
+    meta: { section: 'news' }
+  }
+  const expected = {
+    item: {
+      heading: 'The heading'
+    },
+    section: 'news'
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return data when no mapping def and reverse mapping', (t) => {
   const def = null
   const data = [

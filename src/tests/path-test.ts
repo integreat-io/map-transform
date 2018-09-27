@@ -52,6 +52,31 @@ test('should map with object shape', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with root path', (t) => {
+  const def = [
+    {
+      attributes: {
+        title: 'content.heading',
+        section: '$meta.section'
+      }
+    }
+  ]
+  const data = {
+    content: { heading: 'The heading', copy: 'A long text' },
+    meta: { section: 'news' }
+  }
+  const expected = {
+    attributes: {
+      title: 'The heading',
+      section: 'news'
+    }
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map undefined to undefined', (t) => {
   const def = [
     'items[]',

@@ -72,3 +72,30 @@ test('should set on path when reversed', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should get from root path', (t) => {
+  const state = {
+    root: { section: 'news', items: [{ id: 'no1' }] },
+    context: { id: 'no1' },
+    value: { id: 'no1' }
+  }
+  const expectedValue = 'news'
+
+  const ret = get('$section')(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should not set to root path', (t) => {
+  const state = {
+    root: { section: 'news', items: [{ id: 'no1' }] },
+    context: { id: 'no1' },
+    value: { id: 'no1' },
+    rev: true
+  }
+  const expectedValue = undefined
+
+  const ret = get('$section')(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})

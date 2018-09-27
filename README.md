@@ -150,7 +150,7 @@ Think of the transform object as a description of the object structure you want.
 
 #### Keys on the transform object
 In essence, the keys on the transform object will be the keys on the target
-object. You may, however, specifiy a key with dot notation, which will be split
+object. You may, however, specify a key with dot notation, which will be split
 out to child objects on the target. You can also specify the child objects
 directly on the transform object, so in most cases this is just a matter of
 taste.
@@ -588,6 +588,17 @@ As you see, every item in the `articles[]` array, will be mapped with the
 `section` property from the `meta` object. This would not be available to the
 items without the root operation.
 
+There's also a shortcut notation for root, by prefixing a dot notation path with
+`$`. This only works when the path is used for getting a value, and it will be
+plugged when used as set (i.e., it will return no value). This may be used in
+`get()` and `set()` operations, and in transformation objects.
+
+In the following example, `def16` and `def17` is exactly the same:
+```javascript
+const def16 = get('$meta.section')
+const def17 = divide(root('meta.section'), plug())
+```
+
 #### `plug()` operation
 
 All the `plug()` operation does is set clear the value in the pipeline - it
@@ -618,7 +629,7 @@ Here's an example where only data where role is set to 'admin' will be kept:
 ```javascript
 import { filter, compare } from 'map-transform'
 
-const def14 = [
+const def18 = [
   {
     name: 'name',
     role: 'role'
@@ -637,7 +648,7 @@ Here we filter away all data where role is set to 'admin':
 ```javascript
 import { filter, compare } from 'map-transform'
 
-const def15 = [
+const def19 = [
   {
     name: 'name',
     role: 'role'
@@ -664,7 +675,7 @@ Let's see an example of reverse mapping:
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def16 = [
+const def20 = [
   'data.customers[]',
   {
     id: 'customerNo',
@@ -704,7 +715,7 @@ data, without defaults or properties set to `undefined`. MapTransform's
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def17 = {
+const def21 = {
   id: 'customerNo',
   name: ['fullname', alt(value('Anonymous'))]
 }

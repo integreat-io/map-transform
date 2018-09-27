@@ -499,6 +499,14 @@ supports seperate forward and reverse functions, when it is given two functions.
 In this case you may choose what you think is clearer, but in other cases, the
 `fwd()` and `rev()` operations are your only friends.
 
+#### `divide(fwdPipeline, revPipeline)` operation
+
+`divide()` is `fwd()` and `rev()` operations combined, where the first argument
+is a pipeline to use when going forward and the second when going in reverse.
+
+
+See `fwd()` and `rev()` for more details.
+
 #### `get(path)` and `set(path)` operation
 Both the `get()` and `set()` operations accepts a dot notation path to act on.
 The get operation will pull the data at the path in the source data, and insert

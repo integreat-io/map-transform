@@ -12,3 +12,9 @@ export function fwd (def: MapDefinition): MapFunction {
 export function rev (def: MapDefinition): MapFunction {
   return applyInDirection(def, true)
 }
+
+export function divide (fwdDef: MapFunction, revDef: MapFunction): MapFunction {
+  const fwdFn = mapFunctionFromDef(fwdDef)
+  const revFn = mapFunctionFromDef(revDef)
+  return (state) => (state.rev) ? revFn(state) : fwdFn(state)
+}

@@ -13,7 +13,7 @@ export { default as not } from './funcs/not'
 export { default as plug } from './funcs/plug'
 export { default as transform, TransformFunction } from './funcs/transform'
 export { default as filter, FilterFunction } from './funcs/filter'
-export { fwd, rev } from './funcs/directionals'
+export { fwd, rev, divide } from './funcs/directionals'
 export { Data } from './types'
 
 const composeMapFunction = (mapFn: MapFunction, initialState: Partial<State>) => {

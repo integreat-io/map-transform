@@ -574,7 +574,7 @@ const def15 = [
   }
 ]
 
-const date = {
+const data = {
   articles: [ { id: '1', headline: 'An article' }, /* ... */ ],
   meta: { section: 'news' }
 }
@@ -619,6 +619,40 @@ The solution is to plug it in the other direction.
 You could have accomplished the same with `value(undefined)`, but this will not
 work for `onlyMappedValues()`. `plug()` will do its trick in all cases.
 
+#### `lookup(arrayPath, propPath)` operation
+
+`lookup()` will take the value in the pipeline and replace it with the first
+object in the `arrayPath` array with a value in `propPath` matching the value.
+
+In reverse, the `propPath` will simply be used as a get path. (In the future,
+MapTransform might support setting the items back on the `arrayPath` in
+reverse.)
+
+Example:
+```javascript
+const def18 = [
+  'content.meta.authors[]',
+  lookup('$users[]', 'id')
+]
+const data = {
+  content: { meta: { authors: ['user1', 'user3'] } },
+  users: [
+    { id: 'user1', name: 'User 1'},
+    { id: 'user2', name: 'User 2'},
+    { id: 'user3', name: 'User 3'}
+  ]
+}
+const mapper = mapTransform(def18)
+const mappedData = mapper(data)
+// --> [
+//   { id: 'user1', name: 'User 1' },
+//   { id: 'user3', name: 'User 3' }
+// ]
+
+mapper.rev(mappedData)
+// --> { content: { meta: { authors: ['user1', 'user3'] } } }
+```
+
 #### `compare(path, value)` helper
 
 This is a helper intended for use with the `filter()` operation. You pass a dot
@@ -631,7 +665,7 @@ Here's an example where only data where role is set to 'admin' will be kept:
 ```javascript
 import { filter, compare } from 'map-transform'
 
-const def18 = [
+const def19 = [
   {
     name: 'name',
     role: 'role'
@@ -650,7 +684,7 @@ Here we filter away all data where role is set to 'admin':
 ```javascript
 import { filter, compare } from 'map-transform'
 
-const def19 = [
+const def20 = [
   {
     name: 'name',
     role: 'role'
@@ -677,7 +711,7 @@ Let's see an example of reverse mapping:
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def20 = [
+const def21 = [
   'data.customers[]',
   {
     id: 'customerNo',
@@ -717,7 +751,7 @@ data, without defaults or properties set to `undefined`. MapTransform's
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def21 = {
+const def22 = {
   id: 'customerNo',
   name: ['fullname', alt(value('Anonymous'))]
 }

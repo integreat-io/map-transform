@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev } from '..'
+import { mapTransform, get, set, fwd, rev, lookup } from '..'
 
 test('should reverse map simple object', (t) => {
   const def = {
@@ -86,6 +86,24 @@ test('should reverse map with root array path', (t) => {
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }
   ]
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should treat lookup as get in reverse', (t) => {
+  const def = {
+    title: 'content.heading',
+    authors: ['content.authors[]', lookup('$meta.users[]', 'id')]
+  }
+  const data = {
+    title: 'The heading',
+    authors: [{ id: 'user1', name: 'User 1' }, { id: 'user3', name: 'User 3' }]
+  }
+  const expected = {
+    content: { heading: 'The heading', authors: ['user1', 'user3'] }
+  }
 
   const ret = mapTransform(def).rev(data)
 

@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, root, plug } from '..'
+import { mapTransform, get, set, fwd, rev, root, plug, lookup } from '..'
 
 test('should map with object path', (t) => {
   const def = [
@@ -70,6 +70,31 @@ test('should map with root path', (t) => {
       title: 'The heading',
       section: 'news'
     }
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with lookup', (t) => {
+  const def = {
+    title: 'content.heading',
+    authors: ['content.authors[]', [lookup('$meta.users[]', 'id'), get('name')]]
+  }
+  const data = {
+    content: { heading: 'The heading', authors: ['user1', 'user3'] },
+    meta: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+        { id: 'user3', name: 'User 3' }
+      ]
+    }
+  }
+  const expected = {
+    title: 'The heading',
+    authors: ['User 1', 'User 3']
   }
 
   const ret = mapTransform(def)(data)

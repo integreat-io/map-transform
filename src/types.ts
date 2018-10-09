@@ -2,7 +2,7 @@ export interface ObjectWithProps {
   [key: string]: Data
 }
 
-type Prop = string | number | boolean | object | null | undefined | ObjectWithProps
+export type Prop = string | number | boolean | object | null | undefined | ObjectWithProps
 
 export type Data = Prop | Prop[]
 
@@ -21,7 +21,9 @@ export interface MapFunction {
   (state: State): State
 }
 
-export type MapPipe = (MapFunction | Path | MapObject)[]
+type MapPipeSimple = (MapFunction | Path | MapObject)[]
+
+export type MapPipe = (MapFunction | Path | MapObject | MapPipeSimple)[]
 
 export interface MapObject {
   [key: string]: MapDefinition

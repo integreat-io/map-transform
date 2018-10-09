@@ -243,6 +243,8 @@ the data. It is usually not necessary, as MapTransform will map any array it
 finds, but it may be good to indicate what you expect from the source data, and
 it may be important if you plan to reverse transform the mapping object.
 
+To pass on the value on the pipeline, use an empty path `''`.
+
 Another feature of the bracket notation, is that you may pick a single item from
 an array by indicating the array index in the brackets.
 

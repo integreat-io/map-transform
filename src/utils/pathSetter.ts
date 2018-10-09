@@ -1,4 +1,4 @@
-import { mergeDeepRight, compose, binary, map, apply } from 'ramda'
+import { mergeDeepRight, compose, identity } from 'ramda'
 import { Data, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
@@ -52,12 +52,6 @@ const setter = (prop: string) => {
   }
 }
 
-const getSetters = compose(
-  binary(apply(compose)),
-  map(setter),
-  split
-)
-
 export type SetFunction = (value: Data, object?: Data | null) => Data
 
 /**
@@ -71,10 +65,15 @@ export type SetFunction = (value: Data, object?: Data | null) => Data
  * @returns {function} A setter function accepting a value and a target object
  */
 export default function pathSetter (path: Path): SetFunction {
-  const setters = getSetters(path)
+  const setters = split(path).map(setter)
 
+  if (setters.length === 0) {
+    return identity
+  }
+
+  const setterFn = compose.apply(null, setters) // .apply to satisfy TypeScript :(
   return (value, object = null) => {
-    const data = setters(value)
+    const data = setterFn(value)
     return (object) ? mergeDeepRight(object, data) : data
   }
 }

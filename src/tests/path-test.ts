@@ -77,6 +77,26 @@ test('should map with root path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set current value on path', (t) => {
+  const def = [
+    'ids[]',
+    {
+      id: '.'
+    }
+  ]
+  const data = {
+    ids: ['ent1', 'ent2']
+  }
+  const expected = [
+    { id: 'ent1' },
+    { id: 'ent2' }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map undefined to undefined', (t) => {
   const def = [
     'items[]',

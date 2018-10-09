@@ -5,7 +5,7 @@ import { get } from './getSet'
 
 // Tests
 
-test('should get from path and set on value', (t) => {
+test('should get from path', (t) => {
   const data = { meta: { author: 'Someone' } }
   const state = {
     root: data,
@@ -71,6 +71,26 @@ test('should set on path when reversed', (t) => {
   const ret = get('meta.author')(state)
 
   t.deepEqual(ret, expected)
+})
+
+test('should get current value', (t) => {
+  const state = {
+    root: { id: 'ent1' },
+    context: { id: 'ent1' },
+    value: 'ent1'
+  }
+  const expected = {
+    root: { id: 'ent1' },
+    context: { id: 'ent1' },
+    value: 'ent1',
+    arr: false
+  }
+
+  const ret1 = get('.')(state)
+  const ret2 = get('')(state)
+
+  t.deepEqual(ret1, expected)
+  t.deepEqual(ret2, expected)
 })
 
 test('should get from root path', (t) => {

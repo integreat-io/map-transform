@@ -16,6 +16,14 @@ test('should set value at path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should return value when no path', (t) => {
+  const path = ''
+  const object = {}
+  const ret = pathSetter(path)('johnf', object)
+
+  t.deepEqual(ret, 'johnf')
+})
+
 test('should set value at path with array index', (t) => {
   const path = 'meta.authors[0]'
   const object = {}

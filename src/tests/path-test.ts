@@ -526,6 +526,21 @@ test('should map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with sub pipeline', (t) => {
+  const def = [
+    'content',
+    ['articles']
+  ]
+  const data = {
+    content: { articles: [{ id: 'ent1' }, { id: 'ent2' }] }
+  }
+  const expected = [{ id: 'ent1' }, { id: 'ent2' }]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return data when no mapping def', (t) => {
   const def = null
   const data = [

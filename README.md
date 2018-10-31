@@ -674,6 +674,28 @@ const def19 = [
 ]
 ```
 
+#### `validate(path, schema)` helper
+
+This is a helper for validating the value at the path against a
+[JSON Schema](http://json-schema.org). We won't go into details of JSON Schema
+here, and the `validate()` helper simply retrieves the value at the path and
+validates it according to the provided schema.
+
+Note that if you provide a schema that is always valid, it will be valid even
+when the data has no value at the given path.
+
+```javascript
+import { filter, validate } from 'map-transform'
+
+const def20 = [
+  'items',
+  filter(validate('draft', { const: false })),
+  {
+    title: 'heading'
+  }
+]
+```
+
 #### `not(value)` helper
 
 `not()` will return `false` when value if truthy and `true` when value is falsy.
@@ -684,7 +706,7 @@ Here we filter away all data where role is set to 'admin':
 ```javascript
 import { filter, compare } from 'map-transform'
 
-const def20 = [
+const def21 = [
   {
     name: 'name',
     role: 'role'
@@ -711,7 +733,7 @@ Let's see an example of reverse mapping:
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def21 = [
+const def22 = [
   'data.customers[]',
   {
     id: 'customerNo',
@@ -725,7 +747,7 @@ const dataInTargetState = [
   { id: 'cust3' }
 ]
 
-const dataInSourceState = mapTransform(def14).rev(dataInTargetState)
+const dataInSourceState = mapTransform(def22).rev(dataInTargetState)
 // --> {
   // data: {
   //   customers: [
@@ -751,12 +773,12 @@ data, without defaults or properties set to `undefined`. MapTransform's
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def22 = {
+const def23 = {
   id: 'customerNo',
   name: ['fullname', alt(value('Anonymous'))]
 }
 
-const mapper = mapTransform(def15)
+const mapper = mapTransform(def23)
 
 mapper({ customerNo: 'cust4' })
 // --> { id: 'cust4', name: 'Anonymous' }

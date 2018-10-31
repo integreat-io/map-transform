@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, filter, fwd, rev, compare, not, FilterFunction, Data } from '..'
+import { mapTransform, filter, fwd, rev, compare, validate, not, FilterFunction, Data } from '..'
 
 // Helpers
 
@@ -263,6 +263,28 @@ test('should filter with not and compare helpers', (t) => {
     title: 'The heading',
     meta: { section: 'fashion' }
   }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should filter with validate', (t) => {
+  const def = [
+    'content',
+    filter(validate('draft', { const: false })),
+    {
+      title: 'heading'
+    }
+  ]
+  const data = [
+    { content: { heading: 'The heading', draft: true } },
+    { content: { heading: 'Just this', draft: false } },
+    { content: { heading: 'Another heading' } }
+  ]
+  const expected = [
+    { title: 'Just this' }
+  ]
 
   const ret = mapTransform(def)(data)
 

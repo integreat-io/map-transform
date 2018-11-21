@@ -75,7 +75,7 @@ const source2 = mapper.rev(target)
 ```
 
 You may improve this with pipelines, expressed through arrays. For instance,
-retrieve the `content` object first, so you don't have to write the entiry
+retrieve the `content` object first, so you don't have to write the entire
 path for every attribute:
 
 ```javascript
@@ -178,11 +178,10 @@ const def2 = {
 // }
 ```
 
-You may also add brackets to keys, to ensure that you will end up with an array.
 If MapTransform happens upon an array in the source data, it will map it and
 set an array where each item is mapped according to the mapping object. But to
 ensure that you get an array, even when the source data contains only an object,
-suffix the key with `[]`.
+you may suffix a key with brackets `[]`.
 
 ```javascript
 const def3 = {
@@ -243,7 +242,7 @@ the data. It is usually not necessary, as MapTransform will map any array it
 finds, but it may be good to indicate what you expect from the source data, and
 it may be important if you plan to reverse transform the mapping object.
 
-To pass on the value on the pipeline, use an empty path `''`.
+To pass on the value on the pipeline, use an empty path `''` or a dot `'.'`.
 
 Another feature of the bracket notation, is that you may pick a single item from
 an array by indicating the array index in the brackets.
@@ -421,7 +420,7 @@ const def9 = [
 #### `value(data)` operation
 The data given to the value operation, will be inserted in the pipeline in place
 of any data that is already present at that point. The data may be an object,
-a string, a number, a boolean, or an array of the above.
+a string, a number, a boolean, or an array of any of those.
 
 This could be useful for:
 - Setting a fixed value on a property in the target data
@@ -439,6 +438,14 @@ const def10 = {
 ```
 
 The operation will not set anything when mapping with `.onlyMappedValues()`.
+
+#### `fixed(data)` operation
+The data given to the fixed operation, will be inserted in the pipeline in place
+of any data that is already present at that point. The data may be an object,
+a string, a number, a boolean, or an array of any of those.
+
+This is exactly the same as `value()`, except that the value set with `fixed()`
+will be included when mapping with `.onlyMappedValues()` as well.
 
 #### `alt(pipeline)` operation
 The alt operation will apply the function or pipeline it is given when the data
@@ -535,7 +542,7 @@ prop. Reverse map this end result, and you'll get what you started with, as the
 get and set operations switch roles.
 
 You may notice that the example above could have been written with a transform
-object, and you're absolutely right. The tranform object is actually an
+object, and you're absolutely right. The transform object is actually an
 alternative to using get and set operations, and will be converted to get and
 set operations behind the curtains.
 
@@ -763,12 +770,17 @@ const dataInSourceState = mapTransform(def22).rev(dataInTargetState)
 
 MapTransform will try its best to map the data it gets to the state you want,
 and will always set all properties, even though the mapping you defined result
-in `undefined`. You may include alt operations to provide default or fallback
+in `undefined`. You may include `alt()` operations to provide default or fallback
 values for these cases.
 
 But sometimes, you want just the data that is actually present in the source
 data, without defaults or properties set to `undefined`. MapTransform's
 `onlyMappedValues()` method gives you this.
+
+Note that `value()` operations will also be skipped when mapping with
+`onlyMappedValues()`, to honor the request for only the values that comes from
+the data source. To override this behavior, use the `fixed()` operation instead,
+which will set a value also in this case.
 
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'

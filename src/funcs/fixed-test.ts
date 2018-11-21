@@ -1,0 +1,39 @@
+import test from 'ava'
+
+import fixed from './fixed'
+
+test('should set value', (t) => {
+  const state = {
+    root: {},
+    context: {},
+    value: 'Something'
+  }
+  const expected = {
+    root: {},
+    context: {},
+    value: 'Splendid!'
+  }
+
+  const ret = fixed('Splendid!')(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value for onlyMapped too', (t) => {
+  const state = {
+    root: {},
+    context: {},
+    value: 'Something',
+    onlyMapped: true
+  }
+  const expected = {
+    root: {},
+    context: {},
+    value: 'Splendid!',
+    onlyMapped: true
+  }
+
+  const ret = fixed('Splendid!')(state)
+
+  t.deepEqual(ret, expected)
+})

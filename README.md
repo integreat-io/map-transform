@@ -478,6 +478,16 @@ the `currentDate` function, that simply returns the current date as a JS object.
 Finally, another transform operation pipes whatever data we get from all of this
 through the `formatDate` function.
 
+#### `concat(pipeline, pipeline, ...)` operation
+
+The `concat()` operation will flatten the result of every pipeline it is given
+into one array. A pipeline that does not return an array will simple have its
+return value appended to the array.
+
+This operation will always return an array, even when it is given only one
+pipeline that does not return an array. Pipelines that does not result in a
+value (i.e. return `undefined`) will be filtered away.
+
 #### `fwd(pipeline)` and `rev(pipeline)` operation
 
 All operations in MapTransform will apply in both directions, although some of

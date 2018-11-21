@@ -173,6 +173,43 @@ test('should map array with object path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map several layers of arrays', (t) => {
+  const def = [
+    'content.articles[]',
+    {
+      attributes: {
+        title: 'content.heading'
+      },
+      relationships: {
+        'topics[].id': 'meta.keywords',
+        'author.id': 'meta.user_id'
+      }
+    }
+  ]
+  const data = {
+    content: {
+      articles: [
+        { content: { heading: 'Heading 1' }, meta: { keywords: ['news', 'latest'], user_id: 'johnf' } },
+        { content: { heading: 'Heading 2' }, meta: { keywords: ['tech'], user_id: 'maryk' } }
+      ]
+    }
+  }
+  const expected = [
+    {
+      attributes: { title: 'Heading 1' },
+      relationships: { topics: [{ id: 'news' }, { id: 'latest' }], author: { id: 'johnf' } }
+    },
+    {
+      attributes: { title: 'Heading 2' },
+      relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } }
+    }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map empty array as empty array', (t) => {
   const def = {
     title: 'content.heading'
@@ -455,13 +492,13 @@ test('should map with nested mappings', (t) => {
 
 test('should forward map with directional paths', (t) => {
   const def = [
-    fwd(get('content.articles')),
-    rev(get('wrong.path')),
+    fwd(get('content.articles[]')),
+    rev(get('wrong.path[]')),
     {
       title: 'content.heading'
     },
-    fwd(set('items')),
-    rev(set('wrong.path'))
+    fwd(set('items[]')),
+    rev(set('wrong.path[]'))
   ]
   const data = {
     content: {

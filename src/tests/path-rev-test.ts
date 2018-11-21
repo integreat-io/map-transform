@@ -71,6 +71,43 @@ test('should reverse map with object array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map several layers of arrays', (t) => {
+  const def = [
+    'content.articles[]',
+    {
+      attributes: {
+        title: 'content.heading'
+      },
+      relationships: {
+        'topics[].id': 'meta.keywords',
+        'author.id': 'meta.user_id'
+      }
+    }
+  ]
+  const data = [
+    {
+      attributes: { title: 'Heading 1' },
+      relationships: { topics: [{ id: 'news' }, { id: 'latest' }], author: { id: 'johnf' } }
+    },
+    {
+      attributes: { title: 'Heading 2' },
+      relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } }
+    }
+  ]
+  const expected = {
+    content: {
+      articles: [
+        { content: { heading: 'Heading 1' }, meta: { keywords: ['news', 'latest'], user_id: 'johnf' } },
+        { content: { heading: 'Heading 2' }, meta: { keywords: ['tech'], user_id: 'maryk' } }
+      ]
+    }
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should reverse map with root array path', (t) => {
   const def = [
     '[]',
@@ -158,13 +195,13 @@ test('should reverse map with nested mapping', (t) => {
 
 test('should reverse map with directional paths', (t) => {
   const def = [
-    fwd(get('wrong.path')),
-    rev(get('content.articles')),
+    fwd(get('wrong.path[]')),
+    rev(get('content.articles[]')),
     {
       title: 'content.heading'
     },
-    fwd(set('wrong.path')),
-    rev(set('items'))
+    fwd(set('wrong.path[]')),
+    rev(set('items[]'))
   ]
   const data = {
     items: [

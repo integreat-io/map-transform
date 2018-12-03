@@ -10,7 +10,8 @@ test('should mutate object with map functions', (t) => {
       id: value('ent1'),
       attributes: {
         title: get('headline'),
-        text: value('The text')
+        text: value('The text'),
+        age: get('unknown')
       },
       relationships: {
         author: get('user')
@@ -30,7 +31,8 @@ test('should mutate object with map functions', (t) => {
         id: 'ent1',
         attributes: {
           title: 'The title',
-          text: 'The text'
+          text: 'The text',
+          age: undefined
         },
         relationships: {
           author: 'johnf'

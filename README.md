@@ -523,7 +523,6 @@ In this case you may choose what you think is clearer, but in other cases, the
 `divide()` is `fwd()` and `rev()` operations combined, where the first argument
 is a pipeline to use when going forward and the second when going in reverse.
 
-
 See `fwd()` and `rev()` for more details.
 
 #### `get(path)` and `set(path)` operation
@@ -770,7 +769,42 @@ const dataInSourceState = mapTransform(def22).rev(dataInTargetState)
   //   customers: [
   //     { customerNo: 'cust1', fullname: 'Fred Johnsen' },
   //     { customerNo: 'cust2', fullname: 'Lucy Knight' },
-  //     { customerNo: 'cust3', fullname: 'Anonymous' },
+  //     { customerNo: 'cust3', fullname: 'Anonymous' }
+  //   ]
+  // }
+// }
+```
+
+Transform objects allow the same property on the source data to be mapped to
+several properties on the target object, but to this in reverse, you have to use
+a special syntax, as object properties need to be unique. By suffixing a key
+with a slash and a number, you tell MapTransform to use it in reverse, but
+skipping it going forward.
+
+For example:
+```javascript
+import { mapTransform, transform } from 'map-transform'
+
+const username = (name) => name.replace(/\s+/, '.').toLowerCase()
+
+const def23 = [
+  'data.customers[]',
+  {
+    id: 'customerNo',
+    name: 'fullname',
+    'name/1': ['username', rev(transform(username))]
+  }
+]
+
+const dataInTargetState = [
+  { id: 'cust1', name: 'Fred Johnsen' }
+]
+
+const dataInSourceState = mapTransform(def23).rev(dataInTargetState)
+// --> {
+  // data: {
+  //   customers: [
+  //     { customerNo: 'cust1', fullname: 'Fred Johnsen', username: 'fred.johnsen' }
   //   ]
   // }
 // }
@@ -795,12 +829,12 @@ which will set a value also in this case.
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
-const def23 = {
+const def24 = {
   id: 'customerNo',
   name: ['fullname', alt(value('Anonymous'))]
 }
 
-const mapper = mapTransform(def23)
+const mapper = mapTransform(def24)
 
 mapper({ customerNo: 'cust4' })
 // --> { id: 'cust4', name: 'Anonymous' }

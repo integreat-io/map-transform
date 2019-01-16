@@ -52,6 +52,30 @@ test('should map with object shape', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should skip slashed properties going forward', (t) => {
+  const def = [
+    'content.article',
+    {
+      title: 'content.heading',
+      'title/1': 'content.title',
+      'title/2': 'title'
+    }
+  ]
+  const data = {
+    content: {
+      article: {
+        content: { heading: 'Heading 1', title: 'Heading 2' },
+        title: 'Heading 3'
+      }
+    }
+  }
+  const expected = { title: 'Heading 1' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with root path', (t) => {
   const def = [
     {

@@ -2,6 +2,7 @@ import { compose, mergeDeepRight } from 'ramda'
 import { MapDefinition, MapFunction, MapPipe, Path, State, Data } from '../types'
 import { setStateValue, pipeMapFns, liftState, lowerState } from './stateHelpers'
 import { set } from '../funcs/getSet'
+import { rev } from '../funcs/directionals'
 import pipe from '../funcs/pipe'
 import { isMapObject } from './definitionHelpers'
 
@@ -22,14 +23,17 @@ const runAndMergeState = (fn: MapFunction) => (state: State): State => {
 const concatToArray = (existing: MapPipe | Path | MapFunction, setFn: MapFunction) =>
   (Array.isArray(existing)) ? [...existing, setFn] : [existing, setFn]
 
-const pipeWithSetPath = (existing: MapPipe | Path | MapFunction, setFn: MapFunction) =>
-  runAndMergeState(pipe(concatToArray(existing, setFn)))
+const pipeWithSetPath = (existing: MapPipe | Path | MapFunction, pathArray: Path[]) => {
+  const [path, index] = pathArray.join('.').split('/')
+  const fn = runAndMergeState(pipe(concatToArray(existing, set(path))))
+  return (typeof index === 'undefined') ? [fn] : [rev(fn)]
+}
 
 const extractSetFns = (def: MapDefinition, path: string[] = []): MapFunction[] => (isMapObject(def))
   ? Object.keys(def).reduce(
     (sets: MapFunction[], key: string) => [ ...sets, ...extractSetFns(def[key], appendToPath(path, key)) ],
     [])
-  : (def === null) ? [] : [pipeWithSetPath(def, set(path.join('.')))]
+  : (def === null) ? [] : pipeWithSetPath(def, path)
 
 export default function objectToMapFunction (def: MapDefinition): MapFunction {
   const fns = extractSetFns(def)

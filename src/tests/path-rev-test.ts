@@ -108,6 +108,30 @@ test('should reverse map several layers of arrays', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should use slashed properties in reverse', (t) => {
+  const def = [
+    'content.article',
+    {
+      title: 'content.heading',
+      'title/1': 'content.title',
+      'title/2': 'title'
+    }
+  ]
+  const data = { title: 'Heading 1' }
+  const expected = {
+    content: {
+      article: {
+        content: { heading: 'Heading 1', title: 'Heading 1' },
+        title: 'Heading 1'
+      }
+    }
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should reverse map with root array path', (t) => {
   const def = [
     '[]',

@@ -1,4 +1,4 @@
-import { mergeDeepRight, compose, identity } from 'ramda'
+import { mergeDeepRight, compose, identity, apply } from 'ramda'
 import { Data, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
@@ -71,7 +71,7 @@ export default function pathSetter (path: Path): SetFunction {
     return identity
   }
 
-  const setterFn = compose.apply(null, setters) // .apply to satisfy TypeScript :(
+  const setterFn: SetFunction = apply(compose, setters) as any // Using apply() to avoid complaints from typescript
   return (value, object = null) => {
     const data = setterFn(value)
     return (object) ? mergeDeepRight(object, data) : data

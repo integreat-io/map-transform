@@ -20,11 +20,13 @@ const setValue = (set: SetFunction, isArray: boolean, state: State): State => {
   return { ...state, value }
 }
 
+const setupRootGetOrSet = (isGet: boolean, path: Path) => (isGet)
+  ? divide(root(get(path.substr(1))), plug())
+  : divide(plug(), root(set(path.substr(1))))
+
 const getOrSet = (isGet: boolean) => (path: Path): MapFunction => {
   if (path && path.startsWith('$')) {
-    return (isGet)
-      ? divide(root(get(path.substr(1))), plug())
-      : divide(plug(), root(set(path.substr(1))))
+    return setupRootGetOrSet(isGet, path)
   }
 
   const getFn = getter(path)

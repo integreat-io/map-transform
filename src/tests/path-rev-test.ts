@@ -108,6 +108,29 @@ test('should reverse map several layers of arrays', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set several props in array in reverse', (t) => {
+  const def = {
+    'content.prop1': 'props[0].value',
+    'content.prop2': 'props[1].value'
+  }
+  const data = {
+    content: {
+      prop1: 'Value 1',
+      prop2: 'Value 2'
+    }
+  }
+  const expected = {
+    props: [
+      { value: 'Value 1' },
+      { value: 'Value 2' }
+    ]
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use slashed properties in reverse', (t) => {
   const def = [
     'content.article',
@@ -290,6 +313,19 @@ test('should return undefined when mapping def is empty', (t) => {
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }
   ]
+  const expected = undefined
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map undefined to undefined', (t) => {
+  const def = [
+    'items[]',
+    { attributes: { title: 'content.heading' } }
+  ]
+  const data = undefined
   const expected = undefined
 
   const ret = mapTransform(def).rev(data)

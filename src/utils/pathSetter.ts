@@ -1,4 +1,4 @@
-import { mergeDeepRight, compose, identity, apply } from 'ramda'
+import { mergeDeepWith, merge, compose, identity, apply } from 'ramda'
 import { Data, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
@@ -52,6 +52,16 @@ const setter = (prop: string) => {
   }
 }
 
+export const mergeExisting = (left: any, right: any) => {
+  if (Array.isArray(right)) {
+    return right.reduce((arr, value, index) => {
+      arr[index] = merge(left[index], value)
+      return arr
+    }, left)
+  }
+  return right
+}
+
 export type SetFunction = (value: Data, object?: Data | null) => Data
 
 /**
@@ -74,6 +84,6 @@ export default function pathSetter (path: Path): SetFunction {
   const setterFn: SetFunction = apply(compose, setters) as any // Using apply() to avoid complaints from typescript
   return (value, object = null) => {
     const data = setterFn(value)
-    return (object) ? mergeDeepRight(object, data) : data
+    return (object) ? mergeDeepWith(mergeExisting, object, data) : data
   }
 }

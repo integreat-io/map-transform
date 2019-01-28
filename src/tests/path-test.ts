@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, root, plug, lookup } from '..'
+import { mapTransform, get, set, fwd, rev, root, plug, lookup, value } from '..'
 
 test('should map with object path', (t) => {
   const def = [
@@ -46,6 +46,20 @@ test('should map with object shape', (t) => {
       author: 'johnf'
     }
   }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should allow colons in paths', (t) => {
+  const def = [
+    {
+      'b:title': 'content.a:heading'
+    }
+  ]
+  const data = { content: { 'a:heading': 'Heading 1' } }
+  const expected = { 'b:title': 'Heading 1' }
 
   const ret = mapTransform(def)(data)
 
@@ -149,7 +163,7 @@ test('should set current value on path', (t) => {
 test('should map undefined to undefined', (t) => {
   const def = [
     'items[]',
-    { title: 'content.heading' }
+    { attributes: { title: 'content.heading' } }
   ]
   const data = undefined
   const expected = undefined
@@ -350,6 +364,31 @@ test('should map with array index in middle of path', (t) => {
     }
   }
   const expected = 'Heading 1'
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set several props in array', (t) => {
+  const def = {
+    'props[0].key': value('prop1'),
+    'props[0].value': 'content.prop1',
+    'props[1].key': value('prop2'),
+    'props[1].value': 'content.prop2'
+  }
+  const data = {
+    content: {
+      prop1: 'Value 1',
+      prop2: 'Value 2'
+    }
+  }
+  const expected = {
+    props: [
+      { key: 'prop1', value: 'Value 1' },
+      { key: 'prop2', value: 'Value 2' }
+    ]
+  }
 
   const ret = mapTransform(def)(data)
 

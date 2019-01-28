@@ -1,15 +1,15 @@
-import { compose, mergeDeepRight } from 'ramda'
+import { compose, mergeDeepWith } from 'ramda'
 import { MapDefinition, MapFunction, MapPipe, Path, State, Data } from '../types'
 import { setStateValue, pipeMapFns, liftState, lowerState } from './stateHelpers'
 import { set } from '../funcs/getSet'
 import { rev } from '../funcs/directionals'
 import pipe from '../funcs/pipe'
 import { isMapObject } from './definitionHelpers'
+import { mergeExisting } from './pathSetter'
 
 const appendToPath = (path: string[], fragment: string) => [...path, fragment]
 
-const merge = (left: Data, right: Data) => (!right) ? left : mergeDeepRight(left, right)
-
+const merge = (left: Data, right: Data) => (!right) ? left : mergeDeepWith(mergeExisting, left, right)
 const mergeToArray = (arr: Data[]) => (val: Data, index: number) => merge(arr[index], val)
 
 const runAndMergeState = (fn: MapFunction) => (state: State): State => {

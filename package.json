@@ -1,6 +1,6 @@
 {
   "name": "map-transform",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Map and transform objects with mapping definitions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -65,16 +65,16 @@
   },
   "devDependencies": {
     "@types/deep-freeze": "^0.1.1",
-    "@types/sinon": "^7.0.3",
-    "ava": "^1.1.0",
+    "@types/sinon": "^7.0.5",
+    "ava": "^1.2.0",
     "babel-preset-env": "^1.7.0",
     "coveralls": "^3.0.2",
     "deep-freeze": "0.0.1",
     "nyc": "^13.1.0",
-    "sinon": "^7.2.2",
-    "ts-node": "^7.0.1",
+    "sinon": "^7.2.3",
+    "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.2.2"
+    "typescript": "^3.2.4"
   }
 }

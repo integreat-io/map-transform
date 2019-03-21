@@ -684,7 +684,7 @@ import { filter, compare } from 'map-transform'
 const def19 = [
   {
     name: 'name',
-    role: 'role'
+    role: 'editor'
   },
   filter(compare('role', 'admin'))
 ]

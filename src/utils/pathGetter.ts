@@ -1,5 +1,4 @@
 import * as R from 'ramda'
-import * as mapAny from 'map-any'
 import { Data, ObjectWithProps, Path } from '../types'
 
 const numberOrString = (val: string): string | number => {
@@ -16,8 +15,11 @@ const getProp = (prop: string) => (object?: ObjectWithProps) =>
 const getArrayIndex = (index: number) => (arr?: Data) =>
   (Array.isArray(arr)) ? arr[index] : undefined
 
+const getObjectOrArray = (fn: (object?: ObjectWithProps) => any) =>
+  (object?: ObjectWithProps) => (Array.isArray(object)) ? R.flatten(object.map(fn)) : fn(object)
+
 const getter = (prop: string | number) =>
-  (typeof prop === 'number') ? getArrayIndex(prop) : mapAny(getProp(prop))
+  (typeof prop === 'number') ? getArrayIndex(prop) : getObjectOrArray(getProp(prop))
 
 const getGetters = R.compose(
   R.ifElse(

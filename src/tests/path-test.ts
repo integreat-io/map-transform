@@ -1,10 +1,32 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, root, plug, lookup, value } from '..'
+import { mapTransform, get, set, fwd, rev, alt, root, plug, lookup, value } from '..'
 
 test('should map with object path', (t) => {
   const def = [
     'content.article',
+    {
+      title: 'content.heading'
+    }
+  ]
+  const data = {
+    content: {
+      article: {
+        content: { heading: 'Heading 1' }
+      }
+    }
+  }
+  const expected = { title: 'Heading 1' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should get object from alt path', (t) => {
+  const def = [
+    'Content.Article',
+    fwd(alt('content.article')),
     {
       title: 'content.heading'
     }
@@ -46,6 +68,27 @@ test('should map with object shape', (t) => {
       author: 'johnf'
     }
   }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map null values path', (t) => {
+  const def = [
+    'content.article',
+    {
+      title: 'content.heading'
+    }
+  ]
+  const data = {
+    content: {
+      article: {
+        content: { heading: null }
+      }
+    }
+  }
+  const expected = { title: null }
 
   const ret = mapTransform(def)(data)
 
@@ -241,6 +284,37 @@ test('should map several layers of arrays', (t) => {
       attributes: { title: 'Heading 2' },
       relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } }
     }
+  ]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should flatten arrays', (t) => {
+  const def = [
+    'content.articles[].content[]',
+    {
+      attributes: {
+        title: 'heading'
+      }
+    }
+  ]
+  const data = {
+    content: {
+      articles: [
+        {
+          content: [
+            { heading: 'Heading 1' },
+            { heading: 'Heading 2' }
+          ]
+        }
+      ]
+    }
+  }
+  const expected = [
+    { attributes: { title: 'Heading 1' } },
+    { attributes: { title: 'Heading 2' } }
   ]
 
   const ret = mapTransform(def)(data)

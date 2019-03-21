@@ -131,6 +131,22 @@ test('should set several props in array in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map with null value', (t) => {
+  const def = {
+    title: 'content.heading'
+  }
+  const data = {
+    title: null
+  }
+  const expected = {
+    content: { heading: null }
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use slashed properties in reverse', (t) => {
   const def = [
     'content.article',

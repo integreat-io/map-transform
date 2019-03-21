@@ -60,6 +60,24 @@ test('should get array of values at path with open array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should flatten arrays', (t) => {
+  const path = 'data.items[].tags[]'
+  const expected = [
+    'one',
+    'odd',
+    'two',
+    'even',
+    'three',
+    'odd',
+    'four',
+    'even'
+  ]
+
+  const ret = pathGetter(path)(object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return object when no path', (t) => {
   const path = null
 

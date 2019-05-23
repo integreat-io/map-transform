@@ -1,6 +1,6 @@
 {
   "name": "map-transform",
-  "version": "0.3.4-alpha.0",
+  "version": "0.4.0-alpha.0",
   "description": "Map and transform objects with mapping definitions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "start": "tsc && node index.js",
-    "test": "tsc && nyc --reporter=text-summary ava dist/**/*-test.js",
+    "test": "tsc && nyc --reporter=text-summary ava dist/**/*.test.js",
     "test:watch": "npm run dev",
     "dev": "ava --watch",
     "build": "tsc",
@@ -33,10 +33,10 @@
       "ts-node/register/transpile-only"
     ],
     "files": [
-      "src/**/*-test.ts"
+      "src/**/*.test.ts"
     ],
     "sources": [
-      "src/**/!(*-test).ts"
+      "src/**/!(*.test).ts"
     ]
   },
   "nyc": {

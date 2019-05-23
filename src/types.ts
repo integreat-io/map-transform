@@ -12,7 +12,8 @@ export interface State {
   value: Data,
   rev?: boolean,
   onlyMapped?: boolean,
-  arr?: boolean
+  arr?: boolean,
+  operations?: OperationsStore
 }
 
 export type Path = string
@@ -21,19 +22,35 @@ export interface MapFunction {
   (state: State): State
 }
 
-type MapPipeSimple = (MapFunction | Path | MapObject)[]
+export interface DataMapper {
+  (data: Data): Data
+}
 
-export type MapPipe = (MapFunction | Path | MapObject | MapPipeSimple)[]
+export interface Operands {
+  [operand: string]: any
+}
+
+export interface Operation extends Operands {
+  $op: string
+}
+
+export interface OperationFunction {
+  (data: Data, operands: Operands): Data
+}
+
+export interface OperationsStore {
+  [key: string]: OperationFunction
+}
+
+type MapPipeSimple = (MapFunction | Path | MapObject | Operation)[]
+
+export type MapPipe = (MapFunction | Path | MapObject | Operation | MapPipeSimple)[]
 
 export interface MapObject {
   [key: string]: MapDefinition
 }
 
-export type MapDefinition = MapObject | MapFunction | MapPipe | Path | null
-
-export interface DataMapper {
-  (data: Data): Data
-}
+export type MapDefinition = MapObject | MapFunction | MapPipe | Operation | Path | null
 
 export interface DataMapperWithOnlyMappedValues extends DataMapper {
   onlyMappedValues: DataMapper

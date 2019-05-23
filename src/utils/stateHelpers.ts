@@ -23,10 +23,11 @@ export const lowerState = (state: State) => ({
 export const pipeMapFns = (fns: MapFunction[]) => (state: State): State =>
   fns.reduce((state: State, fn: MapFunction) => fn(state), state)
 
-export const populateState = ({ rev = false, onlyMapped = false }) => (data: Data): State => ({
+export const populateState = ({ rev = false, onlyMapped = false, operations = {} }) => (data: Data): State => ({
   root: data,
   context: data,
   value: data,
   rev,
-  onlyMapped
+  onlyMapped,
+  operations
 })

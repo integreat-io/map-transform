@@ -1,5 +1,5 @@
 import { compose, mergeDeepWith } from 'ramda'
-import { MapDefinition, MapFunction, MapPipe, Path, State, Data } from '../types'
+import { MapDefinition, MapFunction, MapPipe, Path, State, Data, Operation } from '../types'
 import { setStateValue, pipeMapFns, liftState, lowerState } from './stateHelpers'
 import { set } from '../funcs/getSet'
 import { rev } from '../funcs/directionals'
@@ -20,10 +20,10 @@ const runAndMergeState = (fn: MapFunction) => (state: State): State => {
     : setStateValue(state, merge(state.value, nextState.value))
 }
 
-const concatToArray = (existing: MapPipe | Path | MapFunction, setFn: MapFunction) =>
+const concatToArray = (existing: MapPipe | Path | MapFunction | Operation, setFn: MapFunction) =>
   (Array.isArray(existing)) ? [...existing, setFn] : [existing, setFn]
 
-const pipeWithSetPath = (existing: MapPipe | Path | MapFunction, pathArray: Path[]) => {
+const pipeWithSetPath = (existing: MapPipe | Path | MapFunction | Operation, pathArray: Path[]) => {
   const [path, index] = pathArray.join('.').split('/')
   const fn = runAndMergeState(pipe(concatToArray(existing, set(path))))
   return (typeof index === 'undefined') ? [fn] : [rev(fn)]

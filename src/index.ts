@@ -1,5 +1,5 @@
 import { compose } from 'ramda'
-import { MapDefinition, MapTransform, MapFunction, State, Data } from './types'
+import { MapDefinition, MapTransform, MapFunction, State, Data, OperationsStore } from './types'
 import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
 import objectToMapFunction from './utils/objectToMapFunction'
@@ -16,26 +16,31 @@ export { default as not } from './funcs/not'
 export { default as plug } from './funcs/plug'
 export { default as lookup } from './funcs/lookup'
 export { default as transform, TransformFunction } from './funcs/transform'
+export { default as operation } from './funcs/operation'
 export { default as filter, FilterFunction } from './funcs/filter'
 export { fwd, rev, divide } from './funcs/directionals'
 export { Data } from './types'
+
+export interface Options {
+  operations?: OperationsStore
+}
 
 const composeMapFunction = (mapFn: MapFunction, initialState: Partial<State>) => {
   const map = compose(getStateValue, mapFn, populateState(initialState))
   return (data: Data) => (typeof data === 'undefined') ? undefined : map(data)
 }
 
-export function mapTransform (def: MapDefinition): MapTransform {
+export function mapTransform (def: MapDefinition, { operations }: Options = {}): MapTransform {
   const mapFn = (isMapObject(def)) ? objectToMapFunction(def) : mapFunctionFromDef(def)
 
   return Object.assign(
-    composeMapFunction(mapFn, {}),
+    composeMapFunction(mapFn, { operations }),
     {
-      onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),
+      onlyMappedValues: composeMapFunction(mapFn, { operations, onlyMapped: true }),
       rev: Object.assign(
-        composeMapFunction(mapFn, { rev: true }),
+        composeMapFunction(mapFn, { operations, rev: true }),
         {
-          onlyMappedValues: composeMapFunction(mapFn, { rev: true, onlyMapped: true })
+          onlyMappedValues: composeMapFunction(mapFn, { operations, rev: true, onlyMapped: true })
         }
       )
     }

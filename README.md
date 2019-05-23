@@ -417,6 +417,50 @@ const def9 = [
 ]
 ```
 
+#### `operation(op)` operation
+
+The `operation()` operation (well, yepp) offers a way of supplying transform
+functions to MapTransform appart from the mapping definition. You refer to a
+transform function by an id, which is given as the `$op` property on an object.
+All other properties on that object is passed on as an argument (operand)
+object.
+
+Let's look at an example:
+```javascript
+import { mapTransform, operation } from 'map-transform'
+
+const operations = {
+  multiply: (data, { multiplier }) => Number.parseInt(data) * multiplier
+}
+
+const def25 = {
+  count: [
+    'statistics.views',
+    operation({ $op: 'multiply', multiplier: 3 })
+  ]
+}
+
+const data = {
+  statistics: {
+    view: '18',
+    // ...
+  }
+}
+
+mapTransform(def25)(data)
+// --> {
+//   count: 54
+// }
+```
+
+Note that you can alter the data anyway you like in the transform function, so
+you may also implement filter functions this way. You just have to do the
+actual filtering of the data yourself.
+
+There is no reverse version of `operation()` – you have to control that with
+`rev()` etc. In the future, we might add support for having a `.rev` function
+on the transform function.
+
 #### `value(data)` operation
 The data given to the value operation, will be inserted in the pipeline in place
 of any data that is already present at that point. The data may be an object,

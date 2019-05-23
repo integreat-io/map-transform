@@ -1,5 +1,5 @@
 src/
-*-test*
+*.test*
 .*
 tsconfig.json
 tslint.json

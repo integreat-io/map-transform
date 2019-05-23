@@ -447,7 +447,7 @@ const data = {
   }
 }
 
-mapTransform(def25)(data)
+mapTransform(def25, { operations })(data)
 // --> {
 //   count: 54
 // }

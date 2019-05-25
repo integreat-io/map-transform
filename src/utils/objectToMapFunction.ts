@@ -1,5 +1,5 @@
 import { compose, mergeDeepWith } from 'ramda'
-import { MapDefinition, MapFunction, MapPipe, Path, State, Data, Operation } from '../types'
+import { MapDefinition, Operation, StateMapper, MapPipe, Path, State, Data, OperationObject, Options } from '../types'
 import { setStateValue, pipeMapFns, liftState, lowerState } from './stateHelpers'
 import { set } from '../funcs/getSet'
 import { rev } from '../funcs/directionals'
@@ -12,30 +12,30 @@ const appendToPath = (path: string[], fragment: string) => [...path, fragment]
 const merge = (left: Data, right: Data) => (!right) ? left : mergeDeepWith(mergeExisting, left, right)
 const mergeToArray = (arr: Data[]) => (val: Data, index: number) => merge(arr[index], val)
 
-const runAndMergeState = (fn: MapFunction) => (state: State): State => {
-  const nextState = fn(lowerState(state))
+const runAndMergeState = (fn: Operation) => (options: Options) => (state: State): State => {
+  const nextState = fn(options)(lowerState(state))
 
   return (Array.isArray(nextState.value))
     ? setStateValue(state, (Array.isArray(state.value)) ? nextState.value.map(mergeToArray(state.value)) : nextState.value)
     : setStateValue(state, merge(state.value, nextState.value))
 }
 
-const concatToArray = (existing: MapPipe | Path | MapFunction | Operation, setFn: MapFunction) =>
+const concatToArray = (existing: MapPipe | Path | Operation | OperationObject, setFn: Operation) =>
   (Array.isArray(existing)) ? [...existing, setFn] : [existing, setFn]
 
-const pipeWithSetPath = (existing: MapPipe | Path | MapFunction | Operation, pathArray: Path[]) => {
+const pipeWithSetPath = (existing: MapPipe | Path | Operation | OperationObject, options: Options, pathArray: Path[]): StateMapper[] => {
   const [path, index] = pathArray.join('.').split('/')
   const fn = runAndMergeState(pipe(concatToArray(existing, set(path))))
-  return (typeof index === 'undefined') ? [fn] : [rev(fn)]
+  return (typeof index === 'undefined') ? [fn(options)] : [rev(fn)(options)]
 }
 
-const extractSetFns = (def: MapDefinition, path: string[] = []): MapFunction[] => (isMapObject(def))
+const extractSetFns = (def: MapDefinition, options: Options, path: string[] = []): StateMapper[] => (isMapObject(def))
   ? Object.keys(def).reduce(
-    (sets: MapFunction[], key: string) => [ ...sets, ...extractSetFns(def[key], appendToPath(path, key)) ],
+    (sets: StateMapper[], key: string) => [ ...sets, ...extractSetFns(def[key], options, appendToPath(path, key)) ],
     [])
-  : (def === null) ? [] : pipeWithSetPath(def, path)
+  : (def === null) ? [] : pipeWithSetPath(def, options, path)
 
-export default function objectToMapFunction (def: MapDefinition): MapFunction {
-  const fns = extractSetFns(def)
+export default function objectToMapFunction (def: MapDefinition, options: Options) {
+  const fns = extractSetFns(def, options)
   return compose(pipeMapFns(fns), liftState)
 }

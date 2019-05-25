@@ -1,6 +1,7 @@
 import test from 'ava'
+import { Operands, MapDefinition } from '../types'
 
-import { mapTransform, transform, rev, TransformFunction, Data } from '..'
+import { mapTransform, transform, rev, Data } from '..'
 
 // Helpers
 
@@ -11,28 +12,37 @@ const removeAuthor = (item: { title: string, author: string }) => (item.title.en
   ? item.title.substr(0, item.title.length - 6 - item.author.length)
   : item.title
 
-const appendAuthorToTitle: TransformFunction = (item) => (isObject(item))
+const appendToTitle = ({ text }: Operands) => (item: Data) => (isObject(item))
+    ? { ...item, title: `${(item as any).title}${text}` }
+    : item
+
+const appendAuthorToTitle = (item: Data) => (isObject(item))
     ? { ...item, title: createTitle(item as any) }
     : item
 
-const removeAuthorFromTitle: TransformFunction = (item) => (isObject(item))
+const removeAuthorFromTitle = (item: Data) => (isObject(item))
   ? ({ ...item, title: removeAuthor(item as any) })
   : item
 
-const setActive: TransformFunction = (item) => (isObject(item))
+const setActive = (item: Data) => (isObject(item))
   ? { ...item, active: true }
   : item
 
 const prepareAuthorName = ({ author }: { author: string }) =>
   `${author[0].toUpperCase()}${author.substr(1)}.`
 
-const setAuthorName: TransformFunction = (item) => (isObject(item))
+const setAuthorName = (item: Data) => (isObject(item))
   ? ({ ...item, authorName: prepareAuthorName(item as any) })
   : item
 
-const appendEllipsis: TransformFunction = (str) => (typeof str === 'string') ? str + ' ...' : str
+const appendEllipsis = (str: Data) => (typeof str === 'string') ? str + ' ...' : str
 
-const getLength: TransformFunction = (str) => (typeof str === 'string') ? str.length : 0
+const getLength = () => (str: Data) => (typeof str === 'string') ? str.length : 0
+
+const customFunctions = {
+  appendToTitle,
+  getLength
+}
 
 // Tests
 
@@ -185,7 +195,7 @@ test('should apply transform functions from left to right', (t) => {
       titleLength: [
         'content.heading',
         transform(appendEllipsis),
-        transform(getLength)
+        transform(getLength())
       ]
     }
   ]
@@ -197,6 +207,90 @@ test('should apply transform functions from left to right', (t) => {
   }
 
   const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply transform from an operation object', (t) => {
+  const def = [
+    {
+      titleLength: [
+        'content.heading',
+        { $op: 'transform', $fn: 'getLength' }
+      ]
+    }
+  ]
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = {
+    titleLength: 11
+  }
+
+  const ret = mapTransform(def, { customFunctions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply transform from an operation object with arguments', (t) => {
+  const def = [
+    {
+      title: 'content.heading'
+    },
+    { $op: 'transform', $fn: 'appendToTitle', text: ' - archived' }
+  ] as MapDefinition
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = {
+    title: 'The heading - archived'
+  }
+
+  const ret = mapTransform(def, { customFunctions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip unknown operation', (t) => {
+  const def = [
+    {
+      titleLength: [
+        'content.heading',
+        { $op: 'transform', $fn: 'getLength' },
+        { $op: 'unknown' }
+      ]
+    }
+  ]
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = {
+    titleLength: 11
+  }
+
+  const ret = mapTransform(def, { customFunctions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip unknown customer function', (t) => {
+  const def = [
+    {
+      titleLength: [
+        'content.heading',
+        { $op: 'transform', $fn: 'getLength' },
+        { $op: 'transform', $fn: 'unknown' }
+      ]
+    }
+  ]
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = {
+    titleLength: 11
+  }
+
+  const ret = mapTransform(def, { customFunctions })(data)
 
   t.deepEqual(ret, expected)
 })

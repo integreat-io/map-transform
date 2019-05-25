@@ -1,20 +1,25 @@
-import { MapDefinition, MapFunction } from '../types'
+import { MapDefinition, Operation, Options } from '../types'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
-const applyInDirection = (def: MapDefinition, rev: boolean): MapFunction => {
-  const fn = mapFunctionFromDef(def)
-  return (state) => (rev ? state.rev : !state.rev) ? fn(state) : state
+const applyInDirection = (def: MapDefinition, rev: boolean): Operation => {
+  return (options: Options) => {
+    const fn = mapFunctionFromDef(def, options)
+    return (state) => (rev ? state.rev : !state.rev) ? fn(state) : state
+  }
 }
-export function fwd (def: MapDefinition): MapFunction {
+
+export function fwd (def: MapDefinition): Operation {
   return applyInDirection(def, false)
 }
 
-export function rev (def: MapDefinition): MapFunction {
+export function rev (def: MapDefinition): Operation {
   return applyInDirection(def, true)
 }
 
-export function divide (fwdDef: MapFunction, revDef: MapFunction): MapFunction {
-  const fwdFn = mapFunctionFromDef(fwdDef)
-  const revFn = mapFunctionFromDef(revDef)
-  return (state) => (state.rev) ? revFn(state) : fwdFn(state)
+export function divide (fwdDef: Operation, revDef: Operation): Operation {
+  return (options: Options) => {
+    const fwdFn = mapFunctionFromDef(fwdDef, options)
+    const revFn = mapFunctionFromDef(revDef, options)
+    return (state) => (state.rev) ? revFn(state) : fwdFn(state)
+  }
 }

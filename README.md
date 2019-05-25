@@ -306,7 +306,7 @@ const def6 = [
 ```
 
 (Note that in this example, both `maxLength` and `onlyItemsWithSection` are
-custom functions for this case, but their implementation is not provided.)
+custom functions for this case, but their implementations are not provided.)
 
 #### `transform(fn, fnRev)` operation
 
@@ -381,6 +381,36 @@ const def8 = {
 }
 ```
 
+You may also define a transform operation as an object:
+
+```javascript
+import { mapTransform } from 'map-transform'
+
+const ensureInteger = (operands) => (data) => Number.parseInt(data, 10) || 0
+const customFunctions = { ensureInteger }
+const def7withObject = {
+  count: ['statistics.views', { $op: 'transform', $fn: 'ensureInteger' }]
+}
+
+const data = {
+  statistics: {
+    view: '18',
+    // ...
+  }
+}
+
+mapTransform(def7withObject, { customFunctions })(data)
+// --> {
+//   count: 18
+// }
+```
+
+Note that the function itself is passed on the `customFunctions` object. When
+you provide the custom function this way, it should be given as a function
+accepting an object with operands / arguments, that returns the actual function
+used in the transform. Any properties given on the operation object, apart from
+`$op` and `$fn`, will be passed in the `operands` object.
+
 #### `filter(fn)` operation
 
 Just like the transform operation, the filter operation will apply whatever
@@ -416,50 +446,6 @@ const def9 = [
   filter(onlyActives)
 ]
 ```
-
-#### `operation(op)` operation
-
-The `operation()` operation (well, yepp) offers a way of supplying transform
-functions to MapTransform appart from the mapping definition. You refer to a
-transform function by an id, which is given as the `$op` property on an object.
-All other properties on that object is passed on as an argument (operand)
-object.
-
-Let's look at an example:
-```javascript
-import { mapTransform, operation } from 'map-transform'
-
-const operations = {
-  multiply: (data, { multiplier }) => Number.parseInt(data) * multiplier
-}
-
-const def25 = {
-  count: [
-    'statistics.views',
-    operation({ $op: 'multiply', multiplier: 3 })
-  ]
-}
-
-const data = {
-  statistics: {
-    view: '18',
-    // ...
-  }
-}
-
-mapTransform(def25, { operations })(data)
-// --> {
-//   count: 54
-// }
-```
-
-Note that you can alter the data anyway you like in the transform function, so
-you may also implement filter functions this way. You just have to do the
-actual filtering of the data yourself.
-
-There is no reverse version of `operation()` – you have to control that with
-`rev()` etc. In the future, we might add support for having a `.rev` function
-on the transform function.
 
 #### `value(data)` operation
 The data given to the value operation, will be inserted in the pipeline in place

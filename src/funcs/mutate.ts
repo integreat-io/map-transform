@@ -1,12 +1,13 @@
 import * as mapAny from 'map-any'
-import { MapFunction, State, MapDefinition } from '../types'
+import { Operation, State, MapDefinition, Options } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import objectToMapFunction from '../utils/objectToMapFunction'
 
-export default function mutate (def: MapDefinition): MapFunction {
-  const runMutation = objectToMapFunction(def)
+export default function mutate (def: MapDefinition): Operation {
+  return (options: Options) => {
+    const runMutation = objectToMapFunction(def, options)
 
-  return (state: State): State => (typeof state.value === 'undefined')
+    return (state: State): State => (typeof state.value === 'undefined')
     ? state
     : setStateValue(
       state,
@@ -15,4 +16,5 @@ export default function mutate (def: MapDefinition): MapFunction {
         state.value
       )
     )
+  }
 }

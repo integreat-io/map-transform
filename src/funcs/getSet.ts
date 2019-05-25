@@ -1,5 +1,5 @@
 import * as mapAny from 'map-any'
-import { MapFunction, State, Path } from '../types'
+import { Operation, State, Path } from '../types'
 import getter, { GetFunction } from '../utils/pathGetter'
 import setter, { SetFunction } from '../utils/pathSetter'
 import root from './root'
@@ -24,7 +24,7 @@ const setupRootGetOrSet = (isGet: boolean, path: Path) => (isGet)
   ? divide(root(get(path.substr(1))), plug())
   : divide(plug(), root(set(path.substr(1))))
 
-const getOrSet = (isGet: boolean) => (path: Path): MapFunction => {
+const getOrSet = (isGet: boolean) => (path: Path): Operation => {
   if (path && path.startsWith('$')) {
     return setupRootGetOrSet(isGet, path)
   }
@@ -33,7 +33,7 @@ const getOrSet = (isGet: boolean) => (path: Path): MapFunction => {
   const setFn = setter(path)
   const isArray = path.endsWith('[]')
 
-  return (state: State): State => (isGet ? !state.rev : state.rev)
+  return () => (state: State): State => (isGet ? !state.rev : state.rev)
     ? getValue(getFn, isArray, state)
     : setValue(setFn, isArray, state)
 }

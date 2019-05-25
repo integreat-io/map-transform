@@ -3,6 +3,10 @@ import { compose } from 'ramda'
 
 import { get } from './getSet'
 
+// Setup
+
+const options = {}
+
 // Tests
 
 test('should get from path', (t) => {
@@ -19,7 +23,7 @@ test('should get from path', (t) => {
     arr: false
   }
 
-  const ret = get('meta.author')(state)
+  const ret = get('meta.author')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -37,7 +41,7 @@ test('should be composable', (t) => {
   }
   const expectedValue = 'Second item'
 
-  const ret = compose(get('title'), get('data.items[1]'))(state)
+  const ret = compose(get('title')(options), get('data.items[1]')(options))(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -49,7 +53,7 @@ test('should set value to undefined when path is missing on value', (t) => {
     value: {}
   }
 
-  const ret = get('unknown.path')(state)
+  const ret = get('unknown.path')(options)(state)
 
   t.is(ret.value, undefined)
 })
@@ -68,7 +72,7 @@ test('should set on path when reversed', (t) => {
     rev: true
   }
 
-  const ret = get('meta.author')(state)
+  const ret = get('meta.author')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -86,8 +90,8 @@ test('should get current value', (t) => {
     arr: false
   }
 
-  const ret1 = get('.')(state)
-  const ret2 = get('')(state)
+  const ret1 = get('.')(options)(state)
+  const ret2 = get('')(options)(state)
 
   t.deepEqual(ret1, expected)
   t.deepEqual(ret2, expected)
@@ -101,7 +105,7 @@ test('should get from root path', (t) => {
   }
   const expectedValue = 'news'
 
-  const ret = get('$section')(state)
+  const ret = get('$section')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -115,7 +119,7 @@ test('should not set to root path', (t) => {
   }
   const expectedValue = undefined
 
-  const ret = get('$section')(state)
+  const ret = get('$section')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })

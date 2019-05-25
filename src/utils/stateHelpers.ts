@@ -1,4 +1,4 @@
-import { State, MapFunction, Data } from '../types'
+import { State, StateMapper, Data } from '../types'
 
 export const setStateValue = (state: State, value: Data): State => ({ ...state, value })
 export const getStateValue = (state: State): Data => state.value
@@ -20,14 +20,18 @@ export const lowerState = (state: State) => ({
   value: state.context
 })
 
-export const pipeMapFns = (fns: MapFunction[]) => (state: State): State =>
-  fns.reduce((state: State, fn: MapFunction) => fn(state), state)
+export const contextFromState = ({ rev = false, onlyMapped = false }: State) => ({
+  rev,
+  onlyMappedValues: onlyMapped
+})
 
-export const populateState = ({ rev = false, onlyMapped = false, operations = {} }) => (data: Data): State => ({
+export const pipeMapFns = (fns: StateMapper[]) => (state: State): State =>
+  fns.reduce((state: State, fn: StateMapper) => fn(state), state)
+
+export const populateState = ({ rev = false, onlyMapped = false }) => (data: Data): State => ({
   root: data,
   context: data,
   value: data,
   rev,
-  onlyMapped,
-  operations
+  onlyMapped
 })

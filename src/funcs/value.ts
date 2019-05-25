@@ -1,7 +1,7 @@
-import { Data, MapFunction, State } from '../types'
+import { Data, Operation, State } from '../types'
 
-export default function value (val: Data): MapFunction {
-  return (state: State) => ({
+export default function value (val: Data): Operation {
+  return () => (state: State) => ({
     ...state,
     value: (state.onlyMapped) ? undefined : val
   })

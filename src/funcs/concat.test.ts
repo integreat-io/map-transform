@@ -3,6 +3,10 @@ import value from './value'
 
 import concat from './concat'
 
+// Setup
+
+const options = {}
+
 // Tests
 
 test('should just pass on state when given one pipeline', (t) => {
@@ -19,7 +23,7 @@ test('should just pass on state when given one pipeline', (t) => {
     arr: false
   }
 
-  const ret = concat('users[]')(state)
+  const ret = concat('users[]')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -33,7 +37,7 @@ test('should merge arrays from several pipelines', (t) => {
   }
   const expectedValue = ['johnf', 'maryk', 'theboss']
 
-  const ret = concat('users[]', 'admins[]')(state)
+  const ret = concat('users[]', 'admins[]')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -47,7 +51,7 @@ test('should merge strings from several pipelines into array', (t) => {
   }
   const expectedValue = ['bergen', '-', 'johnf']
 
-  const ret = concat('group', value('-'), 'user')(state)
+  const ret = concat('group', value('-'), 'user')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -61,7 +65,7 @@ test('should strip away undefined', (t) => {
   }
   const expectedValue = ['bergen', 'johnf', null]
 
-  const ret = concat('group', 'unknown', 'user', 'team')(state)
+  const ret = concat('group', 'unknown', 'user', 'team')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })

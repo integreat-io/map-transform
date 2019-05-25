@@ -2,6 +2,12 @@ import test from 'ava'
 
 import root from './root'
 
+// Setup
+
+const options = {}
+
+// Tests
+
 test('should apply pipeline to root', (t) => {
   const state = {
     root: { content: { title: 'An article' }, section: 'news' },
@@ -16,7 +22,7 @@ test('should apply pipeline to root', (t) => {
     arr: false
   }
 
-  const ret = root('section')(state)
+  const ret = root('section')(options)(state)
 
   t.deepEqual(ret, expected)
 })

@@ -4,6 +4,12 @@ import { get } from './getSet'
 
 import mutate from './mutate'
 
+// Setup
+
+const options = {}
+
+// Tests
+
 test('should mutate object with map functions', (t) => {
   const def = {
     item: {
@@ -41,7 +47,7 @@ test('should mutate object with map functions', (t) => {
     }
   }
 
-  const ret = mutate(def)(state)
+  const ret = mutate(def)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -59,7 +65,7 @@ test('should set value to undefined when no map functions', (t) => {
     value: undefined
   }
 
-  const ret = mutate(def)(state)
+  const ret = mutate(def)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -81,7 +87,7 @@ test('should treat string as path', (t) => {
     }
   }
 
-  const ret = mutate(def)(state)
+  const ret = mutate(def)(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -107,7 +113,7 @@ test('should treat array as map pipe', (t) => {
     }
   }
 
-  const ret = mutate(def)(state)
+  const ret = mutate(def)(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -130,7 +136,7 @@ test('should reverse map', (t) => {
   }
   const expectedValue = { headline: 'The title' }
 
-  const ret = mutate(def)(state)
+  const ret = mutate(def)(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -164,7 +170,7 @@ test('should reverse map with value array', (t) => {
     { headline: 'Entry 2' }
   ]
 
-  const ret = mutate(def)(state)
+  const ret = mutate(def)(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })

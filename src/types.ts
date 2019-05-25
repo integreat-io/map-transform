@@ -6,56 +6,74 @@ export type Prop = string | number | boolean | object | null | undefined | Objec
 
 export type Data = Prop | Prop[]
 
+export type Path = string
+
+export interface Operands {
+  [key: string]: any
+}
+
+export interface Context {
+  rev: boolean,
+  onlyMappedValues: boolean
+}
+
+export interface DataMapper<U = Data, V = Data> {
+  (data: U, context: Context): V
+}
+
+export interface CustomFunction<T = Operands, U = Data, V = Data> {
+  (operands: T): DataMapper<U, V>
+}
+
+export interface CustomFunctions {
+  [key: string]: CustomFunction
+}
+
 export interface State {
   root: Data,
   context: Data,
   value: Data,
   rev?: boolean,
   onlyMapped?: boolean,
-  arr?: boolean,
-  operations?: OperationsStore
+  arr?: boolean
 }
 
-export type Path = string
+export interface Options {
+  customFunctions?: CustomFunctions
+}
 
-export interface MapFunction {
+export interface OperationObject extends Operands {
+  $op: string,
+  $fn?: string
+}
+
+export interface StateMapper {
   (state: State): State
 }
 
-export interface DataMapper {
-  (data: Data): Data
+export interface Operation {
+  (options: Options): StateMapper
 }
 
-export interface Operands {
-  [operand: string]: any
+export interface MapFunction {
+  (options: Options): (state: State) => State
 }
 
-export interface Operation extends Operands {
-  $op: string
-}
+type MapPipeSimple = (MapObject | Operation | OperationObject | Path)[]
 
-export interface OperationFunction {
-  (data: Data, operands: Operands): Data
-}
-
-export interface OperationsStore {
-  [key: string]: OperationFunction
-}
-
-type MapPipeSimple = (MapFunction | Path | MapObject | Operation)[]
-
-export type MapPipe = (MapFunction | Path | MapObject | Operation | MapPipeSimple)[]
+export type MapPipe = (MapObject | Operation | OperationObject | Path | MapPipeSimple)[]
 
 export interface MapObject {
   [key: string]: MapDefinition
 }
 
-export type MapDefinition = MapObject | MapFunction | MapPipe | Operation | Path | null
+export type MapDefinition = MapObject | Operation | OperationObject | MapPipe | Path | null
 
-export interface DataMapperWithOnlyMappedValues extends DataMapper {
-  onlyMappedValues: DataMapper
+export interface MapTransformWithOnlyMappedValues {
+  (data: Data): Data
+  onlyMappedValues: (data: Data) => Data
 }
 
-export interface MapTransform extends DataMapperWithOnlyMappedValues {
-  rev: DataMapperWithOnlyMappedValues
+export interface MapTransform extends MapTransformWithOnlyMappedValues {
+  rev: MapTransformWithOnlyMappedValues
 }

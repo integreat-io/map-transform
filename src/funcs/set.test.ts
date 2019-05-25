@@ -2,6 +2,10 @@ import test from 'ava'
 
 import { set } from './getSet'
 
+// Setup
+
+const options = {}
+
 // Tests
 
 test('should set value on path', (t) => {
@@ -16,7 +20,7 @@ test('should set value on path', (t) => {
     context: data,
     value: { meta: { author: 'johnf' } }
   }
-  const ret = set('meta.author')(state)
+  const ret = set('meta.author')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -29,7 +33,7 @@ test('should set undefined', (t) => {
   }
   const expectedValue = { meta: { author: undefined } }
 
-  const ret = set('meta.author')(state)
+  const ret = set('meta.author')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -43,7 +47,7 @@ test('should not set undefined when onlyMapped is true', (t) => {
   }
   const expectedValue = undefined
 
-  const ret = set('meta.author')(state)
+  const ret = set('meta.author')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -57,7 +61,7 @@ test('should not set undefined in array when onlyMapped is true', (t) => {
   }
   const expectedValue = [undefined, { meta: { author: 'johnf' } }]
 
-  const ret = set('meta.author')(state)
+  const ret = set('meta.author')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -77,7 +81,7 @@ test('should get from path when reverse mapping', (t) => {
     rev: true,
     arr: false
   }
-  const ret = set('meta.author')(state)
+  const ret = set('meta.author')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -90,7 +94,7 @@ test('should not set on root path', (t) => {
   }
   const expectedValue = undefined
 
-  const ret = set('$section')(state)
+  const ret = set('$section')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -104,7 +108,7 @@ test('should get from root path', (t) => {
   }
   const expectedValue = 'news'
 
-  const ret = set('$section')(state)
+  const ret = set('$section')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })

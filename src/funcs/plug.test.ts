@@ -2,6 +2,12 @@ import test from 'ava'
 
 import plug from './plug'
 
+// Setup
+
+const options = {}
+
+// Tests
+
 test('should set value to undefined', (t) => {
   const state = {
     root: { data: { name: 'John F.' } },
@@ -14,7 +20,7 @@ test('should set value to undefined', (t) => {
     value: undefined
   }
 
-  const ret = plug()(state)
+  const ret = plug()(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -33,7 +39,7 @@ test('should set value to undefined when onlyMapped', (t) => {
     onlyMapped: true
   }
 
-  const ret = plug()(state)
+  const ret = plug()(options)(state)
 
   t.deepEqual(ret, expected)
 })

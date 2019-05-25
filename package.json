@@ -17,6 +17,7 @@
     "start": "tsc && node index.js",
     "test": "tsc && nyc --reporter=text-summary ava dist/**/*.test.js",
     "test:watch": "npm run dev",
+    "test:inspect": "node --inspect node_modules/ava/profile.js",
     "dev": "ava --watch",
     "build": "tsc",
     "prepare": "npm run build",

@@ -1,10 +1,13 @@
 import test from 'ava'
+import { Data } from '../types'
 
-import filter, { FilterFunction } from './filter'
+import filter from './filter'
 
 // Helpers
 
-const beginsWithA: FilterFunction = (str) => (typeof str === 'string') ? str.startsWith('A') : false
+const beginsWithA = (str: Data) => (typeof str === 'string') ? str.startsWith('A') : false
+
+const options = {}
 
 // Tests
 
@@ -20,7 +23,7 @@ test('should set value to undefined when filter returns false', (t) => {
     value: undefined
   }
 
-  const ret = filter(beginsWithA)(state)
+  const ret = filter(beginsWithA)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -32,7 +35,7 @@ test('should not touch value when filter returns true', (t) => {
     value: 'An entry'
   }
 
-  const ret = filter(beginsWithA)(state)
+  const ret = filter(beginsWithA)(options)(state)
 
   t.deepEqual(ret, state)
 })
@@ -49,7 +52,7 @@ test('should remove values in array when filter returns false', (t) => {
     value: ['Andy']
   }
 
-  const ret = filter(beginsWithA)(state)
+  const ret = filter(beginsWithA)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -61,7 +64,7 @@ test('should not touch value when filter is not a function', (t) => {
     value: 'An entry'
   }
 
-  const ret = filter('notallowed' as any)(state)
+  const ret = filter('notallowed' as any)(options)(state)
 
   t.deepEqual(ret, state)
 })

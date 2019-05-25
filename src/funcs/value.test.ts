@@ -2,6 +2,12 @@ import test from 'ava'
 
 import value from './value'
 
+// Setup
+
+const options = {}
+
+// Tests
+
 test('should set value', (t) => {
   const state = {
     root: {},
@@ -14,7 +20,7 @@ test('should set value', (t) => {
     value: 'Splendid!'
   }
 
-  const ret = value('Splendid!')(state)
+  const ret = value('Splendid!')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -33,7 +39,7 @@ test('should not set value when onlyMapped', (t) => {
     onlyMapped: true
   }
 
-  const ret = value('Splendid!')(state)
+  const ret = value('Splendid!')(options)(state)
 
   t.deepEqual(ret, expected)
 })

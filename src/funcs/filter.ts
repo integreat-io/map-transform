@@ -1,27 +1,29 @@
 import { compose, unless, always, ifElse, filter as filterR, identity } from 'ramda'
-import { MapFunction, Data, State } from '../types'
-import { getStateValue } from '../utils/stateHelpers'
+import { Operation, DataMapper, Data, State, Options } from '../types'
+import { getStateValue, contextFromState } from '../utils/stateHelpers'
 
-export interface FilterFunction {
-  (data: Data): boolean
-}
+export default function filter (fn: DataMapper<Data, boolean>): Operation {
+  return (_options: Options) => {
+    if (typeof fn !== 'function') {
+      return identity
+    }
 
-export default function filter (fn: FilterFunction): MapFunction {
-  if (typeof fn !== 'function') {
-    return identity
+    return (state: State) => {
+      const run = (data: Data) => fn(data, contextFromState(state))
+
+      const runFilter = compose(
+        ifElse(
+          Array.isArray,
+          filterR(run),
+          unless(run, always(undefined))
+        ),
+        getStateValue
+      )
+
+      return {
+        ...state,
+        value: runFilter(state)
+      }
+    }
   }
-
-  const runFilter = compose(
-    ifElse(
-      Array.isArray,
-      filterR(fn),
-      unless(fn, always(undefined))
-    ),
-    getStateValue
-  )
-
-  return (state: State) => ({
-    ...state,
-    value: runFilter(state)
-  })
 }

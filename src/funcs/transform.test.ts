@@ -1,12 +1,15 @@
 import test from 'ava'
-import * as sinon from 'sinon'
+import sinon = require('sinon')
+import { Data } from '../types'
 
-import transform, { TransformFunction } from './transform'
+import transform from './transform'
 
-// Helpers
+// Setup
 
-const upper: TransformFunction = (str) => (typeof str === 'string') ? str.toUpperCase() : str
-const lower: TransformFunction = (str) => (typeof str === 'string') ? str.toLowerCase() : str
+const upper = (str: Data) => (typeof str === 'string') ? str.toUpperCase() : str
+const lower = (str: Data) => (typeof str === 'string') ? str.toLowerCase() : str
+
+const options = {}
 
 // Tests
 
@@ -22,7 +25,7 @@ test('should run transform function on value', (t) => {
     value: 'ENTRY 1'
   }
 
-  const ret = transform(upper)(state)
+  const ret = transform(upper)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -34,7 +37,7 @@ test('should not touch value run with anything else than a function', (t) => {
     value: 'Entry 1'
   }
 
-  const ret = transform('wrong' as any)(state)
+  const ret = transform('wrong' as any)(options)(state)
 
   t.deepEqual(ret, state)
 })
@@ -53,7 +56,7 @@ test('should run transform in reverse', (t) => {
     rev: true
   }
 
-  const ret = transform(upper)(state)
+  const ret = transform(upper)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -72,7 +75,7 @@ test('should run dedicated transform in reverse', (t) => {
     rev: true
   }
 
-  const ret = transform(upper, lower)(state)
+  const ret = transform(upper, lower)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -91,7 +94,7 @@ test('should not mind reverse transform going forward', (t) => {
     rev: false
   }
 
-  const ret = transform(upper, lower)(state)
+  const ret = transform(upper, lower)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -110,7 +113,7 @@ test('should pass rev and onlyMapped to transform function', (t) => {
     onlyMappedValues: true
   }
 
-  transform(fn)(state)
+  transform(fn)(options)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })
@@ -129,7 +132,7 @@ test('should pass rev and onlyMapped to rev transform function', (t) => {
     onlyMappedValues: false
   }
 
-  transform(upper, fn)(state)
+  transform(upper, fn)(options)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })

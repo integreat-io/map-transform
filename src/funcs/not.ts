@@ -1,5 +1,5 @@
-import { FilterFunction } from './filter'
+import { DataMapper, Data } from '../types'
 
-export default function not (fn: FilterFunction): FilterFunction {
-  return (value) => !fn(value)
+export default function not (fn: DataMapper<Data, boolean>): DataMapper<Data, boolean> {
+  return (value, context) => !fn(value, context)
 }

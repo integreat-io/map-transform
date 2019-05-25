@@ -1,5 +1,5 @@
 import { compose } from 'ramda'
-import { MapDefinition, MapTransform, MapFunction, State, Data, OperationsStore } from './types'
+import { MapDefinition, MapTransform, State, StateMapper, Data, Options } from './types'
 import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
 import objectToMapFunction from './utils/objectToMapFunction'
@@ -15,32 +15,27 @@ export { default as validate } from './funcs/validate'
 export { default as not } from './funcs/not'
 export { default as plug } from './funcs/plug'
 export { default as lookup } from './funcs/lookup'
-export { default as transform, TransformFunction } from './funcs/transform'
-export { default as operation } from './funcs/operation'
-export { default as filter, FilterFunction } from './funcs/filter'
+export { default as transform } from './funcs/transform'
+export { default as filter } from './funcs/filter'
 export { fwd, rev, divide } from './funcs/directionals'
-export { Data } from './types'
+export { Data, CustomFunction, DataMapper } from './types'
 
-export interface Options {
-  operations?: OperationsStore
-}
-
-const composeMapFunction = (mapFn: MapFunction, initialState: Partial<State>) => {
+const composeMapFunction = (mapFn: StateMapper, initialState: Partial<State>) => {
   const map = compose(getStateValue, mapFn, populateState(initialState))
   return (data: Data) => (typeof data === 'undefined') ? undefined : map(data)
 }
 
-export function mapTransform (def: MapDefinition, { operations }: Options = {}): MapTransform {
-  const mapFn = (isMapObject(def)) ? objectToMapFunction(def) : mapFunctionFromDef(def)
+export function mapTransform (def: MapDefinition, options: Options = {}): MapTransform {
+  const mapFn = (isMapObject(def)) ? objectToMapFunction(def, options) : mapFunctionFromDef(def, options)
 
   return Object.assign(
-    composeMapFunction(mapFn, { operations }),
+    composeMapFunction(mapFn, {}),
     {
-      onlyMappedValues: composeMapFunction(mapFn, { operations, onlyMapped: true }),
+      onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),
       rev: Object.assign(
-        composeMapFunction(mapFn, { operations, rev: true }),
+        composeMapFunction(mapFn, { rev: true }),
         {
-          onlyMappedValues: composeMapFunction(mapFn, { operations, rev: true, onlyMapped: true })
+          onlyMappedValues: composeMapFunction(mapFn, { rev: true, onlyMapped: true })
         }
       )
     }

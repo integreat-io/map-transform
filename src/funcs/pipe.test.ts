@@ -3,6 +3,12 @@ import { get } from './getSet'
 
 import pipe from './pipe'
 
+// Setup
+
+const options = {}
+
+// Tests
+
 test('should run map pipe', (t) => {
   const def = [get('data'), get('name')]
   const state = {
@@ -16,7 +22,7 @@ test('should run map pipe', (t) => {
     value: 'John F.'
   }
 
-  const ret = pipe(def)(state)
+  const ret = pipe(def)(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -30,7 +36,7 @@ test('should treat string as path', (t) => {
   }
   const expectedValue = 'John F.'
 
-  const ret = pipe(def)(state)
+  const ret = pipe(def)(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -44,7 +50,7 @@ test('should treat object as map object', (t) => {
   }
   const expectedValue = { fullName: 'John F.' }
 
-  const ret = pipe(def)(state)
+  const ret = pipe(def)(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -64,7 +70,7 @@ test('should reverse map pipe on reverse mapping', (t) => {
     rev: true
   }
 
-  const ret = pipe(def)(state)
+  const ret = pipe(def)(options)(state)
 
   t.deepEqual(ret, expected)
 })

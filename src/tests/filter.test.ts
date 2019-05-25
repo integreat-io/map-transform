@@ -1,15 +1,15 @@
 import test from 'ava'
 
-import { mapTransform, filter, fwd, rev, compare, validate, not, FilterFunction, Data } from '..'
+import { mapTransform, filter, fwd, rev, compare, validate, not, Data } from '..'
 
 // Helpers
 
 const isObject = (item: Data): item is object => (!!item && typeof item === 'object')
 
-const noHeadingTitle: FilterFunction = (item) =>
+const noHeadingTitle = (item: Data) =>
   (isObject(item)) && !(/heading/gi).test((item as any).title)
 
-const noAlso: FilterFunction = (item) => (isObject(item)) && !(/also/gi).test((item as any).title)
+const noAlso = (item: Data) => (isObject(item)) && !(/also/gi).test((item as any).title)
 
 // Tests
 

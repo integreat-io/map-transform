@@ -2,6 +2,12 @@ import test from 'ava'
 
 import lookup from './lookup'
 
+// Setup
+
+const options = {}
+
+// Tests
+
 test('should lookup data', (t) => {
   const data = {
     content: { author: 'user2' },
@@ -23,7 +29,7 @@ test('should lookup data', (t) => {
     value: { id: 'user2', name: 'User 2' }
   }
 
-  const ret = lookup('$related.users[]', 'id')(state)
+  const ret = lookup('$related.users[]', 'id')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -50,7 +56,7 @@ test('should lookup array of data', (t) => {
     value: [{ id: 'user1', name: 'User 1' }, {  id: 'user3', name: 'User 3' }]
   }
 
-  const ret = lookup('$related.users[]', 'id')(state)
+  const ret = lookup('$related.users[]', 'id')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -65,7 +71,7 @@ test('should set value to undefined when missing array', (t) => {
     value: 'user2'
   }
 
-  const ret = lookup('$related.users', 'id')(state)
+  const ret = lookup('$related.users', 'id')(options)(state)
 
   t.is(ret.value, undefined)
 })
@@ -86,7 +92,7 @@ test('should set value to undefined when no match', (t) => {
     value: 'user3'
   }
 
-  const ret = lookup('$related.users[]', 'id')(state)
+  const ret = lookup('$related.users[]', 'id')(options)(state)
 
   t.is(ret.value, undefined)
 })
@@ -106,7 +112,7 @@ test('should get lookup prop in reverse', (t) => {
     rev: true
   }
 
-  const ret = lookup('$related.users[]', 'id')(state)
+  const ret = lookup('$related.users[]', 'id')(options)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -126,7 +132,7 @@ test('should get lookup prop on array in reverse', (t) => {
     rev: true
   }
 
-  const ret = lookup('$related.users[]', 'id')(state)
+  const ret = lookup('$related.users[]', 'id')(options)(state)
 
   t.deepEqual(ret, expected)
 })

@@ -64,7 +64,9 @@ type MapPipeSimple = (MapObject | Operation | OperationObject | Path)[]
 export type MapPipe = (MapObject | Operation | OperationObject | Path | MapPipeSimple)[]
 
 export interface MapObject {
-  [key: string]: MapDefinition
+  [key: string]: MapDefinition | undefined,
+  $op?: undefined,
+  $fn?: undefined
 }
 
 export type MapDefinition = MapObject | Operation | OperationObject | MapPipe | Path | null

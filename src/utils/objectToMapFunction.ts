@@ -1,5 +1,5 @@
 import { compose, mergeDeepWith } from 'ramda'
-import { MapDefinition, Operation, StateMapper, MapPipe, Path, State, Data, OperationObject, Options } from '../types'
+import { MapDefinition, MapObject, Operation, StateMapper, MapPipe, Path, State, Data, OperationObject, Options } from '../types'
 import { setStateValue, pipeMapFns, liftState, lowerState } from './stateHelpers'
 import { set } from '../funcs/getSet'
 import { rev } from '../funcs/directionals'
@@ -29,13 +29,14 @@ const pipeWithSetPath = (existing: MapPipe | Path | Operation | OperationObject,
   return (typeof index === 'undefined') ? [fn(options)] : [rev(fn)(options)]
 }
 
-const extractSetFns = (def: MapDefinition, options: Options, path: string[] = []): StateMapper[] => (isMapObject(def))
+const extractSetFns = (def: MapDefinition | undefined, options: Options, path: string[] = []): StateMapper[] => (isMapObject(def))
   ? Object.keys(def).reduce(
     (sets: StateMapper[], key: string) => [ ...sets, ...extractSetFns(def[key], options, appendToPath(path, key)) ],
     [])
-  : (def === null) ? [] : pipeWithSetPath(def, options, path)
+  : (def === null || typeof def === 'undefined')
+    ? [] : pipeWithSetPath(def, options, path)
 
-export default function objectToMapFunction (def: MapDefinition, options: Options) {
+export default function objectToMapFunction (def: MapObject, options: Options) {
   const fns = extractSetFns(def, options)
   return compose(pipeMapFns(fns), liftState)
 }

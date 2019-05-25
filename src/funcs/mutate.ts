@@ -1,9 +1,9 @@
 import * as mapAny from 'map-any'
-import { Operation, State, MapDefinition, Options } from '../types'
+import { Operation, State, MapObject, Options } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import objectToMapFunction from '../utils/objectToMapFunction'
 
-export default function mutate (def: MapDefinition): Operation {
+export default function mutate (def: MapObject): Operation {
   return (options: Options) => {
     const runMutation = objectToMapFunction(def, options)
 

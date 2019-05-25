@@ -238,7 +238,7 @@ test('should apply transform from an operation object with arguments', (t) => {
       title: 'content.heading'
     },
     { $op: 'transform', $fn: 'appendToTitle', text: ' - archived' }
-  ] as MapDefinition
+  ]
   const data = {
     content: { heading: 'The heading' }
   }

@@ -1,5 +1,5 @@
 import test from 'ava'
-import { get } from '../funcs/getSet'
+import { get } from '../operations/getSet'
 
 import { mapTransform, alt, value, fwd, rev } from '..'
 

@@ -1,9 +1,9 @@
 import { compose, mergeDeepWith } from 'ramda'
 import { MapDefinition, MapObject, Operation, StateMapper, MapPipe, Path, State, Data, OperationObject, Options } from '../types'
 import { setStateValue, pipeMapFns, liftState, lowerState } from './stateHelpers'
-import { set } from '../funcs/getSet'
-import { rev } from '../funcs/directionals'
-import pipe from '../funcs/pipe'
+import { set } from '../operations/getSet'
+import { rev } from '../operations/directionals'
+import pipe from '../operations/pipe'
 import { isMapObject } from './definitionHelpers'
 import { mergeExisting } from './pathSetter'
 

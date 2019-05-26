@@ -1,10 +1,10 @@
 import { identity } from 'ramda'
 import { Operation, StateMapper, DataMapper, Data, MapDefinition, MapObject, Path, MapPipe, OperationObject, Options, CustomFunctions } from '../types'
-import { get } from '../funcs/getSet'
-import mutate from '../funcs/mutate'
-import pipe from '../funcs/pipe'
-import transform from '../funcs/transform'
-import filter from '../funcs/filter'
+import { get } from '../operations/getSet'
+import mutate from '../operations/mutate'
+import pipe from '../operations/pipe'
+import transform from '../operations/transform'
+import filter from '../operations/filter'
 
 const isObject = (def: MapDefinition): def is { [key: string]: any } =>
   typeof def === 'object' && def !== null && !Array.isArray(def)

@@ -6,10 +6,14 @@ import { mapTransform, filter, fwd, rev, compare, validate, not, Data } from '..
 
 const isObject = (item: Data): item is object => (!!item && typeof item === 'object')
 
-const noHeadingTitle = (item: Data) =>
+const noHeadingTitle = () => (item: Data) =>
   (isObject(item)) && !(/heading/gi).test((item as any).title)
 
 const noAlso = (item: Data) => (isObject(item)) && !(/also/gi).test((item as any).title)
+
+const customFunctions = {
+  noHeadingTitle
+}
 
 // Tests
 
@@ -18,7 +22,7 @@ test('should filter out item', (t) => {
     {
       title: 'content.heading'
     },
-    filter(noHeadingTitle)
+    filter(noHeadingTitle())
   ]
   const data = {
     content: { heading: 'The heading' }
@@ -35,7 +39,7 @@ test('should filter out items in array', (t) => {
     {
       title: 'content.heading'
     },
-    filter(noHeadingTitle)
+    filter(noHeadingTitle())
   ]
   const data = [
     { content: { heading: 'The heading' } },
@@ -56,7 +60,7 @@ test('should filter with several filters', (t) => {
     {
       title: 'content.heading'
     },
-    filter(noHeadingTitle),
+    filter(noHeadingTitle()),
     filter(noAlso)
   ]
   const data = [
@@ -80,7 +84,7 @@ test('should set filtered items on path', (t) => {
       {
         title: 'content.heading'
       },
-      filter(noHeadingTitle)
+      filter(noHeadingTitle())
     ]
   }
   const data = [
@@ -104,7 +108,7 @@ test('should filter items from parent mapping for reverse mapping', (t) => {
       {
         title: 'content.heading'
       },
-      filter(noHeadingTitle)
+      filter(noHeadingTitle())
     ]
   }
   const data = {
@@ -127,7 +131,7 @@ test('should filter on reverse mapping', (t) => {
     {
       title: 'content.heading'
     },
-    filter(noHeadingTitle),
+    filter(noHeadingTitle()),
     filter(noAlso)
   ]
   const data = [
@@ -151,7 +155,7 @@ test('should use directional filters - going forward', (t) => {
       title: 'content.heading'
     },
     fwd(filter(noAlso)),
-    rev(filter(noHeadingTitle))
+    rev(filter(noHeadingTitle()))
   ]
   const data = [
     { content: { heading: 'The heading' } },
@@ -176,7 +180,7 @@ test('should use directional filters - going reverse', (t) => {
       title: 'content.heading'
     },
     fwd(filter(noAlso)),
-    rev(filter(noHeadingTitle))
+    rev(filter(noHeadingTitle()))
   ]
   const data = [
     { title: 'The heading' },
@@ -197,7 +201,7 @@ test('should use directional filters - going reverse', (t) => {
 test('should filter before mapping', (t) => {
   const def = [
     'content',
-    filter(noHeadingTitle),
+    filter(noHeadingTitle()),
     {
       heading: 'title'
     }
@@ -215,7 +219,7 @@ test('should filter before mapping', (t) => {
 test('should filter with filter before mapping on reverse mapping', (t) => {
   const def = [
     'content',
-    filter(noHeadingTitle),
+    filter(noHeadingTitle()),
     {
       heading: 'title'
     }
@@ -287,6 +291,42 @@ test('should filter with validate', (t) => {
   ]
 
   const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply filter from operation object', (t) => {
+  const def = [
+    {
+      title: 'content.heading'
+    },
+    { $op: 'filter', $fn: 'noHeadingTitle' }
+  ]
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = undefined
+
+  const ret = mapTransform(def, { customFunctions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip filter when unknown function', (t) => {
+  const def = [
+    {
+      title: 'content.heading'
+    },
+    { $op: 'filter', $fn: 'unknown' }
+  ]
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = {
+    title: 'The heading'
+  }
+
+  const ret = mapTransform(def, { customFunctions })(data)
 
   t.deepEqual(ret, expected)
 })

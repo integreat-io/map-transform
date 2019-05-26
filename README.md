@@ -388,7 +388,7 @@ import { mapTransform } from 'map-transform'
 
 const ensureInteger = (operands) => (data) => Number.parseInt(data, 10) || 0
 const customFunctions = { ensureInteger }
-const def7withObject = {
+const def7asObject = {
   count: ['statistics.views', { $op: 'transform', $fn: 'ensureInteger' }]
 }
 
@@ -399,7 +399,7 @@ const data = {
   }
 }
 
-mapTransform(def7withObject, { customFunctions })(data)
+mapTransform(def7asObject, { customFunctions })(data)
 // --> {
 //   count: 18
 // }
@@ -446,6 +446,25 @@ const def9 = [
   filter(onlyActives)
 ]
 ```
+
+Defining a filter operation as an object:
+
+```javascript
+import { mapTransform } from 'map-transform'
+
+const onlyActives = (data) => data.active
+const customFunctions = { onlyActives }
+const def9asObject = [
+  'members'
+  {
+    name: 'name',
+    active: 'hasPayed'
+  },
+  { $op: 'filter', $fn: 'onlyActives' }
+]
+```
+
+See the `transform()` operation on how defining as an object works.
 
 #### `value(data)` operation
 The data given to the value operation, will be inserted in the pipeline in place

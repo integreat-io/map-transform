@@ -21,7 +21,7 @@ export interface DataMapper<U = Data, V = Data> {
   (data: U, context: Context): V
 }
 
-export interface CustomFunction<T = Operands, U = Data, V = Data> {
+export interface CustomFunction<T = Operands, U = Data, V = Data | boolean> {
   (operands: T): DataMapper<U, V>
 }
 

@@ -1,6 +1,7 @@
 import test from 'ava'
 
-import { mapTransform, filter, fwd, rev, compare, validate, not, Data } from '..'
+import { mapTransform, filter, fwd, rev, validate, not, Data, functions } from '..'
+const { compare } = functions
 
 // Helpers
 
@@ -242,7 +243,7 @@ test('should filter with compare helper', (t) => {
         section: 'section'
       }
     },
-    filter(compare('meta.section', 'news'))
+    filter(compare({ path: 'meta.section', match: 'news' }))
   ]
   const data = { heading: 'The heading', section: 'fashion' }
   const expected = undefined
@@ -260,7 +261,7 @@ test('should filter with not and compare helpers', (t) => {
         section: 'section'
       }
     },
-    filter(not(compare('meta.section', 'news')))
+    filter(not(compare({ path: 'meta.section', match: 'news' })))
   ]
   const data = { heading: 'The heading', section: 'fashion' }
   const expected = {
@@ -308,6 +309,23 @@ test('should apply filter from operation object', (t) => {
   const expected = undefined
 
   const ret = mapTransform(def, { customFunctions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply filter with compare function from operation object', (t) => {
+  const def = [
+    {
+      title: 'content.heading'
+    },
+    { $op: 'filter', $fn: 'compare', path: 'title', operator: '=', match: 'Other heading' }
+  ]
+  const data = {
+    content: { heading: 'The heading' }
+  }
+  const expected = undefined
+
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

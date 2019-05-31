@@ -17,7 +17,7 @@ export interface Context {
   onlyMappedValues: boolean
 }
 
-export interface DataMapper<U = Data, V = Data> {
+export interface DataMapper<U = Data, V = Data | boolean> {
   (data: U, context: Context): V
 }
 
@@ -42,10 +42,15 @@ export interface Options {
   customFunctions?: CustomFunctions
 }
 
-export interface OperationObject extends Operands {
-  $op: string,
-  $fn?: string
+export interface TransformObject extends Operands {
+  $transform: string
 }
+
+export interface FilterObject extends Operands {
+  $filter: string
+}
+
+export type OperationObject = TransformObject | FilterObject
 
 export interface StateMapper {
   (state: State): State
@@ -65,8 +70,8 @@ export type MapPipe = (MapObject | Operation | OperationObject | Path | MapPipeS
 
 export interface MapObject {
   [key: string]: MapDefinition | undefined,
-  $op?: undefined,
-  $fn?: undefined
+  $transform?: undefined,
+  $filter?: undefined
 }
 
 export type MapDefinition = MapObject | Operation | OperationObject | MapPipe | Path | null

@@ -301,7 +301,7 @@ test('should apply filter from operation object', (t) => {
     {
       title: 'content.heading'
     },
-    { $op: 'filter', $fn: 'noHeadingTitle' }
+    { $filter: 'noHeadingTitle' }
   ]
   const data = {
     content: { heading: 'The heading' }
@@ -318,7 +318,7 @@ test('should apply filter with compare function from operation object', (t) => {
     {
       title: 'content.heading'
     },
-    { $op: 'filter', $fn: 'compare', path: 'title', operator: '=', match: 'Other heading' }
+    { $filter: 'compare', path: 'title', operator: '=', match: 'Other heading' }
   ]
   const data = {
     content: { heading: 'The heading' }
@@ -335,7 +335,7 @@ test('should skip filter when unknown function', (t) => {
     {
       title: 'content.heading'
     },
-    { $op: 'filter', $fn: 'unknown' }
+    { $filter: 'unknown' }
   ]
   const data = {
     content: { heading: 'The heading' }

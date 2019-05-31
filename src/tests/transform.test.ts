@@ -1,5 +1,5 @@
 import test from 'ava'
-import { Operands, MapDefinition } from '../types'
+import { Operands } from '../types'
 
 import { mapTransform, transform, rev, Data } from '..'
 
@@ -216,7 +216,7 @@ test('should apply transform from an operation object', (t) => {
     {
       titleLength: [
         'content.heading',
-        { $op: 'transform', $fn: 'getLength' }
+        { $transform: 'getLength' }
       ]
     }
   ]
@@ -237,7 +237,7 @@ test('should apply transform from an operation object with arguments', (t) => {
     {
       title: 'content.heading'
     },
-    { $op: 'transform', $fn: 'appendToTitle', text: ' - archived' }
+    { $transform: 'appendToTitle', text: ' - archived' }
   ]
   const data = {
     content: { heading: 'The heading' }
@@ -251,35 +251,13 @@ test('should apply transform from an operation object with arguments', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip unknown operation', (t) => {
-  const def = [
-    {
-      titleLength: [
-        'content.heading',
-        { $op: 'transform', $fn: 'getLength' },
-        { $op: 'unknown' }
-      ]
-    }
-  ]
-  const data = {
-    content: { heading: 'The heading' }
-  }
-  const expected = {
-    titleLength: 11
-  }
-
-  const ret = mapTransform(def, { customFunctions })(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should skip unknown customer function', (t) => {
   const def = [
     {
       titleLength: [
         'content.heading',
-        { $op: 'transform', $fn: 'getLength' },
-        { $op: 'transform', $fn: 'unknown' }
+        { $transform: 'getLength' },
+        { $transform: 'unknown' }
       ]
     }
   ]

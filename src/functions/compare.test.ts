@@ -72,6 +72,15 @@ test('should return false for unknown operator', (t) => {
   t.false(ret)
 })
 
+test('should use . as path when no path', (t) => {
+  const match = 'admin'
+  const data = 'admin'
+
+  const ret = compare({ match })(data)
+
+  t.true(ret)
+})
+
 test('should return true when not equal', (t) => {
   const match = 'admin'
   const path = 'meta.role'

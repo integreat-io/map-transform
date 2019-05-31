@@ -5,6 +5,12 @@ interface Comparer {
   (value: Data): boolean
 }
 
+interface Options extends Operands {
+  path?: string,
+  operator?: string,
+  match?: Prop
+}
+
 const not = (comparer: Comparer) => (value: Data) => !comparer(value)
 
 const compareArrayOrValue = (comparer: Comparer) =>
@@ -32,7 +38,7 @@ function createComparer (operator: string, match: Prop) {
   }
 }
 
-export default function compare ({ path, operator = '=', match }: Operands) {
+export default function compare ({ path = '.', operator = '=', match }: Options) {
   const getFn = getter(path)
 
   const comparer = createComparer(operator, match)

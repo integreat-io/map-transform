@@ -1,6 +1,6 @@
 {
   "name": "map-transform",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Map and transform objects with mapping definitions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -63,23 +63,23 @@
   },
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
-    "@types/ramda": "^0.26.8",
+    "@types/ramda": "^0.26.9",
     "ajv": "^6.10.0",
     "map-any": "^0.1.2",
     "ramda": "^0.26.1"
   },
   "devDependencies": {
     "@types/deep-freeze": "^0.1.1",
-    "@types/sinon": "^7.0.11",
+    "@types/sinon": "^7.0.12",
     "ava": "^1.4.1",
     "babel-preset-env": "^1.7.0",
     "coveralls": "^3.0.3",
     "deep-freeze": "0.0.1",
     "nyc": "^14.1.1",
     "sinon": "^7.3.2",
-    "ts-node": "^8.1.0",
-    "tslint": "^5.16.0",
+    "ts-node": "^8.2.0",
+    "tslint": "^5.17.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.4.5"
+    "typescript": "^3.5.1"
   }
 }

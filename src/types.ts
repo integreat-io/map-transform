@@ -9,7 +9,7 @@ export type Data = Prop | Prop[]
 export type Path = string
 
 export interface Operands {
-  [key: string]: any
+  [key: string]: Data
 }
 
 export interface Context {

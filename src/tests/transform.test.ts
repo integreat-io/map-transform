@@ -272,3 +272,19 @@ test('should skip unknown customer function', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should use built in join function', (t) => {
+  const def = {
+    title: ['content', { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }]
+  }
+  const data = {
+    content: { heading: 'The heading', meta: { user: 'johnf' } }
+  }
+  const expected = {
+    title: 'The heading - johnf'
+  }
+
+  const ret = mapTransform(def, { customFunctions })(data)
+
+  t.deepEqual(ret, expected)
+})

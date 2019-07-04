@@ -18,7 +18,7 @@ export { default as lookup } from './operations/lookup'
 export { default as transform } from './operations/transform'
 export { default as filter } from './operations/filter'
 export { fwd, rev, divide } from './operations/directionals'
-export { Data, CustomFunction, DataMapper } from './types'
+export { Data, CustomFunction, DataMapper, MapDefinition } from './types'
 export const functions = functionsObject
 
 const composeMapFunction = (mapFn: StateMapper, initialState: Partial<State>) => {

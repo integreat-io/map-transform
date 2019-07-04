@@ -304,3 +304,27 @@ test('should use built in get function', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should apply transform function to array', (t) => {
+  const def = [
+    'content',
+    {
+      title: [{ $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }]
+    }
+  ]
+  const data = {
+    content: [
+      { heading: 'The heading', meta: { user: 'johnf' } },
+      { heading: 'The other', meta: { user: 'maryk' } }
+    ]
+  }
+
+  const expected = [
+    { title: 'The heading - johnf' },
+    { title: 'The other - maryk' }
+  ]
+
+  const ret = mapTransform(def, { customFunctions })(data)
+
+  t.deepEqual(ret, expected)
+})

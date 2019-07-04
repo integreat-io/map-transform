@@ -11,13 +11,14 @@ Map and transform objects with mapping definitions.
 Behind this boring name hides a powerful object transformer.
 
 Some highlighted features:
+
 - You pretty much define the transformation by creating the JavaScript object
-you want as a result, setting paths and transformation functions, etc. where
-they apply.
+  you want as a result, setting paths and transformation functions, etc. where
+  they apply.
 - There's a concept of a transform pipeline, that your data is passed through,
-and you define pipelines anywhere you'd like on the target object.
+  and you define pipelines anywhere you'd like on the target object.
 - By defining a mapping from one object to another, you have at the same time
-defined a mapping back to the original format (with some gotchas).
+  defined a mapping back to the original format (with some gotchas).
 
 Let's look at a simple example:
 
@@ -104,14 +105,14 @@ const { mapTransform, transform } = require('map-transform')
 // ....
 
 // Write a transform function, that accepts a value and returns a value
-const msToDate = (ms) => (new Date(ms)).toISOString()
+const msToDate = ms => new Date(ms).toISOString()
 
 const def3 = [
   'data[0].content',
   {
     title: 'name',
     author: 'meta.author',
-    date: [ 'meta.date', transform(msToDate) ]
+    date: ['meta.date', transform(msToDate)]
   }
 ]
 
@@ -149,6 +150,7 @@ npm install map-transform --save
 Think of the transform object as a description of the object structure you want.
 
 #### Keys on the transform object
+
 In essence, the keys on the transform object will be the keys on the target
 object. You may, however, specify a key with dot notation, which will be split
 out to child objects on the target. You can also specify the child objects
@@ -334,14 +336,14 @@ on an object. You would probably just not get the end result you expected.
 ```javascript
 import { mapTransform, transform } from 'map-transform'
 
-const ensureInteger = (data) => Number.parseInt(data, 10) || 0
+const ensureInteger = data => Number.parseInt(data, 10) || 0
 const def7 = {
   count: ['statistics.views', transform(ensureInteger)]
 }
 
 const data = {
   statistics: {
-    view: '18',
+    view: '18'
     // ...
   }
 }
@@ -360,6 +362,7 @@ particular case.
 
 The functions you provide for the transform operation are expected to be pure,
 i.e. they should not have any side effects. This means they should
+
 1. not alter the data their are given, and
 2. not rely on any state outside the function
 
@@ -375,6 +378,7 @@ that would accept the current date (or any date) as the first argument. This
 would be a truly pure function.
 
 Example transformation pipeline with a `yearsSince` function:
+
 ```javascript
 const def8 = {
   age: ['birthyear', yearsSince(new Date())]
@@ -386,7 +390,7 @@ You may also define a transform operation as an object:
 ```javascript
 import { mapTransform } from 'map-transform'
 
-const ensureInteger = (operands) => (data) => Number.parseInt(data, 10) || 0
+const ensureInteger = operands => data => Number.parseInt(data, 10) || 0
 const customFunctions = { ensureInteger }
 const def7asObject = {
   count: ['statistics.views', { $transform: 'ensureInteger' }]
@@ -394,7 +398,7 @@ const def7asObject = {
 
 const data = {
   statistics: {
-    view: '18',
+    view: '18'
     // ...
   }
 }
@@ -433,6 +437,7 @@ it is expected and absolutely necessary, rely on states outside the function.
 See the explanation of this under the transform operation above.
 
 Example of a filter, where only data of active members are returned:
+
 ```javascript
 import { mapTransform, filter } from 'map-transform'
 
@@ -467,15 +472,18 @@ const def9asObject = [
 See the `transform()` operation on how defining as an object works.
 
 #### `value(data)` operation
+
 The data given to the value operation, will be inserted in the pipeline in place
 of any data that is already present at that point. The data may be an object,
 a string, a number, a boolean, or an array of any of those.
 
 This could be useful for:
+
 - Setting a fixed value on a property in the target data
 - Providing a default value to the alt operation
 
 Example of both:
+
 ```javascript
 import { value, alt } from 'map-transform'
 
@@ -489,6 +497,7 @@ const def10 = {
 The operation will not set anything when mapping with `.onlyMappedValues()`.
 
 #### `fixed(data)` operation
+
 The data given to the fixed operation, will be inserted in the pipeline in place
 of any data that is already present at that point. The data may be an object,
 a string, a number, a boolean, or an array of any of those.
@@ -497,6 +506,7 @@ This is exactly the same as `value()`, except that the value set with `fixed()`
 will be included when mapping with `.onlyMappedValues()` as well.
 
 #### `alt(pipeline)` operation
+
 The alt operation will apply the function or pipeline it is given when the data
 already in the pipeline is `undefined`. This is how you provide default values
 in MapTransform. The pipeline may be as simple as a `value()` operation, a dot
@@ -504,8 +514,10 @@ notation path into the source data, or a full pipeline of several operations.
 
 ```javascript
 import { alt, transform, value } from 'map-transform'
-const currentDate = (data) => new Date()
-const formatDate = (data) => { /* implementation not included */ }
+const currentDate = data => new Date()
+const formatDate = data => {
+  /* implementation not included */
+}
 
 const def11 = {
   id: 'data.id',
@@ -526,6 +538,18 @@ we still have `undefined`, the second alt will call a transform operation with
 the `currentDate` function, that simply returns the current date as a JS object.
 Finally, another transform operation pipes whatever data we get from all of this
 through the `formatDate` function.
+
+You may also define an alt operation as an object:
+
+```javascript
+const def11asObject = {
+  id: 'data.id',
+  name: ['data.name', { $transform: 'alt', value: 'Anonymous' }]
+}
+```
+
+For now, only the value operand is supported. In the example above, the value
+`'Anonymous'` will be used when `data.name` is undefined.
 
 #### `concat(pipeline, pipeline, ...)` operation
 
@@ -549,8 +573,8 @@ pipeline when we're mapping in reverse.
 
 ```javascript
 import { fwd, rev, transform } from 'map-transform'
-const increment = (data) => data + 1
-const decrement = (data) => data - 1
+const increment = data => data + 1
+const decrement = data => data - 1
 
 const def12 = {
   order: ['index', fwd(transform(increment)), rev(transform(decrement))]
@@ -575,6 +599,7 @@ is a pipeline to use when going forward and the second when going in reverse.
 See `fwd()` and `rev()` for more details.
 
 #### `get(path)` and `set(path)` operation
+
 Both the `get()` and `set()` operations accepts a dot notation path to act on.
 The get operation will pull the data at the path in the source data, and insert
 it in the pipeline, while the set operation will take what's in the pipeline
@@ -587,10 +612,7 @@ operation will set and the set operation will get.
 ```javascript
 import { get, set } from 'map-transform'
 
-const def13 = [
-  get('data.items[].content'),
-  set('content[]')
-]
+const def13 = [get('data.items[].content'), set('content[]')]
 ```
 
 In the example above, the get operation will return an array of whatever is in
@@ -605,6 +627,7 @@ alternative to using get and set operations, and will be converted to get and
 set operations behind the curtains.
 
 This example results in the exact same pipeline as the example above:
+
 ```javascript
 const def14 = {
   'content[]': 'data.items[].content'
@@ -627,6 +650,7 @@ root pipeline will still be applied at the point you are in the parent pipeline,
 so this is not a way to alter data out of the pipeline.
 
 Let's look at an example:
+
 ```javascript
 import { mapTransform, root } from 'map-transform'
 
@@ -640,7 +664,7 @@ const def15 = [
 ]
 
 const data = {
-  articles: [ { id: '1', headline: 'An article' }, /* ... */ ],
+  articles: [{ id: '1', headline: 'An article' } /* ... */],
   meta: { section: 'news' }
 }
 
@@ -661,6 +685,7 @@ plugged when used as set (i.e., it will return no value). This may be used in
 `get()` and `set()` operations, and in transformation objects.
 
 In the following example, `def16` and `def17` is exactly the same:
+
 ```javascript
 const def16 = get('$meta.section')
 const def17 = divide(root('meta.section'), plug())
@@ -694,17 +719,15 @@ MapTransform might support setting the items back on the `arrayPath` in
 reverse.)
 
 Example:
+
 ```javascript
-const def18 = [
-  'content.meta.authors[]',
-  lookup('$users[]', 'id')
-]
+const def18 = ['content.meta.authors[]', lookup('$users[]', 'id')]
 const data = {
   content: { meta: { authors: ['user1', 'user3'] } },
   users: [
-    { id: 'user1', name: 'User 1'},
-    { id: 'user2', name: 'User 2'},
-    { id: 'user3', name: 'User 3'}
+    { id: 'user1', name: 'User 1' },
+    { id: 'user2', name: 'User 2' },
+    { id: 'user3', name: 'User 3' }
   ]
 }
 const mapper = mapTransform(def18)
@@ -727,6 +750,7 @@ does not not have the value set at the provided path. If the path points to an
 array, the value is expected to be one of the values in the array.
 
 Here's an example where only data where role is set to 'admin' will be kept:
+
 ```javascript
 import { filter, compare } from 'map-transform'
 
@@ -768,6 +792,7 @@ This is useful for making the `filter()` operation do the opposite of what the
 filter function implies.
 
 Here we filter away all data where role is set to 'admin':
+
 ```javascript
 import { filter, compare } from 'map-transform'
 
@@ -795,6 +820,7 @@ you plan to map back and forth between two states – all values must be mapped 
 be able to map back to the original data.
 
 Let's see an example of reverse mapping:
+
 ```javascript
 import { mapTransform, alt, value } from 'map-transform'
 
@@ -814,13 +840,13 @@ const dataInTargetState = [
 
 const dataInSourceState = mapTransform(def22).rev(dataInTargetState)
 // --> {
-  // data: {
-  //   customers: [
-  //     { customerNo: 'cust1', fullname: 'Fred Johnsen' },
-  //     { customerNo: 'cust2', fullname: 'Lucy Knight' },
-  //     { customerNo: 'cust3', fullname: 'Anonymous' }
-  //   ]
-  // }
+// data: {
+//   customers: [
+//     { customerNo: 'cust1', fullname: 'Fred Johnsen' },
+//     { customerNo: 'cust2', fullname: 'Lucy Knight' },
+//     { customerNo: 'cust3', fullname: 'Anonymous' }
+//   ]
+// }
 // }
 ```
 
@@ -831,10 +857,11 @@ with a slash and a number, you tell MapTransform to use it in reverse, but
 skipping it going forward.
 
 For example:
+
 ```javascript
 import { mapTransform, transform } from 'map-transform'
 
-const username = (name) => name.replace(/\s+/, '.').toLowerCase()
+const username = name => name.replace(/\s+/, '.').toLowerCase()
 
 const def23 = [
   'data.customers[]',
@@ -845,17 +872,15 @@ const def23 = [
   }
 ]
 
-const dataInTargetState = [
-  { id: 'cust1', name: 'Fred Johnsen' }
-]
+const dataInTargetState = [{ id: 'cust1', name: 'Fred Johnsen' }]
 
 const dataInSourceState = mapTransform(def23).rev(dataInTargetState)
 // --> {
-  // data: {
-  //   customers: [
-  //     { customerNo: 'cust1', fullname: 'Fred Johnsen', username: 'fred.johnsen' }
-  //   ]
-  // }
+// data: {
+//   customers: [
+//     { customerNo: 'cust1', fullname: 'Fred Johnsen', username: 'fred.johnsen' }
+//   ]
+// }
 // }
 ```
 

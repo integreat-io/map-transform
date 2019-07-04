@@ -11,6 +11,7 @@ import {
   OperationObject,
   TransformObject,
   FilterObject,
+  AltObject,
   Options,
   CustomFunctions
 } from '../types'
@@ -19,19 +20,21 @@ import mutate from '../operations/mutate'
 import pipe from '../operations/pipe'
 import transform from '../operations/transform'
 import filter from '../operations/filter'
+import alt from '../operations/alt'
 
 const isObject = (def: MapDefinition): def is MapObject | OperationObject =>
   typeof def === 'object' && def !== null && !Array.isArray(def)
 
-export const hasTransformProp = (
-  def: MapObject | OperationObject
-): def is TransformObject => typeof def['$transform'] !== 'undefined'
-export const hasFilterProp = (
-  def: MapObject | OperationObject
-): def is FilterObject => typeof def['$filter'] !== 'undefined'
+export const isOperationType = <T extends OperationObject>(
+  def: MapObject | OperationObject,
+  prop: string
+): def is T => typeof def[prop] !== 'undefined'
 export const hasOperationProps = (
   def: MapObject | OperationObject
-): def is OperationObject => hasTransformProp(def) || hasFilterProp(def)
+): def is OperationObject =>
+  isOperationType<TransformObject>(def, '$transform') ||
+  isOperationType<FilterObject>(def, '$filter') ||
+  isOperationType<AltObject>(def, '$alt')
 
 export const isPath = (def: any): def is Path => typeof def === 'string'
 export const isMapObject = (def: any): def is MapObject =>
@@ -43,20 +46,22 @@ export const isOperation = (def: any): def is Operation =>
 const getOperationFunction = (
   fnId?: string,
   customFunctions?: CustomFunctions
-) =>
-  fnId &&
-  customFunctions &&
-  (typeof customFunctions[fnId] as any) === 'function'
-    ? customFunctions[fnId]
-    : undefined
+) => {
+  if (!fnId || !customFunctions) {
+    return undefined
+  }
+  const fn = customFunctions[fnId]
+  return (typeof fn as any) === 'function' ? fn : undefined
+}
 
 const createOperation = <T>(
   operationFn: (fn: DataMapper<Data, T>) => Operation,
-  fnId: string | undefined,
-  { $transform: transformFn, $filter: filterFn, ...operands }: OperationObject,
+  fnProp: string,
+  operation: OperationObject,
   options: Options
 ) => {
-  const fn = getOperationFunction(fnId, options.customFunctions)
+  const { [fnProp]: fnId, ...operands } = operation
+  const fn = getOperationFunction(fnId as string, options.customFunctions)
   return typeof fn !== 'undefined'
     ? operationFn(fn(operands) as any)(options)
     : identity // TODO: Improve typing
@@ -66,10 +71,12 @@ const operationFromObject = (
   def: OperationObject | MapObject,
   options: Options
 ) => {
-  if (hasTransformProp(def)) {
-    return createOperation(transform, def['$transform'], def, options)
-  } else if (hasFilterProp(def)) {
-    return createOperation(filter, def['$filter'], def, options)
+  if (isOperationType<TransformObject>(def, '$transform')) {
+    return createOperation(transform, '$transform', def, options)
+  } else if (isOperationType<FilterObject>(def, '$filter')) {
+    return createOperation(filter, '$filter', def, options)
+  } else if (isOperationType<AltObject>(def, '$alt')) {
+    return createOperation(alt, '$alt', def, options)
   } else {
     return mutate(def)(options)
   }

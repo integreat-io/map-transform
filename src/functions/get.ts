@@ -5,7 +5,11 @@ interface Options extends Operands {
   path?: string
 }
 
-export default function get ({ path = '.' }: Options) {
+const extractPath = (path: Options | string) =>
+  typeof path === 'string' ? path : path.path
+
+export default function get(options: Options | string) {
+  const path = extractPath(options) || '.'
   const getFn = getter(path)
 
   return (data: Data) => getFn(data)

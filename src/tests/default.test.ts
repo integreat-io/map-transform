@@ -1,7 +1,7 @@
 import test from 'ava'
-import { get } from '../operations/getSet'
-
-import { mapTransform, alt, value, fwd, rev } from '..'
+import { mapTransform, alt, fwd, rev } from '..'
+import { value } from '../functions/value'
+import get from '../functions/get'
 
 test('should use default value', t => {
   const def = {
@@ -212,10 +212,7 @@ test('should apply default value from a operation object', t => {
   const def = [
     '[]',
     {
-      title: [
-        'content.heading',
-        { $transform: 'alt', value: 'Default heading' }
-      ]
+      title: ['content.heading', { $alt: 'value', value: 'Default heading' }]
     }
   ]
   const data = [{ content: {} }, { content: { heading: 'From data' } }]

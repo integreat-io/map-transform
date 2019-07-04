@@ -1,17 +1,17 @@
 import test from 'ava'
-import { State, Options } from '../types'
+import { DataMapper } from '../types'
 
 import alt from './alt'
 
 // Helpers
 
-const getUser = (_options: Options) => (state: State) => ({ ...state, value: (state.value as any).user })
+const getUser: DataMapper = data => (data ? (data as any).user : undefined)
 
 const options = {}
 
 // Tests
 
-test('should set alt value when value is undefined', (t) => {
+test('should set alt value when value is undefined', t => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
@@ -28,7 +28,7 @@ test('should set alt value when value is undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when value is set', (t) => {
+test('should do nothing when value is set', t => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
@@ -45,7 +45,7 @@ test('should do nothing when value is set', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should treat string as path', (t) => {
+test('should treat string as path', t => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
@@ -62,7 +62,7 @@ test('should treat string as path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should treat array as map pipe', (t) => {
+test('should treat array as map pipe', t => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },

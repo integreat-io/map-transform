@@ -1,11 +1,12 @@
-import alt from './alt'
+import { value, fixed } from './value'
 import compare from './compare'
 import get from './get'
 import join from './join'
 
 export default {
-  alt,
   compare,
+  fixed,
   get,
-  join
+  join,
+  value
 }

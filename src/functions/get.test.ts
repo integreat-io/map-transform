@@ -13,7 +13,7 @@ const arrayData = ['first', 'second', 'third']
 
 // Tests
 
-test('should return value at given path', (t) => {
+test('should return value at given path', t => {
   const path = 'meta.user'
   const expected = 'johnf'
 
@@ -22,7 +22,7 @@ test('should return value at given path', (t) => {
   t.is(ret, expected)
 })
 
-test('should use . when no path', (t) => {
+test('should use . when no path', t => {
   const data = 'johnf'
   const expected = 'johnf'
 
@@ -31,7 +31,7 @@ test('should use . when no path', (t) => {
   t.is(ret, expected)
 })
 
-test('should return undefined for unknown path', (t) => {
+test('should return undefined for unknown path', t => {
   const path = 'meta.missing'
 
   const ret = get({ path })(data)
@@ -39,7 +39,7 @@ test('should return undefined for unknown path', (t) => {
   t.is(typeof ret, 'undefined')
 })
 
-test('should return item at given array index', (t) => {
+test('should return item at given array index', t => {
   const path = '[1]'
   const expected = 'second'
 
@@ -48,7 +48,7 @@ test('should return item at given array index', (t) => {
   t.is(ret, expected)
 })
 
-test('should return undefined when index is too low', (t) => {
+test('should return undefined when index is too low', t => {
   // Note: Maybe this should return last item instead ...?
   const path = '[-1]'
 
@@ -57,7 +57,7 @@ test('should return undefined when index is too low', (t) => {
   t.is(typeof ret, 'undefined')
 })
 
-test('should return undefined when index is too high', (t) => {
+test('should return undefined when index is too high', t => {
   const path = '[3]'
 
   const ret = get({ path })(arrayData)
@@ -65,10 +65,19 @@ test('should return undefined when index is too high', (t) => {
   t.is(typeof ret, 'undefined')
 })
 
-test('should return undefined when data is not an array', (t) => {
+test('should return undefined when data is not an array', t => {
   const path = '[1]'
 
   const ret = get({ path })(data)
 
   t.is(typeof ret, 'undefined')
+})
+
+test('should accept path instead of options object', t => {
+  const path = 'meta.user'
+  const expected = 'johnf'
+
+  const ret = get(path)(data)
+
+  t.is(ret, expected)
 })

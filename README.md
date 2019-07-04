@@ -509,11 +509,12 @@ will be included when mapping with `.onlyMappedValues()` as well.
 
 The alt operation will apply the function or pipeline it is given when the data
 already in the pipeline is `undefined`. This is how you provide default values
-in MapTransform. The pipeline may be as simple as a `value()` operation, a dot
+in MapTransform. The pipeline may be as simple as a `value()` function, a dot
 notation path into the source data, or a full pipeline of several operations.
 
 ```javascript
-import { alt, transform, value } from 'map-transform'
+import { alt, transform, functions } from 'map-transform'
+const { value } = functions
 const currentDate = data => new Date()
 const formatDate = data => {
   /* implementation not included */
@@ -525,7 +526,7 @@ const def11 = {
   updatedAt: [
     'data.updateDate',
     alt('data.createDate'),
-    alt(transform(currentDate)),
+    alt(currentDate),
     transform(formatDate)
   ]
 }
@@ -534,22 +535,25 @@ const def11 = {
 In the example above, we first try to set the `updatedAt` prop to the data found
 at `data.updateDate` in the source data. If that does not exist (i.e. we get
 `undefined`), the alt operation kicks in and try the path `data.createDate`. If
-we still have `undefined`, the second alt will call a transform operation with
-the `currentDate` function, that simply returns the current date as a JS object.
-Finally, another transform operation pipes whatever data we get from all of this
-through the `formatDate` function.
+we still have `undefined`, the second alt will call the customer function
+`currentDate`, that simply returns the current date as a JS object. Finally,
+another transform operation pipes whatever data we get from all of this through
+the `formatDate` function.
 
 You may also define an alt operation as an object:
 
 ```javascript
 const def11asObject = {
   id: 'data.id',
-  name: ['data.name', { $transform: 'alt', value: 'Anonymous' }]
+  name: ['data.name', { $alt: 'value', value: 'Anonymous' }],
+  updatedAt: [
+    'data.updateDate',
+    { $alt: 'get', path: 'data.createDate' },
+    { $alt: 'currentDate' },
+    { $transform: 'formatDate' }
+  ]
 }
 ```
-
-For now, only the value operand is supported. In the example above, the value
-`'Anonymous'` will be used when `data.name` is undefined.
 
 #### `concat(pipeline, pipeline, ...)` operation
 

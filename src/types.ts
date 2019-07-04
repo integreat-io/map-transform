@@ -2,7 +2,14 @@ export interface ObjectWithProps {
   [key: string]: Data
 }
 
-export type Prop = string | number | boolean | object | null | undefined | ObjectWithProps
+export type Prop =
+  | string
+  | number
+  | boolean
+  | object
+  | null
+  | undefined
+  | ObjectWithProps
 
 export type Data = Prop | Prop[]
 
@@ -13,7 +20,7 @@ export interface Operands {
 }
 
 export interface Context {
-  rev: boolean,
+  rev: boolean
   onlyMappedValues: boolean
 }
 
@@ -30,11 +37,11 @@ export interface CustomFunctions {
 }
 
 export interface State {
-  root: Data,
-  context: Data,
-  value: Data,
-  rev?: boolean,
-  onlyMapped?: boolean,
+  root: Data
+  context: Data
+  value: Data
+  rev?: boolean
+  onlyMapped?: boolean
   arr?: boolean
 }
 
@@ -50,7 +57,11 @@ export interface FilterObject extends Operands {
   $filter: string
 }
 
-export type OperationObject = TransformObject | FilterObject
+export interface AltObject extends Operands {
+  $alt: string
+}
+
+export type OperationObject = TransformObject | FilterObject | AltObject
 
 export interface StateMapper {
   (state: State): State
@@ -66,15 +77,27 @@ export interface MapFunction {
 
 type MapPipeSimple = (MapObject | Operation | OperationObject | Path)[]
 
-export type MapPipe = (MapObject | Operation | OperationObject | Path | MapPipeSimple)[]
+export type MapPipe = (
+  | MapObject
+  | Operation
+  | OperationObject
+  | Path
+  | MapPipeSimple)[]
 
 export interface MapObject {
-  [key: string]: MapDefinition | undefined,
-  $transform?: undefined,
+  [key: string]: MapDefinition | undefined
+  $transform?: undefined
   $filter?: undefined
+  $alt?: undefined
 }
 
-export type MapDefinition = MapObject | Operation | OperationObject | MapPipe | Path | null
+export type MapDefinition =
+  | MapObject
+  | Operation
+  | OperationObject
+  | MapPipe
+  | Path
+  | null
 
 export interface MapTransformWithOnlyMappedValues {
   (data: Data): Data

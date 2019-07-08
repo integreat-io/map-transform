@@ -43,9 +43,9 @@ const composeMapFunction = (
 
 const mergeOptions = (options: Options) => ({
   ...options,
-  customFunctions: {
+  functions: {
     ...functions,
-    ...(options.customFunctions || {})
+    ...(options.functions || {})
   }
 })
 

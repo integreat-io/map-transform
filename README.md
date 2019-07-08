@@ -391,7 +391,7 @@ You may also define a transform operation as an object:
 import { mapTransform } from 'map-transform'
 
 const ensureInteger = operands => data => Number.parseInt(data, 10) || 0
-const customFunctions = { ensureInteger }
+const functions = { ensureInteger }
 const def7asObject = {
   count: ['statistics.views', { $transform: 'ensureInteger' }]
 }
@@ -403,13 +403,13 @@ const data = {
   }
 }
 
-mapTransform(def7asObject, { customFunctions })(data)
+mapTransform(def7asObject, { functions })(data)
 // --> {
 //   count: 18
 // }
 ```
 
-Note that the function itself is passed on the `customFunctions` object. When
+Note that the function itself is passed on the `functions` object. When
 you provide the custom function this way, it should be given as a function
 accepting an object with operands / arguments, that returns the actual function
 used in the transform. Any properties given on the operation object, apart from
@@ -458,7 +458,7 @@ Defining a filter operation as an object:
 import { mapTransform } from 'map-transform'
 
 const onlyActives = (data) => data.active
-const customFunctions = { onlyActives }
+const functions = { onlyActives }
 const def9asObject = [
   'members'
   {

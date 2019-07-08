@@ -24,16 +24,12 @@ export interface Context {
   onlyMappedValues: boolean
 }
 
-export interface DataMapper<U = Data, V = Data | boolean> {
-  (data: U, context: Context): V
+export interface DataMapper {
+  (data: Data, context: Context): Data
 }
 
-export interface CustomFunction<T = Operands, U = Data, V = Data | boolean> {
-  (operands: T): DataMapper<U, V>
-}
-
-export interface CustomFunctions {
-  [key: string]: CustomFunction
+export interface CustomFunction<T = Operands> {
+  (operands: T): DataMapper
 }
 
 export interface State {
@@ -46,7 +42,9 @@ export interface State {
 }
 
 export interface Options {
-  customFunctions?: CustomFunctions
+  functions?: {
+    [key: string]: CustomFunction
+  }
   pipelines?: {
     [key: string]: MapDefinition
   }

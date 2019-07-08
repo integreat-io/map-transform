@@ -2,7 +2,6 @@ import { identity } from 'ramda'
 import {
   Operation,
   StateMapper,
-  Data,
   DataMapper,
   MapDefinition,
   MapObject,
@@ -13,8 +12,7 @@ import {
   FilterObject,
   ApplyObject,
   AltObject,
-  Options,
-  CustomFunctions
+  Options
 } from '../types'
 import { get } from '../operations/getSet'
 import mutate from '../operations/mutate'
@@ -46,28 +44,17 @@ export const isMapPipe = (def: any): def is MapPipe => Array.isArray(def)
 export const isOperation = (def: any): def is Operation =>
   typeof def === 'function'
 
-const getOperationFunction = (
-  fnId?: string,
-  customFunctions?: CustomFunctions
-) => {
-  if (!fnId || !customFunctions) {
-    return undefined
-  }
-  const fn = customFunctions[fnId]
-  return (typeof fn as any) === 'function' ? fn : undefined
-}
-
-const createOperation = <T>(
-  operationFn: (fn: DataMapper<Data, T>) => Operation,
+const createOperation = <U extends OperationObject>(
+  operationFn: (fn: DataMapper) => Operation,
   fnProp: string,
-  operation: OperationObject,
+  operation: U,
   options: Options
 ) => {
   const { [fnProp]: fnId, ...operands } = operation
-  const fn = getOperationFunction(fnId as string, options.customFunctions)
-  return typeof fn !== 'undefined'
-    ? operationFn(fn(operands) as any)(options)
-    : identity // TODO: Improve typing
+  const fn = options.functions![fnId as string]
+  return typeof fn === 'function'
+    ? operationFn(fn(operands))(options)
+    : identity
 }
 
 const createApplyOperation = (

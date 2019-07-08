@@ -11,6 +11,7 @@ import {
   OperationObject,
   TransformObject,
   FilterObject,
+  ApplyObject,
   AltObject,
   Options,
   CustomFunctions
@@ -20,6 +21,7 @@ import mutate from '../operations/mutate'
 import pipe from '../operations/pipe'
 import transform from '../operations/transform'
 import filter from '../operations/filter'
+import apply from '../operations/apply'
 import alt from '../operations/alt'
 
 const isObject = (def: MapDefinition): def is MapObject | OperationObject =>
@@ -34,6 +36,7 @@ export const hasOperationProps = (
 ): def is OperationObject =>
   isOperationType<TransformObject>(def, '$transform') ||
   isOperationType<FilterObject>(def, '$filter') ||
+  isOperationType<ApplyObject>(def, '$apply') ||
   isOperationType<AltObject>(def, '$alt')
 
 export const isPath = (def: any): def is Path => typeof def === 'string'
@@ -67,6 +70,15 @@ const createOperation = <T>(
     : identity // TODO: Improve typing
 }
 
+const createApplyOperation = (
+  operationFn: (pipelineId: string) => Operation,
+  operation: ApplyObject,
+  options: Options
+) => {
+  const pipelineId = operation.$apply
+  return operationFn(pipelineId)(options)
+}
+
 const operationFromObject = (
   def: OperationObject | MapObject,
   options: Options
@@ -75,6 +87,8 @@ const operationFromObject = (
     return createOperation(transform, '$transform', def, options)
   } else if (isOperationType<FilterObject>(def, '$filter')) {
     return createOperation(filter, '$filter', def, options)
+  } else if (isOperationType<ApplyObject>(def, '$apply')) {
+    return createApplyOperation(apply, def, options)
   } else if (isOperationType<AltObject>(def, '$alt')) {
     return createOperation(alt, '$alt', def, options)
   } else {

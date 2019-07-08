@@ -471,6 +471,59 @@ const def9asObject = [
 
 See the `transform()` operation on how defining as an object works.
 
+#### `apply(pipelineId)` operation
+
+The apply operation allows pipelines to be reused. Several pipelines may be
+provided on the `pipelines` object on the `options` provided to
+`mapTransform()`, and the keys of the `pipelines` object serves as ids.
+When an id is passed to the apply operation as `pipelinedId`, the pipeline will
+be applied in the place of the apply operation and executed as if it was part of
+the pipeline definition in the first place.
+
+```javascript
+import { mapTransform, apply, transform } from 'map-transform'
+
+const ensureInteger = data => Number.parseInt(data, 10) || 0
+const pipelines = {
+  castEntry: {
+    title: ['title', transform(String)],
+    count: ['count', transform(ensureInteger)]
+  }
+}
+const def25 = [
+  {
+    title: 'heading',
+    count: 'statistics.views'
+  },
+  apply('castEntry')
+]
+
+const data = {
+  heading: 'Entry 1',
+  statistics: {
+    view: '18'
+  }
+}
+
+mapTransform(def7)(data)
+// --> {
+//   title: 'Entry 1',
+//   count: 18
+// }
+```
+
+You may also define the apply operation as an operation object:
+
+```javascript
+const def25 = [
+  {
+    title: 'heading',
+    count: 'statistics.views'
+  },
+  { $apply: 'castEntry' }
+]
+```
+
 #### `value(data)` operation
 
 The data given to the value operation, will be inserted in the pipeline in place

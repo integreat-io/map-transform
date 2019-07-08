@@ -47,6 +47,9 @@ export interface State {
 
 export interface Options {
   customFunctions?: CustomFunctions
+  pipelines?: {
+    [key: string]: MapDefinition
+  }
 }
 
 export interface TransformObject extends Operands {
@@ -57,11 +60,19 @@ export interface FilterObject extends Operands {
   $filter: string
 }
 
+export interface ApplyObject extends Operands {
+  $apply: string
+}
+
 export interface AltObject extends Operands {
   $alt: string
 }
 
-export type OperationObject = TransformObject | FilterObject | AltObject
+export type OperationObject =
+  | TransformObject
+  | FilterObject
+  | ApplyObject
+  | AltObject
 
 export interface StateMapper {
   (state: State): State
@@ -88,6 +99,7 @@ export interface MapObject {
   [key: string]: MapDefinition | undefined
   $transform?: undefined
   $filter?: undefined
+  $apply?: undefined
   $alt?: undefined
 }
 

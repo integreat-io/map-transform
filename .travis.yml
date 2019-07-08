@@ -1,7 +1,8 @@
 language: node_js
 node_js:
-  - "8.6"
-  - "10"
+  - '8.6'
+  - '10'
+  - '12'
 after_success: npm run coverage
 notifications:
   email:

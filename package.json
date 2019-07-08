@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "start": "tsc && node index.js",
-    "test": "nyc --reporter=text-summary ava dist/**/*.test.js",
+    "test": "tsc && nyc --reporter=text-summary ava dist/**/*.test.js",
     "test:watch": "npm run dev",
     "test:inspect": "node --inspect node_modules/ava/profile.js",
     "dev": "ava --watch",

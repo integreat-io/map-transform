@@ -14,13 +14,12 @@
     "path"
   ],
   "scripts": {
-    "start": "tsc && node index.js",
-    "test": "tsc && nyc --reporter=text-summary ava dist/**/*.test.js",
+    "start": "npm run build && node index.js",
+    "test": "npm run build && nyc --reporter=text-summary ava dist/**/*.test.js",
     "test:watch": "npm run dev",
     "test:inspect": "node --inspect node_modules/ava/profile.js",
     "dev": "ava --watch",
     "build": "tsc",
-    "prepare": "npm run build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "nyc:report": "nyc report",
     "lint": "tslint --project tsconfig.json --config tslint.json"
@@ -69,15 +68,15 @@
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
     "@types/ramda": "^0.26.15",
-    "ajv": "^6.10.1",
+    "ajv": "^6.10.2",
     "map-any": "^0.2.1",
     "ramda": "^0.26.1"
   },
   "devDependencies": {
     "@types/deep-freeze": "^0.1.1",
     "@types/sinon": "^7.0.13",
-    "ava": "^2.1.0",
-    "coveralls": "^3.0.4",
+    "ava": "^2.2.0",
+    "coveralls": "^3.0.5",
     "deep-freeze": "0.0.1",
     "nyc": "^14.1.1",
     "prettier": "^1.18.2",
@@ -87,6 +86,6 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-config-security": "^1.16.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.5.2"
+    "typescript": "^3.5.3"
   }
 }

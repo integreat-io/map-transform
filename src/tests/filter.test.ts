@@ -2,6 +2,7 @@ import test from 'ava'
 
 import {
   mapTransform,
+  set,
   filter,
   fwd,
   rev,
@@ -87,14 +88,13 @@ test('should filter with several filters', t => {
 })
 
 test('should set filtered items on path', t => {
-  const def = {
-    'items[]': [
-      {
-        title: 'content.heading'
-      },
-      filter(noHeadingTitle())
-    ]
-  }
+  const def = [
+    {
+      title: 'content.heading'
+    },
+    filter(noHeadingTitle()),
+    set('items[]')
+  ]
   const data = [
     { content: { heading: 'The heading' } },
     { content: { heading: 'Just this' } }

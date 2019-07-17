@@ -71,10 +71,11 @@ test('should reverse map with object array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map several layers of arrays', (t) => {
+test.skip('should reverse map several layers of arrays', (t) => {
   const def = [
     'content.articles[]',
     {
+      $iterate: false,
       attributes: {
         title: 'content.heading'
       },

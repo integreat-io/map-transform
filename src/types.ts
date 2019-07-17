@@ -94,7 +94,8 @@ export type MapPipe = (
   | MapPipeSimple)[]
 
 export interface MapObject {
-  [key: string]: MapDefinition | undefined
+  [key: string]: MapDefinition | undefined | boolean
+  $iterate?: boolean
   $transform?: undefined
   $filter?: undefined
   $apply?: undefined

@@ -180,27 +180,64 @@ const def2 = {
 // }
 ```
 
-If MapTransform happens upon an array in the source data, it will map it and
-set an array where each item is mapped according to the mapping object. But to
-ensure that you get an array, even when the source data contains only an object,
-you may suffix a key with brackets `[]`.
+By default, when an array in the data meets a mapping object, MapTransform will
+map the transformation to each item in the array.
 
 ```javascript
 const def3 = {
+  title: 'heading'
+}
+
+// -->
+// [
+//   { title: 'The first heading' },
+//   { title: 'The second heading' }
+// ]
+```
+
+The example above will only return an array when an array was given in the data.
+To ensure an array is always returned, you need to use specify a
+[**transform pipeline**](#transform-pipeline) with square bracket notation,
+like this:
+
+```javascript
+const def26 = [
+  '[]',
+  {
+    title: 'heading'
+  }
+]
+
+// -->
+// [
+//   { title: 'Always in an array' }
+// ]
+```
+
+As MapTransform's default behavior is to map transform objects over arrays, you
+have to specify when you want the transform object to actually return an object.
+You do this by setting the `$iterate` flag on the mapping object to `false`:
+
+```javascript
+const def27 = {
+  $iterate: false,
   'data.entries[]': {
     title: 'heading'
   }
 }
 
-// def3 will always give you entries as an array:
+// def27 will always give you entries as an array:
 // {
 //   data: {
 //     entries: [
-//       {title: 'The actual heading'}
+//       {title: 'The first heading'},
+//       {title: 'The second heading'}
 //     ]
 //   }
 // }
 ```
+
+Properties prefixed with `$` will never be included in the output.
 
 #### Values on the transform object
 
@@ -277,7 +314,7 @@ original format again (although with a potential loss of data, if not all
 properties are transformed). This is what you do in a
 [reverse mapping](#reverse-mapping).
 
-One way to put it is that the pipeline describes the difference between the two
+One way to put it, is that the pipeline describes the difference between the two
 possible states of the data, and allows you to go back and forth between them.
 Or you can just view it as operations applied in the order they are defined – or
 back again.
@@ -309,6 +346,13 @@ const def6 = [
 
 (Note that in this example, both `maxLength` and `onlyItemsWithSection` are
 custom functions for this case, but their implementations are not provided.)
+
+**A note on arrays:** When MapTransform encounters an array in the data, it may
+not always be clear whether you want an operation or a transform object to be
+applied to each item in the array or the array itself. In such cases,
+MapTransform will always choose to iterate the array and map to each item.
+Because of this, some operations has a version with an `Arr` suffix, that will
+apply to the array instead. For non-arrays, the two versions are identical.
 
 #### `transform(fn, fnRev)` operation
 
@@ -385,6 +429,10 @@ const def8 = {
 }
 ```
 
+**Note:** When the `transform` operation is applied to an array, it will iterate
+the array and map each item in the array. To transform the array itself, use the
+`transformArr` operation instead.
+
 You may also define a transform operation as an object:
 
 ```javascript
@@ -414,6 +462,37 @@ you provide the custom function this way, it should be given as a function
 accepting an object with operands / arguments, that returns the actual function
 used in the transform. Any properties given on the operation object, apart from
 `$transform`, will be passed in the `operands` object.
+
+#### `transformArr(fn, fnRev)` operation
+
+The `transformArr` operation is identical to `transform` in every way, except
+for the way it handles arrays. When an array in the data is transformed with
+`transformArr`, the entire array is passed to the transform function, instead of
+iterating the array.
+
+The transformArr operation as an object:
+
+```javascript
+import { mapTransform } from 'map-transform'
+
+const ensureInteger = operands => data => Number.parseInt(data, 10) || 0
+const functions = { ensureInteger }
+const def27 = {
+  count: ['statistics.views', { $transform: 'slice', start: 0, end: 10, iterate: false }]
+}
+
+const data = {
+  statistics: {
+    view: '18'
+    // ...
+  }
+}
+
+mapTransform(def7asObject, { functions })(data)
+// --> {
+//   count: 18
+// }
+```
 
 #### `filter(fn)` operation
 
@@ -565,6 +644,10 @@ already in the pipeline is `undefined`. This is how you provide default values
 in MapTransform. The pipeline may be as simple as a `value()` function, a dot
 notation path into the source data, or a full pipeline of several operations.
 
+When given an array, the `alt` operation will iterate over the array and provide
+alternative values to any `undefined` item. To avoid iterating an array, use the
+`altArr` operation instead.
+
 ```javascript
 import { alt, transform, functions } from 'map-transform'
 const { value } = functions
@@ -607,6 +690,12 @@ const def11asObject = {
   ]
 }
 ```
+
+#### `altArr(pipeline)` operation
+
+`altArr` is identical to the `alt` operation, except that it will treat an array
+as a value and do nothing, instead of iterating the items of the array to find
+`undefined` items.
 
 #### `concat(pipeline, pipeline, ...)` operation
 

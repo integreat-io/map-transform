@@ -77,7 +77,7 @@ export default function pathSetter(path: Path): SetFunction {
     return identity
   }
 
-  const setterFn: SetFunction = apply(compose, setters) as any // Using apply() to avoid complaints from typescript
+  const setterFn = apply(compose, setters) as SetFunction // Using apply() to avoid complaints from typescript
   return (value, object = null) => {
     const data = setterFn(value)
     return object ? mergeDeepWith(mergeExisting, object, data) : data

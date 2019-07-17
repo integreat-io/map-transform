@@ -62,8 +62,10 @@
   },
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
+    "@types/lodash.merge": "^4.6.6",
     "@types/ramda": "^0.26.15",
     "ajv": "^6.10.2",
+    "lodash.merge": "^4.6.2",
     "map-any": "^0.2.1",
     "ramda": "^0.26.1"
   },

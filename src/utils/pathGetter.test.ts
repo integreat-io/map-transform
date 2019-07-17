@@ -17,7 +17,8 @@ const object = {
     author: 'Someone',
     tags: []
   },
-  list: [{ id: 'no1' }, { id: 'no2' }, { id: 'no3' }]
+  list: [{ id: 'no1' }, { id: 'no2' }, { id: 'no3' }],
+  images: null
 }
 
 // Tests
@@ -28,6 +29,38 @@ test('should get value at path', (t) => {
   const ret = pathGetter(path)(object)
 
   t.is(ret, 'Someone')
+})
+
+test('should ensure array when path ends with square brackets', (t) => {
+  const path = 'meta.author[]'
+
+  const ret = pathGetter(path)(object)
+
+  t.deepEqual(ret, ['Someone'])
+})
+
+test('should ensure array when path includes square brackets', (t) => {
+  const path = 'data.items[].id'
+
+  const ret = pathGetter(path)(object)
+
+  t.deepEqual(ret, ['item1', 'item2', 'item3', 'item4'])
+})
+
+test('should not ensure array when value is undefined', (t) => {
+  const path = 'meta.author[]'
+
+  const ret = pathGetter(path)({})
+
+  t.is(typeof ret, 'undefined')
+})
+
+test('should return empty array when value is null', (t) => {
+  const path = 'images[]'
+
+  const ret = pathGetter(path)(object)
+
+  t.deepEqual(ret, [])
 })
 
 test('should get value at path with array index', (t) => {

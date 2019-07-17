@@ -1,25 +1,36 @@
 import mapAny = require('map-any')
+import { compose } from 'ramda'
 import { Operation, State, Path } from '../types'
-import getter, { GetFunction } from '../utils/pathGetter'
+import getter from '../utils/pathGetter'
 import setter, { SetFunction } from '../utils/pathSetter'
+import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import root from './root'
 import plug from './plug'
 import { divide } from './directionals'
 
-const getValue = (get: GetFunction, isArray: boolean, state: State): State => {
-  const value = mapAny(get, state.value)
-  const arr = isArray || (!Array.isArray(state.value) && Array.isArray(value))
+const isGet = (isGetOperation: boolean, isRev = false) =>
+  isGetOperation ? !isRev : isRev
 
-  return { ...state, value: isArray && !value ? [] : value, arr }
-}
+const shouldIterate = (path: Path) => path.endsWith('[]')
 
-const setValue = (set: SetFunction, isArray: boolean, state: State): State => {
-  const setFn: SetFunction = value =>
-    state.onlyMapped && typeof value === 'undefined' ? value : set(value)
-  const value =
-    state.arr || isArray ? setFn(state.value) : mapAny(setFn, state.value)
+const setWithOnlyMapped = (
+  state: State,
+  setFn: SetFunction
+): SetFunction => value =>
+  state.onlyMapped && typeof value === 'undefined' ? value : setFn(value)
 
-  return { ...state, value }
+const getValueFromState = (path: Path) =>
+  compose(
+    getter(path),
+    getStateValue
+  )
+
+const setValueFromState = (path: Path) => (state: State) => {
+  const setFn = setWithOnlyMapped(state, setter(path))
+  // return setFn(getStateValue(state))
+  return shouldIterate(path)
+    ? setFn(getStateValue(state))
+    : mapAny(setFn, getStateValue(state))
 }
 
 const setupRootGetOrSet = (isGet: boolean, path: Path) =>
@@ -27,21 +38,19 @@ const setupRootGetOrSet = (isGet: boolean, path: Path) =>
     ? divide(root(get(path.substr(1))), plug())
     : divide(plug(), root(set(path.substr(1))))
 
-const getOrSet = (isGet: boolean) => (path: Path): Operation => {
+const getOrSet = (isGetOperation: boolean) => (path: Path): Operation => {
   if (path && path.startsWith('$')) {
-    return setupRootGetOrSet(isGet, path)
+    return setupRootGetOrSet(isGetOperation, path)
   }
 
-  const getFn = getter(path)
-  const setFn = setter(path)
-  const isArray = path.endsWith('[]')
+  const getFn = getValueFromState(path)
+  const setFn = setValueFromState(path)
 
   return () => (state: State): State =>
-    (isGet
-    ? !state.rev
-    : state.rev)
-      ? getValue(getFn, isArray, state)
-      : setValue(setFn, isArray, state)
+    setStateValue(
+      state,
+      isGet(isGetOperation, state.rev) ? getFn(state) : setFn(state)
+    )
 }
 
 export const get = getOrSet(true)

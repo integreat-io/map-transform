@@ -91,8 +91,7 @@ test('should get from path when reverse mapping', t => {
     root: data,
     context: data,
     value: 'johnf',
-    rev: true,
-    arr: false
+    rev: true
   }
   const ret = set('meta.author')(options)(state)
 

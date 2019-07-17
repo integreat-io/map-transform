@@ -1,13 +1,13 @@
-import { reverse } from 'ramda'
-import { MapPipe, Operation, State, Options } from '../types'
-import { setValueFromState, pipeMapFns } from '../utils/stateHelpers'
+import { compose, pipe as pipeR, apply } from 'ramda'
+import { MapPipe, Operation, State, Options, StateMapper } from '../types'
+import { setValueFromState } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
 export default function pipe (defs: MapPipe): Operation {
   return (options: Options) => {
     const fns = defs.map((def) => mapFunctionFromDef(def, options))
-    const runPipe = pipeMapFns(fns)
-    const runRevPipe = pipeMapFns(reverse(fns))
+    const runPipe = apply(pipeR, fns) as StateMapper
+    const runRevPipe = apply(compose, fns) as StateMapper
 
     return (state: State) => setValueFromState(
       state,

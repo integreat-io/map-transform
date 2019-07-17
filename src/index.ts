@@ -7,9 +7,8 @@ import {
   Data,
   Options
 } from './types'
-import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
+import { mapFunctionFromDef } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
-import objectToMapFunction from './utils/objectToMapFunction'
 import functionsObject from './functions'
 
 export { get, set } from './operations/getSet'
@@ -54,9 +53,7 @@ export function mapTransform(
   options: Options = {}
 ): MapTransform {
   const preparedOptions = mergeOptions(options)
-  const mapFn = isMapObject(def)
-    ? objectToMapFunction(def, preparedOptions)
-    : mapFunctionFromDef(def, preparedOptions)
+  const mapFn = mapFunctionFromDef(def, preparedOptions)
 
   return Object.assign(composeMapFunction(mapFn, {}), {
     onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),

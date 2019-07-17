@@ -10,6 +10,34 @@ const options = {}
 
 // Tests
 
+test('should mutate shallow object with map functions', (t) => {
+  const def = {
+    id: value('ent1'),
+    title: get('headline'),
+    text: value('The text'),
+    age: get('unknown')
+  }
+  const state = {
+    root: { data: { headline: 'The title' } },
+    context: { headline: 'The title' },
+    value: { headline: 'The title' }
+  }
+  const expected = {
+    root: { data: { headline: 'The title' } },
+    context: { headline: 'The title' },
+    value: {
+      id: 'ent1',
+      title: 'The title',
+      text: 'The text',
+      age: undefined
+    }
+  }
+
+  const ret = mutate(def)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should mutate object with map functions', (t) => {
   const def = {
     item: {

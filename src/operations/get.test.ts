@@ -19,8 +19,7 @@ test('should get from path', (t) => {
   const expected = {
     root: data,
     context: data,
-    value: 'Someone',
-    arr: false
+    value: 'Someone'
   }
 
   const ret = get('meta.author')(options)(state)
@@ -83,18 +82,12 @@ test('should get current value', (t) => {
     context: { id: 'ent1' },
     value: 'ent1'
   }
-  const expected = {
-    root: { id: 'ent1' },
-    context: { id: 'ent1' },
-    value: 'ent1',
-    arr: false
-  }
 
   const ret1 = get('.')(options)(state)
   const ret2 = get('')(options)(state)
 
-  t.deepEqual(ret1, expected)
-  t.deepEqual(ret2, expected)
+  t.is(ret1.value, 'ent1')
+  t.is(ret2.value, 'ent1')
 })
 
 test('should get from root path', (t) => {

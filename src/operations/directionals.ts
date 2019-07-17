@@ -16,7 +16,7 @@ export function rev (def: MapDefinition): Operation {
   return applyInDirection(def, true)
 }
 
-export function divide (fwdDef: Operation, revDef: Operation): Operation {
+export function divide (fwdDef: MapDefinition, revDef: MapDefinition): Operation {
   return (options: Options) => {
     const fwdFn = mapFunctionFromDef(fwdDef, options)
     const revFn = mapFunctionFromDef(revDef, options)

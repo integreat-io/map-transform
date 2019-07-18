@@ -427,7 +427,7 @@ const def8 = {
 }
 ```
 
-**Note:** When the `transform` operation is applied to an array, it will note
+**Note:** When the `transform` operation is applied to an array, it will not
 iterate the array. Mapping over each item needs to be handled in the transform
 itself, or wrap the `transform` operation in an `iterate` operation.
 
@@ -460,6 +460,10 @@ you provide the custom function this way, it should be given as a function
 accepting an object with operands / arguments, that returns the actual function
 used in the transform. Any properties given on the operation object, apart from
 `$transform`, will be passed in the `operands` object.
+
+When you define the `transform` operation as an object, you may specify
+`$iterate: true` on the object to apply the transform to every item on an array,
+if an array is encountered.
 
 #### `filter(fn)` operation
 
@@ -596,6 +600,10 @@ const def25 = [
 ]
 ```
 
+When you define the `apply` operation as an object, you may specify
+`$iterate: true` on the object to apply the pipeline to every item on an array,
+if an array is encountered.
+
 #### `value(data)` operation
 
 The data given to the value operation, will be inserted in the pipeline in place
@@ -683,6 +691,10 @@ const def11asObject = {
   ]
 }
 ```
+
+When you define the `alt` operation as an object, you may specify
+`$iterate: true` on the object to provide a default value to every `undefined`
+item on an array, if an array is encountered.
 
 #### `concat(pipeline, pipeline, ...)` operation
 

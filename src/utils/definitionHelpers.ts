@@ -15,6 +15,7 @@ import {
 } from '../types'
 import { get } from '../operations/getSet'
 import mutate from '../operations/mutate'
+import iterate from '../operations/iterate'
 import pipe from '../operations/pipe'
 import transform from '../operations/transform'
 import filter from '../operations/filter'
@@ -45,24 +46,27 @@ export const isMapPipe = (def: any): def is MapPipe => Array.isArray(def)
 export const isOperation = (def: any): def is Operation =>
   typeof def === 'function'
 
+const iterateIfSpecified = (fn: Operation, def: OperationObject) =>
+  (def.$iterate === true) ? iterate(fn) : fn
+
 const createOperation = <U extends OperationObject>(
   operationFn: (fn: DataMapper) => Operation,
   fnProp: string,
-  operation: U
+  def: U
 ) => (options: Options) => {
-  const { [fnProp]: fnId, ...operands } = operation
+  const { [fnProp]: fnId, ...operands } = def
   const fn = options.functions![fnId as string]
   return typeof fn === 'function'
-    ? operationFn(fn(operands))(options)
+    ? iterateIfSpecified(operationFn(fn(operands)), def)(options)
     : identity
 }
 
 const createApplyOperation = (
   operationFn: (pipelineId: string) => Operation,
-  operation: ApplyObject
+  def: ApplyObject
 ) => {
-  const pipelineId = operation.$apply
-  return operationFn(pipelineId)
+  const pipelineId = def.$apply
+  return iterateIfSpecified(operationFn(pipelineId), def)
 }
 
 const operationFromObject = (

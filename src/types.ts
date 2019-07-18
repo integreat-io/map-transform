@@ -52,6 +52,7 @@ export interface Options {
 
 export interface TransformObject extends Operands {
   $transform: string
+  $iterate?: boolean
 }
 
 export interface FilterObject extends Operands {
@@ -60,10 +61,12 @@ export interface FilterObject extends Operands {
 
 export interface ApplyObject extends Operands {
   $apply: string
+  $iterate?: boolean
 }
 
 export interface AltObject extends Operands {
   $alt: string
+  $iterate?: boolean
 }
 
 export type OperationObject =

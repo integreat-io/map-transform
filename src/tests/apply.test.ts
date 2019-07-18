@@ -130,6 +130,41 @@ test('should apply pipeline as operation object', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should iterate applied pipeline', t => {
+  const def = [
+    {
+      $iterate: true,
+      title: 'content.heading',
+      viewCount: 'meta.hits'
+    },
+    { $apply: 'castEntry', $iterate: true }
+  ]
+  const data = [
+    {
+      content: { heading: 'The heading' },
+      meta: { hits: '45' }
+    },
+    {
+      content: { heading: 'The next heading' },
+      meta: { hits: '111' }
+    }
+  ]
+  const expected = [
+    {
+      title: 'The heading',
+      viewCount: 45
+    },
+    {
+      title: 'The next heading',
+      viewCount: 111
+    }
+  ]
+
+  const ret = mapTransform(def, { pipelines })(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should do nothing on unknown pipeline in operation object', t => {
   const def = [
     {

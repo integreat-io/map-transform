@@ -223,3 +223,13 @@ test('should apply default value from an operation object', t => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should apply default value through iteration of operation object', t => {
+  const def = ['heading', { $alt: 'value', value: 'Default heading', $iterate: true }]
+  const data = [{}, { heading: 'From data' }]
+  const expected = ['Default heading', 'From data']
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})

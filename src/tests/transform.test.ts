@@ -39,7 +39,7 @@ const appendEllipsis = (str: Data) =>
   typeof str === 'string' ? str + ' ...' : str
 
 const getLength = () => (str: Data) =>
-  typeof str === 'string' ? str.length : 0
+  typeof str === 'string' ? str.length : -1
 
 const functions = {
   appendToTitle,
@@ -224,6 +224,27 @@ test('should apply transform from an operation object', t => {
   }
   const expected = {
     titleLength: 11
+  }
+
+  const ret = mapTransform(def, { functions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should interate transform from an operation object', t => {
+  const def = [
+    {
+      titleLengths: [
+        'content[].heading',
+        { $transform: 'getLength', $iterate: true }
+      ]
+    }
+  ]
+  const data = {
+    content: [{ heading: 'The heading' }, { heading: 'The next heading' }]
+  }
+  const expected = {
+    titleLengths: [11, 16]
   }
 
   const ret = mapTransform(def, { functions })(data)

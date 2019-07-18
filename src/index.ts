@@ -7,9 +7,10 @@ import {
   Data,
   Options
 } from './types'
-import { mapFunctionFromDef } from './utils/definitionHelpers'
+import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
-import functionsObject from './functions'
+import functions from './functions'
+import iterate from './operations/iterate'
 
 export { get, set } from './operations/getSet'
 export { default as root } from './operations/root'
@@ -25,8 +26,9 @@ export { default as lookup } from './operations/lookup'
 export { default as transform } from './operations/transform'
 export { default as filter } from './operations/filter'
 export { fwd, rev, divide } from './operations/directionals'
+export { default as merge } from './operations/merge'
+export { iterate, functions }
 export { Data, CustomFunction, DataMapper, MapDefinition } from './types'
-export const functions = functionsObject
 
 const composeMapFunction = (
   mapFn: StateMapper,
@@ -53,7 +55,9 @@ export function mapTransform(
   options: Options = {}
 ): MapTransform {
   const preparedOptions = mergeOptions(options)
-  const mapFn = mapFunctionFromDef(def, preparedOptions)
+  const mapFn = isMapObject(def)
+    ? iterate(def)(options)
+    : mapFunctionFromDef(def, preparedOptions)
 
   return Object.assign(composeMapFunction(mapFn, {}), {
     onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),

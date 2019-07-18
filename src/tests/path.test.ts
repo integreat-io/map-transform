@@ -1,16 +1,6 @@
 import test from 'ava'
 
-import {
-  mapTransform,
-  get,
-  set,
-  fwd,
-  rev,
-  alt,
-  root,
-  plug,
-  lookup
-} from '..'
+import { mapTransform, get, set, fwd, rev, alt, root, plug, lookup } from '..'
 
 test('should map with object path', t => {
   const def = [
@@ -168,7 +158,7 @@ test('should map with root path', t => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should map with lookup', t => {
+test('should map with lookup', t => {
   const def = {
     title: 'content.heading',
     authors: ['content.authors[]', [lookup('$meta.users[]', 'id'), get('name')]]
@@ -197,6 +187,7 @@ test('should spread array to mapping objects', t => {
   const def = [
     'ids[]',
     {
+      $iterate: true,
       id: '.'
     }
   ]
@@ -282,17 +273,19 @@ test('should map data as is when no mapping', t => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should map with nested mappings', t => {
-  const def = {
-    $iterate: false,
-    content: {
-      'articles[]': [
-        {
-          title: 'content.heading'
-        }
-      ]
+test('should map with nested mappings', t => {
+  const def = [
+    {
+      content: {
+        'articles[]': [
+          {
+            $iterate: true,
+            title: 'content.heading'
+          }
+        ]
+      }
     }
-  }
+  ]
   const data = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }
@@ -313,6 +306,7 @@ test('should forward map with directional paths', t => {
     fwd(get('content.articles[]')),
     rev(get('wrong.path[]')),
     {
+      $iterate: true,
       title: 'content.heading'
     },
     fwd(set('items[]')),

@@ -65,20 +65,6 @@ test('should not set undefined when onlyMapped is true', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should not set undefined in array when onlyMapped is true', t => {
-  const state = {
-    root: {},
-    context: {},
-    value: [undefined, 'johnf'],
-    onlyMapped: true
-  }
-  const expectedValue = [undefined, { meta: { author: 'johnf' } }]
-
-  const ret = set('meta.author')(options)(state)
-
-  t.deepEqual(ret.value, expectedValue)
-})
-
 test('should get from path when reverse mapping', t => {
   const data = { user: 'johnf' }
   const state = {

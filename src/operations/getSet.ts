@@ -1,4 +1,3 @@
-import mapAny = require('map-any')
 import { compose } from 'ramda'
 import { Operation, State, Path } from '../types'
 import getter from '../utils/pathGetter'
@@ -10,8 +9,6 @@ import { divide } from './directionals'
 
 const isGet = (isGetOperation: boolean, isRev = false) =>
   isGetOperation ? !isRev : isRev
-
-const shouldIterate = (path: Path) => path.endsWith('[]')
 
 const setWithOnlyMapped = (
   state: State,
@@ -27,10 +24,7 @@ const getValueFromState = (path: Path) =>
 
 const setValueFromState = (path: Path) => (state: State) => {
   const setFn = setWithOnlyMapped(state, setter(path))
-  // return setFn(getStateValue(state))
-  return shouldIterate(path)
-    ? setFn(getStateValue(state))
-    : mapAny(setFn, getStateValue(state))
+  return setFn(getStateValue(state))
 }
 
 const setupRootGetOrSet = (isGet: boolean, path: Path) =>

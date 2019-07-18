@@ -1,4 +1,5 @@
-import { mergeDeepWith, merge, compose, identity, apply } from 'ramda'
+import { mergeDeepWith, merge, identity } from 'ramda'
+import { compose } from './functional'
 import { Data, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
@@ -21,7 +22,8 @@ const split = (path: Path): string[] => [...pathSplitter(path)]
 
 const setOnObject = (prop: string) => (value: Data): Data => ({ [prop]: value })
 
-const setOnOpenArray = (value: Data) => (Array.isArray(value) ? value : [value])
+const setOnOpenArray = (value: Data) =>
+  Array.isArray(value) ? value : typeof value === 'undefined' ? [] : [value]
 
 const setOnArrayIndex = (index: number, value: Data) => {
   const arr = []
@@ -77,7 +79,7 @@ export default function pathSetter(path: Path): SetFunction {
     return identity
   }
 
-  const setterFn = apply(compose, setters) as SetFunction // Using apply() to avoid complaints from typescript
+  const setterFn = compose(...setters)
   return (value, object = null) => {
     const data = setterFn(value)
     return object ? mergeDeepWith(mergeExisting, object, data) : data

@@ -35,9 +35,9 @@ const getGetters = R.compose(
 )
 
 const ensureArray = (value: any) =>
-  Array.isArray(value) || typeof value === 'undefined'
+  Array.isArray(value)
     ? value
-    : value === null
+    : value === null || typeof value === 'undefined'
     ? []
     : [value]
 

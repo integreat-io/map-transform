@@ -166,6 +166,19 @@ test('should set value at path with array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set empty array at path when value is undefined', (t) => {
+  const path = 'meta.authors[]'
+  const object = {}
+  const expected = {
+    meta: {
+      authors: []
+    }
+  }
+  const ret = pathSetter(path)(undefined, object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set array at path with array', (t) => {
   const path = 'meta.authors[]'
   const object = {}

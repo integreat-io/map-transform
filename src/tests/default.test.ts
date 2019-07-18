@@ -208,10 +208,11 @@ test('should return undefined for undefined', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply default value from a operation object', t => {
+test('should apply default value from an operation object', t => {
   const def = [
     '[]',
     {
+      $iterate: true,
       title: ['content.heading', { $alt: 'value', value: 'Default heading' }]
     }
   ]

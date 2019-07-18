@@ -50,6 +50,7 @@ test('should filter out item', t => {
 test('should filter out items in array', t => {
   const def = [
     {
+      $iterate: true,
       title: 'content.heading'
     },
     filter(noHeadingTitle())
@@ -69,6 +70,7 @@ test('should filter out items in array', t => {
 test('should filter with several filters', t => {
   const def = [
     {
+      $iterate: true,
       title: 'content.heading'
     },
     filter(noHeadingTitle()),
@@ -90,6 +92,7 @@ test('should filter with several filters', t => {
 test('should set filtered items on path', t => {
   const def = [
     {
+      $iterate: true,
       title: 'content.heading'
     },
     filter(noHeadingTitle()),
@@ -112,6 +115,7 @@ test('should filter items from parent mapping for reverse mapping', t => {
   const def = {
     'items[]': [
       {
+        $iterate: true,
         title: 'content.heading'
       },
       filter(noHeadingTitle())
@@ -130,6 +134,7 @@ test('should filter items from parent mapping for reverse mapping', t => {
 test('should filter on reverse mapping', t => {
   const def = [
     {
+      $iterate: true,
       title: 'content.heading'
     },
     filter(noHeadingTitle()),
@@ -151,6 +156,7 @@ test('should filter on reverse mapping', t => {
 test('should use directional filters - going forward', t => {
   const def = [
     {
+      $iterate: true,
       title: 'content.heading'
     },
     fwd(filter(noAlso)),
@@ -176,6 +182,7 @@ test('should use directional filters - going forward', t => {
 test('should use directional filters - going reverse', t => {
   const def = [
     {
+      $iterate: true,
       title: 'content.heading'
     },
     fwd(filter(noAlso)),
@@ -277,6 +284,7 @@ test('should filter with validate', t => {
     'content',
     filter(validate('draft', { const: false })),
     {
+      $iterate: true,
       title: 'heading'
     }
   ]

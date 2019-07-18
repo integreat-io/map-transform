@@ -143,6 +143,9 @@ Install from npm:
 npm install map-transform --save
 ```
 
+## Breaking changes in v0.4
+- Map objects won't be mapped over an array by default. You have to specify `$iterate: true`
+
 ## Usage
 
 ### The transform object
@@ -180,8 +183,8 @@ const def2 = {
 // }
 ```
 
-By default, when an array in the data meets a mapping object, MapTransform will
-map the transformation to each item in the array.
+When you transform an array of data with a mapping object, each item in the
+data array will be be transformed with the mapping object.
 
 ```javascript
 const def3 = {
@@ -195,49 +198,39 @@ const def3 = {
 // ]
 ```
 
-The example above will only return an array when an array was given in the data.
-To ensure an array is always returned, you need to use specify a
-[**transform pipeline**](#transform-pipeline) with square bracket notation,
-like this:
+If you want to apply the mapping object to the entire array – not each item in
+the array – set `$iterate: false` on the mapping object or wrap the object in a
+transform pipeline.
 
-```javascript
-const def26 = [
-  '[]',
-  {
-    title: 'heading'
-  }
-]
+**Note:** When a mapping object is part of a transform pipeline, the default is
+to not iterate. See [**transform pipeline**](#transform-pipeline) for more.
 
-// -->
-// [
-//   { title: 'Always in an array' }
-// ]
-```
-
-As MapTransform's default behavior is to map transform objects over arrays, you
-have to specify when you want the transform object to actually return an object.
-You do this by setting the `$iterate` flag on the mapping object to `false`:
+A key will set whatever is returned by the pipeline (see
+[next section](#values-on-the-transform-object)), whether it is a string, a
+boolean, an array, etc. If you want to ensure that you always get an array, you
+can suffix the key with `[]`. Any value that is not an array will be wrapped in
+one.
 
 ```javascript
 const def27 = {
-  $iterate: false,
-  'data.entries[]': {
+  $iterate: false
+  'articles[]': {
     title: 'heading'
   }
 }
 
-// def27 will always give you entries as an array:
+// -->
 // {
-//   data: {
-//     entries: [
-//       {title: 'The first heading'},
-//       {title: 'The second heading'}
-//     ]
-//   }
+//   articles: [
+//     { title: 'Wrapped in an array, even if the data was just an object' },
+//   ]
 // }
 ```
 
-Properties prefixed with `$` will never be included in the output.
+A bonus of using the `[]` suffix, is that when key has another transform object
+as its value, this transform object will be iterated by default (no need to set
+the `$iterate` property). This does not happen to pipelines, paths, or
+operations.
 
 #### Values on the transform object
 
@@ -336,6 +329,7 @@ import { transform, filter } from 'map-transform'
 const def6 = [
   'data.items[]',
   {
+    $iterate: true,
     id: 'articleNo',
     title: ['headline', transform(maxLength(20))],
     sections: 'meta.sections[].id'
@@ -347,12 +341,13 @@ const def6 = [
 (Note that in this example, both `maxLength` and `onlyItemsWithSection` are
 custom functions for this case, but their implementations are not provided.)
 
-**A note on arrays:** When MapTransform encounters an array in the data, it may
-not always be clear whether you want an operation or a transform object to be
-applied to each item in the array or the array itself. In such cases,
-MapTransform will always choose to iterate the array and map to each item.
-Because of this, some operations has a version with an `Arr` suffix, that will
-apply to the array instead. For non-arrays, the two versions are identical.
+**A note on arrays:** In a transform pipeline, the default behavior is to treat
+an array as any other data. The array will be passed on to a `transform()`
+operation, the entire array will be set on a path, etc. This also means that a
+mapping object will be applied to the entire array if nothing else is specified.
+In the example above, we have set `$iterate: true` on the mapping object, to
+signal that we want the mapping to be applied to the items of any array. See
+also [the `iterate` operation](#iteratepipeline-operation) for more.
 
 #### `transform(fn, fnRev)` operation
 
@@ -429,9 +424,9 @@ const def8 = {
 }
 ```
 
-**Note:** When the `transform` operation is applied to an array, it will iterate
-the array and map each item in the array. To transform the array itself, use the
-`transformArr` operation instead.
+**Note:** When the `transform` operation is applied to an array, it will note
+iterate the array. Mapping over each item needs to be handled in the transform
+itself, or wrap the `transform` operation in an `iterate` operation.
 
 You may also define a transform operation as an object:
 
@@ -462,37 +457,6 @@ you provide the custom function this way, it should be given as a function
 accepting an object with operands / arguments, that returns the actual function
 used in the transform. Any properties given on the operation object, apart from
 `$transform`, will be passed in the `operands` object.
-
-#### `transformArr(fn, fnRev)` operation
-
-The `transformArr` operation is identical to `transform` in every way, except
-for the way it handles arrays. When an array in the data is transformed with
-`transformArr`, the entire array is passed to the transform function, instead of
-iterating the array.
-
-The transformArr operation as an object:
-
-```javascript
-import { mapTransform } from 'map-transform'
-
-const ensureInteger = operands => data => Number.parseInt(data, 10) || 0
-const functions = { ensureInteger }
-const def27 = {
-  count: ['statistics.views', { $transform: 'slice', start: 0, end: 10, iterate: false }]
-}
-
-const data = {
-  statistics: {
-    view: '18'
-    // ...
-  }
-}
-
-mapTransform(def7asObject, { functions })(data)
-// --> {
-//   count: 18
-// }
-```
 
 #### `filter(fn)` operation
 
@@ -549,6 +513,29 @@ const def9asObject = [
 ```
 
 See the `transform()` operation on how defining as an object works.
+
+#### `iterate(pipeline)` operation
+
+If you want something to be mapped over the items of an array, the `iterate`
+operation is your friend. When you wrap another operation, a pipeline, or a
+mapping object in an `iterate` operation, it will be applied to each item.
+
+In this example, each value in the array returned by `statistics[].views` will
+be transformed with the `ensureInteger` function, even if the function does not
+support arrays:
+
+```javascript
+import { mapTransform, iterate } from 'map-transform'
+
+const ensureInteger = data => Number.parseInt(data, 10) || 0
+const def26 = [
+  counts: ['statistics[].views', iterate(transform(ensureInteger))]
+]
+```
+
+The `iterate` operation may also be used to wrap mapping objects in a transform
+pipeline, however, setting `$iterate: true` on the object may be more
+convenient.
 
 #### `apply(pipelineId)` operation
 
@@ -644,9 +631,9 @@ already in the pipeline is `undefined`. This is how you provide default values
 in MapTransform. The pipeline may be as simple as a `value()` function, a dot
 notation path into the source data, or a full pipeline of several operations.
 
-When given an array, the `alt` operation will iterate over the array and provide
-alternative values to any `undefined` item. To avoid iterating an array, use the
-`altArr` operation instead.
+When given an array, the `alt` operation will treat it as a value and do
+nothing, as it is not an `undefined` value. To provide the `alt` operation to
+every item in the array, please use the `iterate` operation.
 
 ```javascript
 import { alt, transform, functions } from 'map-transform'
@@ -690,12 +677,6 @@ const def11asObject = {
   ]
 }
 ```
-
-#### `altArr(pipeline)` operation
-
-`altArr` is identical to the `alt` operation, except that it will treat an array
-as a value and do nothing, instead of iterating the items of the array to find
-`undefined` items.
 
 #### `concat(pipeline, pipeline, ...)` operation
 

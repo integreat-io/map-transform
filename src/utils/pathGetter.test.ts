@@ -47,12 +47,12 @@ test('should ensure array when path includes square brackets', (t) => {
   t.deepEqual(ret, ['item1', 'item2', 'item3', 'item4'])
 })
 
-test('should not ensure array when value is undefined', (t) => {
+test('should ensure array when value is undefined', (t) => {
   const path = 'meta.author[]'
 
   const ret = pathGetter(path)({})
 
-  t.is(typeof ret, 'undefined')
+  t.deepEqual(ret, [])
 })
 
 test('should return empty array when value is null', (t) => {

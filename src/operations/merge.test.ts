@@ -1,5 +1,6 @@
 import test from 'ava'
 import { set } from './getSet'
+import iterate from './iterate'
 
 import merge from './merge'
 
@@ -86,7 +87,7 @@ test('should run pipelines and merge arrays', t => {
     }
   ]
 
-  const ret = merge(...pipelines)(options)(stateWithArray)
+  const ret = iterate(merge(...pipelines))(options)(stateWithArray)
 
   t.deepEqual(ret.value, expectedValue)
 })

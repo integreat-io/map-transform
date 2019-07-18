@@ -1,5 +1,5 @@
 import test from 'ava'
-import { compose } from 'ramda'
+import { compose } from '../utils/functional'
 
 import { get } from './getSet'
 

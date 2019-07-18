@@ -1,8 +1,8 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, lookup } from '..'
+import { mapTransform, get, set, fwd, rev, lookup, iterate, merge } from '..'
 
-test('should reverse map simple object', (t) => {
+test('should reverse map simple object', t => {
   const def = {
     title: 'content.heading',
     author: 'meta.writer.username'
@@ -21,7 +21,7 @@ test('should reverse map simple object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map array of objects', (t) => {
+test('should reverse map array of objects', t => {
   const def = {
     title: 'content.heading',
     author: 'meta.writer.username'
@@ -46,17 +46,15 @@ test('should reverse map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with object array path', (t) => {
+test('should reverse map with object array path', t => {
   const def = [
     'content.articles[]',
     {
+      $iterate: true,
       title: 'content.heading'
     }
   ]
-  const data = [
-    { title: 'Heading 1' },
-    { title: 'Heading 2' }
-  ]
+  const data = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
   const expected = {
     content: {
       articles: [
@@ -71,11 +69,11 @@ test('should reverse map with object array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should reverse map several layers of arrays', (t) => {
+test('should reverse map several layers of arrays', t => {
   const def = [
     'content.articles[]',
     {
-      $iterate: false,
+      $iterate: true,
       attributes: {
         title: 'content.heading'
       },
@@ -88,7 +86,10 @@ test.skip('should reverse map several layers of arrays', (t) => {
   const data = [
     {
       attributes: { title: 'Heading 1' },
-      relationships: { topics: [{ id: 'news' }, { id: 'latest' }], author: { id: 'johnf' } }
+      relationships: {
+        topics: [{ id: 'news' }, { id: 'latest' }],
+        author: { id: 'johnf' }
+      }
     },
     {
       attributes: { title: 'Heading 2' },
@@ -98,8 +99,14 @@ test.skip('should reverse map several layers of arrays', (t) => {
   const expected = {
     content: {
       articles: [
-        { content: { heading: 'Heading 1' }, meta: { keywords: ['news', 'latest'], user_id: 'johnf' } },
-        { content: { heading: 'Heading 2' }, meta: { keywords: ['tech'], user_id: 'maryk' } }
+        {
+          content: { heading: 'Heading 1' },
+          meta: { keywords: ['news', 'latest'], user_id: 'johnf' }
+        },
+        {
+          content: { heading: 'Heading 2' },
+          meta: { keywords: ['tech'], user_id: 'maryk' }
+        }
       ]
     }
   }
@@ -109,7 +116,56 @@ test.skip('should reverse map several layers of arrays', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set several props in array in reverse', (t) => {
+test('should reverse map several layers of arrays - as pipelines', t => {
+  const def = [
+    'content.articles[]',
+    iterate(
+      merge(
+        [merge(['content.heading', set('title')]), set('attributes')],
+        [
+          merge(
+            ['meta.keywords', set('topics[].id')],
+            ['meta.user_id', set('author.id')]
+          ),
+          set('relationships')
+        ]
+      )
+    )
+  ]
+  const data = [
+    {
+      attributes: { title: 'Heading 1' },
+      relationships: {
+        topics: [{ id: 'news' }, { id: 'latest' }],
+        author: { id: 'johnf' }
+      }
+    },
+    {
+      attributes: { title: 'Heading 2' },
+      relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } }
+    }
+  ]
+  const expected = {
+    content: {
+      articles: [
+        {
+          content: { heading: 'Heading 1' },
+          meta: { keywords: ['news', 'latest'], user_id: 'johnf' }
+        },
+        {
+          content: { heading: 'Heading 2' },
+          meta: { keywords: ['tech'], user_id: 'maryk' }
+        }
+      ]
+    }
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set several props in array in reverse', t => {
   const def = {
     'content.prop1': 'props[0].value',
     'content.prop2': 'props[1].value'
@@ -121,10 +177,7 @@ test('should set several props in array in reverse', (t) => {
     }
   }
   const expected = {
-    props: [
-      { value: 'Value 1' },
-      { value: 'Value 2' }
-    ]
+    props: [{ value: 'Value 1' }, { value: 'Value 2' }]
   }
 
   const ret = mapTransform(def).rev(data)
@@ -132,7 +185,7 @@ test('should set several props in array in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with null value', (t) => {
+test('should reverse map with null value', t => {
   const def = {
     title: 'content.heading'
   }
@@ -148,7 +201,7 @@ test('should reverse map with null value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use slashed properties in reverse', (t) => {
+test('should use slashed properties in reverse', t => {
   const def = [
     'content.article',
     {
@@ -172,17 +225,15 @@ test('should use slashed properties in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with root array path', (t) => {
+test('should reverse map with root array path', t => {
   const def = [
     '[]',
     {
+      $iterate: true,
       title: 'content.heading'
     }
   ]
-  const data = [
-    { title: 'Heading 1' },
-    { title: 'Heading 2' }
-  ]
+  const data = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
   const expected = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }
@@ -193,7 +244,7 @@ test('should reverse map with root array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should treat lookup as get in reverse', (t) => {
+test('should treat lookup as get in reverse', t => {
   const def = {
     title: 'content.heading',
     authors: ['content.authors[]', lookup('$meta.users[]', 'id')]
@@ -211,10 +262,8 @@ test('should treat lookup as get in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map data as is when no mapping', (t) => {
-  const def = [
-    'content'
-  ]
+test('should reverse map data as is when no mapping', t => {
+  const def = ['content']
   const data = {
     title: 'The heading',
     author: 'johnf'
@@ -231,20 +280,15 @@ test('should reverse map data as is when no mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with nested mapping', (t) => {
+test('should reverse map with nested mapping', t => {
   const def = {
-    'content.articles': [
-      {
-        title: 'content.heading'
-      }
-    ]
+    'content.articles[]': {
+      title: 'content.heading'
+    }
   }
   const data = {
     content: {
-      articles: [
-        { title: 'Heading 1' },
-        { title: 'Heading 2' }
-      ]
+      articles: [{ title: 'Heading 1' }, { title: 'Heading 2' }]
     }
   }
   const expected = [
@@ -257,21 +301,19 @@ test('should reverse map with nested mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with directional paths', (t) => {
+test('should reverse map with directional paths', t => {
   const def = [
     fwd(get('wrong.path[]')),
     rev(get('content.articles[]')),
     {
+      $iterate: true,
       title: 'content.heading'
     },
     fwd(set('wrong.path[]')),
     rev(set('items[]'))
   ]
   const data = {
-    items: [
-      { title: 'Heading 1' },
-      { title: 'Heading 2' }
-    ]
+    items: [{ title: 'Heading 1' }, { title: 'Heading 2' }]
   }
   const expected = {
     content: {
@@ -287,7 +329,7 @@ test('should reverse map with directional paths', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with root path', (t) => {
+test('should reverse map with root path', t => {
   const def = [
     {
       title: 'item.heading',
@@ -311,7 +353,7 @@ test('should reverse map with root path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return data when no mapping def and reverse mapping', (t) => {
+test('should return data when no mapping def and reverse mapping', t => {
   const def = null
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -324,7 +366,7 @@ test('should return data when no mapping def and reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when mapping def is empty', (t) => {
+test('should return undefined when mapping def is empty', t => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -337,11 +379,8 @@ test('should return undefined when mapping def is empty', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map undefined to undefined', (t) => {
-  const def = [
-    'items[]',
-    { attributes: { title: 'content.heading' } }
-  ]
+test('should map undefined to undefined', t => {
+  const def = ['items[]', { attributes: { title: 'content.heading' } }]
   const data = undefined
   const expected = undefined
 

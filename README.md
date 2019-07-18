@@ -144,7 +144,10 @@ npm install map-transform --save
 ```
 
 ## Breaking changes in v0.4
+
 - Map objects won't be mapped over an array by default. You have to specify `$iterate: true`
+- The `alt` operation now accepts any type of pipeline, but not a helper
+function
 
 ## Usage
 
@@ -520,6 +523,9 @@ If you want something to be mapped over the items of an array, the `iterate`
 operation is your friend. When you wrap another operation, a pipeline, or a
 mapping object in an `iterate` operation, it will be applied to each item.
 
+When iterating, the state's `context` will iterate as well, to support `alt`
+operations etc. that need to access the corresponding item in the context.
+
 In this example, each value in the array returned by `statistics[].views` will
 be transformed with the `ensureInteger` function, even if the function does not
 support arrays:
@@ -626,9 +632,9 @@ will be included when mapping with `.onlyMappedValues()` as well.
 
 #### `alt(pipeline)` operation
 
-The alt operation will apply the function or pipeline it is given when the data
-already in the pipeline is `undefined`. This is how you provide default values
-in MapTransform. The pipeline may be as simple as a `value()` function, a dot
+The alt operation will apply the pipeline it is given when the data already in
+the pipeline is `undefined`. This is how you provide default values in
+MapTransform. The pipeline may be as simple as a `value()` operation, a dot
 notation path into the source data, or a full pipeline of several operations.
 
 When given an array, the `alt` operation will treat it as a value and do
@@ -649,7 +655,7 @@ const def11 = {
   updatedAt: [
     'data.updateDate',
     alt('data.createDate'),
-    alt(currentDate),
+    alt(transform(currentDate)),
     transform(formatDate)
   ]
 }

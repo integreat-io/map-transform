@@ -1,4 +1,6 @@
 import test from 'ava'
+import alt from './alt'
+import transform from './transform'
 
 import iterate from './iterate'
 
@@ -62,4 +64,26 @@ test('should return undefined when no def', t => {
   const ret = iterate(def)(options)(state)
 
   t.is(typeof ret.value, 'undefined')
+})
+
+test('should also iterate context to support alt operation etc.', t => {
+  const def = alt(
+    transform((item: any) =>
+      item && typeof item === 'object' ? `${item.key}: ${item.headline}` : ''
+    )
+  )
+  const state = {
+    root: data,
+    context: data,
+    value: ['From somewhere else', undefined]
+  }
+  const expected = {
+    root: data,
+    context: data,
+    value: ['From somewhere else', 'ent2: Entry 2']
+  }
+
+  const ret = iterate(def)(options)(state)
+
+  t.deepEqual(ret, expected)
 })

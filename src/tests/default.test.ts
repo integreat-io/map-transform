@@ -1,7 +1,7 @@
 import test from 'ava'
 import { mapTransform, alt, fwd, rev } from '..'
-import { value } from '../functions/value'
-import get from '../functions/get'
+import value from '../operations/value'
+import { get } from '../operations/getSet'
 
 test('should use default value', t => {
   const def = {
@@ -15,7 +15,7 @@ test('should use default value', t => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should use default value in array', t => {
+test('should use default value in array', t => {
   const def = {
     id: ['id', alt(get('key'))]
   }
@@ -42,7 +42,7 @@ test('should use default value in reverse', t => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should use alternative path', t => {
+test('should use alternative path', t => {
   const def = {
     title: ['heading', alt('headline')]
   }
@@ -54,7 +54,7 @@ test.failing('should use alternative path', t => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should use alternative path with dot notation', t => {
+test('should use alternative path with dot notation', t => {
   const def = {
     attributes: {
       title: ['content.heading', alt('content.headline')]

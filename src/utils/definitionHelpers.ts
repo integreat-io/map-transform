@@ -22,6 +22,8 @@ import filter from '../operations/filter'
 import apply from '../operations/apply'
 import alt from '../operations/alt'
 
+const altOperation = (fn: DataMapper) => alt(transform(fn))
+
 const isObject = (def: MapDefinition): def is MapObject | OperationObject =>
   typeof def === 'object' && def !== null && !Array.isArray(def)
 
@@ -77,7 +79,7 @@ const operationFromObject = (
   } else if (isOperationType<ApplyObject>(def, '$apply')) {
     return createApplyOperation(apply, def, options)
   } else if (isOperationType<AltObject>(def, '$alt')) {
-    return createOperation(alt, '$alt', def, options)
+    return createOperation(altOperation, '$alt', def, options)
   } else {
     return mutate(def)(options)
   }

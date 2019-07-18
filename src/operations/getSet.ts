@@ -29,12 +29,12 @@ const setValueFromState = (path: Path) => (state: State) => {
 
 const setupRootGetOrSet = (isGet: boolean, path: Path) =>
   isGet
-    ? divide(root(get(path.substr(1))), plug())
-    : divide(plug(), root(set(path.substr(1))))
+    ? divide(root(get(path)), plug())
+    : divide(plug(), root(set(path)))
 
 const getOrSet = (isGetOperation: boolean) => (path: Path): Operation => {
-  if (path && path.startsWith('$')) {
-    return setupRootGetOrSet(isGetOperation, path)
+  if (path && path.startsWith('^')) {
+    return setupRootGetOrSet(isGetOperation, path.substr(1))
   }
 
   const getFn = getValueFromState(path)

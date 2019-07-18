@@ -138,7 +138,7 @@ test('should map with root path', t => {
     {
       attributes: {
         title: 'content.heading',
-        section: '$meta.section'
+        section: '^meta.section'
       }
     }
   ]
@@ -161,7 +161,7 @@ test('should map with root path', t => {
 test('should map with lookup', t => {
   const def = {
     title: 'content.heading',
-    authors: ['content.authors[]', [lookup('$meta.users[]', 'id'), get('name')]]
+    authors: ['content.authors[]', [lookup('^meta.users[]', 'id'), get('name')]]
   }
   const data = {
     content: { heading: 'The heading', authors: ['user1', 'user3'] },

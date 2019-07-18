@@ -92,7 +92,7 @@ test('should not set on root path', t => {
   }
   const expectedValue = undefined
 
-  const ret = set('$section')(options)(state)
+  const ret = set('^section')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -106,7 +106,7 @@ test('should get from root path', t => {
   }
   const expectedValue = 'news'
 
-  const ret = set('$section')(options)(state)
+  const ret = set('^section')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })

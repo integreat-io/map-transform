@@ -148,6 +148,7 @@ npm install map-transform --save
 - Map objects won't be mapped over an array by default. You have to specify `$iterate: true`
 - The `alt` operation now accepts any type of pipeline, but not a helper
 function
+- The root path prefix is changed from `$` to `^`
 
 ## Usage
 
@@ -825,14 +826,14 @@ As you see, every item in the `articles[]` array, will be mapped with the
 items without the root operation.
 
 There's also a shortcut notation for root, by prefixing a dot notation path with
-`$`. This only works when the path is used for getting a value, and it will be
+`^`. This only works when the path is used for getting a value, and it will be
 plugged when used as set (i.e., it will return no value). This may be used in
 `get()` and `set()` operations, and in transformation objects.
 
 In the following example, `def16` and `def17` is exactly the same:
 
 ```javascript
-const def16 = get('$meta.section')
+const def16 = get('^meta.section')
 const def17 = divide(root('meta.section'), plug())
 ```
 

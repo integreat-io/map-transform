@@ -247,7 +247,7 @@ test('should reverse map with root array path', t => {
 test('should treat lookup as get in reverse', t => {
   const def = {
     title: 'content.heading',
-    authors: ['content.authors[]', lookup('$meta.users[]', 'id')]
+    authors: ['content.authors[]', lookup('^meta.users[]', 'id')]
   }
   const data = {
     title: 'The heading',
@@ -333,7 +333,7 @@ test('should reverse map with root path', t => {
   const def = [
     {
       title: 'item.heading',
-      '$meta.section': 'section'
+      '^meta.section': 'section'
     },
     set('content')
   ]

@@ -272,7 +272,7 @@ test('should skip unknown customer function', t => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should use built in join function', t => {
+test('should use built in join function', t => {
   const def = {
     title: [
       'content',
@@ -291,7 +291,7 @@ test.failing('should use built in join function', t => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should use built in get function', t => {
+test('should use built in get function', t => {
   const def = {
     title: ['content', { $transform: 'get', path: 'heading' }]
   }

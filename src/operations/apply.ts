@@ -7,6 +7,6 @@ const extractPipeline = (pipelineId: string, { pipelines }: Options) =>
 export default function apply(pipelineId: string): Operation {
   return (options: Options) => {
     const pipeline = extractPipeline(pipelineId, options)
-    return mapFunctionFromDef(pipeline || null, options)
+    return mapFunctionFromDef(pipeline || null)(options)
   }
 }

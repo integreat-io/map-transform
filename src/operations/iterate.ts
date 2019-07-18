@@ -24,7 +24,7 @@ export default function iterate(def: MapDefinition): Operation {
     }
     const fn = compose(
       getStateValue,
-      mapFunctionFromDef(def, options),
+      mapFunctionFromDef(def)(options),
       iterateWithContext
     )
     return (state: State): State =>

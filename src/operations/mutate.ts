@@ -17,7 +17,7 @@ import { isMapObject } from '../utils/definitionHelpers'
 
 const ensureArray = (value: any) => (Array.isArray(value) ? value : [value])
 
-const shouldIterate = (def: MapDefinition, path: Path = '') =>
+const shouldIterate = (def: MapDefinition, path: Path) =>
   (isMapObject(def) && def['$iterate'] === true) || path.includes('[]')
 
 const createSubPipeline = (

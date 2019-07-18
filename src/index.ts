@@ -50,14 +50,15 @@ const mergeOptions = (options: Options) => ({
   }
 })
 
+const createRootMapper = (def: MapDefinition) =>
+  isMapObject(def) ? iterate(def) : mapFunctionFromDef(def)
+
 export function mapTransform(
   def: MapDefinition,
   options: Options = {}
 ): MapTransform {
   const preparedOptions = mergeOptions(options)
-  const mapFn = isMapObject(def)
-    ? iterate(def)(options)
-    : mapFunctionFromDef(def, preparedOptions)
+  const mapFn = createRootMapper(def)(preparedOptions)
 
   return Object.assign(composeMapFunction(mapFn, {}), {
     onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),

@@ -1,7 +1,6 @@
 import { identity } from 'ramda'
 import {
   Operation,
-  StateMapper,
   DataMapper,
   MapDefinition,
   MapObject,
@@ -49,9 +48,8 @@ export const isOperation = (def: any): def is Operation =>
 const createOperation = <U extends OperationObject>(
   operationFn: (fn: DataMapper) => Operation,
   fnProp: string,
-  operation: U,
-  options: Options
-) => {
+  operation: U
+) => (options: Options) => {
   const { [fnProp]: fnId, ...operands } = operation
   const fn = options.functions![fnId as string]
   return typeof fn === 'function'
@@ -61,40 +59,37 @@ const createOperation = <U extends OperationObject>(
 
 const createApplyOperation = (
   operationFn: (pipelineId: string) => Operation,
-  operation: ApplyObject,
-  options: Options
+  operation: ApplyObject
 ) => {
   const pipelineId = operation.$apply
-  return operationFn(pipelineId)(options)
+  return operationFn(pipelineId)
 }
 
 const operationFromObject = (
-  def: OperationObject | MapObject,
-  options: Options
+  def: OperationObject | MapObject
 ) => {
   if (isOperationType<TransformObject>(def, '$transform')) {
-    return createOperation(transform, '$transform', def, options)
+    return createOperation(transform, '$transform', def)
   } else if (isOperationType<FilterObject>(def, '$filter')) {
-    return createOperation(filter, '$filter', def, options)
+    return createOperation(filter, '$filter', def)
   } else if (isOperationType<ApplyObject>(def, '$apply')) {
-    return createApplyOperation(apply, def, options)
+    return createApplyOperation(apply, def)
   } else if (isOperationType<AltObject>(def, '$alt')) {
-    return createOperation(altOperation, '$alt', def, options)
+    return createOperation(altOperation, '$alt', def)
   } else {
-    return mutate(def)(options)
+    return mutate(def)
   }
 }
 
 export const mapFunctionFromDef = (
-  def: MapDefinition,
-  options: Options
-): StateMapper =>
+  def: MapDefinition
+): Operation =>
   isMapPipe(def)
-    ? pipe(def)(options)
+    ? pipe(def)
     : isObject(def)
-    ? operationFromObject(def, options)
+    ? operationFromObject(def)
     : isPath(def)
-    ? get(def)(options)
+    ? get(def)
     : isOperation(def)
-    ? def(options)
-    : identity
+    ? def
+    : (_options: Options) => identity

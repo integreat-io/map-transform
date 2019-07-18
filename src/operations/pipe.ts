@@ -5,7 +5,7 @@ import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
 export default function pipe (defs: MapPipe): Operation {
   return (options: Options) => {
-    const fns = defs.map((def) => mapFunctionFromDef(def, options))
+    const fns = defs.map((def) => mapFunctionFromDef(def)(options))
     const runPipe = pipeFn(...fns)
     const runRevPipe = compose(...fns)
 

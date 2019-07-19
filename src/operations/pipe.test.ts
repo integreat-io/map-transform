@@ -1,21 +1,30 @@
 import test from 'ava'
+import { State, } from '../types'
 import { get } from './getSet'
 
 import pipe from './pipe'
 
 // Setup
 
+const data = { name: 'John F.' }
+
+const state = {
+  root: { data },
+  context: { data },
+  value: { data }
+}
+
 const options = {}
+
+const getNameFromContext = () => (state: State) => ({
+  ...state,
+  value: (state.context as any).name
+})
 
 // Tests
 
-test('should run map pipe', (t) => {
+test('should run map pipe', t => {
   const def = [get('data'), get('name')]
-  const state = {
-    root: { data: { name: 'John F.' } },
-    context: { data: { name: 'John F.' } },
-    value: { data: { name: 'John F.' } }
-  }
   const expected = {
     root: { data: { name: 'John F.' } },
     context: { data: { name: 'John F.' } },
@@ -27,12 +36,30 @@ test('should run map pipe', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should treat string as path', (t) => {
+test('should treat string as path', t => {
   const def = ['data', get('name')]
+  const expectedValue = 'John F.'
+
+  const ret = pipe(def)(options)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should treat object as map object', t => {
+  const def = ['data', { fullName: 'name' }]
+  const expectedValue = { fullName: 'John F.' }
+
+  const ret = pipe(def)(options)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should update context when entering a pipeline', t => {
+  const def = [getNameFromContext]
   const state = {
-    root: {},
-    context: {},
-    value: { data: { name: 'John F.' } }
+    root: { data },
+    context: { data },
+    value: data
   }
   const expectedValue = 'John F.'
 
@@ -41,21 +68,7 @@ test('should treat string as path', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should treat object as map object', (t) => {
-  const def = ['data', { fullName: 'name' }]
-  const state = {
-    root: {},
-    context: {},
-    value: { data: { name: 'John F.' } }
-  }
-  const expectedValue = { fullName: 'John F.' }
-
-  const ret = pipe(def)(options)(state)
-
-  t.deepEqual(ret.value, expectedValue)
-})
-
-test('should reverse map pipe on reverse mapping', (t) => {
+test('should reverse map pipe on reverse mapping', t => {
   const def = [get('data'), get('name')]
   const state = {
     root: 'John F.',
@@ -73,4 +86,19 @@ test('should reverse map pipe on reverse mapping', (t) => {
   const ret = pipe(def)(options)(state)
 
   t.deepEqual(ret, expected)
+})
+
+test('should update context when entering a pipeline in reverse', t => {
+  const def = [getNameFromContext]
+  const state = {
+    root: { data },
+    context: { data },
+    value: data,
+    rev: true
+  }
+  const expectedValue = 'John F.'
+
+  const ret = pipe(def)(options)(state)
+
+  t.deepEqual(ret.value, expectedValue)
 })

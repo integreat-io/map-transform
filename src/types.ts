@@ -6,9 +6,9 @@ export type Prop =
   | string
   | number
   | boolean
-  | object
   | null
   | undefined
+  | object
   | ObjectWithProps
 
 export type Data = Prop | Prop[]
@@ -53,20 +53,24 @@ export interface Options {
 export interface TransformObject extends Operands {
   $transform: string
   $iterate?: boolean
+  $direction?: string
 }
 
 export interface FilterObject extends Operands {
   $filter: string
+  $direction?: string
 }
 
 export interface ApplyObject extends Operands {
   $apply: string
   $iterate?: boolean
+  $direction?: string
 }
 
 export interface AltObject extends Operands {
   $alt: string
   $iterate?: boolean
+  $direction?: string
 }
 
 export type OperationObject =

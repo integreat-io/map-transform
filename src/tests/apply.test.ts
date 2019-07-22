@@ -186,3 +186,37 @@ test('should do nothing on unknown pipeline in operation object', t => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should apply pipeline as operation object online going forward only', t => {
+  const def = [
+    { title: 'content.heading', viewCount: 'meta.hits' },
+    { $apply: 'castEntry', $direction: 'fwd' }
+  ]
+  const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
+  const expectedFwd = { title: 'The heading', viewCount: 45 }
+  const dataRev = { title: 'The heading', viewCount: '45' }
+  const expectedRev = { content: { heading: 'The heading' }, meta: { hits: '45' } }
+
+  const retFwd = mapTransform(def, { pipelines })(dataFwd)
+  const retRev = mapTransform(def, { pipelines }).rev(dataRev)
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
+
+test('should apply pipeline as operation object online going in reverse only', t => {
+  const def = [
+    { title: 'content.heading', viewCount: 'meta.hits' },
+    { $apply: 'castEntry', $direction: 'rev' }
+  ]
+  const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
+  const expectedFwd = { title: 'The heading', viewCount: '45' }
+  const dataRev = { title: 'The heading', viewCount: '45' }
+  const expectedRev = { content: { heading: 'The heading' }, meta: { hits: 45 } }
+
+  const retFwd = mapTransform(def, { pipelines })(dataFwd)
+  const retRev = mapTransform(def, { pipelines }).rev(dataRev)
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})

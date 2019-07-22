@@ -147,7 +147,7 @@ npm install map-transform --save
 
 - Map objects won't be mapped over an array by default. You have to specify `$iterate: true`
 - The `alt` operation now accepts any type of pipeline, but not a helper
-function
+  function
 - The root path prefix is changed from `$` to `^`
 
 ## Usage
@@ -464,7 +464,8 @@ used in the transform. Any properties given on the operation object, apart from
 
 When you define the `transform` operation as an object, you may specify
 `$iterate: true` on the object to apply the transform to every item on an array,
-if an array is encountered.
+if an array is encountered. You may also set `$direction: 'fwd'` or
+`$direction: 'rev'` to have it transform in one direction only.
 
 #### `filter(fn)` operation
 
@@ -520,7 +521,10 @@ const def9asObject = [
 ]
 ```
 
-See the `transform()` operation on how defining as an object works.
+You may also set `$direction: 'fwd'` or `$direction: 'rev'` on the object, to
+have it filter in one direction only.
+
+See the `transform()` operation for more on how defining as an object works.
 
 #### `iterate(pipeline)` operation
 
@@ -603,7 +607,8 @@ const def25 = [
 
 When you define the `apply` operation as an object, you may specify
 `$iterate: true` on the object to apply the pipeline to every item on an array,
-if an array is encountered.
+if an array is encountered. You may also set `$direction: 'fwd'` or
+`$direction: 'rev'` to have it apply in one direction only.
 
 #### `value(data)` operation
 
@@ -629,6 +634,18 @@ const def10 = {
 ```
 
 The operation will not set anything when mapping with `.onlyMappedValues()`.
+
+If you want to define the `value` operation as an operation object, use
+`$transform` or `$alt`:
+
+```javascript
+const def10asObject = {
+  id: 'data.customerNo',
+  type: { $transform: 'value', value: 'customer' },
+  name: ['data.name', { $alt: 'value', value: 'Anonymous' }]
+}
+```
+
 
 #### `fixed(data)` operation
 
@@ -695,7 +712,8 @@ const def11asObject = {
 
 When you define the `alt` operation as an object, you may specify
 `$iterate: true` on the object to provide a default value to every `undefined`
-item on an array, if an array is encountered.
+item on an array, if an array is encountered. You may also set
+`$direction: 'fwd'` or `$direction: 'rev'` to limit it to one direction only.
 
 #### `concat(pipeline, pipeline, ...)` operation
 
@@ -887,7 +905,7 @@ mapper.rev(mappedData)
 // --> { content: { meta: { authors: ['user1', 'user3'] } } }
 ```
 
-#### `compare(path, value)` helper
+#### `compare({ path, match })` helper
 
 This is a helper intended for use with the `filter()` operation. You pass a dot
 notation path and a value (string, number, boolean) to `compare()`, and it
@@ -905,7 +923,7 @@ const def19 = [
     name: 'name',
     role: 'editor'
   },
-  filter(compare('role', 'admin'))
+  filter(compare({ path: 'role', match: 'admin'}))
 ]
 ```
 

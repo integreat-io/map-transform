@@ -237,6 +237,44 @@ test('should apply default value through iteration of operation object', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should apply default value from an operation object going forward only', t => {
+  const def = {
+    title: [
+      'content.heading',
+      { $alt: 'value', value: 'Default heading', $direction: 'fwd' }
+    ]
+  }
+  const dataFwd = { content: {} }
+  const expectedFwd = { title: 'Default heading' }
+  const dataRev = {}
+  const expectedRev = { content: { heading: undefined } }
+
+  const retFwd = mapTransform(def)(dataFwd)
+  const retRev = mapTransform(def).rev(dataRev)
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
+
+test('should apply default value from an operation object going in reverse only', t => {
+  const def = {
+    title: [
+      'content.heading',
+      { $alt: 'value', value: 'Default heading', $direction: 'rev' }
+    ]
+  }
+  const dataFwd = { content: {} }
+  const expectedFwd = { title: undefined }
+  const dataRev = {}
+  const expectedRev = { content: { heading: 'Default heading' } }
+
+  const retFwd = mapTransform(def)(dataFwd)
+  const retRev = mapTransform(def).rev(dataRev)
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
+
 test('should apply default in iterated deep structure', t => {
   const def = [
     'data',

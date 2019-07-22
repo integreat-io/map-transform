@@ -21,6 +21,7 @@ import transform from '../operations/transform'
 import filter from '../operations/filter'
 import apply from '../operations/apply'
 import alt from '../operations/alt'
+import { fwd, rev } from '../operations/directionals'
 
 const altOperation = (fn: DataMapper) => alt(transform(fn))
 
@@ -46,8 +47,17 @@ export const isMapPipe = (def: any): def is MapPipe => Array.isArray(def)
 export const isOperation = (def: any): def is Operation =>
   typeof def === 'function'
 
-const iterateIfSpecified = (fn: Operation, def: OperationObject) =>
-  (def.$iterate === true) ? iterate(fn) : fn
+const iterateIf = (fn: Operation, should: boolean) =>
+  should ? iterate(fn) : fn
+
+const wrapFromDefinition = (fn: Operation, def: OperationObject) => {
+  const fnIterated = iterateIf(fn, def.$iterate === true)
+  return def.$direction === 'rev'
+    ? rev(fnIterated)
+    : def.$direction === 'fwd'
+    ? fwd(fnIterated)
+    : fnIterated
+}
 
 const createOperation = <U extends OperationObject>(
   operationFn: (fn: DataMapper) => Operation,
@@ -57,7 +67,7 @@ const createOperation = <U extends OperationObject>(
   const { [fnProp]: fnId, ...operands } = def
   const fn = options.functions![fnId as string]
   return typeof fn === 'function'
-    ? iterateIfSpecified(operationFn(fn(operands)), def)(options)
+    ? wrapFromDefinition(operationFn(fn(operands)), def)(options)
     : identity
 }
 
@@ -66,12 +76,10 @@ const createApplyOperation = (
   def: ApplyObject
 ) => {
   const pipelineId = def.$apply
-  return iterateIfSpecified(operationFn(pipelineId), def)
+  return wrapFromDefinition(operationFn(pipelineId), def)
 }
 
-const operationFromObject = (
-  def: OperationObject | MapObject
-) => {
+const operationFromObject = (def: OperationObject | MapObject) => {
   if (isOperationType<TransformObject>(def, '$transform')) {
     return createOperation(transform, '$transform', def)
   } else if (isOperationType<FilterObject>(def, '$filter')) {
@@ -85,9 +93,7 @@ const operationFromObject = (
   }
 }
 
-export const mapFunctionFromDef = (
-  def: MapDefinition
-): Operation =>
+export const mapFunctionFromDef = (def: MapDefinition): Operation =>
   isMapPipe(def)
     ? pipe(def)
     : isObject(def)

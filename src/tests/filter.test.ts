@@ -319,9 +319,7 @@ test('should apply filter from operation object', t => {
 
 test('should apply filter with compare function from operation object', t => {
   const def = [
-    {
-      title: 'content.heading'
-    },
+    { title: 'content.heading' },
     { $filter: 'compare', path: 'title', operator: '=', match: 'Other heading' }
   ]
   const data = {
@@ -335,20 +333,43 @@ test('should apply filter with compare function from operation object', t => {
 })
 
 test('should skip filter when unknown function', t => {
-  const def = [
-    {
-      title: 'content.heading'
-    },
-    { $filter: 'unknown' }
-  ]
+  const def = [{ title: 'content.heading' }, { $filter: 'unknown' }]
   const data = {
     content: { heading: 'The heading' }
   }
-  const expected = {
-    title: 'The heading'
-  }
+  const expected = { title: 'The heading' }
 
   const ret = mapTransform(def, { functions })(data)
 
   t.deepEqual(ret, expected)
+})
+
+test('should only apply filter from operation object going forward', t => {
+  const def = [
+    { title: 'content.heading' },
+    { $filter: 'noHeadingTitle', $direction: 'fwd' }
+  ]
+  const dataFwd = { content: { heading: 'The heading' } }
+  const dataRev = { title: 'The heading' }
+
+  const retFwd = mapTransform(def, { functions })(dataFwd)
+  const retRev = mapTransform(def, { functions }).rev(dataRev)
+
+  t.is(retFwd, undefined)
+  t.deepEqual(retRev, dataFwd)
+})
+
+test('should only apply filter from operation object going in reverse', t => {
+  const def = [
+    { title: 'content.heading' },
+    { $filter: 'noHeadingTitle', $direction: 'rev' }
+  ]
+  const dataFwd = { content: { heading: 'The heading' } }
+  const dataRev = { title: 'The heading' }
+
+  const retFwd = mapTransform(def, { functions })(dataFwd)
+  const retRev = mapTransform(def, { functions }).rev(dataRev)
+
+  t.deepEqual(retFwd, dataRev)
+  t.is(retRev, undefined)
 })

@@ -300,12 +300,8 @@ test('should use built in join function', t => {
       { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }
     ]
   }
-  const data = {
-    content: { heading: 'The heading', meta: { user: 'johnf' } }
-  }
-  const expected = {
-    title: 'The heading - johnf'
-  }
+  const data = { content: { heading: 'The heading', meta: { user: 'johnf' } } }
+  const expected = { title: 'The heading - johnf' }
 
   const ret = mapTransform(def, { functions })(data)
 
@@ -316,16 +312,78 @@ test('should use built in get function', t => {
   const def = {
     title: ['content', { $transform: 'get', path: 'heading' }]
   }
-  const data = {
-    content: { heading: 'The heading', meta: { user: 'johnf' } }
-  }
-  const expected = {
-    title: 'The heading'
-  }
+  const data = { content: { heading: 'The heading', meta: { user: 'johnf' } } }
+  const expected = { title: 'The heading' }
 
   const ret = mapTransform(def, { functions })(data)
 
   t.deepEqual(ret, expected)
+})
+
+test('should use built in fixed function', t => {
+  const def = {
+    title: [
+      'content',
+      { $transform: 'fixed', value: 'I\'m always here' }
+    ]
+  }
+  const data = { content: { heading: 'The heading' } }
+  const expected = { title: 'I\'m always here' }
+
+  const ret = mapTransform(def, { functions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use built in fixed function in reverse', t => {
+  const def = {
+    title: [
+      'content',
+      { $transform: 'fixed', value: 'I\'m always here' }
+    ]
+  }
+  const data = { title: 'The heading' }
+  const expected = { content: 'I\'m always here' }
+
+  const ret = mapTransform(def, { functions }).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should only use transform going forward', t => {
+  const def = {
+    title: [
+      'content',
+      { $transform: 'fixed', value: 'I\'m always here', $direction: 'fwd' }
+    ]
+  }
+  const data = { content: { heading: 'The heading' } }
+  const expectedFwd = { title: 'I\'m always here' }
+  const expectedRev = { content: undefined }
+
+  const retFwd = mapTransform(def, { functions })(data)
+  const retRev = mapTransform(def, { functions }).rev(data)
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
+
+test('should only use transform going in reverse', t => {
+  const def = {
+    title: [
+      'content',
+      { $transform: 'fixed', value: 'I\'m always here', $direction: 'rev' }
+    ]
+  }
+  const data = { title: 'The heading' }
+  const expectedFwd = { title: undefined }
+  const expectedRev = { content: 'I\'m always here' }
+
+  const retFwd = mapTransform(def, { functions })(data)
+  const retRev = mapTransform(def, { functions }).rev(data)
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
 })
 
 test('should apply transform function to array', t => {

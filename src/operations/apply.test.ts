@@ -50,28 +50,26 @@ test('should run pipeline by id - in rev', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when pipieline is unknown', t => {
+test('should return undefined when pipieline is unknown', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
     value: { title: 'Entry 1' }
   }
-  const expected = state
 
   const ret = apply('unknown')(options)(state)
 
-  t.deepEqual(ret, expected)
+  t.is(ret.value, undefined)
 })
 
-test('should do nothing when no pipielines are supplied', t => {
+test('should return undefined when no pipielines are supplied', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
     value: { title: 'Entry 1' }
   }
-  const expected = state
 
   const ret = apply('extractTitle')({})(state)
 
-  t.deepEqual(ret, expected)
+  t.is(ret.value, undefined)
 })

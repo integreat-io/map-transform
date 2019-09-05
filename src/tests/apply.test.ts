@@ -86,7 +86,7 @@ test('should apply pipeline by id in reverse', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when no pipelines is supplied', t => {
+test('should return undefined when no pipelines is supplied', t => {
   const def = [
     {
       title: 'content.heading',
@@ -98,14 +98,10 @@ test('should do nothing when no pipelines is supplied', t => {
     content: { heading: 'The heading' },
     meta: { hits: '45' }
   }
-  const expected = {
-    title: 'The heading',
-    viewCount: '45'
-  }
 
   const ret = mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  t.is(ret, undefined)
 })
 
 test('should apply pipeline as operation object', t => {
@@ -165,7 +161,7 @@ test('should iterate applied pipeline', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing on unknown pipeline in operation object', t => {
+test('should return undefined on unknown pipeline in operation object', t => {
   const def = [
     {
       title: 'content.heading',
@@ -177,14 +173,10 @@ test('should do nothing on unknown pipeline in operation object', t => {
     content: { heading: 'The heading' },
     meta: { hits: '45' }
   }
-  const expected = {
-    title: 'The heading',
-    viewCount: '45'
-  }
 
   const ret = mapTransform(def, { pipelines })(data)
 
-  t.deepEqual(ret, expected)
+  t.is(ret, undefined)
 })
 
 test('should apply pipeline as operation object online going forward only', t => {
@@ -195,7 +187,10 @@ test('should apply pipeline as operation object online going forward only', t =>
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: 45 }
   const dataRev = { title: 'The heading', viewCount: '45' }
-  const expectedRev = { content: { heading: 'The heading' }, meta: { hits: '45' } }
+  const expectedRev = {
+    content: { heading: 'The heading' },
+    meta: { hits: '45' }
+  }
 
   const retFwd = mapTransform(def, { pipelines })(dataFwd)
   const retRev = mapTransform(def, { pipelines }).rev(dataRev)
@@ -212,7 +207,10 @@ test('should apply pipeline as operation object online going in reverse only', t
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: '45' }
   const dataRev = { title: 'The heading', viewCount: '45' }
-  const expectedRev = { content: { heading: 'The heading' }, meta: { hits: 45 } }
+  const expectedRev = {
+    content: { heading: 'The heading' },
+    meta: { hits: 45 }
+  }
 
   const retFwd = mapTransform(def, { pipelines })(dataFwd)
   const retRev = mapTransform(def, { pipelines }).rev(dataRev)

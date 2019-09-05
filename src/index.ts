@@ -28,7 +28,14 @@ export { default as filter } from './operations/filter'
 export { fwd, rev, divide } from './operations/directionals'
 export { default as merge } from './operations/merge'
 export { iterate, functions }
-export { Data, CustomFunction, DataMapper, MapDefinition } from './types'
+export {
+  Data,
+  CustomFunction,
+  DataMapper,
+  MapDefinition,
+  MapObject,
+  MapTransform
+} from './types'
 
 const composeMapFunction = (
   mapFn: StateMapper,

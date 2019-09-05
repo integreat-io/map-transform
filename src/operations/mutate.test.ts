@@ -83,6 +83,32 @@ test('should mutate object with map functions', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
+test('should mutate object with props in the given order', t => {
+  const def = {
+    item: {
+      id: value('ent1'),
+      attributes: {
+        title: get('headline'),
+        text: value('The text'),
+        age: get('unknown')
+      },
+      relationships: {
+        author: get('user')
+      }
+    }
+  }
+  const expectedPropsItem = ['id', 'attributes', 'relationships']
+  const expectedPropsAttrs = ['title', 'text', 'age']
+  const expectedPropsRels = ['author']
+
+  const ret = mutate(def)(options)(stateWithObject)
+
+  const { item } = ret.value as any
+  t.deepEqual(Object.keys(item), expectedPropsItem)
+  t.deepEqual(Object.keys(item.attributes), expectedPropsAttrs)
+  t.deepEqual(Object.keys(item.relationships), expectedPropsRels)
+})
+
 test('should iterate when $iterate is true', t => {
   const def = {
     $iterate: true,

@@ -20,13 +20,19 @@
     "ecmaVersion": 2018,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "promise", "security"],
+  "plugins": ["@typescript-eslint", "promise", "security", "node"],
   "rules": {
     "@typescript-eslint/explicit-function-return-type": 0,
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
-      { "argsIgnorePattern": "^_" }
+      { "argsIgnorePattern": "^_", "ignoreRestSiblings": true }
+    ],
+    "node/no-extraneous-import": [
+      "error",
+      {
+        "tryExtensions": [".js", ".json", ".ts"]
+      }
     ]
   }
 }

@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "start": "npm run build && node index.js",
-    "test": "npm run build && nyc --reporter=text-summary ava dist/**/*.test.js",
+    "test": "npm run build && nyc --reporter=text-summary ava --config ./ava-dist.config.js",
     "test:watch": "npm run dev",
     "test:inspect": "node --inspect node_modules/ava/profile.js",
     "dev": "ava --watch",
@@ -23,31 +23,6 @@
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "nyc:report": "nyc report",
     "lint": "eslint --ext .ts src"
-  },
-  "ava": {
-    "compileEnhancements": false,
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register/transpile-only"
-    ],
-    "files": [
-      "src/**/*.test.ts"
-    ],
-    "sources": [
-      "src/**/!(*.test).ts"
-    ]
-  },
-  "nyc": {
-    "extension": [
-      ".ts",
-      ".js"
-    ],
-    "include": [
-      "**/!(*.test).js",
-      "**/!(*.test|*.d).ts"
-    ]
   },
   "repository": {
     "type": "git",
@@ -79,6 +54,7 @@
     "deep-freeze": "0.0.1",
     "eslint": "^6.3.0",
     "eslint-config-prettier": "^6.2.0",
+    "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-security": "^1.4.0",
     "nyc": "^14.1.1",

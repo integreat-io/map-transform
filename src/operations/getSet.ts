@@ -27,14 +27,12 @@ const setValueFromState = (path: Path) => (state: State) => {
   return setFn(getStateValue(state))
 }
 
-const setupRootGetOrSet = (isGet: boolean, path: Path) =>
-  isGet
-    ? divide(root(get(path)), plug())
-    : divide(plug(), root(set(path)))
-
 const getOrSet = (isGetOperation: boolean) => (path: Path): Operation => {
   if (path && path.startsWith('^')) {
-    return setupRootGetOrSet(isGetOperation, path.substr(1))
+    const rootGetSet = root(getOrSet(isGetOperation)(path.substr(1)))
+    return isGetOperation
+      ? divide(rootGetSet, plug())
+      : divide(plug(), rootGetSet)
   }
 
   const getFn = getValueFromState(path)

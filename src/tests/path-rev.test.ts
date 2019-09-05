@@ -101,11 +101,11 @@ test('should reverse map several layers of arrays', t => {
       articles: [
         {
           content: { heading: 'Heading 1' },
-          meta: { keywords: ['news', 'latest'], user_id: 'johnf' }
+          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' }
         },
         {
           content: { heading: 'Heading 2' },
-          meta: { keywords: ['tech'], user_id: 'maryk' }
+          meta: { keywords: ['tech'], ['user_id']: 'maryk' }
         }
       ]
     }
@@ -150,11 +150,11 @@ test('should reverse map several layers of arrays - as pipelines', t => {
       articles: [
         {
           content: { heading: 'Heading 1' },
-          meta: { keywords: ['news', 'latest'], user_id: 'johnf' }
+          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' }
         },
         {
           content: { heading: 'Heading 2' },
-          meta: { keywords: ['tech'], user_id: 'maryk' }
+          meta: { keywords: ['tech'], ['user_id']: 'maryk' }
         }
       ]
     }

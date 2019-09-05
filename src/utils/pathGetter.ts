@@ -14,12 +14,12 @@ const split = (str: Path): (string | number)[] =>
     .map(numberOrString)
 
 const getProp = (prop: string) => (object?: ObjectWithProps) =>
-  object ? object[prop] : undefined
+  object ? object[prop] : undefined // eslint-disable-line security/detect-object-injection
 
 const getArrayIndex = (index: number) => (arr?: Data) =>
-  Array.isArray(arr) ? arr[index] : undefined
+  Array.isArray(arr) ? arr[index] : undefined // eslint-disable-line security/detect-object-injection
 
-const getObjectOrArray = (fn: (object?: ObjectWithProps) => any) => (
+const getObjectOrArray = (fn: (object?: ObjectWithProps) => Data) => (
   object?: ObjectWithProps
 ) => (Array.isArray(object) ? R.flatten(object.map(fn)) : fn(object))
 
@@ -34,7 +34,7 @@ const getGetters = R.compose(
   split
 )
 
-const ensureArray = (value: any) =>
+const ensureArray = (value: Data) =>
   Array.isArray(value)
     ? value
     : value === null || typeof value === 'undefined'

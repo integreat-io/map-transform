@@ -6,7 +6,7 @@ import { setStateValue } from '../utils/stateHelpers'
 
 const matchPropInArray = (getProp: GetFunction) => (arr: Prop[]) => (
   value: string | number | boolean | null
-) => (arr as any[]).find(obj => getProp(obj) === value)
+) => arr.find(obj => getProp(obj) === value)
 
 const mapValue = (getArray: Operation, getProp: GetFunction) => {
   const matchInArray = matchPropInArray(getProp)

@@ -1,19 +1,24 @@
 import test from 'ava'
 import { identity } from 'ramda'
-import { MapFunction, Options } from '../types'
+import { MapFunction, Options, Data } from '../types'
 
 import { fwd, rev, divide } from './directionals'
 
 // Helpers
 
-const upperCase = (str: string | any) => (typeof str === 'string') ? str.toUpperCase() : str
-const upper: MapFunction = (_options: Options) => (state) => ({ ...state, value: upperCase(state.value) })
+const upperCase = (str: Data) =>
+  typeof str === 'string' ? str.toUpperCase() : str
+
+const upper: MapFunction = (_options: Options) => state => ({
+  ...state,
+  value: upperCase(state.value)
+})
 
 const options = {}
 
 // Tests -- forward
 
-test('should apply function when not rev', (t) => {
+test('should apply function when not rev', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -32,7 +37,7 @@ test('should apply function when not rev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not apply function when rev', (t) => {
+test('should not apply function when rev', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -51,7 +56,7 @@ test('should not apply function when rev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should treat string as get path in fwd', (t) => {
+test('should treat string as get path in fwd', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -67,7 +72,7 @@ test('should treat string as get path in fwd', (t) => {
 
 // Tests -- reverse
 
-test('should apply function when rev', (t) => {
+test('should apply function when rev', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -86,7 +91,7 @@ test('should apply function when rev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not apply function when fwd', (t) => {
+test('should not apply function when fwd', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -105,7 +110,7 @@ test('should not apply function when fwd', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should treat string as get path in rev', (t) => {
+test('should treat string as get path in rev', t => {
   const state = {
     root: 'Entry 1',
     context: 'Entry 1',
@@ -121,7 +126,7 @@ test('should treat string as get path in rev', (t) => {
 
 // Tests -- divide
 
-test('should apply first function when not rev', (t) => {
+test('should apply first function when not rev', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -140,7 +145,7 @@ test('should apply first function when not rev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply second function when rev', (t) => {
+test('should apply second function when rev', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },

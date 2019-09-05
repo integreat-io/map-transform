@@ -1,6 +1,7 @@
 import test from 'ava'
 import merge from '../operations/merge'
 import iterate from '../operations/iterate'
+import { ObjectWithProps } from '../types'
 
 import { mapTransform, value, set } from '..'
 
@@ -115,11 +116,11 @@ test('should map several layers of arrays', t => {
       articles: [
         {
           content: { heading: 'Heading 1' },
-          meta: { keywords: ['news', 'latest'], user_id: 'johnf' }
+          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' }
         },
         {
           content: { heading: 'Heading 2' },
-          meta: { keywords: ['tech'], user_id: 'maryk' }
+          meta: { keywords: ['tech'], ['user_id']: 'maryk' }
         }
       ]
     }
@@ -159,11 +160,11 @@ test('should map several layers of arrays - seperate pipelines', t => {
       articles: [
         {
           content: { heading: 'Heading 1' },
-          meta: { keywords: ['news', 'latest'], user_id: 'johnf' }
+          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' }
         },
         {
           content: { heading: 'Heading 2' },
-          meta: { keywords: ['tech'], user_id: 'maryk' }
+          meta: { keywords: ['tech'], ['user_id']: 'maryk' }
         }
       ]
     }
@@ -221,8 +222,8 @@ test('should map empty array as empty array', t => {
     $iterate: true,
     title: 'content.heading'
   }
-  const data: any[] = []
-  const expected: any[] = []
+  const data: ObjectWithProps[] = []
+  const expected: ObjectWithProps[] = []
 
   const ret = mapTransform(def)(data)
 
@@ -415,7 +416,7 @@ test('should set empty data array', t => {
       }
     }
   ]
-  const data: any[] = []
+  const data: ObjectWithProps[] = []
   const expected = {
     items: []
   }

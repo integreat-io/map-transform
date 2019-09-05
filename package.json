@@ -1,6 +1,6 @@
 {
   "name": "map-transform",
-  "version": "0.3.6",
+  "version": "0.4.0-alpha.0",
   "description": "Map and transform objects with mapping definitions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +22,7 @@
     "build": "tsc",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "nyc:report": "nyc report",
-    "lint": "tslint --project tsconfig.json --config tslint.json"
+    "lint": "eslint --ext .ts src"
   },
   "ava": {
     "compileEnhancements": false,
@@ -72,17 +72,19 @@
   "devDependencies": {
     "@types/deep-freeze": "^0.1.1",
     "@types/sinon": "^7.0.13",
+    "@typescript-eslint/eslint-plugin": "^2.1.0",
+    "@typescript-eslint/parser": "^2.1.0",
     "ava": "^2.2.0",
     "coveralls": "^3.0.5",
     "deep-freeze": "0.0.1",
+    "eslint": "^6.3.0",
+    "eslint-config-prettier": "^6.2.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-security": "^1.4.0",
     "nyc": "^14.1.1",
     "prettier": "^1.18.2",
     "sinon": "^7.3.2",
     "ts-node": "^8.3.0",
-    "tslint": "^5.18.0",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-config-security": "^1.16.0",
-    "tslint-config-standard": "^8.0.1",
     "typescript": "^3.5.3"
   }
 }

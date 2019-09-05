@@ -1,4 +1,5 @@
 import test from 'ava'
+import { ObjectWithProps } from '../types'
 
 import {
   mapTransform,
@@ -15,14 +16,14 @@ const { compare } = fns
 
 // Setup
 
-const isObject = (item: Data): item is object =>
+const isObject = (item: Data): item is ObjectWithProps =>
   !!item && typeof item === 'object'
 
 const noHeadingTitle = () => (item: Data) =>
-  isObject(item) && !/heading/gi.test((item as any).title)
+  isObject(item) && !/heading/gi.test(item.title as string)
 
 const noAlso = (item: Data) =>
-  isObject(item) && !/also/gi.test((item as any).title)
+  isObject(item) && !/also/gi.test(item.title as string)
 
 const functions = {
   noHeadingTitle

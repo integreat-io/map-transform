@@ -11,7 +11,7 @@ import { getStateValue, contextFromState } from '../utils/stateHelpers'
 
 export default function filter(fn: DataMapper): Operation {
   return (_options: Options) => {
-    if ((typeof fn as any) !== 'function') {
+    if (typeof fn !== 'function') {
       return identity
     }
 

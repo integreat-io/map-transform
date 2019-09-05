@@ -15,7 +15,7 @@ import plug from './plug'
 import iterate from './iterate'
 import { isMapObject } from '../utils/definitionHelpers'
 
-const ensureArray = (value: any) => (Array.isArray(value) ? value : [value])
+const ensureArray = (value: unknown) => (Array.isArray(value) ? value : [value])
 
 const shouldIterate = (def: MapDefinition, path: Path) =>
   (isMapObject(def) && def['$iterate'] === true) || path.includes('[]')
@@ -25,7 +25,7 @@ const createSubPipeline = (
   path: Path
 ) =>
   isMapObject(pipeline)
-    ? [objectToMapFunction(pipeline, path)]
+    ? [objectToMapFunction(pipeline, path)] // eslint-disable-line @typescript-eslint/no-use-before-define
     : ensureArray(pipeline)
 
 const extractRealPath = (path: Path) => {

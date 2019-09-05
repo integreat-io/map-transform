@@ -1,6 +1,7 @@
 import test from 'ava'
 import value from './value'
 import { get } from './getSet'
+import { ObjectWithProps } from '../types'
 
 import mutate from './mutate'
 
@@ -103,10 +104,16 @@ test('should mutate object with props in the given order', t => {
 
   const ret = mutate(def)(options)(stateWithObject)
 
-  const { item } = ret.value as any
+  const item = (ret.value as ObjectWithProps).item as ObjectWithProps
   t.deepEqual(Object.keys(item), expectedPropsItem)
-  t.deepEqual(Object.keys(item.attributes), expectedPropsAttrs)
-  t.deepEqual(Object.keys(item.relationships), expectedPropsRels)
+  t.deepEqual(
+    Object.keys(item.attributes as ObjectWithProps),
+    expectedPropsAttrs
+  )
+  t.deepEqual(
+    Object.keys(item.relationships as ObjectWithProps),
+    expectedPropsRels
+  )
 })
 
 test('should iterate when $iterate is true', t => {
@@ -181,9 +188,11 @@ test('should iterate pipelines on brackets notation paths', t => {
 
 test('should not iterate sub pipeline on brackets notation paths', t => {
   const def = {
-    'articles[]': [{
-      title: get('headline')
-    }]
+    'articles[]': [
+      {
+        title: get('headline')
+      }
+    ]
   }
   const expectedValue = {
     articles: [{ title: ['Entry 1', 'Entry 2'] }]

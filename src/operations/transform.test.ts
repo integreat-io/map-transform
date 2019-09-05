@@ -6,14 +6,14 @@ import transform from './transform'
 
 // Setup
 
-const upper = (str: Data) => (typeof str === 'string') ? str.toUpperCase() : str
-const lower = (str: Data) => (typeof str === 'string') ? str.toLowerCase() : str
+const upper = (str: Data) => (typeof str === 'string' ? str.toUpperCase() : str)
+const lower = (str: Data) => (typeof str === 'string' ? str.toLowerCase() : str)
 
 const options = {}
 
 // Tests
 
-test('should run transform function on value', (t) => {
+test('should run transform function on value', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -30,19 +30,20 @@ test('should run transform function on value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not touch value run with anything else than a function', (t) => {
+test('should not touch value run with anything else than a function', t => {
   const state = {
     root: {},
     context: {},
     value: 'Entry 1'
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ret = transform('wrong' as any)(options)(state)
 
   t.deepEqual(ret, state)
 })
 
-test('should run transform in reverse', (t) => {
+test('should run transform in reverse', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -61,7 +62,7 @@ test('should run transform in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should run dedicated transform in reverse', (t) => {
+test('should run dedicated transform in reverse', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -80,7 +81,7 @@ test('should run dedicated transform in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not mind reverse transform going forward', (t) => {
+test('should not mind reverse transform going forward', t => {
   const state = {
     root: { title: 'Entry 1' },
     context: { title: 'Entry 1' },
@@ -99,7 +100,7 @@ test('should not mind reverse transform going forward', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should pass rev and onlyMapped to transform function', (t) => {
+test('should pass rev and onlyMapped to transform function', t => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
     root: { title: 'Entry 1' },
@@ -118,7 +119,7 @@ test('should pass rev and onlyMapped to transform function', (t) => {
   t.deepEqual(fn.args[0][1], expected)
 })
 
-test('should pass rev and onlyMapped to rev transform function', (t) => {
+test('should pass rev and onlyMapped to rev transform function', t => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
     root: { title: 'Entry 1' },

@@ -4,8 +4,8 @@ import { Operation, State, Data, MapDefinition, Options } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
-const indexOfIfArray = (arr: any, index?: number) =>
-  Array.isArray(arr) && typeof index === 'number' ? arr[index] : arr
+const indexOfIfArray = (arr: unknown, index?: number) =>
+  Array.isArray(arr) && typeof index === 'number' ? arr[index] : arr // eslint-disable-line security/detect-object-injection
 
 const iterateWithContext = (
   state: State,

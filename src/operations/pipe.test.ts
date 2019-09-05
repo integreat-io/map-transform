@@ -1,5 +1,5 @@
 import test from 'ava'
-import { State, } from '../types'
+import { State, ObjectWithProps } from '../types'
 import { get } from './getSet'
 
 import pipe from './pipe'
@@ -18,7 +18,7 @@ const options = {}
 
 const getNameFromContext = () => (state: State) => ({
   ...state,
-  value: (state.context as any).name
+  value: (state.context as ObjectWithProps).name
 })
 
 // Tests
@@ -102,3 +102,5 @@ test('should update context when entering a pipeline in reverse', t => {
 
   t.deepEqual(ret.value, expectedValue)
 })
+
+test.todo('should handle empty pipeline')

@@ -1,39 +1,47 @@
 import test from 'ava'
-import { Operands } from '../types'
+import { Operands, ObjectWithProps } from '../types'
 
 import { mapTransform, transform, rev, Data } from '..'
 
 // Setup
 
-const isObject = (item: Data): item is object =>
-  !!item && typeof item === 'object'
+const isObject = (item: Data): item is ObjectWithProps =>
+  !!item &&
+  typeof item === 'object' &&
+  !Array.isArray(item) &&
+  !(item instanceof Date)
 
-const createTitle = (item: { title: string; author: string }) =>
+const createTitle = (item: ObjectWithProps) =>
   `${item.title} - by ${item.author}`
-const removeAuthor = (item: { title: string; author: string }) =>
-  item.title.endsWith(` - by ${item.author}`)
-    ? item.title.substr(0, item.title.length - 6 - item.author.length)
+const removeAuthor = (item: ObjectWithProps) =>
+  typeof item.title === 'string' && item.title.endsWith(` - by ${item.author}`)
+    ? item.title.substr(
+        0,
+        item.title.length -
+          6 -
+          (typeof item.author === 'string' ? item.author.length : 0)
+      )
     : item.title
 
 const appendToTitle = ({ text }: Operands) => (item: Data) =>
-  isObject(item) ? { ...item, title: `${(item as any).title}${text}` } : item
+  isObject(item) ? { ...item, title: `${item.title}${text}` } : item
 
 const appendAuthorToTitle = (item: Data) =>
-  isObject(item) ? { ...item, title: createTitle(item as any) } : item
+  isObject(item) ? { ...item, title: createTitle(item) } : item
 
 const removeAuthorFromTitle = (item: Data) =>
-  isObject(item) ? { ...item, title: removeAuthor(item as any) } : item
+  isObject(item) ? { ...item, title: removeAuthor(item) } : item
 
 const setActive = (item: Data) =>
   isObject(item) ? { ...item, active: true } : item
 
-const prepareAuthorName = ({ author }: { author: string }) =>
-  `${author[0].toUpperCase()}${author.substr(1)}.`
+const prepareAuthorName = ({ author }: ObjectWithProps) =>
+  typeof author === 'string'
+    ? `${author[0].toUpperCase()}${author.substr(1)}.`
+    : ''
 
 const setAuthorName = (item: Data) =>
-  isObject(item)
-    ? { ...item, authorName: prepareAuthorName(item as any) }
-    : item
+  isObject(item) ? { ...item, authorName: prepareAuthorName(item) } : item
 
 const appendEllipsis = (str: Data) =>
   typeof str === 'string' ? str + ' ...' : str
@@ -322,13 +330,10 @@ test('should use built in get function', t => {
 
 test('should use built in fixed function', t => {
   const def = {
-    title: [
-      'content',
-      { $transform: 'fixed', value: 'I\'m always here' }
-    ]
+    title: ['content', { $transform: 'fixed', value: "I'm always here" }]
   }
   const data = { content: { heading: 'The heading' } }
-  const expected = { title: 'I\'m always here' }
+  const expected = { title: "I'm always here" }
 
   const ret = mapTransform(def, { functions })(data)
 
@@ -337,13 +342,10 @@ test('should use built in fixed function', t => {
 
 test('should use built in fixed function in reverse', t => {
   const def = {
-    title: [
-      'content',
-      { $transform: 'fixed', value: 'I\'m always here' }
-    ]
+    title: ['content', { $transform: 'fixed', value: "I'm always here" }]
   }
   const data = { title: 'The heading' }
-  const expected = { content: 'I\'m always here' }
+  const expected = { content: "I'm always here" }
 
   const ret = mapTransform(def, { functions }).rev(data)
 
@@ -354,11 +356,11 @@ test('should only use transform going forward', t => {
   const def = {
     title: [
       'content',
-      { $transform: 'fixed', value: 'I\'m always here', $direction: 'fwd' }
+      { $transform: 'fixed', value: "I'm always here", $direction: 'fwd' }
     ]
   }
   const data = { content: { heading: 'The heading' } }
-  const expectedFwd = { title: 'I\'m always here' }
+  const expectedFwd = { title: "I'm always here" }
   const expectedRev = { content: undefined }
 
   const retFwd = mapTransform(def, { functions })(data)
@@ -372,12 +374,12 @@ test('should only use transform going in reverse', t => {
   const def = {
     title: [
       'content',
-      { $transform: 'fixed', value: 'I\'m always here', $direction: 'rev' }
+      { $transform: 'fixed', value: "I'm always here", $direction: 'rev' }
     ]
   }
   const data = { title: 'The heading' }
   const expectedFwd = { title: undefined }
-  const expectedRev = { content: 'I\'m always here' }
+  const expectedRev = { content: "I'm always here" }
 
   const retFwd = mapTransform(def, { functions })(data)
   const retRev = mapTransform(def, { functions }).rev(data)
@@ -437,7 +439,7 @@ test('should do nothing when transform operation has invalid function id', t => 
     'content',
     {
       $iterate: true,
-      title: ['heading', { $transform: { id: 13 } } as any]
+      title: ['heading', { $transform: { id: 13 } }]
     }
   ]
   const data = {
@@ -446,6 +448,7 @@ test('should do nothing when transform operation has invalid function id', t => 
 
   const expected = [{ title: 'The heading' }, { title: 'The other' }]
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ret = mapTransform(def as any, { functions })(data)
 
   t.deepEqual(ret, expected)

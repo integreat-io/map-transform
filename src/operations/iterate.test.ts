@@ -1,6 +1,7 @@
 import test from 'ava'
 import alt from './alt'
 import transform from './transform'
+import { Data } from '../types'
 
 import iterate from './iterate'
 
@@ -68,8 +69,13 @@ test('should return undefined when no def', t => {
 
 test('should also iterate context to support alt operation etc.', t => {
   const def = alt(
-    transform((item: any) =>
-      item && typeof item === 'object' ? `${item.key}: ${item.headline}` : ''
+    transform((item?: Data) =>
+      item &&
+      typeof item === 'object' &&
+      !(item instanceof Date) &&
+      !Array.isArray(item)
+        ? `${item.key}: ${item.headline}`
+        : ''
     )
   )
   const state = {

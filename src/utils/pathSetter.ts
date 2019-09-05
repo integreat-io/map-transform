@@ -1,6 +1,6 @@
 import { mergeDeepWith, merge, identity } from 'ramda'
 import { compose } from './functional'
-import { Data, Path } from '../types'
+import { Data, Prop, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
   isAfterOpenArray ? `]${part}` : part
@@ -26,18 +26,19 @@ const setOnOpenArray = (value: Data) =>
   Array.isArray(value) ? value : typeof value === 'undefined' ? [] : [value]
 
 const setOnArrayIndex = (index: number, value: Data) => {
-  const arr = []
+  const arr: Data[] = []
+  // eslint-disable-next-line security/detect-object-injection
   arr[index] = value
   return arr
 }
 
-const setOnArray = (prop: string) => (value: Data): Data => {
+const setOnArray = (prop: string) => (value: Data) => {
   const index = parseInt(prop.substr(1), 10)
   return isNaN(index) ? setOnOpenArray(value) : setOnArrayIndex(index, value)
 }
 
-const setOnSubArray = (prop: string) => (value: Data): Data =>
-  ([] as Data[]).concat(value).map(setOnObject(prop.substr(1)))
+const setOnSubArray = (prop: string) => (value: Prop) =>
+  ([] as Prop[]).concat(value).map(setOnObject(prop.substr(1)))
 
 const setter = (prop: string) => {
   switch (prop[0]) {
@@ -50,9 +51,10 @@ const setter = (prop: string) => {
   }
 }
 
-export const mergeExisting = (left: any, right: any) => {
+export const mergeExisting = (left: unknown[], right: unknown) => {
   if (Array.isArray(right)) {
     return right.reduce((arr, value, index) => {
+      // eslint-disable-next-line security/detect-object-injection
       arr[index] = merge(left[index], value)
       return arr
     }, left)
@@ -79,8 +81,9 @@ export default function pathSetter(path: Path): SetFunction {
     return identity
   }
 
-  const setterFn = compose(...setters)
-  return (value, object = null) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const setterFn = compose(...(setters as any))
+  return (value, object: Data = null) => {
     const data = setterFn(value)
     return object ? mergeDeepWith(mergeExisting, object, data) : data
   }

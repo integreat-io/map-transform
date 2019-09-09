@@ -42,6 +42,18 @@ test('should use default value in reverse', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should run function as default value', t => {
+  const def = {
+    title: ['content.heading', alt(value(() => 'Default from function'))]
+  }
+  const data = [{ content: {} }, { content: { heading: 'From data' } }]
+  const expected = [{ title: 'Default from function' }, { title: 'From data' }]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use alternative path', t => {
   const def = {
     title: ['heading', alt('headline')]
@@ -218,6 +230,25 @@ test('should apply default value from an operation object', t => {
   ]
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply default value from a function given in an operation object', t => {
+  const def = [
+    '[]',
+    {
+      $iterate: true,
+      title: [
+        'content.heading',
+        { $alt: 'value', value: () => 'Default from function' }
+      ]
+    }
+  ]
+  const data = [{ content: {} }, { content: { heading: 'From data' } }]
+  const expected = [{ title: 'Default from function' }, { title: 'From data' }]
 
   const ret = mapTransform(def)(data)
 

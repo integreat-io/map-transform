@@ -10,6 +10,15 @@ test('should return value', t => {
   t.is(ret, 'The default')
 })
 
+test('should return value from function', t => {
+  const data = undefined
+  const valueFunction = () => 'Value from function'
+
+  const ret = value({ value: valueFunction })(data)
+
+  t.is(ret, 'Value from function')
+})
+
 test('should return value when not undefined', t => {
   const data = { title: 'The data' }
 
@@ -33,6 +42,15 @@ test('should return fixed value', t => {
   const ret = fixed({ value: 'The default' })(data)
 
   t.is(ret, 'The default')
+})
+
+test('should return fixed value from function', t => {
+  const data = undefined
+  const valueFunction = () => 'Value from function'
+
+  const ret = fixed({ value: valueFunction })(data)
+
+  t.is(ret, 'Value from function')
 })
 
 test('should return fixed value also when onlyMappedValues is true', t => {

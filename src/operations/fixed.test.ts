@@ -8,7 +8,7 @@ const options = {}
 
 // Tests
 
-test('should set value', (t) => {
+test('should set value', t => {
   const state = {
     root: {},
     context: {},
@@ -25,7 +25,25 @@ test('should set value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set value for onlyMapped too', (t) => {
+test('should set value from function', t => {
+  const state = {
+    root: {},
+    context: {},
+    value: 'Something'
+  }
+  const expected = {
+    root: {},
+    context: {},
+    value: 'Value from function'
+  }
+  const valueFunction = () => 'Value from function'
+
+  const ret = fixed(valueFunction)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value for onlyMapped too', t => {
   const state = {
     root: {},
     context: {},

@@ -11,8 +11,21 @@ export interface DataArray extends Array<Data> {}
 
 export type Path = string
 
+export type DictionaryValue = string | number | boolean | null | undefined
+
+export type DictionaryTuple = readonly [DictionaryValue, DictionaryValue]
+export type Dictionary = DictionaryTuple[]
+
+export interface Dictionaries {
+  [key: string]: Dictionary
+}
+
+export interface ValueFunction {
+  (): Data
+}
+
 export interface Operands {
-  [key: string]: Data
+  [key: string]: Data | ValueFunction
 }
 
 export interface Context {
@@ -25,7 +38,7 @@ export interface DataMapper {
 }
 
 export interface CustomFunction<T = Operands> {
-  (operands: T): DataMapper
+  (operands: T, options: Options): DataMapper
 }
 
 export interface State {
@@ -44,6 +57,7 @@ export interface Options {
   pipelines?: {
     [key: string]: MapDefinition
   }
+  dictionaries?: Dictionaries
 }
 
 export interface TransformObject extends Operands {

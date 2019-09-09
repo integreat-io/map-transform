@@ -145,7 +145,8 @@ npm install map-transform --save
 
 ## Breaking changes in v0.4
 
-- Map objects won't be mapped over an array by default. You have to specify `$iterate: true`
+- Map objects won't be mapped over an array by default. You have to specify
+  `$iterate: true`
 - The `alt` operation now accepts any type of pipeline, but not a helper
   function
 - The root path prefix is changed from `$` to `^`
@@ -646,7 +647,6 @@ const def10asObject = {
 }
 ```
 
-
 #### `fixed(data)` operation
 
 The data given to the fixed operation, will be inserted in the pipeline in place
@@ -905,31 +905,89 @@ mapper.rev(mappedData)
 // --> { content: { meta: { authors: ['user1', 'user3'] } } }
 ```
 
-#### `compare({ path, match })` helper
+#### `compare({ path, match })` function
 
-This is a helper intended for use with the `filter()` operation. You pass a dot
-notation path and a value (string, number, boolean) to `compare()`, and it
-returns a function that you can pass to `filter()` for filtering away data that
-does not not have the value set at the provided path. If the path points to an
-array, the value is expected to be one of the values in the array.
+This is a helper function intended for use with the `filter()` operation. You
+pass a dot notation path and a value (string, number, boolean) to `compare()`,
+and it returns a function that you can pass to `filter()` for filtering away
+data that does not not have the value set at the provided path. If the path
+points to an array, the value is expected to be one of the values in the array.
 
 Here's an example where only data where role is set to 'admin' will be kept:
 
 ```javascript
-import { filter, compare } from 'map-transform'
+import { filter, functions } from 'map-transform'
+const { compare } = functions
 
 const def19 = [
   {
     name: 'name',
     role: 'editor'
   },
-  filter(compare({ path: 'role', match: 'admin'}))
+  filter(compare({ path: 'role', match: 'admin' }))
 ]
 ```
 
-#### `validate(path, schema)` helper
+#### `map(dictionary)` function
 
-This is a helper for validating the value at the path against a
+This helper function accepts a dictionary described as an array of tuples, where
+each tuple holds a from value and a to value. When a data value is given to the
+`map` helper, it is replaced with a value from the dictionary. For a forward
+transformation, the first value in the tuple will be matched with the given
+data value, and the second value will be returned. In reverse transformation,
+the second value is matched and the first is returned.
+
+The wildcard value `*` will match any value, and is applied if there is no other
+match in the dictionary. When the returned value is `*`, the original data value
+is returned instead.
+
+The `map` function only supports primitive values, so any object will be mapped to
+`undefined` or the value given by the wildcard in the dictionary. Arrays will be
+iterated to map each value in the array.
+
+Example:
+
+```
+import { transform, functions } from 'map-transform'
+const { map } = functions
+
+const dictionary = [
+  [200, 'ok'],
+  [404, 'notfound'],
+  ['*', 'error']
+]
+
+const def28 = {
+  status: ['result', transform(map(dictionary))]
+}
+```
+
+When using `map` in an operation object, you may provice a dictionary array
+or a named dictionary on the `dictionary` property. An example of with a named
+dictionary:
+
+```
+import { mapTransform } from 'map-transform'
+
+const dictionary = [
+  [200, 'ok'],
+  [404, 'notfound'],
+  ['*', 'error']
+]
+
+const def29 = {
+  status: [
+    'result',
+    { $transform: 'map', dictionary: 'statusCodes' }
+  ]
+}
+
+const mapper = mapTransform(def29, { dictionaries: { statusCodes: dictionary } })
+```
+
+#### `validate(path, schema)` function
+
+This is a helper function for validating the value at the path against a
 [JSON Schema](http://json-schema.org). We won't go into details of JSON Schema
 here, and the `validate()` helper simply retrieves the value at the path and
 validates it according to the provided schema.
@@ -938,7 +996,8 @@ Note that if you provide a schema that is always valid, it will be valid even
 when the data has no value at the given path.
 
 ```javascript
-import { filter, validate } from 'map-transform'
+import { filter, functions } from 'map-transform'
+const { validate } = functions
 
 const def20 = [
   'items',
@@ -949,7 +1008,7 @@ const def20 = [
 ]
 ```
 
-#### `not(value)` helper
+#### `not(value)` function
 
 `not()` will return `false` when value if truthy and `true` when value is falsy.
 This is useful for making the `filter()` operation do the opposite of what the
@@ -958,7 +1017,8 @@ filter function implies.
 Here we filter away all data where role is set to 'admin':
 
 ```javascript
-import { filter, compare } from 'map-transform'
+import { filter, functions } from 'map-transform'
+const { compare } = functions
 
 const def21 = [
   {

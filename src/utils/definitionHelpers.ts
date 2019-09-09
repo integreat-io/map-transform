@@ -67,7 +67,7 @@ const createOperation = <U extends OperationObject>(
   const { [fnProp]: fnId, ...operands } = def
   const fn = options.functions && options.functions[fnId as string]
   return typeof fn === 'function'
-    ? wrapFromDefinition(operationFn(fn(operands)), def)(options)
+    ? wrapFromDefinition(operationFn(fn(operands, options)), def)(options)
     : identity
 }
 

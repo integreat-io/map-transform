@@ -340,6 +340,21 @@ test('should use built in fixed function', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should use built in fixed function with value function', t => {
+  const def = {
+    title: [
+      'content',
+      { $transform: 'fixed', value: () => "I'm from the function!" }
+    ]
+  }
+  const data = { content: { heading: 'The heading' } }
+  const expected = { title: "I'm from the function!" }
+
+  const ret = mapTransform(def, { functions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use built in fixed function in reverse', t => {
   const def = {
     title: ['content', { $transform: 'fixed', value: "I'm always here" }]
@@ -348,6 +363,49 @@ test('should use built in fixed function in reverse', t => {
   const expected = { content: "I'm always here" }
 
   const ret = mapTransform(def, { functions }).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use built in map function', t => {
+  const def = {
+    result: [
+      'status',
+      {
+        $transform: 'map',
+        dictionary: [[200, 'ok'], [404, 'notfound'], ['*', 'error']]
+      }
+    ]
+  }
+  const data = { status: 404 }
+  const expected = { result: 'notfound' }
+
+  const ret = mapTransform(def, { functions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use built in map function with named dictionary', t => {
+  const def = {
+    result: [
+      'status',
+      {
+        $transform: 'map',
+        dictionary: 'statusCodes'
+      }
+    ]
+  }
+  const dictionaries = {
+    statusCodes: [
+      [200, 'ok'] as const,
+      [404, 'notfound'] as const,
+      ['*', 'error'] as const
+    ]
+  }
+  const data = { status: 404 }
+  const expected = { result: 'notfound' }
+
+  const ret = mapTransform(def, { functions, dictionaries })(data)
 
   t.deepEqual(ret, expected)
 })

@@ -34,7 +34,9 @@ export {
   DataMapper,
   MapDefinition,
   MapObject,
-  MapTransform
+  MapTransform,
+  Dictionary,
+  Dictionaries
 } from './types'
 
 const composeMapFunction = (

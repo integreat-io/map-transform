@@ -928,6 +928,44 @@ const def19 = [
 ]
 ```
 
+#### `explode()` function
+
+Given an object, the `explode` helper function will return an array with one
+object for each property in the source object, with a `key` property for the
+property key, and a `value` property for the value.
+
+When given an array, the `explode` helper will return on object for every item
+in the array, with a `key` property set to the index number in the source array
+and a `value` property to the item value.
+
+When transforming in reverse, `explode` will try to compile an object or an
+array from an array of key/value objects. If all `key` props are numbers, an
+array is produced, otherwise an object. Anything that don't match the expected
+structure will be skipped.
+
+Example:
+
+```javascript
+import { mapTransform, transform, functions } from 'map-transform'
+const { explode } = functions
+
+const data = {
+  currencies: { NOK: 1, USD: 0.125, EUR: 0.1 }
+}
+
+const def32 = ['currencies', transform(explode())]
+
+mapTransform(def32)(data)
+// --> [{ key: 'NOK', value: 1 }, { key: 'USD', value: 0.125 },
+//      { key: 'EUR', value: 0.1 }]
+```
+
+Or as a transform object:
+
+```javascript
+const def32o = ['currencies', { $transform: 'explode' }]
+```
+
 #### `map(dictionary)` function
 
 This helper function accepts a dictionary described as an array of tuples, where
@@ -958,7 +996,7 @@ const dictionary = [
 ]
 
 const def28 = {
-  status: ['result', transform(map(dictionary))]
+  status: ['result', transform(map({ dictionary }))]
 }
 ```
 

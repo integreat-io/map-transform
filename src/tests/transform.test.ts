@@ -430,6 +430,25 @@ test('should use built in template function', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should use built in explode function', t => {
+  const def = {
+    rate: [
+      'currencies',
+      { $transform: 'explode' },
+      { $filter: 'compare', path: 'key', match: 'EUR' },
+      '[0]value'
+    ]
+  }
+  const data = {
+    currencies: { NOK: 1, USD: 0.125, EUR: 0.1 }
+  }
+  const expected = { rate: 0.1 }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should only use transform going forward', t => {
   const def = {
     title: [

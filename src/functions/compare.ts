@@ -1,64 +1,85 @@
-import { Data, Prop, Operands } from '../types'
+import { Data, Prop, Operands, Path } from '../types'
 import getter from '../utils/pathGetter'
 
 interface Comparer {
-  (value: Data): boolean
+  (value: Data, match: Data): boolean
 }
 
-interface Options extends Operands {
-  path?: string
+interface NumericComparer {
+  (value: number, match: number): boolean
+}
+
+interface CompareOperands extends Operands {
+  path?: Path
   operator?: string
   match?: Prop
+  matchPath?: Path
 }
 
-const not = (comparer: Comparer) => (value: Data) => !comparer(value)
+const not = (comparer: Comparer) => (value: Data, match: Data) =>
+  !comparer(value, match)
 
-const compareArrayOrValue = (comparer: Comparer) => (value: Data) =>
-  Array.isArray(value) ? value.some(comparer) : comparer(value)
-
-const compareEqual = (match: Prop) =>
-  compareArrayOrValue((value: Data) => value === match)
+const compareArrayOrValue = (comparer: Comparer) => (
+  value: Data,
+  match: Data
+) =>
+  Array.isArray(value)
+    ? value.some((value: Data) => comparer(value, match))
+    : comparer(value, match)
 
 const isNumeric = (value: Data): value is number => typeof value === 'number'
 
-function createComparer(operator: string, match: Prop) {
+const compareArrayOrValueNumeric = (comparer: NumericComparer) =>
+  compareArrayOrValue(
+    (value: Data, match: Data) =>
+      isNumeric(value) && isNumeric(match) && comparer(value, match)
+  )
+
+const compareEqual = compareArrayOrValue(
+  (value: Data, match: Data) => value === match
+)
+
+function createComparer(operator: string) {
   switch (operator) {
     case '=':
-      return compareEqual(match)
+      return compareEqual
     case '!=':
-      return not(compareEqual(match))
+      return not(compareEqual)
     case '>':
-      return compareArrayOrValue(
-        (value: Data) => isNumeric(value) && isNumeric(match) && value > match
+      return compareArrayOrValueNumeric(
+        (value: number, match: number) => value > match
       )
     case '>=':
-      return compareArrayOrValue(
-        (value: Data) => isNumeric(value) && isNumeric(match) && value >= match
+      return compareArrayOrValueNumeric(
+        (value: number, match: number) => value >= match
       )
     case '<':
-      return compareArrayOrValue(
-        (value: Data) => isNumeric(value) && isNumeric(match) && value < match
+      return compareArrayOrValueNumeric(
+        (value: number, match: number) => value < match
       )
     case '<=':
-      return compareArrayOrValue(
-        (value: Data) => isNumeric(value) && isNumeric(match) && value <= match
+      return compareArrayOrValueNumeric(
+        (value: number, match: number) => value <= match
       )
     default:
-      return (_value: Data) => false
+      return (_value: Data, _match: Data) => false
   }
 }
 
 export default function compare({
   path = '.',
   operator = '=',
-  match
-}: Options) {
-  const getFn = getter(path)
+  match,
+  matchPath
+}: CompareOperands) {
+  const getValue = getter(path)
+  const getMatch = matchPath ? getter(matchPath) : () => match
 
-  const comparer = createComparer(operator, match)
+  const comparer = createComparer(operator)
 
   return (data: Data) => {
-    const value = getFn(data)
-    return comparer(value)
+    const value = getValue(data)
+    const match = getMatch(data)
+    return comparer(value, match)
   }
 }

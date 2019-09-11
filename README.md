@@ -905,13 +905,23 @@ mapper.rev(mappedData)
 // --> { content: { meta: { authors: ['user1', 'user3'] } } }
 ```
 
-#### `compare({ path, match })` function
+#### `compare({ path, operator, match, matchPath })` function
 
 This is a helper function intended for use with the `filter()` operation. You
-pass a dot notation path and a value (string, number, boolean) to `compare()`,
-and it returns a function that you can pass to `filter()` for filtering away
-data that does not not have the value set at the provided path. If the path
-points to an array, the value is expected to be one of the values in the array.
+pass a dot notation `path` and a `match` value (string, number, boolean) to
+`compare()`, and it returns a function that you can pass to `filter()` for
+filtering away data that does not not have the value set at the provided path.
+
+As an alternative to `match`, you may specify a `matchPath`, which is a dot
+notation path, in which case the match value will be fetched from the provided
+data.
+
+The default is to compare the values resulting from `path` and `match` or
+`matchPath` with equality, but other operations may be set on the `operator`
+property. Alternatives: `'='`, `'!='`, `'>'`, `'>='`, `'<'`, or `'<='`.
+
+If the path points to an array, the value is expected to be one of the values in
+the array.
 
 Here's an example where only data where role is set to 'admin' will be kept:
 
@@ -924,7 +934,19 @@ const def19 = [
     name: 'name',
     role: 'editor'
   },
-  filter(compare({ path: 'role', match: 'admin' }))
+  filter(compare({ path: 'role', operator: '=', match: 'admin' }))
+]
+```
+
+You may also define this with a transform object:
+
+```javascript
+const def19o = [
+  {
+    name: 'name',
+    role: 'editor'
+  },
+  { $filter: 'compare', path: 'role', operator: '=', match: 'admin' }
 ]
 ```
 

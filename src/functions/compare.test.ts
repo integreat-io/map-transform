@@ -52,6 +52,16 @@ test('should return false when object does not have match value in array at path
   t.false(ret)
 })
 
+test('should use matchPath to get match value from data', t => {
+  const path = 'meta.role'
+  const matchPath = 'level'
+  const data = { name: 'John F.', meta: { role: 'admin' }, level: 'admin' }
+
+  const ret = compare({ path, operator: '=', matchPath })(data)
+
+  t.true(ret)
+})
+
 test('should use equality as default operator', t => {
   const match = 'admin'
   const path = 'meta.role'

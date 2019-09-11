@@ -1156,7 +1156,7 @@ const def22 = [
 
 const dataInTargetState = [
   { id: 'cust1', name: 'Fred Johnsen' },
-  { id: 'cust2', name: 'Lucy Knight' },
+  // { id: 'cust2', name: 'Lucy Knight' },
   { id: 'cust3' }
 ]
 
@@ -1205,6 +1205,60 @@ const dataInSourceState = mapTransform(def23).rev(dataInTargetState)
 // }
 // }
 ```
+
+In some cases, the reverse transform is more complex than the forward transform.
+For that reason, there is a `$flip` property that may be set to `true` on a
+transform object, to indicate that it is defined from the reverse perspective
+and should be flipped before running transformations.
+
+A flipped transformation object will – in forward transformations – get with the
+properties on the object and set with the paths in the value. The order of paths
+and operations in a pipeline will also be reversed. Note that this will not
+affect any operations that behaves differently depending on direction, and they
+will run as if they were used on a non-flipped transformation object.
+
+Also note that flipping will not affect the `get` and `set` operations, only
+path strings set directly as properties on the object or as part of the value
+(the pipeline). This might change in the future, so you should not use `get` and
+`set` directly on a flipped transformation object.
+
+This flipped defintion:
+
+```javascript
+const def33flipped = {
+  $flip: true,
+  id: 'key',
+  attributes: {
+    title: ['headline', transform(threeLetters)],
+    age: ['unknown']
+  },
+  relationships: {
+    author: value('johnf')
+  }
+}
+```
+
+... is identical to:
+
+```javascript
+const def33 = {
+  key: 'id',
+  headline: ['attributes.title', transform(threeLetters)],
+  unknown: ['attributes.age']
+  },
+  'none/1': ['relationships.author': value('johnf')]
+}
+```
+
+The flipped definition is (in this case) easier to read.
+
+Note also the `'none/1'` property in `def33`, that will stop this property from
+being set when going forward. This is not necessary on the flipped definition,
+but also results in a definition that will not work as expected going forward.
+This is a weakness in how MapTransform treats pipelines right now, and will
+probably be resolved in the future. For now, make sure to always have a path
+at the beginning of all pipelines if you plan to reverse transform – and the
+same goes for flipped transform objects if you want to forward transform.
 
 ### Mapping without fallbacks
 

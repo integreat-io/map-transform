@@ -17,20 +17,34 @@ import { isMapObject } from '../utils/definitionHelpers'
 
 const ensureArray = (value: unknown) => (Array.isArray(value) ? value : [value])
 
+const setIfPath = (map: unknown) => (typeof map === 'string' ? set(map) : map)
+
+const flipIfNeeded = (pipe: MapPipe, flip: boolean) => {
+  const pipeline = flip
+    ? pipe
+        .slice()
+        .reverse()
+        .map(setIfPath)
+    : pipe
+  return pipeline
+}
+
 const shouldIterate = (def: MapDefinition, path: Path) =>
   (isMapObject(def) && def['$iterate'] === true) || path.includes('[]')
 
 const createSubPipeline = (
   pipeline: MapDefinition | undefined | boolean,
+  flip: boolean,
   path: Path
 ) =>
   isMapObject(pipeline)
-    ? [objectToMapFunction(pipeline, path)] // eslint-disable-line @typescript-eslint/no-use-before-define
-    : ensureArray(pipeline)
+    ? // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      [objectToMapFunction(pipeline, flip, path)]
+    : flipIfNeeded(ensureArray(pipeline), flip)
 
 const extractRealPath = (path: Path) => {
   const [realPath, index] = path.split('/')
-  return [realPath, typeof index !== 'undefined'] as const
+  return [realPath, index !== undefined] as const
 }
 
 const mergeAndIterate = (
@@ -40,7 +54,11 @@ const mergeAndIterate = (
 ) =>
   shouldIterate(def, path) ? iterate(merge(...pipelines)) : merge(...pipelines)
 
-const objectToMapFunction = (objectDef: MapObject, path = ''): Operation =>
+const objectToMapFunction = (
+  objectDef: MapObject,
+  flip: boolean,
+  path = ''
+): Operation =>
   mergeAndIterate(
     Object.entries(objectDef)
       .map(([path, def]) => {
@@ -49,8 +67,9 @@ const objectToMapFunction = (objectDef: MapObject, path = ''): Operation =>
         }
         const [realPath, revOnly] = extractRealPath(path)
         const pipeline = [
-          ...createSubPipeline(def, realPath),
-          set(realPath)
+          flip ? realPath : null,
+          ...createSubPipeline(def, flip, realPath),
+          flip ? null : set(realPath)
         ] as MapPipe
         return revOnly ? divide(plug(), pipeline) : pipeline
       })
@@ -64,7 +83,8 @@ export default function mutate(def: MapObject): Operation {
     return (_options: Options) => (state: State) =>
       setStateValue(state, undefined)
   }
-  const runMutation = objectToMapFunction(def)
+  const flip = def.$flip || false
+  const runMutation = objectToMapFunction(def, flip)
 
   return (options: Options) => (state: State): State =>
     typeof state.value === 'undefined' ? state : runMutation(options)(state)

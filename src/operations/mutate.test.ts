@@ -1,7 +1,8 @@
 import test from 'ava'
 import value from './value'
 import { get } from './getSet'
-import { ObjectWithProps } from '../types'
+import transform from './transform'
+import { ObjectWithProps, Data } from '../types'
 
 import mutate from './mutate'
 
@@ -23,6 +24,9 @@ const stateWithArray = {
   context: data,
   value: data
 }
+
+const threeLetters = (value: Data) =>
+  typeof value === 'string' ? value.substr(0, 3) : value
 
 const options = {}
 
@@ -314,6 +318,38 @@ test('should reverse map with value array', t => {
   const expectedValue = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
 
   const ret = mutate(def)(options)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should flip and mutate object', t => {
+  const def = {
+    $flip: true,
+    item: {
+      id: value('ent1'),
+      attributes: {
+        title: ['headline', transform(threeLetters)],
+        age: ['unknown']
+      },
+      relationships: {
+        author: 'user'
+      }
+    }
+  }
+  const expectedValue = {
+    item: {
+      id: 'ent1',
+      attributes: {
+        title: 'Ent',
+        age: undefined
+      },
+      relationships: {
+        author: 'johnf'
+      }
+    }
+  }
+
+  const ret = mutate(def)(options)({ ...stateWithObject, rev: true })
 
   t.deepEqual(ret.value, expectedValue)
 })

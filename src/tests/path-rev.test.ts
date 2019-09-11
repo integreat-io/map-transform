@@ -1,6 +1,25 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, lookup, iterate, merge } from '..'
+import {
+  mapTransform,
+  get,
+  set,
+  fwd,
+  rev,
+  lookup,
+  iterate,
+  merge,
+  value,
+  transform,
+  Data
+} from '..'
+
+// Setup
+
+const threeLetters = (value: Data) =>
+  typeof value === 'string' ? value.substr(0, 3) : value
+
+// Tests
 
 test('should reverse map simple object', t => {
   const def = {
@@ -351,6 +370,56 @@ test('should reverse map with root path', t => {
   const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
+})
+
+test('should reverse map with flipped mutate object', t => {
+  const data = [
+    { key: 'ent1', headline: 'Entry 1' },
+    { key: 'ent2', headline: 'Entry 2' }
+  ]
+  const def = [
+    'content',
+    {
+      $flip: true,
+      $iterate: true,
+      id: 'key',
+      attributes: {
+        title: ['headline', transform(threeLetters)],
+        age: ['unknown']
+      },
+      relationships: {
+        author: value('johnf')
+      }
+    }
+  ]
+  const expectedValue = {
+    content: [
+      {
+        id: 'ent1',
+        attributes: {
+          title: 'Ent',
+          age: undefined
+        },
+        relationships: {
+          author: 'johnf'
+        }
+      },
+      {
+        id: 'ent2',
+        attributes: {
+          title: 'Ent',
+          age: undefined
+        },
+        relationships: {
+          author: 'johnf'
+        }
+      }
+    ]
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expectedValue)
 })
 
 test('should return data when no mapping def and reverse mapping', t => {

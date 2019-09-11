@@ -3,6 +3,7 @@ import compare from './compare'
 import get from './get'
 import join from './join'
 import map from './map'
+import template from './template'
 
 export default {
   compare,
@@ -10,5 +11,6 @@ export default {
   get,
   join,
   map,
+  template,
   value
 }

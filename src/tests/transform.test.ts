@@ -410,6 +410,26 @@ test('should use built in map function with named dictionary', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should use built in template function', t => {
+  const def = {
+    caption: [
+      'content',
+      {
+        $transform: 'template',
+        template: '{{description}}. By {{artist}}'
+      }
+    ]
+  }
+  const data = {
+    content: { description: 'Bergen by night', artist: 'John F.' }
+  }
+  const expected = { caption: 'Bergen by night. By John F.' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should only use transform going forward', t => {
   const def = {
     title: [

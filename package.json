@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "start": "npm run build && node index.js",
-    "test": "npm run build && nyc --reporter=text-summary ava --config ./ava-dist.config.js",
+    "test": "npm run lint && npm run build && nyc --reporter=text-summary ava --config ./ava-dist.config.js",
     "test:watch": "npm run dev",
     "test:inspect": "node --inspect node_modules/ava/profile.js",
     "dev": "ava --watch",
@@ -40,6 +40,7 @@
     "@types/lodash.merge": "^4.6.6",
     "@types/ramda": "^0.26.15",
     "ajv": "^6.10.2",
+    "handlebars": "^4.2.0",
     "lodash.merge": "^4.6.2",
     "map-any": "^0.2.1",
     "ramda": "^0.26.1"

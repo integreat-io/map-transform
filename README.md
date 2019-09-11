@@ -985,6 +985,44 @@ const def29 = {
 const mapper = mapTransform(def29, { dictionaries: { statusCodes: dictionary } })
 ```
 
+#### `template(template)` function
+
+The `template` helper function takes a [handlebars] template and applies the
+given data to it. The placeholders in the template is dot notaion paths to
+fields in the given data. A simple dot (`.`) refers to the data itself, and may
+be useful when the pipeline data is a string.
+
+Values will be forced to strings before being inserted in the template.
+
+Example:
+
+```javascript
+import { mapTransform, transform, functions } from 'map-transform'
+const { template } = functions
+
+const data = {
+  content: { description: 'Bergen by night', artist: 'John F.' }
+}
+
+const def30 = {
+  caption: ['content', transform(template('{{description}}. By {{artist}}'))]
+}
+
+const ret = mapTransform(def30)(data)
+// --> { caption: 'Bergen by night. By John F.' }
+```
+
+The `template` function is also available through a transform object:
+
+```javascript
+const def30o = {
+  caption: [
+    'content',
+    { $transform: 'template', template: '{{description}}. By {{artist}}' }
+  ]
+}
+```
+
 #### `validate(path, schema)` function
 
 This is a helper function for validating the value at the path against a

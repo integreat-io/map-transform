@@ -25,6 +25,7 @@ export { default as plug } from './operations/plug'
 export { default as lookup } from './operations/lookup'
 export { default as transform } from './operations/transform'
 export { default as filter } from './operations/filter'
+export { default as ifelse } from './operations/ifelse'
 export { fwd, rev, divide } from './operations/directionals'
 export { default as merge } from './operations/merge'
 export { iterate, functions }

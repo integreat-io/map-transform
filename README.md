@@ -354,13 +354,13 @@ In the example above, we have set `$iterate: true` on the mapping object, to
 signal that we want the mapping to be applied to the items of any array. See
 also [the `iterate` operation](#iteratepipeline-operation) for more.
 
-#### `transform(fn, fnRev)` operation
+#### `transform(transformFn, transformFnRev)` operation
 
 The simple beauty of the `transform()` operation, is that it will apply whatever
 function you provide it with to the data at that point in the pipeline. It's
 completely up to you to write the function that does the transformation.
 
-You may supply a second function (`fnRev`), that will be used when
+You may supply a second function (`transformFnRev`), that will be used when
 [reverse mapping](#reverse-mapping). If you only supplies one function, it will
 be used in both directions. You may supply `null` for either of these, to make
 it uni-directional, but it might be clearer to use `fwd()` or `rev()` operations
@@ -468,7 +468,7 @@ When you define the `transform` operation as an object, you may specify
 if an array is encountered. You may also set `$direction: 'fwd'` or
 `$direction: 'rev'` to have it transform in one direction only.
 
-#### `filter(fn)` operation
+#### `filter(conditionFn)` operation
 
 Just like the transform operation, the filter operation will apply whatever
 function you give it to the data at that point in the transform pipeline, but
@@ -526,6 +526,32 @@ You may also set `$direction: 'fwd'` or `$direction: 'rev'` on the object, to
 have it filter in one direction only.
 
 See the `transform()` operation for more on how defining as an object works.
+
+#### `ifelse(conditionFn, truePipeline, falsePipeline)` operation
+
+The `ifelse()` operation will run the `truePipeline` if the `conditionFn` results
+in `true`, otherwise it will run the `falsePipeline`. See
+[the `filter()` operation](#filterconditionFn-operation) for more on the
+requirements for the `conditionFn`.
+
+Both `truePipeline` and `falsePipeline` are optional, in case you only need to
+apply a pipeline in one of the cases.
+
+Example:
+
+```javascript
+import { mapTransform, ifelse } from 'map-transform'
+
+const onlyActives = (data) => data.active
+const def31 = [
+  'members'
+  {
+    name: 'name',
+    active: 'hasPayed'
+  },
+  ifelse(onlyActives, set('active[]'), set('inactive[]'))
+]
+```
 
 #### `iterate(pipeline)` operation
 

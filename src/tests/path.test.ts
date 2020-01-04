@@ -1,6 +1,19 @@
 import test from 'ava'
+import { Data } from '../types'
+import { isObject } from '../utils/is'
 
-import { mapTransform, get, set, fwd, rev, alt, root, plug, lookup } from '..'
+import {
+  mapTransform,
+  get,
+  set,
+  fwd,
+  rev,
+  alt,
+  root,
+  plug,
+  lookup,
+  ifelse
+} from '..'
 
 test('should map with object path', t => {
   const def = [
@@ -205,6 +218,31 @@ test('should map undefined to undefined', t => {
   const def = ['items[]', { attributes: { title: 'content.heading' } }]
   const data = undefined
   const expected = undefined
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with ifelse', t => {
+  const isPublished = (data: Data) => isObject(data) && !!data.published
+  const def = [
+    'content.article',
+    {
+      title: 'content.heading',
+      published: 'published'
+    },
+    ifelse(isPublished, set('articles[]'), set('drafts[]'))
+  ]
+  const data = {
+    content: {
+      article: {
+        content: { heading: 'Heading 1' },
+        published: false
+      }
+    }
+  }
+  const expected = { drafts: [{ title: 'Heading 1', published: false }] }
 
   const ret = mapTransform(def)(data)
 

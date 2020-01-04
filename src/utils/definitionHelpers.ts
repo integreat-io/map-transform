@@ -93,7 +93,7 @@ const operationFromObject = (def: OperationObject | MapObject) => {
   }
 }
 
-export const mapFunctionFromDef = (def: MapDefinition): Operation =>
+export const mapFunctionFromDef = (def?: MapDefinition): Operation =>
   isMapPipe(def)
     ? pipe(def)
     : isObject(def)

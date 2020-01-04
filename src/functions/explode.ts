@@ -1,15 +1,10 @@
 import { Data, DataArray, ObjectWithProps, Context } from '../types'
+import { isObject } from '../utils/is'
 
 export interface KeyValue {
   key: string | number
   value: Data
 }
-
-const isObject = (obj: unknown): obj is ObjectWithProps =>
-  typeof obj === 'object' &&
-  obj !== null &&
-  !Array.isArray(obj) &&
-  !(obj instanceof Date)
 
 const isExplodedArray = (data: DataArray) =>
   data.every(item => isObject(item) && typeof item.key === 'number')

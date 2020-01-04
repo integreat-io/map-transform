@@ -1,15 +1,10 @@
 import test from 'ava'
 import { Operands, ObjectWithProps } from '../types'
+import { isObject } from '../utils/is'
 
 import { mapTransform, transform, rev, Data } from '..'
 
 // Setup
-
-const isObject = (item: Data): item is ObjectWithProps =>
-  !!item &&
-  typeof item === 'object' &&
-  !Array.isArray(item) &&
-  !(item instanceof Date)
 
 const createTitle = (item: ObjectWithProps) =>
   `${item.title} - by ${item.author}`

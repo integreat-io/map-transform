@@ -1,8 +1,19 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, alt, root, plug, lookup, value } from '..'
+import {
+  mapTransform,
+  get,
+  set,
+  fwd,
+  rev,
+  alt,
+  root,
+  plug,
+  lookup,
+  value
+} from '..'
 
-test('should map with object path', (t) => {
+test('should map with object path', t => {
   const def = [
     'content.article',
     {
@@ -23,7 +34,7 @@ test('should map with object path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should get object from alt path', (t) => {
+test('should get object from alt path', t => {
   const def = [
     'Content.Article',
     fwd(alt('content.article')),
@@ -45,7 +56,7 @@ test('should get object from alt path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with object shape', (t) => {
+test('should map with object shape', t => {
   const def = {
     attributes: {
       title: 'content.heading',
@@ -74,7 +85,7 @@ test('should map with object shape', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map null values path', (t) => {
+test('should map null values path', t => {
   const def = [
     'content.article',
     {
@@ -95,7 +106,7 @@ test('should map null values path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should allow colons in paths', (t) => {
+test('should allow colons in paths', t => {
   const def = [
     {
       'b:title': 'content.a:heading'
@@ -109,7 +120,7 @@ test('should allow colons in paths', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip slashed properties going forward', (t) => {
+test('should skip slashed properties going forward', t => {
   const def = [
     'content.article',
     {
@@ -133,7 +144,7 @@ test('should skip slashed properties going forward', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with root path', (t) => {
+test('should map with root path', t => {
   const def = [
     {
       attributes: {
@@ -158,7 +169,7 @@ test('should map with root path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with lookup', (t) => {
+test('should map with lookup', t => {
   const def = {
     title: 'content.heading',
     authors: ['content.authors[]', [lookup('$meta.users[]', 'id'), get('name')]]
@@ -183,7 +194,7 @@ test('should map with lookup', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set current value on path', (t) => {
+test('should set current value on path', t => {
   const def = [
     'ids[]',
     {
@@ -193,21 +204,15 @@ test('should set current value on path', (t) => {
   const data = {
     ids: ['ent1', 'ent2']
   }
-  const expected = [
-    { id: 'ent1' },
-    { id: 'ent2' }
-  ]
+  const expected = [{ id: 'ent1' }, { id: 'ent2' }]
 
   const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map undefined to undefined', (t) => {
-  const def = [
-    'items[]',
-    { attributes: { title: 'content.heading' } }
-  ]
+test('should map undefined to undefined', t => {
+  const def = ['items[]', { attributes: { title: 'content.heading' } }]
   const data = undefined
   const expected = undefined
 
@@ -216,11 +221,8 @@ test('should map undefined to undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map undefined from path to empty array', (t) => {
-  const def = [
-    'items[]',
-    { title: 'content.heading' }
-  ]
+test('should map undefined from path to empty array', t => {
+  const def = ['items[]', { title: 'content.heading' }]
   const data = { items: undefined }
   const expected: any[] = []
 
@@ -229,7 +231,7 @@ test('should map undefined from path to empty array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map array with object path', (t) => {
+test('should map array with object path', t => {
   const def = [
     'content.articles',
     {
@@ -244,17 +246,14 @@ test('should map array with object path', (t) => {
       ]
     }
   }
-  const expected = [
-    { title: 'Heading 1' },
-    { title: 'Heading 2' }
-  ]
+  const expected = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
 
   const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map several layers of arrays', (t) => {
+test('should map several layers of arrays', t => {
   const def = [
     'content.articles[]',
     {
@@ -270,15 +269,24 @@ test('should map several layers of arrays', (t) => {
   const data = {
     content: {
       articles: [
-        { content: { heading: 'Heading 1' }, meta: { keywords: ['news', 'latest'], user_id: 'johnf' } },
-        { content: { heading: 'Heading 2' }, meta: { keywords: ['tech'], user_id: 'maryk' } }
+        {
+          content: { heading: 'Heading 1' },
+          meta: { keywords: ['news', 'latest'], user_id: 'johnf' }
+        },
+        {
+          content: { heading: 'Heading 2' },
+          meta: { keywords: ['tech'], user_id: 'maryk' }
+        }
       ]
     }
   }
   const expected = [
     {
       attributes: { title: 'Heading 1' },
-      relationships: { topics: [{ id: 'news' }, { id: 'latest' }], author: { id: 'johnf' } }
+      relationships: {
+        topics: [{ id: 'news' }, { id: 'latest' }],
+        author: { id: 'johnf' }
+      }
     },
     {
       attributes: { title: 'Heading 2' },
@@ -291,7 +299,7 @@ test('should map several layers of arrays', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should flatten arrays', (t) => {
+test('should flatten arrays', t => {
   const def = [
     'content.articles[].content[]',
     {
@@ -304,10 +312,7 @@ test('should flatten arrays', (t) => {
     content: {
       articles: [
         {
-          content: [
-            { heading: 'Heading 1' },
-            { heading: 'Heading 2' }
-          ]
+          content: [{ heading: 'Heading 1' }, { heading: 'Heading 2' }]
         }
       ]
     }
@@ -322,7 +327,7 @@ test('should flatten arrays', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map empty array as empty array', (t) => {
+test('should map empty array as empty array', t => {
   const def = {
     title: 'content.heading'
   }
@@ -334,7 +339,7 @@ test('should map empty array as empty array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with object array path', (t) => {
+test('should map with object array path', t => {
   const def = [
     'content.articles[]',
     {
@@ -361,7 +366,7 @@ test('should map with object array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should handle array paths in object mappings', (t) => {
+test('should handle array paths in object mappings', t => {
   const def = [
     {
       id: 'key',
@@ -370,10 +375,7 @@ test('should handle array paths in object mappings', (t) => {
       }
     }
   ]
-  const data = [
-    { key: 'ent1', sections: ['news', 'sports'] },
-    { key: 'ent2' }
-  ]
+  const data = [{ key: 'ent1', sections: ['news', 'sports'] }, { key: 'ent2' }]
   const expected = [
     { id: 'ent1', relationships: { sections: ['news', 'sports'] } },
     { id: 'ent2', relationships: { sections: [] } }
@@ -384,7 +386,7 @@ test('should handle array paths in object mappings', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map null as empty array', (t) => {
+test('should map null as empty array', t => {
   const def = [
     'content.articles[]',
     {
@@ -403,7 +405,7 @@ test('should map null as empty array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with array index path', (t) => {
+test('should map with array index path', t => {
   const def = [
     'content.articles[1]',
     {
@@ -425,10 +427,8 @@ test('should map with array index path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with array index in middle of path', (t) => {
-  const def = [
-    'content.articles[0].content.heading'
-  ]
+test('should map with array index in middle of path', t => {
+  const def = ['content.articles[0].content.heading']
   const data = {
     content: {
       articles: [
@@ -444,7 +444,7 @@ test('should map with array index in middle of path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set several props in array', (t) => {
+test('should set several props in array', t => {
   const def = {
     'props[0].key': value('prop1'),
     'props[0].value': 'content.prop1',
@@ -469,7 +469,36 @@ test('should set several props in array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with value array', (t) => {
+test('should set several props in array with depth', t => {
+  const def = {
+    'items[0].props[0].key': value('prop1'),
+    'items[0].props[0].value': 'content.prop1',
+    'items[0].props[1].key': value('prop2'),
+    'items[0].props[1].value': 'content.prop2'
+  }
+  const data = {
+    content: {
+      prop1: 'Value 1',
+      prop2: 'Value 2'
+    }
+  }
+  const expected = {
+    items: [
+      {
+        props: [
+          { key: 'prop1', value: 'Value 1' },
+          { key: 'prop2', value: 'Value 2' }
+        ]
+      }
+    ]
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with value array', t => {
   const def = {
     data: {
       'items[]': [
@@ -482,10 +511,7 @@ test('should map with value array', (t) => {
   const data = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
   const expected = {
     data: {
-      items: [
-        { title: 'Entry 1' },
-        { title: 'Entry 2' }
-      ]
+      items: [{ title: 'Entry 1' }, { title: 'Entry 2' }]
     }
   }
 
@@ -494,7 +520,7 @@ test('should map with value array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with root operation', (t) => {
+test('should map with root operation', t => {
   const def = [
     'content',
     {
@@ -524,10 +550,8 @@ test('should map with root operation', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined from non-matching path with array index in middle', (t) => {
-  const def = [
-    'content.articles[0].content.heading'
-  ]
+test('should return undefined from non-matching path with array index in middle', t => {
+  const def = ['content.articles[0].content.heading']
   const data = {
     content: {
       articles: {
@@ -544,7 +568,7 @@ test('should return undefined from non-matching path with array index in middle'
   t.deepEqual(ret, expected)
 })
 
-test('should not map fields without paths', (t) => {
+test('should not map fields without paths', t => {
   const def = {
     title: null,
     author: 'meta.writer.username'
@@ -562,7 +586,7 @@ test('should not map fields without paths', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with root array path', (t) => {
+test('should map with root array path', t => {
   const def = [
     '[]',
     {
@@ -573,17 +597,14 @@ test('should map with root array path', (t) => {
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } }
   ]
-  const expected = [
-    { title: 'Heading 1' },
-    { title: 'Heading 2' }
-  ]
+  const expected = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
 
   const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map data as is when no mapping', (t) => {
+test('should map data as is when no mapping', t => {
   const def = ['content']
   const data = {
     content: { heading: 'The heading' }
@@ -599,7 +620,7 @@ test('should map data as is when no mapping', (t) => {
 
 test.todo('should split mappings with array path in the middle')
 
-test('should map with nested mappings', (t) => {
+test('should map with nested mappings', t => {
   const def = {
     content: {
       'articles[]': [
@@ -615,10 +636,7 @@ test('should map with nested mappings', (t) => {
   ]
   const expected = {
     content: {
-      articles: [
-        { title: 'Heading 1' },
-        { title: 'Heading 2' }
-      ]
+      articles: [{ title: 'Heading 1' }, { title: 'Heading 2' }]
     }
   }
 
@@ -627,7 +645,7 @@ test('should map with nested mappings', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should forward map with directional paths', (t) => {
+test('should forward map with directional paths', t => {
   const def = [
     fwd(get('content.articles[]')),
     rev(get('wrong.path[]')),
@@ -646,10 +664,7 @@ test('should forward map with directional paths', (t) => {
     }
   }
   const expected = {
-    items: [
-      { title: 'Heading 1' },
-      { title: 'Heading 2' }
-    ]
+    items: [{ title: 'Heading 1' }, { title: 'Heading 2' }]
   }
 
   const ret = mapTransform(def)(data)
@@ -657,7 +672,7 @@ test('should forward map with directional paths', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set to undefined when moving forward', (t) => {
+test('should set to undefined when moving forward', t => {
   const def = {
     title: [fwd(plug()), rev('content.heading')]
   }
@@ -669,7 +684,7 @@ test('should set to undefined when moving forward', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map array of objects', (t) => {
+test('should map array of objects', t => {
   const def = {
     content: {
       heading: 'title'
@@ -700,11 +715,8 @@ test('should map array of objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with sub pipeline', (t) => {
-  const def = [
-    'content',
-    ['articles']
-  ]
+test('should map with sub pipeline', t => {
+  const def = ['content', ['articles']]
   const data = {
     content: { articles: [{ id: 'ent1' }, { id: 'ent2' }] }
   }
@@ -715,7 +727,7 @@ test('should map with sub pipeline', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return data when no mapping def', (t) => {
+test('should return data when no mapping def', t => {
   const def = null
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -728,7 +740,7 @@ test('should return data when no mapping def', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when mapping def is empty object', (t) => {
+test('should return undefined when mapping def is empty object', t => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -740,7 +752,7 @@ test('should return undefined when mapping def is empty object', (t) => {
   t.is(ret, undefined)
 })
 
-test('should try to map even when no data is given', (t) => {
+test('should try to map even when no data is given', t => {
   const def = {
     title: 'content.heading'
   }
@@ -753,7 +765,7 @@ test('should try to map even when no data is given', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set empty data array', (t) => {
+test('should set empty data array', t => {
   const def = {
     'items[]': [
       {

@@ -3,10 +3,11 @@ import { Operation, State, MapDefinition, Options } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
-const mergeStates = (state: State, thisState: State) => setStateValue(
-  state,
-  mergeDeep(getStateValue(state), getStateValue(thisState))
-)
+const mergeStates = (state: State, thisState: State) =>
+  setStateValue(
+    state,
+    mergeDeep(getStateValue(state), getStateValue(thisState))
+  )
 
 export default function merge(...defs: MapDefinition[]): Operation {
   return (options: Options) => {
@@ -15,7 +16,9 @@ export default function merge(...defs: MapDefinition[]): Operation {
     }
     const pipelines = defs.map(def => mapFunctionFromDef(def)(options))
 
-    return (state: State): State => pipelines.map(pipeline => pipeline(state))
-      .reduce(mergeStates)
+    return (state: State): State =>
+      state.value === undefined
+        ? state
+        : pipelines.map(pipeline => pipeline(state)).reduce(mergeStates)
   }
 }

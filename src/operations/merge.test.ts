@@ -93,9 +93,7 @@ test('should run pipelines and merge arrays', t => {
 })
 
 test('should run one pipeline', t => {
-  const pipelines = [
-    ['heading', set('title')]
-  ]
+  const pipelines = [['heading', set('title')]]
   const expectedValue = {
     title: 'Entry 1'
   }
@@ -112,4 +110,13 @@ test('should run no pipeline', t => {
   const ret = merge(...pipelines)(options)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+test('should not run pipelines on undefined value', t => {
+  const pipelines = [['heading', set('title')]]
+  const state = { ...stateWithObject, value: undefined }
+
+  const ret = merge(...pipelines)(options)(state)
+
+  t.is(ret.value, undefined)
 })

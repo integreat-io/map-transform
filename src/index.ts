@@ -44,11 +44,7 @@ const composeMapFunction = (
   mapFn: StateMapper,
   initialState: Partial<State>
 ) => {
-  const map = compose(
-    getStateValue,
-    mapFn,
-    populateState(initialState)
-  )
+  const map = compose(getStateValue, mapFn, populateState(initialState))
   return (data: Data) => (typeof data === 'undefined' ? undefined : map(data))
 }
 
@@ -67,8 +63,8 @@ export function mapTransform(
   def: MapDefinition,
   options: Options = {}
 ): MapTransform {
-  const preparedOptions = mergeOptions(options)
-  const mapFn = createRootMapper(def)(preparedOptions)
+  const completeOptions = mergeOptions(options)
+  const mapFn = createRootMapper(def)(completeOptions)
 
   return Object.assign(composeMapFunction(mapFn, {}), {
     onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),

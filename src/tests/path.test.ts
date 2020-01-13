@@ -215,13 +215,21 @@ test('should spread array to mapping objects', t => {
 })
 
 test('should map undefined to undefined', t => {
-  const def = ['items[]', { attributes: { title: 'content.heading' } }]
-  const data = undefined
-  const expected = undefined
+  const def = ['items', { attributes: { title: 'content.heading' } }]
+  const data = { items: undefined }
 
   const ret = mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  t.is(ret, undefined)
+})
+
+test('should map null to undefined when mutateNull is false', t => {
+  const def = ['items', { attributes: { title: 'content.heading' } }]
+  const data = { items: null }
+
+  const ret = mapTransform(def, { mutateNull: false })(data)
+
+  t.is(ret, undefined)
 })
 
 test('should map with ifelse', t => {

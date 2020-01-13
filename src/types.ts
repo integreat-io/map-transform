@@ -58,6 +58,7 @@ export interface Options {
     [key: string]: MapDefinition
   }
   dictionaries?: Dictionaries
+  mutateNull?: boolean
 }
 
 export interface TransformObject extends Operands {
@@ -108,7 +109,8 @@ export type MapPipe = (
   | Operation
   | OperationObject
   | Path
-  | MapPipeSimple)[]
+  | MapPipeSimple
+)[]
 
 export interface MapObject {
   [key: string]: MapDefinition | undefined | boolean

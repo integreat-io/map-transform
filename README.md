@@ -302,6 +302,20 @@ the transform pipeline (which the dot notation path really is, and – come to
 think of it – the transform object itself too). This is explained in detail
 below.
 
+#### A not on undefined and null
+
+MapTransform will treat `undefined` as a value that is not set, and so a
+transform object will not be applied to it. So if an `undefined` value meets
+a transform object, it will produce `undefined`, regardsless of the shape of the
+transform object.
+
+This is not the case for `null`, though. MapTransform treats `null` as a value,
+an intended nothing, and will apply a transform object to it, even though it
+will most likely produce nothing but default values. To change this behavior,
+set `mutateNull: false` on the `options` object passed to MapTransform. This
+will essentially make MapTransform treat `null` the same way as `undefined` when
+it comes to the transform object.
+
 ### Transform pipeline
 
 The idea of the transform pipeline, is that you describe a set of

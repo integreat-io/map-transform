@@ -1,14 +1,17 @@
 import test from 'ava'
+import { set } from './getSet'
 
 import apply from './apply'
 
 // Setup
 
 const extractTitle = ['title']
+const setTitle = [set('title')]
 
 const options = {
   pipelines: {
-    extractTitle
+    extractTitle,
+    setTitle
   }
 }
 
@@ -46,6 +49,19 @@ test('should run pipeline by id - in rev', t => {
   }
 
   const ret = apply('extractTitle')(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not run pipeline when value is undefined', t => {
+  const state = {
+    root: 'Entry 1',
+    context: 'Entry 1',
+    value: undefined
+  }
+  const expected = state
+
+  const ret = apply('setTitle')(options)(state)
 
   t.deepEqual(ret, expected)
 })

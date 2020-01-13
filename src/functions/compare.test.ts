@@ -52,6 +52,16 @@ test('should return false when object does not have match value in array at path
   t.false(ret)
 })
 
+test('should accept undefined as a match value', t => {
+  const match = undefined
+  const path = '.'
+  const data = undefined
+
+  const ret = compare({ path, operator: '=', match })(data)
+
+  t.true(ret)
+})
+
 test('should use matchPath to get match value from data', t => {
   const path = 'meta.role'
   const matchPath = 'level'

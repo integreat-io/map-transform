@@ -55,6 +55,23 @@ test('should mutate shallow object with map functions', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should not mutate undefined value', t => {
+  const def = {
+    id: value('ent1'),
+    title: get('headline')
+  }
+  const state = {
+    root: { data },
+    context: data[0],
+    value: undefined
+  }
+  const expected = state
+
+  const ret = mutate(def)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should mutate object with map functions', t => {
   const def = {
     item: {

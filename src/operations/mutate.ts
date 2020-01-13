@@ -87,5 +87,5 @@ export default function mutate(def: MapObject): Operation {
   const runMutation = objectToMapFunction(def, flip)
 
   return (options: Options) => (state: State): State =>
-    typeof state.value === 'undefined' ? state : runMutation(options)(state)
+    state.value === undefined ? state : runMutation(options)(state)
 }

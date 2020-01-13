@@ -1,4 +1,4 @@
-import { mergeDeepWith, merge, identity } from 'ramda'
+import { mergeDeepWith, identity } from 'ramda'
 import { compose } from './functional'
 import { Data, Prop, Path } from '../types'
 
@@ -55,7 +55,7 @@ export const mergeExisting = (left: unknown[], right: unknown) => {
   if (Array.isArray(right)) {
     return right.reduce((arr, value, index) => {
       // eslint-disable-next-line security/detect-object-injection
-      arr[index] = merge(left[index], value)
+      arr[index] = mergeDeepWith(mergeExisting, left[index], value)
       return arr
     }, left)
   }

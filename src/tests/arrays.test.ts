@@ -340,6 +340,35 @@ test('should set several props in array', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should set several props in array with depth', t => {
+  const def = {
+    'items[0].props[0].key': value('prop1'),
+    'items[0].props[0].value': 'content.prop1',
+    'items[0].props[1].key': value('prop2'),
+    'items[0].props[1].value': 'content.prop2'
+  }
+  const data = {
+    content: {
+      prop1: 'Value 1',
+      prop2: 'Value 2'
+    }
+  }
+  const expected = {
+    items: [
+      {
+        props: [
+          { key: 'prop1', value: 'Value 1' },
+          { key: 'prop2', value: 'Value 2' }
+        ]
+      }
+    ]
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return undefined from non-matching path with array index in middle', t => {
   const def = ['content.articles[0].content.heading']
   const data = {

@@ -117,6 +117,27 @@ test('should preserve existing array and set index path on existing object', t =
   t.deepEqual(ret, expected)
 })
 
+test('should set value at sub array index path', t => {
+  const path = 'meta[0].authors[0].id'
+  const object = {
+    meta: [
+      {
+        authors: [{ type: 'author' }]
+      }
+    ]
+  }
+  const expected = {
+    meta: [
+      {
+        authors: [{ id: 'johnf', type: 'author' }]
+      }
+    ]
+  }
+  const ret = pathSetter(path)('johnf', object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set value array at path', t => {
   const path = 'meta.authors'
   const object = {}

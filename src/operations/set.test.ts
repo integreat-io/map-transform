@@ -8,7 +8,7 @@ const options = {}
 
 // Tests
 
-test('should set value on path', (t) => {
+test('should set value on path', t => {
   const data = { user: 'johnf' }
   const state = {
     root: data,
@@ -25,7 +25,20 @@ test('should set value on path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set undefined', (t) => {
+test('should not strip away star', t => {
+  const state = {
+    root: { token: 's3cr3t' },
+    context: { token: 's3cr3t' },
+    value: 's3cr3t'
+  }
+  const expectedValue = { 's:header': { '*tu:api-key': 's3cr3t' } }
+
+  const ret = set('s:header.*tu:api-key')(options)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should set undefined', t => {
   const state = {
     root: {},
     context: {},
@@ -38,7 +51,7 @@ test('should set undefined', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should not set undefined when onlyMapped is true', (t) => {
+test('should not set undefined when onlyMapped is true', t => {
   const state = {
     root: {},
     context: {},
@@ -52,7 +65,7 @@ test('should not set undefined when onlyMapped is true', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should not set undefined in array when onlyMapped is true', (t) => {
+test('should not set undefined in array when onlyMapped is true', t => {
   const state = {
     root: {},
     context: {},
@@ -66,7 +79,7 @@ test('should not set undefined in array when onlyMapped is true', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should get from path when reverse mapping', (t) => {
+test('should get from path when reverse mapping', t => {
   const data = { user: 'johnf' }
   const state = {
     root: data,
@@ -86,7 +99,7 @@ test('should get from path when reverse mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not set on root path', (t) => {
+test('should not set on root path', t => {
   const state = {
     root: { section: 'news', items: [{ id: 'no1' }] },
     context: { id: 'no1' },
@@ -99,7 +112,7 @@ test('should not set on root path', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should get from root path', (t) => {
+test('should get from root path', t => {
   const state = {
     root: { section: 'news', items: [{ id: 'no1' }] },
     context: { id: 'no1' },

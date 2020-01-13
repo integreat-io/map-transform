@@ -2,7 +2,7 @@ import { mergeDeepWith, compose, identity, apply } from 'ramda'
 import { Data, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
-  isAfterOpenArray ? `*${part}` : part
+  isAfterOpenArray ? `]${part}` : part
 
 const pathSplitter = function*(path: Path) {
   const regEx = /([^[\].]+|\[\w*])/g
@@ -41,7 +41,7 @@ const setter = (prop: string) => {
   switch (prop[0]) {
     case '[':
       return setOnArray(prop)
-    case '*':
+    case ']': // `]` signals we are after an open array
       return setOnSubArray(prop)
     default:
       return setOnObject(prop)

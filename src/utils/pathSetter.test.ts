@@ -1,5 +1,5 @@
 import test from 'ava'
-import * as deepFreeze from 'deep-freeze'
+import deepFreeze = require('deep-freeze')
 
 import pathSetter from './pathSetter'
 
@@ -132,6 +132,81 @@ test('should set value at sub array index path', t => {
         authors: [{ id: 'johnf', type: 'author' }]
       }
     ]
+  }
+  const ret = pathSetter(path)('johnf', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value at array in array index path', t => {
+  const path = 'meta[0][0].id'
+  const expected = {
+    meta: [[{ id: 'johnf' }]]
+  }
+  const ret = pathSetter(path)('johnf')
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value at array in array index path on existing object', t => {
+  const path = 'meta[0][0].id'
+  const object = {
+    meta: [[{ type: 'author' }]]
+  }
+  const expected = {
+    meta: [[{ id: 'johnf', type: 'author' }]]
+  }
+  const ret = pathSetter(path)('johnf', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should include object in array when merging array with object', t => {
+  const path = 'meta[0].id'
+  const object = {
+    meta: { type: 'author' }
+  }
+  const expected = {
+    meta: [{ id: 'johnf', type: 'author' }]
+  }
+  const ret = pathSetter(path)('johnf', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should include object in array when merging array with object on different indices', t => {
+  const path = 'meta[2].id'
+  const object = {
+    meta: { type: 'author' }
+  }
+  const expected = {
+    meta: [{ type: 'author' }, undefined, { id: 'johnf' }]
+  }
+  const ret = pathSetter(path)('johnf', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should include object in array when merging array in array with object in array', t => {
+  const path = 'meta[0][0].id'
+  const object = {
+    meta: [{ type: 'author' }]
+  }
+  const expected = {
+    meta: [[{ id: 'johnf', type: 'author' }]]
+  }
+  const ret = pathSetter(path)('johnf', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should include object in array when merging array in array with object in array on different indices', t => {
+  const path = 'meta[0][2].id'
+  const object = {
+    meta: [{ type: 'author' }]
+  }
+  const expected = {
+    meta: [[{ type: 'author' }, undefined, { id: 'johnf' }]]
   }
   const ret = pathSetter(path)('johnf', object)
 

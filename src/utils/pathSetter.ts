@@ -48,15 +48,18 @@ const setter = (prop: string) => {
   }
 }
 
-export const mergeExisting = (left: any, right: any) => {
-  if (Array.isArray(right)) {
-    return right.reduce((arr, value, index) => {
-      arr[index] = mergeDeepWith(mergeExisting, left[index], value)
-      return arr
-    }, left)
-  }
-  return right
-}
+const ensureArray = (value: unknown) => (Array.isArray(value) ? value : [value])
+
+const mergeArrays = (left: unknown[], right: unknown[]) =>
+  right.reduce((arr: unknown[], value, index) => {
+    arr[index] = Array.isArray(right[index])
+      ? mergeArrays(ensureArray(left[index]), right[index] as unknown[])
+      : mergeDeepWith(mergeExisting, left[index], value)
+    return arr
+  }, left)
+
+export const mergeExisting = (left: unknown, right: unknown) =>
+  Array.isArray(right) ? mergeArrays(ensureArray(left), right) : right
 
 export type SetFunction = (value: Data, object?: Data | null) => Data
 

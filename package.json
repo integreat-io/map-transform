@@ -1,6 +1,6 @@
 {
   "name": "map-transform",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "Map and transform objects with mapping definitions",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

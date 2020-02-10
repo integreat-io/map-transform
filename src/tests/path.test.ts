@@ -498,6 +498,50 @@ test('should set several props in array with depth', t => {
   t.deepEqual(ret, expected)
 })
 
+// This should be working, but might be too hard to fix in v0.3
+// Fix comes in v0.4
+// test('should set values from array', t => {
+//   const def = [
+//     {
+//       'content.prop1': '[0]',
+//       'content.prop2': '[1]',
+//       'content.prop3': '[2]'
+//     }
+//   ]
+//   const data = ['Value 1', 'Value 2', 'Value 3']
+//   const expected = {
+//     content: {
+//       prop1: 'Value 1',
+//       prop2: 'Value 2',
+//       prop3: 'Value 3'
+//     }
+//   }
+//
+//   const ret = mapTransform(def)(data)
+//
+//   t.deepEqual(ret, expected)
+// })
+
+test('should set values in array', t => {
+  const def = {
+    '[0]': 'content.prop1',
+    '[1]': 'content.prop2',
+    '[2]': 'content.prop3'
+  }
+  const data = {
+    content: {
+      prop1: 'Value 1',
+      prop2: 'Value 2',
+      prop3: 'Value 3'
+    }
+  }
+  const expected = ['Value 1', 'Value 2', 'Value 3']
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with value array', t => {
   const def = {
     data: {

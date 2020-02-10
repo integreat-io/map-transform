@@ -25,6 +25,40 @@ test('should set value on path', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should set value on [0] path', t => {
+  const data = { user: 'johnf' }
+  const state = {
+    root: data,
+    context: data,
+    value: 'johnf'
+  }
+  const expected = {
+    root: data,
+    context: data,
+    value: ['johnf']
+  }
+  const ret = set('[0]')(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value on [1] path', t => {
+  const data = { user: 'johnf' }
+  const state = {
+    root: data,
+    context: data,
+    value: 'johnf'
+  }
+  const expected = {
+    root: data,
+    context: data,
+    value: [undefined, 'johnf']
+  }
+  const ret = set('[1]')(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not strip away star', t => {
   const state = {
     root: { token: 's3cr3t' },

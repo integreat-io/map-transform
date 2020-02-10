@@ -59,17 +59,21 @@ const mergeArrays = (left: unknown[], right: unknown[]) =>
     return arr
   }, left)
 
-export const mergeExisting = (left: unknown, right: unknown) =>
+const mergeExisting = (left: unknown, right: unknown) =>
   Array.isArray(right) ? mergeArrays(ensureArray(left), right) : right
 
-const merge = (left: unknown, right: unknown) =>
-  Array.isArray(right)
+export const merge = (left: unknown, right: unknown) =>
+  left === undefined || right === undefined
+    ? right === undefined
+      ? left
+      : right
+    : Array.isArray(right)
     ? mergeArrays(ensureArray(left), right)
     : isObject(right)
     ? mergeDeepWith(mergeExisting, left, right)
     : right
 
-export type SetFunction = (value: Data, object?: Data | null) => Data
+export type SetFunction = (value: Data, object?: Data) => Data
 
 /**
  * Set `value` at `path` in `object`. Note that a new object is returned, and
@@ -89,7 +93,7 @@ export default function pathSetter(path: Path): SetFunction {
   }
 
   const setterFn: SetFunction = apply(compose, setters) as any // Using apply() to avoid complaints from typescript
-  return (value, object = null) => {
+  return (value, object) => {
     const data = setterFn(value)
     return merge(object, data)
   }

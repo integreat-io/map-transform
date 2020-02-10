@@ -7,7 +7,7 @@ import plug from './plug'
 import { divide } from './directionals'
 
 const getValue = (get: GetFunction, isArray: boolean, state: State): State => {
-  const value = mapAny(get, state.value)
+  const value = get(state.value)
   const arr = isArray || (!Array.isArray(state.value) && Array.isArray(value))
 
   return { ...state, value: isArray && !value ? [] : value, arr }
@@ -15,7 +15,7 @@ const getValue = (get: GetFunction, isArray: boolean, state: State): State => {
 
 const setValue = (set: SetFunction, isArray: boolean, state: State): State => {
   const setFn: SetFunction = value =>
-    state.onlyMapped && typeof value === 'undefined' ? value : set(value)
+    state.onlyMapped && value === undefined ? undefined : set(value)
   const value =
     state.arr || isArray ? setFn(state.value) : mapAny(setFn, state.value)
 

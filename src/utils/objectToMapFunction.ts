@@ -1,4 +1,4 @@
-import { compose, mergeDeepWith } from 'ramda'
+import { compose } from 'ramda'
 import {
   MapDefinition,
   MapObject,
@@ -7,7 +7,6 @@ import {
   MapPipe,
   Path,
   State,
-  Data,
   OperationObject,
   Options
 } from '../types'
@@ -21,28 +20,15 @@ import { set } from '../operations/getSet'
 import { rev } from '../operations/directionals'
 import pipe from '../operations/pipe'
 import { isMapObject } from './definitionHelpers'
-import { mergeExisting } from './pathSetter'
+import { merge } from './pathSetter'
 
 const appendToPath = (path: string[], fragment: string) => [...path, fragment]
-
-const merge = (left: Data, right: Data) =>
-  !right ? left : mergeDeepWith(mergeExisting, left, right)
-const mergeToArray = (arr: Data[]) => (val: Data, index: number) =>
-  merge(arr[index], val)
 
 const runAndMergeState = (fn: Operation) => (options: Options) => (
   state: State
 ): State => {
   const nextState = fn(options)(lowerState(state))
-
-  return Array.isArray(nextState.value)
-    ? setStateValue(
-        state,
-        Array.isArray(state.value)
-          ? nextState.value.map(mergeToArray(state.value))
-          : nextState.value
-      )
-    : setStateValue(state, merge(state.value, nextState.value))
+  return setStateValue(state, merge(state.value, nextState.value))
 }
 
 const concatToArray = (
@@ -50,17 +36,14 @@ const concatToArray = (
   setFn: Operation
 ) => (Array.isArray(existing) ? [...existing, setFn] : [existing, setFn])
 
-const pipeWithSetPath = (
+function pipeWithSetPath(
   existing: MapPipe | Path | Operation | OperationObject,
   options: Options,
   pathArray: Path[]
-): StateMapper[] => {
-  const [path, index] = pathArray.join('.').split('/') as [
-    string,
-    string | undefined
-  ]
+): StateMapper[] {
+  const [path, index] = pathArray.join('.').split('/')
   const fn = runAndMergeState(pipe(concatToArray(existing, set(path))))
-  return typeof index === 'undefined' ? [fn(options)] : [rev(fn)(options)]
+  return index === undefined ? [fn(options)] : [rev(fn)(options)]
 }
 
 const extractSetFns = (
@@ -76,14 +59,11 @@ const extractSetFns = (
         ],
         []
       )
-    : def === null || typeof def === 'undefined'
+    : def === null || def === undefined
     ? []
     : pipeWithSetPath(def, options, path)
 
 export default function objectToMapFunction(def: MapObject, options: Options) {
   const fns = extractSetFns(def, options)
-  return compose(
-    pipeMapFns(fns),
-    liftState
-  )
+  return compose(pipeMapFns(fns), liftState)
 }

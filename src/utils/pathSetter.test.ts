@@ -235,6 +235,15 @@ test('should set value on array', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should set value into array', t => {
+  const path = '[1]'
+  const object = undefined
+  const expected = [undefined, 'latest']
+  const ret = pathSetter(path)('latest', object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set value on existing array', t => {
   const path = '[1]'
   const object = ['latest']

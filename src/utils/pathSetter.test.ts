@@ -213,6 +213,19 @@ test('should include object in array when merging array in array with object in 
   t.deepEqual(ret, expected)
 })
 
+test('should set value on second index of existing array', t => {
+  const path = 'meta[0].tags[1]'
+  const object = {
+    meta: [{ tags: ['latest'] }]
+  }
+  const expected = {
+    meta: [{ tags: ['latest', 'sports'] }]
+  }
+  const ret = pathSetter(path)('sports', object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set value array at path', t => {
   const path = 'meta.authors'
   const object = {}
@@ -332,6 +345,15 @@ test('should preserve props on existing object', t => {
     content: [{ id: 'ent1' }]
   }
   const ret = pathSetter(path)('johnf', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return data when not object or array', t => {
+  const path = ''
+  const object = null
+  const expected = 'value'
+  const ret = pathSetter(path)('value', object)
 
   t.deepEqual(ret, expected)
 })

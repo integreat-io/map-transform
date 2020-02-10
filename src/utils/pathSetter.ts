@@ -50,11 +50,18 @@ const setter = (prop: string) => {
 
 const ensureArray = (value: unknown) => (Array.isArray(value) ? value : [value])
 
+// ['latest'] + [undefined, 'sport']
+
+const isObject = (value: unknown): value is object =>
+  typeof value === 'object' && value !== null
+
 const mergeArrays = (left: unknown[], right: unknown[]) =>
   right.reduce((arr: unknown[], value, index) => {
-    arr[index] = Array.isArray(right[index])
-      ? mergeArrays(ensureArray(left[index]), right[index] as unknown[])
-      : mergeDeepWith(mergeExisting, left[index], value)
+    arr[index] = Array.isArray(value)
+      ? mergeArrays(ensureArray(left[index]), value as unknown[])
+      : isObject(value)
+      ? mergeDeepWith(mergeExisting, left[index], value)
+      : value
     return arr
   }, left)
 

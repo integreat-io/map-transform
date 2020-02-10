@@ -50,23 +50,24 @@ const setter = (prop: string) => {
 
 const ensureArray = (value: unknown) => (Array.isArray(value) ? value : [value])
 
-// ['latest'] + [undefined, 'sport']
-
 const isObject = (value: unknown): value is object =>
   typeof value === 'object' && value !== null
 
 const mergeArrays = (left: unknown[], right: unknown[]) =>
   right.reduce((arr: unknown[], value, index) => {
-    arr[index] = Array.isArray(value)
-      ? mergeArrays(ensureArray(left[index]), value as unknown[])
-      : isObject(value)
-      ? mergeDeepWith(mergeExisting, left[index], value)
-      : value
+    arr[index] = merge(left[index], value)
     return arr
   }, left)
 
 export const mergeExisting = (left: unknown, right: unknown) =>
   Array.isArray(right) ? mergeArrays(ensureArray(left), right) : right
+
+const merge = (left: unknown, right: unknown) =>
+  Array.isArray(right)
+    ? mergeArrays(ensureArray(left), right)
+    : isObject(right)
+    ? mergeDeepWith(mergeExisting, left, right)
+    : right
 
 export type SetFunction = (value: Data, object?: Data | null) => Data
 
@@ -90,6 +91,6 @@ export default function pathSetter(path: Path): SetFunction {
   const setterFn: SetFunction = apply(compose, setters) as any // Using apply() to avoid complaints from typescript
   return (value, object = null) => {
     const data = setterFn(value)
-    return object ? mergeDeepWith(mergeExisting, object, data) : data
+    return merge(object, data)
   }
 }

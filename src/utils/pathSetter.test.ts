@@ -226,6 +226,42 @@ test('should set value on second index of existing array', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should set value on array', t => {
+  const path = '[0]'
+  const object = null
+  const expected = ['latest']
+  const ret = pathSetter(path)('latest', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value on existing array', t => {
+  const path = '[1]'
+  const object = ['latest']
+  const expected = ['latest', 'sports']
+  const ret = pathSetter(path)('sports', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set object on existing array', t => {
+  const path = '[2].id'
+  const object = ['latest', 'sports']
+  const expected = ['latest', 'sports', { id: 'topic3' }]
+  const ret = pathSetter(path)('topic3', object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set target on array when merging with array', t => {
+  const path = '[1].id'
+  const object = {}
+  const expected = [{}, { id: 'topic3' }]
+  const ret = pathSetter(path)('topic3', object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set value array at path', t => {
   const path = 'meta.authors'
   const object = {}

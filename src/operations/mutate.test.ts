@@ -388,3 +388,40 @@ test('should flip and mutate object', t => {
 
   t.deepEqual(ret.value, expectedValue)
 })
+
+test('should skip transform object with $direction: rev going forward', t => {
+  const def = {
+    $direction: 'rev',
+    id: value('ent1'),
+    title: get('headline')
+  }
+  const expected = stateWithObject
+
+  const ret = mutate(def)(options)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip transform object with $direction: fwd in reverse', t => {
+  const def = {
+    $direction: 'fwd',
+    content: {
+      title: 'headline'
+    }
+  }
+  const state = {
+    root: {},
+    context: {},
+    value: {
+      content: {
+        title: 'The title'
+      }
+    },
+    rev: true
+  }
+  const expected = state
+
+  const ret = mutate(def)(options)(state)
+
+  t.deepEqual(ret, expected)
+})

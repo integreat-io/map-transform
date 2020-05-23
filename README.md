@@ -302,7 +302,7 @@ the transform pipeline (which the dot notation path really is, and – come to
 think of it – the transform object itself too). This is explained in detail
 below.
 
-#### A not on undefined and null
+#### A note on undefined and null
 
 MapTransform will treat `undefined` as a value that is not set, and so a
 transform object will not be applied to it. So if an `undefined` value meets
@@ -315,6 +315,16 @@ will most likely produce nothing but default values. To change this behavior,
 set `mutateNull: false` on the `options` object passed to MapTransform. This
 will essentially make MapTransform treat `null` the same way as `undefined` when
 it comes to the transform object.
+
+#### Directional transform objects
+
+A transform object is by default applied on forward transformations and in
+reverse. You may alter this by setting the `$direction` prop on a transform
+object, with `fwd`, `rev`, or `both` (the default) as possible values.
+
+When running a forward transformation, transform objects marked with
+`$direction: 'rev'` will be skipped. The same goes for `$direction: 'fwd'` in
+reverse.
 
 ### Transform pipeline
 

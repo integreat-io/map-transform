@@ -263,6 +263,23 @@ test('should reverse map with root array path', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should skip transform object with $direction: fwd', t => {
+  const def = {
+    $direction: 'fwd',
+    title: 'content.heading',
+    author: 'meta.writer.username'
+  }
+  const data = {
+    title: 'The heading',
+    author: 'johnf'
+  }
+  const expected = data
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should treat lookup as get in reverse', t => {
   const def = {
     title: 'content.heading',
@@ -270,7 +287,10 @@ test('should treat lookup as get in reverse', t => {
   }
   const data = {
     title: 'The heading',
-    authors: [{ id: 'user1', name: 'User 1' }, { id: 'user3', name: 'User 3' }]
+    authors: [
+      { id: 'user1', name: 'User 1' },
+      { id: 'user3', name: 'User 3' }
+    ]
   }
   const expected = {
     content: { heading: 'The heading', authors: ['user1', 'user3'] }

@@ -29,6 +29,6 @@ export const populateState = ({ rev = false, onlyMapped = false }) => (
   onlyMapped
 })
 
-export const shouldMutate = ({ mutateNull = true }: Options) => (
+export const shouldSkipMutation = ({ mutateNull = true }: Options) => (
   state: State
 ) => state.value === undefined || (!mutateNull && state.value === null)

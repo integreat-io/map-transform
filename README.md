@@ -775,6 +775,49 @@ This operation will always return an array, even when it is given only one
 pipeline that does not return an array. Pipelines that does not result in a
 value (i.e. return `undefined`) will be filtered away.
 
+#### `merge(pipeline, pipeline, ...)` operation
+
+`merge()` will run all given pipelines and deep merge their results. Conflicts
+are resolved by prioritizing results from the rightmost of the conflicting
+pipelines.
+
+#### `modify(pipeline)` operation
+
+Use the `modify()` operation when you want the pipeline to modify an object,
+instead of replacing it.
+
+Example:
+
+```javascript
+import { modify } from 'map-transform'
+
+const def34 = modify({
+  data: 'data.deeply.placed.items'
+})
+```
+
+`def34` will in effect set the values placed at a deep path on the `data`
+prop. Giving this an object like:
+
+```javascript
+const response = {
+  status: 'ok',
+  data: { deeply: { placed: { items: [{ id: 'ent1' }] } } }
+}
+```
+
+...will result in:
+
+```javascript
+const response = {
+  status: 'ok',
+  data: [{ id: 'ent1' }]
+}
+```
+
+Had we ran this without the `modify()` operation, the returned object would only
+have the `data` prop.
+
 #### `fwd(pipeline)` and `rev(pipeline)` operation
 
 All operations in MapTransform will apply in both directions, although some of

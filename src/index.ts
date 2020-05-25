@@ -28,6 +28,7 @@ export { default as filter } from './operations/filter'
 export { default as ifelse } from './operations/ifelse'
 export { fwd, rev, divide } from './operations/directionals'
 export { default as merge } from './operations/merge'
+export { default as modify } from './operations/modify'
 export { iterate, functions }
 export {
   Data,

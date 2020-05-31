@@ -368,7 +368,11 @@ test('should use built in map function', t => {
       'status',
       {
         $transform: 'map',
-        dictionary: [[200, 'ok'], [404, 'notfound'], ['*', 'error']]
+        dictionary: [
+          [200, 'ok'],
+          [404, 'notfound'],
+          ['*', 'error']
+        ]
       }
     ]
   }
@@ -417,6 +421,26 @@ test('should use built in template function', t => {
   }
   const data = {
     content: { description: 'Bergen by night', artist: 'John F.' }
+  }
+  const expected = { caption: 'Bergen by night. By John F.' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use built in template function with template path', t => {
+  const def = {
+    caption: {
+      $transform: 'template',
+      templatePath: 'options.captionTemplate'
+    }
+  }
+  const data = {
+    content: { description: 'Bergen by night', artist: 'John F.' },
+    options: {
+      captionTemplate: '{{content.description}}. By {{content.artist}}'
+    }
   }
   const expected = { caption: 'Bergen by night. By John F.' }
 

@@ -1176,6 +1176,12 @@ const def30o = {
 }
 ```
 
+If you the template is available as part of the data, you may use `templatePath`
+instead of `template`, and set it to the path of the template in the data. When
+using the transform object format, this is as simple as it sounds. With the
+function version, you supply an operand object to `template()` like this:
+`transform(template({ templatePath: 'options.captionTemplate' }))`.
+
 #### `validate(path, schema)` function
 
 This is a helper function for validating the value at the path against a

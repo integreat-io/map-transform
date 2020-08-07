@@ -40,6 +40,34 @@ test('should reverse map simple object', t => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map with dot only notation', t => {
+  const def = {
+    article: {
+      '.': 'content',
+      title: 'content.heading'
+      // heading: value('Just in:') // TODO: Should skip this in reverse
+    }
+  }
+  const data = {
+    article: {
+      heading: 'Just in:',
+      title: 'The heading',
+      abstract: 'So it begins ...'
+    }
+  }
+  const expected = {
+    content: {
+      heading: 'The heading',
+      abstract: 'So it begins ...',
+      title: 'The heading' // TODO: How to avoid this going backwards?
+    }
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should reverse map array of objects', t => {
   const def = {
     title: 'content.heading',

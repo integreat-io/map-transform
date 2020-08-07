@@ -12,7 +12,8 @@ import {
   root,
   plug,
   lookup,
-  ifelse
+  ifelse,
+  value
 } from '..'
 
 test('should map with object path', t => {
@@ -211,6 +212,33 @@ test('should map with lookup', t => {
   const expected = {
     title: 'The heading',
     authors: ['User 1', 'User 3']
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set all props from source object and override some', t => {
+  const def = {
+    article: {
+      '.': 'content',
+      title: 'content.heading',
+      heading: value('Just in:')
+    }
+  }
+  const data = {
+    content: {
+      heading: 'The heading',
+      abstract: 'So it begins ...'
+    }
+  }
+  const expected = {
+    article: {
+      heading: 'Just in:',
+      title: 'The heading',
+      abstract: 'So it begins ...'
+    }
   }
 
   const ret = mapTransform(def)(data)

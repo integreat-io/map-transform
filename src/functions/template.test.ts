@@ -55,6 +55,19 @@ test('should apply template from path', (t) => {
   t.is(ret, expected)
 })
 
+test('should return undefined when no template at path', (t) => {
+  const operands = { templatePath: 'captionTemplate' }
+  const data = {
+    description: 'Bergen by night',
+    artist: 'John F.',
+  }
+  const expected = undefined
+
+  const ret = template(operands)(data, context)
+
+  t.is(ret, expected)
+})
+
 test('should apply template to array', (t) => {
   const operands = { template: '{{description}}. By {{artist}}' }
   const data = [

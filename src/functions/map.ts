@@ -62,8 +62,8 @@ export default function map(
     return () => undefined
   }
   return (data, context) => {
-    const { rev = false } = context
+    const { rev } = context
     const match = translate(data, dictionary, rev)
-    return match === undefined ? undefined : match === '*' ? data : match
+    return match === '*' ? data : match
   }
 }

@@ -9,18 +9,18 @@ interface Operands {
 }
 
 const extractOperands = (operands: Operands | string) =>
-  typeof operands === 'string'
-    ? { template: operands }
-    : typeof operands === 'object' && operands !== null
-    ? operands
-    : {}
+  typeof operands === 'string' ? { template: operands } : operands
 
 export default function template(operands: Operands | string): DataMapper {
   const { template: templateStr, templatePath } = extractOperands(operands)
+
   if (typeof templateStr === 'string') {
+    // We already got a template -- return a generator
     const generate = Handlebars.compile(templateStr)
     return (data) => mapAny((data: Data) => generate(data), data)
   } else if (typeof templatePath === 'string') {
+    // The template will be provided in the data -- return a function that will
+    // both create the generator and run it
     const getFn = getter(templatePath)
     return (data) => {
       const templateStr = getFn(data)

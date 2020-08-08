@@ -73,10 +73,6 @@ const objectToMapFunction = (
     path
   )
 
-const guardDirection = (fn: Operation, rev: boolean) => (options: Options) => (
-  state: State
-) => ((rev ? state.rev : !state.rev) ? fn(options)(state) : state)
-
 export default function mutate(def: MapObject): Operation {
   if (Object.keys(def).length === 0) {
     return (_options) => (state) => setStateValue(state, undefined)
@@ -86,9 +82,11 @@ export default function mutate(def: MapObject): Operation {
 
   switch (def.$direction) {
     case 'fwd':
-      return guardDirection(runMutation, false)
+      return (options: Options) => (state: State) =>
+        !state.rev ? runMutation(options)(state) : state
     case 'rev':
-      return guardDirection(runMutation, true)
+      return (options: Options) => (state: State) =>
+        state.rev ? runMutation(options)(state) : state
     default:
       return runMutation
   }

@@ -29,8 +29,7 @@
     "url": "git+https://github.com/integreat-io/map-transform.git"
   },
   "engines": {
-    "node": ">= 10.0",
-    "npm": ">= 5.4"
+    "node": ">= 10.0"
   },
   "bugs": {
     "url": "https://github.com/integreat-io/map-transform/issues"
@@ -55,6 +54,7 @@
     "deep-freeze": "0.0.1",
     "eslint": "^7.6.0",
     "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-ava": "^10.5.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-security": "^1.4.0",
@@ -62,7 +62,6 @@
     "prettier": "^2.0.5",
     "sinon": "^9.0.2",
     "ts-node": "^8.10.2",
-    "tsd": "^0.13.1",
     "typescript": "^3.9.7"
   }
 }

@@ -2,12 +2,18 @@ import test from 'ava'
 
 import validate from './validate'
 
+// Setup
+
+const context = { rev: false, onlyMappedValues: false }
+
+// Test
+
 test('should return true when value at path validates', (t) => {
   const schema = { type: 'string' }
   const path = 'item.value'
   const data = { item: { value: 'theValue' } }
 
-  const ret = validate(path, schema)(data)
+  const ret = validate(path, schema)(data, context)
 
   t.true(ret)
 })
@@ -17,7 +23,7 @@ test('should return false when value at path fails validation', (t) => {
   const path = 'item.value'
   const data = { item: { value: 3 } }
 
-  const ret = validate(path, schema)(data)
+  const ret = validate(path, schema)(data, context)
 
   t.false(ret)
 })
@@ -27,7 +33,7 @@ test('should validate entiry array', (t) => {
   const path = 'item.value'
   const data = { item: { value: ['firstValue', 'secondValue'] } }
 
-  const ret = validate(path, schema)(data)
+  const ret = validate(path, schema)(data, context)
 
   t.true(ret)
 })
@@ -37,7 +43,7 @@ test('should validate entiry array items according to json schema sec', (t) => {
   const path = 'item.value'
   const data = { item: { value: ['firstValue', 'secondValue'] } }
 
-  const ret = validate(path, schema)(data)
+  const ret = validate(path, schema)(data, context)
 
   t.true(ret)
 })
@@ -47,7 +53,7 @@ test('should return false when path does not exist on data', (t) => {
   const path = 'item.value'
   const data = {}
 
-  const ret = validate(path, schema)(data)
+  const ret = validate(path, schema)(data, context)
 
   t.false(ret)
 })
@@ -57,7 +63,7 @@ test('should return true for non-existing path when schema still validates', (t)
   const path = 'item.value'
   const data = {}
 
-  const ret = validate(path, schema)(data)
+  const ret = validate(path, schema)(data, context)
 
   t.true(ret)
 })

@@ -1,5 +1,5 @@
 import test from 'ava'
-import { State, ObjectWithProps } from '../types'
+import { State, DataObject } from '../types'
 import { get } from './getSet'
 
 import pipe from './pipe'
@@ -18,7 +18,7 @@ const options = {}
 
 const getNameFromContext = () => (state: State) => ({
   ...state,
-  value: (state.context as ObjectWithProps).name
+  value: (state.context as DataObject).name
 })
 
 // Tests

@@ -36,6 +36,7 @@ export {
   DataMapper,
   MapDefinition,
   MapObject,
+  MapPipe,
   MapTransform,
   Dictionary,
   Dictionaries

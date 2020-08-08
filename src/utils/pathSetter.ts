@@ -1,11 +1,11 @@
 import { mergeDeepWith, identity } from 'ramda'
 import { compose } from './functional'
-import { Data, Prop, Path } from '../types'
+import { Data, DataValue, Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
   isAfterOpenArray ? `]${part}` : part
 
-const pathSplitter = function*(path: Path) {
+const pathSplitter = function* (path: Path) {
   const regEx = /([^[\].]+|\[\w*])/g
   let match
   let isAfterOpenArray = false
@@ -37,8 +37,8 @@ const setOnArray = (prop: string) => (value: Data) => {
   return isNaN(index) ? setOnOpenArray(value) : setOnArrayIndex(index, value)
 }
 
-const setOnSubArray = (prop: string) => (value: Prop) =>
-  ([] as Prop[]).concat(value).map(setOnObject(prop.substr(1)))
+const setOnSubArray = (prop: string) => (value: DataValue) =>
+  ([] as DataValue[]).concat(value).map(setOnObject(prop.substr(1)))
 
 const setter = (prop: string) => {
   switch (prop[0]) {
@@ -51,7 +51,10 @@ const setter = (prop: string) => {
   }
 }
 
-export const mergeExisting = (left: unknown[], right: unknown) => {
+export function mergeExisting<T, U>(
+  left: T[],
+  right: U | U[]
+): U | (U | T | (U & T))[] {
   if (Array.isArray(right)) {
     return right.reduce((arr, value, index) => {
       // eslint-disable-next-line security/detect-object-injection

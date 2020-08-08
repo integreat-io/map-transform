@@ -1,14 +1,13 @@
 import test from 'ava'
-import { Operands, ObjectWithProps } from '../types'
+import { Operands, DataObject } from '../types'
 import { isObject } from '../utils/is'
 
 import { mapTransform, transform, rev, Data } from '..'
 
 // Setup
 
-const createTitle = (item: ObjectWithProps) =>
-  `${item.title} - by ${item.author}`
-const removeAuthor = (item: ObjectWithProps) =>
+const createTitle = (item: DataObject) => `${item.title} - by ${item.author}`
+const removeAuthor = (item: DataObject) =>
   typeof item.title === 'string' && item.title.endsWith(` - by ${item.author}`)
     ? item.title.substr(
         0,
@@ -30,7 +29,7 @@ const removeAuthorFromTitle = (item: Data) =>
 const setActive = (item: Data) =>
   isObject(item) ? { ...item, active: true } : item
 
-const prepareAuthorName = ({ author }: ObjectWithProps) =>
+const prepareAuthorName = ({ author }: DataObject) =>
   typeof author === 'string'
     ? `${author[0].toUpperCase()}${author.substr(1)}.`
     : ''

@@ -1,4 +1,4 @@
-import { Data, Operands, ValueFunction, Context } from '../types'
+import { Data, Operands, ValueFunction, DataMapper } from '../types'
 
 interface Options extends Operands {
   value?: Data | ValueFunction
@@ -7,22 +7,17 @@ interface Options extends Operands {
 const isOptions = (value: unknown): value is Options =>
   typeof value === 'object' && value !== null
 
-export const extractValue = (value: Options | Data | ValueFunction) => {
+export const extractValue = (value: Options | Data | ValueFunction): Data => {
   const val = isOptions(value) ? value.value : value
   return typeof val === 'function' ? val() : val
 }
 
-export function value(options: Options | Data | ValueFunction) {
+export function value(options: Options | Data | ValueFunction): DataMapper {
   const value = extractValue(options)
-  return (_data: Data, context?: Context) => {
-    const { onlyMappedValues = false } = context || {}
-    return onlyMappedValues ? undefined : value
-  }
+  return (_data, context) => (context.onlyMappedValues ? undefined : value)
 }
 
-export function fixed(options: Options | string) {
+export function fixed(options: Options | string): DataMapper {
   const value = extractValue(options)
-  return (_data: Data, _context?: Context) => {
-    return value
-  }
+  return (_data, _context) => value
 }

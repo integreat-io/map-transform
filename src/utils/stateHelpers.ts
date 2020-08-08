@@ -1,34 +1,35 @@
-import { State, Data, Options } from '../types'
+import { State, Data, Options, Context } from '../types'
 
 export const setStateValue = (state: State, value: Data): State => ({
   ...state,
-  value
+  value,
 })
 export const getStateValue = (state: State): Data => state.value
 
-export const setValueFromState = (state: State, { value }: State) => ({
+export const setValueFromState = (state: State, { value }: State): State => ({
   ...state,
-  value
+  value,
 })
 
 export const contextFromState = ({
   rev = false,
-  onlyMapped = false
-}: State) => ({
+  onlyMapped = false,
+}: State): Context => ({
   rev,
-  onlyMappedValues: onlyMapped
+  onlyMappedValues: onlyMapped,
 })
 
-export const populateState = ({ rev = false, onlyMapped = false }) => (
-  data: Data
-): State => ({
+export const populateState = ({
+  rev = false,
+  onlyMapped = false,
+}: Partial<State>) => (data: Data): State => ({
   root: data,
   context: data,
   value: data,
   rev,
-  onlyMapped
+  onlyMapped,
 })
 
 export const shouldSkipMutation = ({ mutateNull = true }: Options) => (
   state: State
-) => state.value === undefined || (!mutateNull && state.value === null)
+): boolean => state.value === undefined || (!mutateNull && state.value === null)

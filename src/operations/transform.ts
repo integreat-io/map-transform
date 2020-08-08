@@ -1,9 +1,9 @@
 import { identity } from 'ramda'
-import { State, Operation, DataMapper, Options } from '../types'
+import { State, Operation, DataMapper } from '../types'
 import {
   getStateValue,
   setStateValue,
-  contextFromState
+  contextFromState,
 } from '../utils/stateHelpers'
 
 const callTransformFn = (fn: DataMapper) => (state: State) =>
@@ -17,6 +17,6 @@ export default function transform(
   const revTransform =
     typeof revFn === 'function' ? callTransformFn(revFn) : fwdTransform
 
-  return (_options: Options) => state =>
+  return (_options) => (state) =>
     state.rev ? revTransform(state) : fwdTransform(state)
 }

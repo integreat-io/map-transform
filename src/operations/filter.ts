@@ -4,18 +4,18 @@ import {
   always,
   ifElse,
   filter as filterR,
-  identity
+  identity,
 } from 'ramda'
-import { Operation, DataMapper, Data, State, Options } from '../types'
+import { Operation, DataMapper, Data } from '../types'
 import { getStateValue, contextFromState } from '../utils/stateHelpers'
 
 export default function filter(fn: DataMapper): Operation {
-  return (_options: Options) => {
+  return (_options) => {
     if (typeof fn !== 'function') {
       return identity
     }
 
-    return (state: State) => {
+    return (state) => {
       const run = (data: Data) => !!fn(data, contextFromState(state))
 
       const runFilter = compose(
@@ -25,7 +25,7 @@ export default function filter(fn: DataMapper): Operation {
 
       return {
         ...state,
-        value: runFilter(state)
+        value: runFilter(state),
       }
     }
   }

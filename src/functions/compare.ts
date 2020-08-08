@@ -1,4 +1,4 @@
-import { Data, Prop, Operands, Path } from '../types'
+import { Data, DataValue, Operands, Path, DataMapper } from '../types'
 import getter from '../utils/pathGetter'
 
 interface Comparer {
@@ -12,7 +12,7 @@ interface NumericComparer {
 interface CompareOperands extends Operands {
   path?: Path
   operator?: string
-  match?: Prop
+  match?: DataValue
   matchPath?: Path
 }
 
@@ -70,14 +70,14 @@ export default function compare({
   path = '.',
   operator = '=',
   match,
-  matchPath
-}: CompareOperands) {
+  matchPath,
+}: CompareOperands): DataMapper {
   const getValue = getter(path)
   const getMatch = matchPath ? getter(matchPath) : () => match
 
   const comparer = createComparer(operator)
 
-  return (data: Data) => {
+  return (data) => {
     const value = getValue(data)
     const match = getMatch(data)
     return comparer(value, match)

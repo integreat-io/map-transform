@@ -1,5 +1,5 @@
 import test from 'ava'
-import { DataArray } from '../types'
+import { Data } from '../types'
 
 import explode from './explode'
 
@@ -25,7 +25,7 @@ test('should explode object to array of key value objects', t => {
 
 test('should explode empty object to empty array', t => {
   const data = {}
-  const expected: DataArray = []
+  const expected: Data[] = []
 
   const ret = explode()(data, context)
 

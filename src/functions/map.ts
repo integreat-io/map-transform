@@ -1,10 +1,10 @@
 import mapAny = require('map-any')
 import {
   Data,
-  Context,
   Dictionary,
   DictionaryValue,
-  Dictionaries
+  Dictionaries,
+  DataMapper,
 } from '../types'
 
 interface Operands {
@@ -22,7 +22,7 @@ function findFirstMatch(
   direction: 0 | 1
 ) {
   // eslint-disable-next-line security/detect-object-injection
-  const match = dictionary.find(dict => dict[direction] === value)
+  const match = dictionary.find((dict) => dict[direction] === value)
   return match ? match[1 - direction] : undefined
 }
 
@@ -53,7 +53,7 @@ function extractDictionary(
 export default function map(
   operands: Operands,
   options?: { dictionaries?: Dictionaries }
-) {
+): DataMapper {
   const dictionary = extractDictionary(
     operands.dictionary,
     options && options.dictionaries
@@ -61,8 +61,8 @@ export default function map(
   if (!dictionary) {
     return () => undefined
   }
-  return (data: Data, context?: Context) => {
-    const { rev = false } = context || {}
+  return (data, context) => {
+    const { rev = false } = context
     const match = translate(data, dictionary, rev)
     return match === undefined ? undefined : match === '*' ? data : match
   }

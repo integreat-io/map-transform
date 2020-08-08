@@ -1,4 +1,4 @@
-import { Data, DataArray, ObjectWithProps, Context } from '../types'
+import { Data, DataObject, Context } from '../types'
 import { isObject } from '../utils/is'
 
 export interface KeyValue {
@@ -6,10 +6,10 @@ export interface KeyValue {
   value: Data
 }
 
-const isExplodedArray = (data: DataArray) =>
+const isExplodedArray = (data: Data[]) =>
   data.every(item => isObject(item) && typeof item.key === 'number')
 
-const setValueOnKey = (target: DataArray | ObjectWithProps, keyValue: Data) => {
+const setValueOnKey = (target: Data[] | DataObject, keyValue: Data) => {
   if (isObject(keyValue)) {
     const { key, value } = keyValue
     if (Array.isArray(target)) {
@@ -25,14 +25,14 @@ function doImplode(data: Data) {
   if (Array.isArray(data)) {
     return data.reduce(
       setValueOnKey,
-      isExplodedArray(data) ? ([] as DataArray) : ({} as ObjectWithProps)
+      isExplodedArray(data) ? ([] as Data[]) : ({} as DataObject)
     )
   } else {
     return undefined
   }
 }
 
-function doExplode(data: Data): DataArray | undefined {
+function doExplode(data: Data): Data[] | undefined {
   if (isObject(data)) {
     return Object.entries(data).map(([key, value]: [string, Data]) => ({
       key,

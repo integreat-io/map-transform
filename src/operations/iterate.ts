@@ -1,6 +1,6 @@
 import { compose } from 'ramda'
 import mapAny = require('map-any')
-import { Operation, State, Data, MapDefinition, Options } from '../types'
+import { Operation, State, Data, MapDefinition } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
@@ -14,20 +14,20 @@ const iterateWithContext = (
 ) => ({
   ...state,
   context: indexOfIfArray(state.context, index),
-  value
+  value,
 })
 
 export default function iterate(def: MapDefinition): Operation {
-  return (options: Options) => {
+  return (options) => {
     if (!def || (typeof def === 'object' && Object.keys(def).length === 0)) {
-      return (state: State) => setStateValue(state, undefined)
+      return (state) => setStateValue(state, undefined)
     }
     const fn = compose(
       getStateValue,
       mapFunctionFromDef(def)(options),
       iterateWithContext
     )
-    return (state: State): State =>
+    return (state) =>
       setStateValue(
         state,
         mapAny((value, index) => fn(state, value, index), getStateValue(state))

@@ -2,8 +2,8 @@
 
 // Typing only supports functions with the same signature ... :(
 
-export const compose = <R>(...fns: Array<(a: R) => R>) =>
+export const compose = <R>(...fns: ((a: R) => R)[]): ((a: R) => R) =>
   fns.reduceRight((f, g) => (...args) => g(f(...args)))
 
-export const pipe = <R>(...fns: Array<(a: R) => R>) =>
+export const pipe = <R>(...fns: ((a: R) => R)[]): ((a: R) => R) =>
   fns.reduce((f, g) => (...args) => g(f(...args)))

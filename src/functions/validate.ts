@@ -1,12 +1,15 @@
 import Ajv = require('ajv')
-import { Path, Data } from '../types'
+import { Path, DataMapper } from '../types'
 import getter from '../utils/pathGetter'
 
 const ajv = new Ajv()
 
-export default function validate (path: Path, schema: object | boolean) {
+export default function validate(
+  path: Path,
+  schema: Record<string, unknown> | boolean
+): DataMapper {
   const getFn = getter(path)
   const validate = ajv.compile(schema)
 
-  return (data: Data) => validate(getFn(data)) as boolean
+  return (data) => validate(getFn(data)) as boolean
 }

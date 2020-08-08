@@ -10,17 +10,11 @@ import { divide } from './directionals'
 const isGet = (isGetOperation: boolean, isRev = false) =>
   isGetOperation ? !isRev : isRev
 
-const setWithOnlyMapped = (
-  state: State,
-  setFn: SetFunction
-): SetFunction => value =>
-  state.onlyMapped && typeof value === 'undefined' ? value : setFn(value)
+const setWithOnlyMapped = (state: State, setFn: SetFunction): SetFunction => (
+  value
+) => (state.onlyMapped && typeof value === 'undefined' ? value : setFn(value))
 
-const getValueFromState = (path: Path) =>
-  compose(
-    getter(path),
-    getStateValue
-  )
+const getValueFromState = (path: Path) => compose(getter(path), getStateValue)
 
 const setValueFromState = (path: Path) => (state: State) => {
   const setFn = setWithOnlyMapped(state, setter(path))
@@ -38,7 +32,7 @@ const getOrSet = (isGetOperation: boolean) => (path: Path): Operation => {
   const getFn = getValueFromState(path)
   const setFn = setValueFromState(path)
 
-  return () => (state: State): State =>
+  return () => (state) =>
     setStateValue(
       state,
       isGet(isGetOperation, state.rev) ? getFn(state) : setFn(state)

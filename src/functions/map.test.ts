@@ -5,7 +5,10 @@ import map from './map'
 
 // Setup
 
-const simple = [['1', 'stripe'], ['2', 'paypal']] as Dictionary
+const simple = [
+  ['1', 'stripe'],
+  ['2', 'paypal'],
+] as Dictionary
 
 const complex = [
   ['200', 'ok'],
@@ -13,17 +16,21 @@ const complex = [
   ['404', 'notfound'],
   ['404', 'noaction'],
   ['*', 'error'],
-  ['500', '*']
+  ['500', '*'],
 ] as Dictionary
 
-const selective = [['LOCAL', 'NOK'], ['*', 'UNKNOWN'], ['*', '*']] as Dictionary
+const selective = [
+  ['LOCAL', 'NOK'],
+  ['*', 'UNKNOWN'],
+  ['*', '*'],
+] as Dictionary
 
 const context = { rev: false, onlyMappedValues: false }
 const contextRev = { rev: true, onlyMappedValues: false }
 
 // Tests
 
-test('should map', t => {
+test('should map', (t) => {
   const mapping = map({ dictionary: simple })
 
   t.is(mapping('1', context), 'stripe')
@@ -31,7 +38,7 @@ test('should map', t => {
   t.is(mapping('0', context), undefined)
 })
 
-test('should map in reverse', t => {
+test('should map in reverse', (t) => {
   const mapping = map({ dictionary: simple })
 
   t.is(mapping('stripe', contextRev), '1')
@@ -39,17 +46,7 @@ test('should map in reverse', t => {
   t.is(mapping('shilling', contextRev), undefined)
 })
 
-test('should map array of values', t => {
-  const mapping = map({ dictionary: simple })
-  const values = ['1', '2', '0']
-  const expected = ['stripe', 'paypal', undefined]
-
-  const ret = mapping(values) // No context - to cover that branch
-
-  t.deepEqual(ret, expected)
-})
-
-test('should map with several alternatives and defaults', t => {
+test('should map with several alternatives and defaults', (t) => {
   const mapping = map({ dictionary: complex })
 
   t.is(mapping('200', context), 'ok')
@@ -59,7 +56,7 @@ test('should map with several alternatives and defaults', t => {
   t.is(mapping('507', context), 'error')
 })
 
-test('should map with several alternatives and defaults in reverse', t => {
+test('should map with several alternatives and defaults in reverse', (t) => {
   const mapping = map({ dictionary: complex })
 
   t.is(mapping('ok', contextRev), '200')
@@ -69,14 +66,14 @@ test('should map with several alternatives and defaults in reverse', t => {
   t.is(mapping('timeout', contextRev), '500')
 })
 
-test('should pick first star', t => {
+test('should pick first star', (t) => {
   const mapping = map({ dictionary: selective })
 
   t.is(mapping('LOCAL', context), 'NOK')
   t.is(mapping('EUR', context), 'UNKNOWN')
 })
 
-test('should map to source value for double star', t => {
+test('should map to source value for double star', (t) => {
   const mapping = map({ dictionary: selective })
 
   t.is(mapping('NOK', contextRev), 'LOCAL')
@@ -84,21 +81,21 @@ test('should map to source value for double star', t => {
   t.is(mapping('USD', contextRev), 'USD')
 })
 
-test('should map to undefined when no dictionary', t => {
+test('should map to undefined when no dictionary', (t) => {
   const mapping = map({})
 
   t.is(mapping('1', context), undefined)
   t.is(mapping('2', contextRev), undefined)
 })
 
-test('should map disallowed dictionary values using star', t => {
+test('should map disallowed dictionary values using star', (t) => {
   const mapping = map({ dictionary: complex })
 
   t.is(mapping({}, context), 'error')
   t.is(mapping(new Date(), context), 'error')
 })
 
-test('should map with named dictionary', t => {
+test('should map with named dictionary', (t) => {
   const options = { dictionaries: { simple } }
   const mapping = map({ dictionary: 'simple' }, options)
 

@@ -5,7 +5,7 @@ import {
   Options,
   MapDefinition,
   MapPipe,
-  Path
+  Path,
 } from '../types'
 import { setStateValue } from '../utils/stateHelpers'
 import merge from './merge'
@@ -20,12 +20,7 @@ const ensureArray = (value: unknown) => (Array.isArray(value) ? value : [value])
 const setIfPath = (map: unknown) => (typeof map === 'string' ? set(map) : map)
 
 const flipIfNeeded = (pipe: MapPipe, flip: boolean) => {
-  const pipeline = flip
-    ? pipe
-        .slice()
-        .reverse()
-        .map(setIfPath)
-    : pipe
+  const pipeline = flip ? pipe.slice().reverse().map(setIfPath) : pipe
   return pipeline
 }
 
@@ -69,7 +64,7 @@ const objectToMapFunction = (
         const pipeline = [
           flip ? realPath : null,
           ...createSubPipeline(def, flip, realPath),
-          flip ? null : set(realPath)
+          flip ? null : set(realPath),
         ] as MapPipe
         return revOnly ? divide(plug(), pipeline) : pipeline
       })
@@ -84,8 +79,7 @@ const guardDirection = (fn: Operation, rev: boolean) => (options: Options) => (
 
 export default function mutate(def: MapObject): Operation {
   if (Object.keys(def).length === 0) {
-    return (_options: Options) => (state: State) =>
-      setStateValue(state, undefined)
+    return (_options) => (state) => setStateValue(state, undefined)
   }
   const flip = def.$flip || false
   const runMutation = objectToMapFunction(def, flip)

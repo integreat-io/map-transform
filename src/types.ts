@@ -1,13 +1,10 @@
-export type Prop = string | number | boolean | null | undefined | Date
+export type DataValue = string | number | boolean | Date | null | undefined
 
-export type Data = Prop | ObjectWithProps | DataArray
-
-export interface ObjectWithProps {
+export interface DataObject {
   [key: string]: Data
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface DataArray extends Array<Data> {}
+export type Data = DataValue | DataObject | Data[]
 
 export type Path = string
 

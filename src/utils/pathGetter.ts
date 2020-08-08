@@ -1,5 +1,5 @@
 import R = require('ramda')
-import { Data, ObjectWithProps, Path } from '../types'
+import { Data, DataObject, Path } from '../types'
 import { isPath } from './definitionHelpers'
 
 const numberOrString = (val: string): string | number => {
@@ -13,14 +13,14 @@ const split = (str: Path): (string | number)[] =>
     .filter(str => str !== '')
     .map(numberOrString)
 
-const getProp = (prop: string) => (object?: ObjectWithProps) =>
+const getProp = (prop: string) => (object?: DataObject) =>
   object ? object[prop] : undefined // eslint-disable-line security/detect-object-injection
 
 const getArrayIndex = (index: number) => (arr?: Data) =>
   Array.isArray(arr) ? arr[index] : undefined // eslint-disable-line security/detect-object-injection
 
-const getObjectOrArray = (fn: (object?: ObjectWithProps) => Data) => (
-  object?: ObjectWithProps
+const getObjectOrArray = (fn: (object?: DataObject) => Data) => (
+  object?: DataObject
 ) => (Array.isArray(object) ? R.flatten(object.map(fn)) : fn(object))
 
 const getter = (prop: string | number) =>
@@ -55,12 +55,7 @@ export type GetFunction = (object?: Data | null) => Data
 export default function pathGetter(path: Path | null): GetFunction {
   if (isPath(path)) {
     const fn = getGetters(path)
-    return path.includes('[]')
-      ? R.compose(
-          ensureArray,
-          fn
-        )
-      : fn
+    return path.includes('[]') ? R.compose(ensureArray, fn) : fn
   }
   return R.identity
 }

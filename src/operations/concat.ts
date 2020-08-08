@@ -1,30 +1,23 @@
-import {
-  State,
-  Data,
-  DataArray,
-  Operation,
-  MapDefinition,
-  Options
-} from '../types'
+import { Data, Operation, MapDefinition } from '../types'
 import { setStateValue, getStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
-const merge = (left: DataArray, right: Data) =>
+const merge = (left: Data[], right: Data) =>
   Array.isArray(right) ? [...left, ...right] : [...left, right]
 
 export default function concat(...defs: MapDefinition[]): Operation {
-  return (options: Options) => {
-    const fns = defs.map(def => mapFunctionFromDef(def)(options))
+  return (options) => {
+    const fns = defs.map((def) => mapFunctionFromDef(def)(options))
 
-    return (state: State) =>
+    return (state) =>
       setStateValue(
         state,
         fns
           .reduce(
             (value, fn) => merge(value, getStateValue(fn(state))),
-            [] as DataArray
+            [] as Data[]
           )
-          .filter(val => typeof val !== 'undefined')
+          .filter((val) => typeof val !== 'undefined')
       )
   }
 }

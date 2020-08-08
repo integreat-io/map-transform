@@ -1,7 +1,7 @@
 import Handlebars = require('handlebars')
 import mapAny = require('map-any')
 import getter from '../utils/pathGetter'
-import { Data, Path } from '../types'
+import { Data, Path, DataMapper } from '../types'
 
 interface Operands {
   template?: string
@@ -15,14 +15,14 @@ const extractOperands = (operands: Operands | string) =>
     ? operands
     : {}
 
-export default function template(operands: Operands | string) {
+export default function template(operands: Operands | string): DataMapper {
   const { template: templateStr, templatePath } = extractOperands(operands)
   if (typeof templateStr === 'string') {
     const generate = Handlebars.compile(templateStr)
-    return (data: Data) => mapAny((data: Data) => generate(data), data)
+    return (data) => mapAny((data: Data) => generate(data), data)
   } else if (typeof templatePath === 'string') {
     const getFn = getter(templatePath)
-    return (data: Data) => {
+    return (data) => {
       const templateStr = getFn(data)
       if (typeof templateStr === 'string') {
         const generate = Handlebars.compile(templateStr)

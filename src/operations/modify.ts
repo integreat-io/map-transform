@@ -1,11 +1,11 @@
-import { Operation, State, MapDefinition, Options } from '../types'
+import { Operation, MapDefinition } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 import { isObject } from '../utils/is'
 
 export default function merge(def: MapDefinition): Operation {
   const runFn = mapFunctionFromDef(def)
-  return (options: Options) => (state: State): State => {
+  return (options) => (state) => {
     const nextState = runFn(options)(state)
 
     const prevValue = getStateValue(state)

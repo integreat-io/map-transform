@@ -1,6 +1,6 @@
-import { ObjectWithProps } from '../types'
+import { DataObject } from '../types'
 
-export const isObject = (obj: unknown): obj is ObjectWithProps =>
+export const isObject = (obj: unknown): obj is DataObject =>
   typeof obj === 'object' &&
   obj !== null &&
   !Array.isArray(obj) &&

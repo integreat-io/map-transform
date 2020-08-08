@@ -1,7 +1,7 @@
 import test from 'ava'
 import merge from '../operations/merge'
 import iterate from '../operations/iterate'
-import { ObjectWithProps } from '../types'
+import { DataObject } from '../types'
 
 import { mapTransform, value, set } from '..'
 
@@ -222,8 +222,8 @@ test('should map empty array as empty array', t => {
     $iterate: true,
     title: 'content.heading'
   }
-  const data: ObjectWithProps[] = []
-  const expected: ObjectWithProps[] = []
+  const data: DataObject[] = []
+  const expected: DataObject[] = []
 
   const ret = mapTransform(def)(data)
 
@@ -445,7 +445,7 @@ test('should set empty data array', t => {
       }
     }
   ]
-  const data: ObjectWithProps[] = []
+  const data: DataObject[] = []
   const expected = {
     items: []
   }

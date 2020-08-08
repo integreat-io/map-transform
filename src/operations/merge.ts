@@ -1,9 +1,9 @@
 import mergeDeep = require('lodash.merge')
-import { Operation, State, MapDefinition, Options } from '../types'
+import { Operation, State, MapDefinition } from '../types'
 import {
   getStateValue,
   setStateValue,
-  shouldSkipMutation
+  shouldSkipMutation,
 } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
@@ -14,16 +14,16 @@ const mergeStates = (state: State, thisState: State) =>
   )
 
 export default function merge(...defs: MapDefinition[]): Operation {
-  return (options: Options) => {
+  return (options) => {
     const skipMutation = shouldSkipMutation(options)
     if (defs.length === 0) {
-      return (state: State) => setStateValue(state, undefined)
+      return (state) => setStateValue(state, undefined)
     }
-    const pipelines = defs.map(def => mapFunctionFromDef(def)(options))
+    const pipelines = defs.map((def) => mapFunctionFromDef(def)(options))
 
-    return (state: State): State =>
+    return (state) =>
       skipMutation(state)
         ? setStateValue(state, undefined)
-        : pipelines.map(pipeline => pipeline(state)).reduce(mergeStates)
+        : pipelines.map((pipeline) => pipeline(state)).reduce(mergeStates)
   }
 }

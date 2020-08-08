@@ -1,6 +1,6 @@
 import { compose } from 'ramda'
 import mapAny = require('map-any')
-import { Operation, State, Data, MapDefinition } from '../types'
+import { Operation, State, MapDefinition } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
@@ -9,7 +9,7 @@ const indexOfIfArray = (arr: unknown, index?: number) =>
 
 const iterateWithContext = (
   state: State,
-  value: Data,
+  value: unknown,
   index: number | undefined
 ) => ({
   ...state,

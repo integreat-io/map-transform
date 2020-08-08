@@ -1,23 +1,24 @@
-import { Data, Operands, ValueFunction, DataMapper } from '../types'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Operands, DataMapper } from '../types'
 
 interface Options extends Operands {
-  value?: Data | ValueFunction
+  value?: unknown
 }
 
 const isOptions = (value: unknown): value is Options =>
   typeof value === 'object' && value !== null
 
-export const extractValue = (value: Options | Data | ValueFunction): Data => {
+export const extractValue = (value: unknown): any => {
   const val = isOptions(value) ? value.value : value
   return typeof val === 'function' ? val() : val
 }
 
-export function value(options: Options | Data | ValueFunction): DataMapper {
-  const value = extractValue(options)
+export function value(operands: unknown): DataMapper {
+  const value = extractValue(operands)
   return (_data, context) => (context.onlyMappedValues ? undefined : value)
 }
 
-export function fixed(options: Options | string): DataMapper {
-  const value = extractValue(options)
+export function fixed(operands: unknown): DataMapper {
+  const value = extractValue(operands)
   return (_data, _context) => value
 }

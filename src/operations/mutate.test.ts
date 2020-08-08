@@ -2,7 +2,6 @@ import test from 'ava'
 import value from './value'
 import { get } from './getSet'
 import transform from './transform'
-import { DataObject, Data } from '../types'
 
 import mutate from './mutate'
 
@@ -25,7 +24,7 @@ const stateWithArray = {
   value: data,
 }
 
-const threeLetters = (value: Data) =>
+const threeLetters = (value: unknown) =>
   typeof value === 'string' ? value.substr(0, 3) : value
 
 const options = {}
@@ -106,12 +105,13 @@ test('should mutate object with props in the given order', (t) => {
   const expectedPropsAttrs = ['title', 'text', 'age']
   const expectedPropsRels = ['author']
 
-  const ret = mutate(def)(options)(stateWithObject)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ret = mutate(def)(options)(stateWithObject) as any
 
-  const item = (ret.value as DataObject).item as DataObject
+  const item = ret.value.item
   t.deepEqual(Object.keys(item), expectedPropsItem)
-  t.deepEqual(Object.keys(item.attributes as DataObject), expectedPropsAttrs)
-  t.deepEqual(Object.keys(item.relationships as DataObject), expectedPropsRels)
+  t.deepEqual(Object.keys(item.attributes), expectedPropsAttrs)
+  t.deepEqual(Object.keys(item.relationships), expectedPropsRels)
 })
 
 test('should iterate when $iterate is true', (t) => {

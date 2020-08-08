@@ -1,8 +1,8 @@
-import { Data, Operation, MapDefinition } from '../types'
+import { Operation, MapDefinition } from '../types'
 import { setStateValue, getStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
-const merge = (left: Data[], right: Data) =>
+const merge = <T, U>(left: T[], right: U | U[]) =>
   Array.isArray(right) ? [...left, ...right] : [...left, right]
 
 export default function concat(...defs: MapDefinition[]): Operation {
@@ -15,7 +15,7 @@ export default function concat(...defs: MapDefinition[]): Operation {
         fns
           .reduce(
             (value, fn) => merge(value, getStateValue(fn(state))),
-            [] as Data[]
+            [] as unknown[]
           )
           .filter((val) => typeof val !== 'undefined')
       )

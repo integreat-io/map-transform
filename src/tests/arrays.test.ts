@@ -1,25 +1,24 @@
 import test from 'ava'
 import merge from '../operations/merge'
 import iterate from '../operations/iterate'
-import { DataObject } from '../types'
 
 import { mapTransform, value, set } from '..'
 
-test('should map specified array over transform object', t => {
+test('should map specified array over transform object', (t) => {
   const def = [
     'content.articles[]',
     {
       $iterate: true,
-      title: 'content.heading'
-    }
+      title: 'content.heading',
+    },
   ]
   const data = {
     content: {
       articles: [
         { content: { heading: 'Heading 1' } },
-        { content: { heading: 'Heading 2' } }
-      ]
-    }
+        { content: { heading: 'Heading 2' } },
+      ],
+    },
   }
   const expected = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
 
@@ -28,22 +27,22 @@ test('should map specified array over transform object', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map specified array over transform object in reverse', t => {
+test('should map specified array over transform object in reverse', (t) => {
   const def = [
     'content.articles[]',
     {
       $iterate: true,
-      title: 'content.heading'
-    }
+      title: 'content.heading',
+    },
   ]
   const data = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
   const expected = {
     content: {
       articles: [
         { content: { heading: 'Heading 1' } },
-        { content: { heading: 'Heading 2' } }
-      ]
-    }
+        { content: { heading: 'Heading 2' } },
+      ],
+    },
   }
 
   const ret = mapTransform(def).rev(data)
@@ -51,21 +50,21 @@ test('should map specified array over transform object in reverse', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should iterate with iterate operation', t => {
+test('should iterate with iterate operation', (t) => {
   const def = [
     'content.articles',
     {
       $iterate: true,
-      title: 'content.heading'
-    }
+      title: 'content.heading',
+    },
   ]
   const data = {
     content: {
       articles: [
         { content: { heading: 'Heading 1' } },
-        { content: { heading: 'Heading 2' } }
-      ]
-    }
+        { content: { heading: 'Heading 2' } },
+      ],
+    },
   }
   const expected = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
 
@@ -74,22 +73,22 @@ test('should iterate with iterate operation', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map array in transform object', t => {
+test('should map array in transform object', (t) => {
   const def = [
     {
       'entries[]': {
-        title: 'content.heading'
+        title: 'content.heading',
       },
-      'authors[]': ['content.author']
-    }
+      'authors[]': ['content.author'],
+    },
   ]
   const data = [
     { content: { heading: 'Heading 1', author: 'johnf' } },
-    { content: { heading: 'Heading 2', author: 'lucyk' } }
+    { content: { heading: 'Heading 2', author: 'lucyk' } },
   ]
   const expected = {
     entries: [{ title: 'Heading 1' }, { title: 'Heading 2' }],
-    authors: ['johnf', 'lucyk']
+    authors: ['johnf', 'lucyk'],
   }
 
   const ret = mapTransform(def)(data)
@@ -97,46 +96,46 @@ test('should map array in transform object', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map several layers of arrays', t => {
+test('should map several layers of arrays', (t) => {
   const def = [
     'content.articles[]',
     {
       $iterate: true,
       attributes: {
-        title: 'content.heading'
+        title: 'content.heading',
       },
       relationships: {
         'topics[].id': 'meta.keywords',
-        'author.id': 'meta.user_id'
-      }
-    }
+        'author.id': 'meta.user_id',
+      },
+    },
   ]
   const data = {
     content: {
       articles: [
         {
           content: { heading: 'Heading 1' },
-          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' }
+          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
         },
         {
           content: { heading: 'Heading 2' },
-          meta: { keywords: ['tech'], ['user_id']: 'maryk' }
-        }
-      ]
-    }
+          meta: { keywords: ['tech'], ['user_id']: 'maryk' },
+        },
+      ],
+    },
   }
   const expected = [
     {
       attributes: { title: 'Heading 1' },
       relationships: {
         topics: [{ id: 'news' }, { id: 'latest' }],
-        author: { id: 'johnf' }
-      }
+        author: { id: 'johnf' },
+      },
     },
     {
       attributes: { title: 'Heading 2' },
-      relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } }
-    }
+      relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } },
+    },
   ]
 
   const ret = mapTransform(def)(data)
@@ -144,7 +143,7 @@ test('should map several layers of arrays', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map several layers of arrays - seperate pipelines', t => {
+test('should map several layers of arrays - seperate pipelines', (t) => {
   const def = [
     'content.articles[]',
     iterate(
@@ -153,34 +152,34 @@ test('should map several layers of arrays - seperate pipelines', t => {
         ['meta.keywords', set('relationships.topics[].id')],
         ['meta.user_id', set('relationships.author.id')]
       )
-    )
+    ),
   ]
   const data = {
     content: {
       articles: [
         {
           content: { heading: 'Heading 1' },
-          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' }
+          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
         },
         {
           content: { heading: 'Heading 2' },
-          meta: { keywords: ['tech'], ['user_id']: 'maryk' }
-        }
-      ]
-    }
+          meta: { keywords: ['tech'], ['user_id']: 'maryk' },
+        },
+      ],
+    },
   }
   const expected = [
     {
       attributes: { title: 'Heading 1' },
       relationships: {
         topics: [{ id: 'news' }, { id: 'latest' }],
-        author: { id: 'johnf' }
-      }
+        author: { id: 'johnf' },
+      },
     },
     {
       attributes: { title: 'Heading 2' },
-      relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } }
-    }
+      relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } },
+    },
   ]
 
   const ret = mapTransform(def)(data)
@@ -188,28 +187,28 @@ test('should map several layers of arrays - seperate pipelines', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should flatten arrays', t => {
+test('should flatten arrays', (t) => {
   const def = [
     'content.articles[].content[]',
     {
       $iterate: true,
       attributes: {
-        title: 'heading'
-      }
-    }
+        title: 'heading',
+      },
+    },
   ]
   const data = {
     content: {
       articles: [
         {
-          content: [{ heading: 'Heading 1' }, { heading: 'Heading 2' }]
-        }
-      ]
-    }
+          content: [{ heading: 'Heading 1' }, { heading: 'Heading 2' }],
+        },
+      ],
+    },
   }
   const expected = [
     { attributes: { title: 'Heading 1' } },
-    { attributes: { title: 'Heading 2' } }
+    { attributes: { title: 'Heading 2' } },
   ]
 
   const ret = mapTransform(def)(data)
@@ -217,40 +216,40 @@ test('should flatten arrays', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map empty array as empty array', t => {
+test('should map empty array as empty array', (t) => {
   const def = {
     $iterate: true,
-    title: 'content.heading'
+    title: 'content.heading',
   }
-  const data: DataObject[] = []
-  const expected: DataObject[] = []
+  const data: unknown[] = []
+  const expected: unknown[] = []
 
   const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map with object array path', t => {
+test('should map with object array path', (t) => {
   const def = [
     'content.articles[]',
     {
       $iterate: true,
-      title: 'content.heading'
-    }
+      title: 'content.heading',
+    },
   ]
   const data = {
     content: {
       articles: [
         { content: { heading: 'Heading 1' } },
         { content: { heading: 'Heading 2' } },
-        { content: { heading: 'Heading 3' } }
-      ]
-    }
+        { content: { heading: 'Heading 3' } },
+      ],
+    },
   }
   const expected = [
     { title: 'Heading 1' },
     { title: 'Heading 2' },
-    { title: 'Heading 3' }
+    { title: 'Heading 3' },
   ]
 
   const ret = mapTransform(def)(data)
@@ -258,17 +257,17 @@ test('should map with object array path', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should handle array paths in object mappings', t => {
+test('should handle array paths in object mappings', (t) => {
   const def = {
     id: 'key',
     relationships: {
-      'sections[]': 'sections'
-    }
+      'sections[]': 'sections',
+    },
   }
   const data = [{ key: 'ent1', sections: ['news', 'sports'] }, { key: 'ent2' }]
   const expected = [
     { id: 'ent1', relationships: { sections: ['news', 'sports'] } },
-    { id: 'ent2', relationships: { sections: [] } }
+    { id: 'ent2', relationships: { sections: [] } },
   ]
 
   const ret = mapTransform(def)(data)
@@ -276,20 +275,20 @@ test('should handle array paths in object mappings', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with array index path', t => {
+test('should map with array index path', (t) => {
   const def = [
     'content.articles[1]',
     {
-      title: 'content.heading'
-    }
+      title: 'content.heading',
+    },
   ]
   const data = {
     content: {
       articles: [
         { content: { heading: 'Heading 1' } },
-        { content: { heading: 'Heading 2' } }
-      ]
-    }
+        { content: { heading: 'Heading 2' } },
+      ],
+    },
   }
   const expected = { title: 'Heading 2' }
 
@@ -298,15 +297,15 @@ test('should map with array index path', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with array index in middle of path', t => {
+test('should map with array index in middle of path', (t) => {
   const def = ['content.articles[0].content.heading']
   const data = {
     content: {
       articles: [
         { content: { heading: 'Heading 1' } },
-        { content: { heading: 'Heading 2' } }
-      ]
-    }
+        { content: { heading: 'Heading 2' } },
+      ],
+    },
   }
   const expected = 'Heading 1'
 
@@ -315,24 +314,24 @@ test('should map with array index in middle of path', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should set several props in array', t => {
+test('should set several props in array', (t) => {
   const def = {
     'props[0].key': value('prop1'),
     'props[0].value': 'content.prop1',
     'props[1].key': value('prop2'),
-    'props[1].value': 'content.prop2'
+    'props[1].value': 'content.prop2',
   }
   const data = {
     content: {
       prop1: 'Value 1',
-      prop2: 'Value 2'
-    }
+      prop2: 'Value 2',
+    },
   }
   const expected = {
     props: [
       { key: 'prop1', value: 'Value 1' },
-      { key: 'prop2', value: 'Value 2' }
-    ]
+      { key: 'prop2', value: 'Value 2' },
+    ],
   }
 
   const ret = mapTransform(def)(data)
@@ -340,28 +339,28 @@ test('should set several props in array', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should set several props in array with depth', t => {
+test('should set several props in array with depth', (t) => {
   const def = {
     'items[0].props[0].key': value('prop1'),
     'items[0].props[0].value': 'content.prop1',
     'items[0].props[1].key': value('prop2'),
-    'items[0].props[1].value': 'content.prop2'
+    'items[0].props[1].value': 'content.prop2',
   }
   const data = {
     content: {
       prop1: 'Value 1',
-      prop2: 'Value 2'
-    }
+      prop2: 'Value 2',
+    },
   }
   const expected = {
     items: [
       {
         props: [
           { key: 'prop1', value: 'Value 1' },
-          { key: 'prop2', value: 'Value 2' }
-        ]
-      }
-    ]
+          { key: 'prop2', value: 'Value 2' },
+        ],
+      },
+    ],
   }
 
   const ret = mapTransform(def)(data)
@@ -369,16 +368,16 @@ test('should set several props in array with depth', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined from non-matching path with array index in middle', t => {
+test('should return undefined from non-matching path with array index in middle', (t) => {
   const def = ['content.articles[0].content.heading']
   const data = {
     content: {
       articles: {
         content: {
-          heading: 'Heading 1'
-        }
-      }
-    }
+          heading: 'Heading 1',
+        },
+      },
+    },
   }
   const expected = undefined
 
@@ -387,17 +386,17 @@ test('should return undefined from non-matching path with array index in middle'
   t.deepEqual(ret, expected)
 })
 
-test('should map with root array path', t => {
+test('should map with root array path', (t) => {
   const def = [
     '[]',
     {
       $iterate: true,
-      title: 'content.heading'
-    }
+      title: 'content.heading',
+    },
   ]
   const data = [
     { content: { heading: 'Heading 1' } },
-    { content: { heading: 'Heading 2' } }
+    { content: { heading: 'Heading 2' } },
   ]
   const expected = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
 
@@ -406,30 +405,30 @@ test('should map with root array path', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map array of objects', t => {
+test('should map array of objects', (t) => {
   const def = {
     content: {
-      heading: 'title'
+      heading: 'title',
     },
     meta: {
       writer: {
-        username: 'author'
-      }
-    }
+        username: 'author',
+      },
+    },
   }
   const data = [
     { title: 'The heading', author: 'johnf' },
-    { title: 'Second heading', author: 'maryk' }
+    { title: 'Second heading', author: 'maryk' },
   ]
   const expected = [
     {
       content: { heading: 'The heading' },
-      meta: { writer: { username: 'johnf' } }
+      meta: { writer: { username: 'johnf' } },
     },
     {
       content: { heading: 'Second heading' },
-      meta: { writer: { username: 'maryk' } }
-    }
+      meta: { writer: { username: 'maryk' } },
+    },
   ]
 
   const ret = mapTransform(def)(data)
@@ -437,17 +436,17 @@ test('should map array of objects', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should set empty data array', t => {
+test('should set empty data array', (t) => {
   const def = [
     {
       'items[]': {
-        title: 'heading'
-      }
-    }
+        title: 'heading',
+      },
+    },
   ]
-  const data: DataObject[] = []
+  const data: unknown[] = []
   const expected = {
-    items: []
+    items: [],
   }
 
   const ret = mapTransform(def)(data)
@@ -455,23 +454,23 @@ test('should set empty data array', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should not hijack array', t => {
+test('should not hijack array', (t) => {
   const def = {
     content: { title: 'heading' },
     meta: {
-      'sections[].id': 'tags'
-    }
+      'sections[].id': 'tags',
+    },
   }
   const data = [
     { heading: 'Entry 1', tags: ['news', 'top_ten'] },
-    { heading: 'Entry 2', tags: ['news'] }
+    { heading: 'Entry 2', tags: ['news'] },
   ]
   const expected = [
     {
       content: { title: 'Entry 1' },
-      meta: { sections: [{ id: 'news' }, { id: 'top_ten' }] }
+      meta: { sections: [{ id: 'news' }, { id: 'top_ten' }] },
     },
-    { content: { title: 'Entry 2' }, meta: { sections: [{ id: 'news' }] } }
+    { content: { title: 'Entry 2' }, meta: { sections: [{ id: 'news' }] } },
   ]
 
   const ret = mapTransform(def)(data)

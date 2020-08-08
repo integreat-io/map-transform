@@ -1,7 +1,7 @@
 import Handlebars = require('handlebars')
 import mapAny = require('map-any')
 import getter from '../utils/pathGetter'
-import { Data, Path, DataMapper } from '../types'
+import { Path, DataMapper } from '../types'
 
 interface Operands {
   template?: string
@@ -17,7 +17,7 @@ export default function template(operands: Operands | string): DataMapper {
   if (typeof templateStr === 'string') {
     // We already got a template -- return a generator
     const generate = Handlebars.compile(templateStr)
-    return (data) => mapAny((data: Data) => generate(data), data)
+    return (data) => mapAny((data: unknown) => generate(data), data)
   } else if (typeof templatePath === 'string') {
     // The template will be provided in the data -- return a function that will
     // both create the generator and run it
@@ -26,7 +26,7 @@ export default function template(operands: Operands | string): DataMapper {
       const templateStr = getFn(data)
       if (typeof templateStr === 'string') {
         const generate = Handlebars.compile(templateStr)
-        return mapAny((data: Data) => generate(data), data)
+        return mapAny((data: unknown) => generate(data), data)
       }
       return undefined
     }

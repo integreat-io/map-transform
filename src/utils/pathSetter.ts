@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { mergeDeepWith, identity } from 'ramda'
 import { compose } from './functional'
-import { Data, DataValue, Path } from '../types'
+import { Path } from '../types'
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
   isAfterOpenArray ? `]${part}` : part
@@ -20,25 +21,27 @@ const pathSplitter = function* (path: Path) {
 
 const split = (path: Path): string[] => [...pathSplitter(path)]
 
-const setOnObject = (prop: string) => (value: Data): Data => ({ [prop]: value })
+const setOnObject = (prop: string) => (value: unknown): any => ({
+  [prop]: value,
+})
 
-const setOnOpenArray = (value: Data) =>
+const setOnOpenArray = (value: unknown) =>
   Array.isArray(value) ? value : typeof value === 'undefined' ? [] : [value]
 
-const setOnArrayIndex = (index: number, value: Data) => {
-  const arr: Data[] = []
+const setOnArrayIndex = (index: number, value: unknown) => {
+  const arr: unknown[] = []
   // eslint-disable-next-line security/detect-object-injection
   arr[index] = value
   return arr
 }
 
-const setOnArray = (prop: string) => (value: Data) => {
+const setOnArray = (prop: string) => (value: unknown) => {
   const index = parseInt(prop.substr(1), 10)
   return isNaN(index) ? setOnOpenArray(value) : setOnArrayIndex(index, value)
 }
 
-const setOnSubArray = (prop: string) => (value: DataValue) =>
-  ([] as DataValue[]).concat(value).map(setOnObject(prop.substr(1)))
+const setOnSubArray = (prop: string) => (value: unknown) =>
+  ([] as unknown[]).concat(value).map(setOnObject(prop.substr(1)))
 
 const setter = (prop: string) => {
   switch (prop[0]) {
@@ -65,7 +68,7 @@ export function mergeExisting<T, U>(
   return right
 }
 
-export type SetFunction = (value: Data, object?: Data | null) => Data
+export type SetFunction = (value: unknown, object?: unknown) => any
 
 /**
  * Set `value` at `path` in `object`. Note that a new object is returned, and
@@ -86,7 +89,7 @@ export default function pathSetter(path: Path): SetFunction {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setterFn = compose(...(setters as any))
-  return (value, object: Data = null) => {
+  return (value, object: unknown = null) => {
     const data = setterFn(value)
     return object ? mergeDeepWith(mergeExisting, object, data) : data
   }

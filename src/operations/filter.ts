@@ -6,7 +6,7 @@ import {
   filter as filterR,
   identity,
 } from 'ramda'
-import { Operation, DataMapper, Data } from '../types'
+import { Operation, DataMapper } from '../types'
 import { getStateValue, contextFromState } from '../utils/stateHelpers'
 
 export default function filter(fn: DataMapper): Operation {
@@ -16,7 +16,7 @@ export default function filter(fn: DataMapper): Operation {
     }
 
     return (state) => {
-      const run = (data: Data) => !!fn(data, contextFromState(state))
+      const run = (data: unknown) => !!fn(data, contextFromState(state))
 
       const runFilter = compose(
         ifElse(Array.isArray, filterR(run), unless(run, always(undefined))),

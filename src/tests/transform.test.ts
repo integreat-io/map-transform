@@ -1,13 +1,14 @@
 import test from 'ava'
-import { Operands, DataObject } from '../types'
+import { Operands } from '../types'
 import { isObject } from '../utils/is'
 
-import { mapTransform, transform, rev, Data } from '..'
+import { mapTransform, transform, rev } from '..'
 
 // Setup
 
-const createTitle = (item: DataObject) => `${item.title} - by ${item.author}`
-const removeAuthor = (item: DataObject) =>
+const createTitle = (item: Record<string, unknown>) =>
+  `${item.title} - by ${item.author}`
+const removeAuthor = (item: Record<string, unknown>) =>
   typeof item.title === 'string' && item.title.endsWith(` - by ${item.author}`)
     ? item.title.substr(
         0,
@@ -17,123 +18,101 @@ const removeAuthor = (item: DataObject) =>
       )
     : item.title
 
-const appendToTitle = ({ text }: Operands) => (item: Data) =>
+const appendToTitle = ({ text }: Operands) => (item: unknown) =>
   isObject(item) ? { ...item, title: `${item.title}${text}` } : item
 
-const appendAuthorToTitle = (item: Data) =>
+const appendAuthorToTitle = (item: unknown) =>
   isObject(item) ? { ...item, title: createTitle(item) } : item
 
-const removeAuthorFromTitle = (item: Data) =>
+const removeAuthorFromTitle = (item: unknown) =>
   isObject(item) ? { ...item, title: removeAuthor(item) } : item
 
-const setActive = (item: Data) =>
+const setActive = (item: unknown) =>
   isObject(item) ? { ...item, active: true } : item
 
-const prepareAuthorName = ({ author }: DataObject) =>
+const prepareAuthorName = ({ author }: Record<string, unknown>) =>
   typeof author === 'string'
     ? `${author[0].toUpperCase()}${author.substr(1)}.`
     : ''
 
-const setAuthorName = (item: Data) =>
+const setAuthorName = (item: unknown) =>
   isObject(item) ? { ...item, authorName: prepareAuthorName(item) } : item
 
-const appendEllipsis = (str: Data) =>
+const appendEllipsis = (str: unknown) =>
   typeof str === 'string' ? str + ' ...' : str
 
-const getLength = () => (str: Data) =>
+const getLength = () => (str: unknown) =>
   typeof str === 'string' ? str.length : -1
 
 const functions = {
   appendToTitle,
-  getLength
+  getLength,
 }
 
 // Tests
 
-test('should map simple object with one transform function', t => {
-  const def = [
-    {
-      title: 'content.heading',
-      author: 'meta.writer.username'
-    },
-    transform(appendAuthorToTitle)
-  ]
-  const data = {
-    content: { heading: 'The heading' },
-    meta: { writer: { username: 'johnf' } }
-  }
-  const expected = {
-    title: 'The heading - by johnf',
-    author: 'johnf'
-  }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should map simple object with several transform functions', t => {
-  const def = [
-    {
-      title: 'content.heading',
-      author: 'meta.writer.username'
-    },
-    transform(appendAuthorToTitle),
-    transform(setActive)
-  ]
-  const data = {
-    content: { heading: 'The heading' },
-    meta: { writer: { username: 'johnf' } }
-  }
-  const expected = {
-    title: 'The heading - by johnf',
-    author: 'johnf',
-    active: true
-  }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should reverse map simple object with rev transform', t => {
+test('should map simple object with one transform function', (t) => {
   const def = [
     {
       title: 'content.heading',
       author: 'meta.writer.username',
-      authorName: 'meta.writer.name'
     },
-    rev(transform(setAuthorName))
+    transform(appendAuthorToTitle),
   ]
   const data = {
-    title: 'The heading',
-    author: 'johnf'
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } },
   }
   const expected = {
-    content: { heading: 'The heading' },
-    meta: { writer: { username: 'johnf', name: 'Johnf.' } }
+    title: 'The heading - by johnf',
+    author: 'johnf',
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map simple object with dedicated rev transform', t => {
+test('should map simple object with several transform functions', (t) => {
   const def = [
     {
       title: 'content.heading',
-      author: 'meta.writer.username'
+      author: 'meta.writer.username',
     },
-    transform(appendAuthorToTitle, removeAuthorFromTitle)
+    transform(appendAuthorToTitle),
+    transform(setActive),
   ]
   const data = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } },
+  }
+  const expected = {
     title: 'The heading - by johnf',
-    author: 'johnf'
+    author: 'johnf',
+    active: true,
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should reverse map simple object with rev transform', (t) => {
+  const def = [
+    {
+      title: 'content.heading',
+      author: 'meta.writer.username',
+      authorName: 'meta.writer.name',
+    },
+    rev(transform(setAuthorName)),
+  ]
+  const data = {
+    title: 'The heading',
+    author: 'johnf',
   }
   const expected = {
     content: { heading: 'The heading' },
-    meta: { writer: { username: 'johnf' } }
+    meta: { writer: { username: 'johnf', name: 'Johnf.' } },
   }
 
   const ret = mapTransform(def).rev(data)
@@ -141,30 +120,52 @@ test('should reverse map simple object with dedicated rev transform', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should transform beofre data is set on outer path', t => {
+test('should reverse map simple object with dedicated rev transform', (t) => {
+  const def = [
+    {
+      title: 'content.heading',
+      author: 'meta.writer.username',
+    },
+    transform(appendAuthorToTitle, removeAuthorFromTitle),
+  ]
+  const data = {
+    title: 'The heading - by johnf',
+    author: 'johnf',
+  }
+  const expected = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } },
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should transform beofre data is set on outer path', (t) => {
   const def = {
     attributes: [
       'result.data',
       {
         title: 'content.heading',
-        author: 'meta.writer.username'
+        author: 'meta.writer.username',
       },
-      transform(appendAuthorToTitle)
-    ]
+      transform(appendAuthorToTitle),
+    ],
   }
   const data = {
     result: {
       data: {
         content: { heading: 'The heading' },
-        meta: { writer: { username: 'johnf' } }
-      }
-    }
+        meta: { writer: { username: 'johnf' } },
+      },
+    },
   }
   const expected = {
     attributes: {
       title: 'The heading - by johnf',
-      author: 'johnf'
-    }
+      author: 'johnf',
+    },
   }
 
   const ret = mapTransform(def)(data)
@@ -172,20 +173,20 @@ test('should transform beofre data is set on outer path', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should transform before mapping', t => {
+test('should transform before mapping', (t) => {
   const def = [
     transform(setActive),
     {
       title: 'content.heading',
-      enabled: 'active'
-    }
+      enabled: 'active',
+    },
   ]
   const data = {
-    content: { heading: 'The heading' }
+    content: { heading: 'The heading' },
   }
   const expected = {
     title: 'The heading',
-    enabled: true
+    enabled: true,
   }
 
   const ret = mapTransform(def)(data)
@@ -193,21 +194,21 @@ test('should transform before mapping', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform functions from left to right', t => {
+test('should apply transform functions from left to right', (t) => {
   const def = [
     {
       titleLength: [
         'content.heading',
         transform(appendEllipsis),
-        transform(getLength())
-      ]
-    }
+        transform(getLength()),
+      ],
+    },
   ]
   const data = {
-    content: { heading: 'The heading' }
+    content: { heading: 'The heading' },
   }
   const expected = {
-    titleLength: 15
+    titleLength: 15,
   }
 
   const ret = mapTransform(def)(data)
@@ -215,17 +216,17 @@ test('should apply transform functions from left to right', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object', t => {
+test('should apply transform from an operation object', (t) => {
   const def = [
     {
-      titleLength: ['content.heading', { $transform: 'getLength' }]
-    }
+      titleLength: ['content.heading', { $transform: 'getLength' }],
+    },
   ]
   const data = {
-    content: { heading: 'The heading' }
+    content: { heading: 'The heading' },
   }
   const expected = {
-    titleLength: 11
+    titleLength: 11,
   }
 
   const ret = mapTransform(def, { functions })(data)
@@ -233,20 +234,20 @@ test('should apply transform from an operation object', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should interate transform from an operation object', t => {
+test('should interate transform from an operation object', (t) => {
   const def = [
     {
       titleLengths: [
         'content[].heading',
-        { $transform: 'getLength', $iterate: true }
-      ]
-    }
+        { $transform: 'getLength', $iterate: true },
+      ],
+    },
   ]
   const data = {
-    content: [{ heading: 'The heading' }, { heading: 'The next heading' }]
+    content: [{ heading: 'The heading' }, { heading: 'The next heading' }],
   }
   const expected = {
-    titleLengths: [11, 16]
+    titleLengths: [11, 16],
   }
 
   const ret = mapTransform(def, { functions })(data)
@@ -254,18 +255,18 @@ test('should interate transform from an operation object', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object with arguments', t => {
+test('should apply transform from an operation object with arguments', (t) => {
   const def = [
     {
-      title: 'content.heading'
+      title: 'content.heading',
     },
-    { $transform: 'appendToTitle', text: ' - archived' }
+    { $transform: 'appendToTitle', text: ' - archived' },
   ]
   const data = {
-    content: { heading: 'The heading' }
+    content: { heading: 'The heading' },
   }
   const expected = {
-    title: 'The heading - archived'
+    title: 'The heading - archived',
   }
 
   const ret = mapTransform(def, { functions })(data)
@@ -273,21 +274,21 @@ test('should apply transform from an operation object with arguments', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip unknown customer function', t => {
+test('should skip unknown customer function', (t) => {
   const def = [
     {
       titleLength: [
         'content.heading',
         { $transform: 'getLength' },
-        { $transform: 'unknown' }
-      ]
-    }
+        { $transform: 'unknown' },
+      ],
+    },
   ]
   const data = {
-    content: { heading: 'The heading' }
+    content: { heading: 'The heading' },
   }
   const expected = {
-    titleLength: 11
+    titleLength: 11,
   }
 
   const ret = mapTransform(def, { functions })(data)
@@ -295,12 +296,12 @@ test('should skip unknown customer function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in join function', t => {
+test('should use built in join function', (t) => {
   const def = {
     title: [
       'content',
-      { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }
-    ]
+      { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' },
+    ],
   }
   const data = { content: { heading: 'The heading', meta: { user: 'johnf' } } }
   const expected = { title: 'The heading - johnf' }
@@ -310,9 +311,9 @@ test('should use built in join function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in get function', t => {
+test('should use built in get function', (t) => {
   const def = {
-    title: ['content', { $transform: 'get', path: 'heading' }]
+    title: ['content', { $transform: 'get', path: 'heading' }],
   }
   const data = { content: { heading: 'The heading', meta: { user: 'johnf' } } }
   const expected = { title: 'The heading' }
@@ -322,9 +323,9 @@ test('should use built in get function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function', t => {
+test('should use built in fixed function', (t) => {
   const def = {
-    title: ['content', { $transform: 'fixed', value: "I'm always here" }]
+    title: ['content', { $transform: 'fixed', value: "I'm always here" }],
   }
   const data = { content: { heading: 'The heading' } }
   const expected = { title: "I'm always here" }
@@ -334,12 +335,12 @@ test('should use built in fixed function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function with value function', t => {
+test('should use built in fixed function with value function', (t) => {
   const def = {
     title: [
       'content',
-      { $transform: 'fixed', value: () => "I'm from the function!" }
-    ]
+      { $transform: 'fixed', value: () => "I'm from the function!" },
+    ],
   }
   const data = { content: { heading: 'The heading' } }
   const expected = { title: "I'm from the function!" }
@@ -349,9 +350,9 @@ test('should use built in fixed function with value function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function in reverse', t => {
+test('should use built in fixed function in reverse', (t) => {
   const def = {
-    title: ['content', { $transform: 'fixed', value: "I'm always here" }]
+    title: ['content', { $transform: 'fixed', value: "I'm always here" }],
   }
   const data = { title: 'The heading' }
   const expected = { content: "I'm always here" }
@@ -361,7 +362,7 @@ test('should use built in fixed function in reverse', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in map function', t => {
+test('should use built in map function', (t) => {
   const def = {
     result: [
       'status',
@@ -370,10 +371,10 @@ test('should use built in map function', t => {
         dictionary: [
           [200, 'ok'],
           [404, 'notfound'],
-          ['*', 'error']
-        ]
-      }
-    ]
+          ['*', 'error'],
+        ],
+      },
+    ],
   }
   const data = { status: 404 }
   const expected = { result: 'notfound' }
@@ -383,22 +384,22 @@ test('should use built in map function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in map function with named dictionary', t => {
+test('should use built in map function with named dictionary', (t) => {
   const def = {
     result: [
       'status',
       {
         $transform: 'map',
-        dictionary: 'statusCodes'
-      }
-    ]
+        dictionary: 'statusCodes',
+      },
+    ],
   }
   const dictionaries = {
     statusCodes: [
       [200, 'ok'] as const,
       [404, 'notfound'] as const,
-      ['*', 'error'] as const
-    ]
+      ['*', 'error'] as const,
+    ],
   }
   const data = { status: 404 }
   const expected = { result: 'notfound' }
@@ -408,18 +409,18 @@ test('should use built in map function with named dictionary', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in template function', t => {
+test('should use built in template function', (t) => {
   const def = {
     caption: [
       'content',
       {
         $transform: 'template',
-        template: '{{description}}. By {{artist}}'
-      }
-    ]
+        template: '{{description}}. By {{artist}}',
+      },
+    ],
   }
   const data = {
-    content: { description: 'Bergen by night', artist: 'John F.' }
+    content: { description: 'Bergen by night', artist: 'John F.' },
   }
   const expected = { caption: 'Bergen by night. By John F.' }
 
@@ -428,18 +429,18 @@ test('should use built in template function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in template function with template path', t => {
+test('should use built in template function with template path', (t) => {
   const def = {
     caption: {
       $transform: 'template',
-      templatePath: 'options.captionTemplate'
-    }
+      templatePath: 'options.captionTemplate',
+    },
   }
   const data = {
     content: { description: 'Bergen by night', artist: 'John F.' },
     options: {
-      captionTemplate: '{{content.description}}. By {{content.artist}}'
-    }
+      captionTemplate: '{{content.description}}. By {{content.artist}}',
+    },
   }
   const expected = { caption: 'Bergen by night. By John F.' }
 
@@ -448,17 +449,17 @@ test('should use built in template function with template path', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in explode function', t => {
+test('should use built in explode function', (t) => {
   const def = {
     rate: [
       'currencies',
       { $transform: 'explode' },
       { $filter: 'compare', path: 'key', match: 'EUR' },
-      '[0]value'
-    ]
+      '[0]value',
+    ],
   }
   const data = {
-    currencies: { NOK: 1, USD: 0.125, EUR: 0.1 }
+    currencies: { NOK: 1, USD: 0.125, EUR: 0.1 },
   }
   const expected = { rate: 0.1 }
 
@@ -467,12 +468,12 @@ test('should use built in explode function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should only use transform going forward', t => {
+test('should only use transform going forward', (t) => {
   const def = {
     title: [
       'content',
-      { $transform: 'fixed', value: "I'm always here", $direction: 'fwd' }
-    ]
+      { $transform: 'fixed', value: "I'm always here", $direction: 'fwd' },
+    ],
   }
   const data = { content: { heading: 'The heading' } }
   const expectedFwd = { title: "I'm always here" }
@@ -485,12 +486,12 @@ test('should only use transform going forward', t => {
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should only use transform going in reverse', t => {
+test('should only use transform going in reverse', (t) => {
   const def = {
     title: [
       'content',
-      { $transform: 'fixed', value: "I'm always here", $direction: 'rev' }
-    ]
+      { $transform: 'fixed', value: "I'm always here", $direction: 'rev' },
+    ],
   }
   const data = { title: 'The heading' }
   const expectedFwd = { title: undefined }
@@ -503,26 +504,26 @@ test('should only use transform going in reverse', t => {
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should apply transform function to array', t => {
+test('should apply transform function to array', (t) => {
   const def = [
     'content',
     {
       $iterate: true,
       title: [
-        { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }
-      ]
-    }
+        { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' },
+      ],
+    },
   ]
   const data = {
     content: [
       { heading: 'The heading', meta: { user: 'johnf' } },
-      { heading: 'The other', meta: { user: 'maryk' } }
-    ]
+      { heading: 'The other', meta: { user: 'maryk' } },
+    ],
   }
 
   const expected = [
     { title: 'The heading - johnf' },
-    { title: 'The other - maryk' }
+    { title: 'The other - maryk' },
   ]
 
   const ret = mapTransform(def, { functions })(data)
@@ -530,16 +531,16 @@ test('should apply transform function to array', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when transform operation has unknown function', t => {
+test('should do nothing when transform operation has unknown function', (t) => {
   const def = [
     'content',
     {
       $iterate: true,
-      title: ['heading', { $transform: 'unknown' }]
-    }
+      title: ['heading', { $transform: 'unknown' }],
+    },
   ]
   const data = {
-    content: [{ heading: 'The heading' }, { heading: 'The other' }]
+    content: [{ heading: 'The heading' }, { heading: 'The other' }],
   }
 
   const expected = [{ title: 'The heading' }, { title: 'The other' }]
@@ -549,16 +550,16 @@ test('should do nothing when transform operation has unknown function', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when transform operation has invalid function id', t => {
+test('should do nothing when transform operation has invalid function id', (t) => {
   const def = [
     'content',
     {
       $iterate: true,
-      title: ['heading', { $transform: { id: 13 } }]
-    }
+      title: ['heading', { $transform: { id: 13 } }],
+    },
   ]
   const data = {
-    content: [{ heading: 'The heading' }, { heading: 'The other' }]
+    content: [{ heading: 'The heading' }, { heading: 'The other' }],
   }
 
   const expected = [{ title: 'The heading' }, { title: 'The other' }]

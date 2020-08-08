@@ -1,10 +1,11 @@
-import { State, Data, Options, Context } from '../types'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { State, Options, Context } from '../types'
 
-export const setStateValue = (state: State, value: Data): State => ({
+export const setStateValue = (state: State, value: unknown): State => ({
   ...state,
   value,
 })
-export const getStateValue = (state: State): Data => state.value
+export const getStateValue = (state: State): any => state.value
 
 export const setValueFromState = (state: State, { value }: State): State => ({
   ...state,
@@ -22,7 +23,7 @@ export const contextFromState = ({
 export const populateState = ({
   rev = false,
   onlyMapped = false,
-}: Partial<State>) => (data: Data): State => ({
+}: Partial<State>) => (data: unknown): State => ({
   root: data,
   context: data,
   value: data,

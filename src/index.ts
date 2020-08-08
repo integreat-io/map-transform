@@ -4,8 +4,7 @@ import {
   MapTransform,
   State,
   StateMapper,
-  Data,
-  Options
+  Options,
 } from './types'
 import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
@@ -31,7 +30,6 @@ export { default as merge } from './operations/merge'
 export { default as modify } from './operations/modify'
 export { iterate, functions }
 export {
-  Data,
   CustomFunction,
   DataMapper,
   MapDefinition,
@@ -39,7 +37,7 @@ export {
   MapPipe,
   MapTransform,
   Dictionary,
-  Dictionaries
+  Dictionaries,
 } from './types'
 
 const composeMapFunction = (
@@ -47,15 +45,16 @@ const composeMapFunction = (
   initialState: Partial<State>
 ) => {
   const map = compose(getStateValue, mapFn, populateState(initialState))
-  return (data: Data) => (typeof data === 'undefined' ? undefined : map(data))
+  return (data: unknown) =>
+    typeof data === 'undefined' ? undefined : map(data)
 }
 
 const mergeOptions = (options: Options) => ({
   ...options,
   functions: {
     ...functions,
-    ...(options.functions || {})
-  }
+    ...(options.functions || {}),
+  },
 })
 
 const createRootMapper = (def: MapDefinition) =>
@@ -73,8 +72,8 @@ export function mapTransform(
     rev: Object.assign(composeMapFunction(mapFn, { rev: true }), {
       onlyMappedValues: composeMapFunction(mapFn, {
         rev: true,
-        onlyMapped: true
-      })
-    })
+        onlyMapped: true,
+      }),
+    }),
   })
 }

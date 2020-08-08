@@ -1,7 +1,7 @@
-import { Data, Operation, ValueFunction } from '../types'
+import { Operation, ValueFunction } from '../types'
 import { extractValue } from '../functions/value'
 
-export default function fixed(val: Data | ValueFunction): Operation {
+export default function fixed(val: unknown | ValueFunction): Operation {
   return () => (state) => ({
     ...state,
     value: extractValue(val),

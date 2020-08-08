@@ -1,8 +1,8 @@
-import { Data, DataValue, Operands, Path, DataMapper } from '../types'
+import { Operands, Path, DataMapper } from '../types'
 import getter from '../utils/pathGetter'
 
 interface Comparer {
-  (value: Data, match: Data): boolean
+  (value: unknown, match: unknown): boolean
 }
 
 interface NumericComparer {
@@ -12,31 +12,31 @@ interface NumericComparer {
 interface CompareOperands extends Operands {
   path?: Path
   operator?: string
-  match?: DataValue
+  match?: unknown
   matchPath?: Path
 }
 
-const not = (comparer: Comparer) => (value: Data, match: Data) =>
+const not = (comparer: Comparer) => (value: unknown, match: unknown) =>
   !comparer(value, match)
 
 const compareArrayOrValue = (comparer: Comparer) => (
-  value: Data,
-  match: Data
+  value: unknown,
+  match: unknown
 ) =>
   Array.isArray(value)
-    ? value.some((value: Data) => comparer(value, match))
+    ? value.some((value: unknown) => comparer(value, match))
     : comparer(value, match)
 
-const isNumeric = (value: Data): value is number => typeof value === 'number'
+const isNumeric = (value: unknown): value is number => typeof value === 'number'
 
 const compareArrayOrValueNumeric = (comparer: NumericComparer) =>
   compareArrayOrValue(
-    (value: Data, match: Data) =>
+    (value: unknown, match: unknown) =>
       isNumeric(value) && isNumeric(match) && comparer(value, match)
   )
 
 const compareEqual = compareArrayOrValue(
-  (value: Data, match: Data) => value === match
+  (value: unknown, match: unknown) => value === match
 )
 
 function createComparer(operator: string) {
@@ -62,7 +62,7 @@ function createComparer(operator: string) {
         (value: number, match: number) => value <= match
       )
     default:
-      return (_value: Data, _match: Data) => false
+      return (_value: unknown, _match: unknown) => false
   }
 }
 

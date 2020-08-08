@@ -1,5 +1,4 @@
 import test from 'ava'
-import { Data } from '../types'
 import { isObject } from '../utils/is'
 import { set } from './getSet'
 
@@ -14,18 +13,18 @@ const falsePipeline = set('inactive[]')
 
 // Tests
 
-test('should run truePipeline when true', t => {
-  const conditionFn = (data: Data) => isObject(data) && data.active
+test('should run truePipeline when true', (t) => {
+  const conditionFn = (data: unknown) => isObject(data) && data.active
   const data = { active: true }
   const state = {
     root: data,
     context: data,
-    value: data
+    value: data,
   }
   const expected = {
     root: data,
     context: data,
-    value: { active: [data] }
+    value: { active: [data] },
   }
 
   const ret = ifelse(conditionFn, truePipeline, falsePipeline)(options)(state)
@@ -33,13 +32,13 @@ test('should run truePipeline when true', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should run falsePipeline when false', t => {
-  const conditionFn = (data: Data) => isObject(data) && data.active
+test('should run falsePipeline when false', (t) => {
+  const conditionFn = (data: unknown) => isObject(data) && data.active
   const data = { active: false }
   const state = {
     root: data,
     context: data,
-    value: data
+    value: data,
   }
   const expectedValue = { inactive: [data] }
 
@@ -48,13 +47,13 @@ test('should run falsePipeline when false', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should do nothing when true and no truePipeline', t => {
-  const conditionFn = (data: Data) => isObject(data) && data.active
+test('should do nothing when true and no truePipeline', (t) => {
+  const conditionFn = (data: unknown) => isObject(data) && data.active
   const data = { active: true }
   const state = {
     root: data,
     context: data,
-    value: data
+    value: data,
   }
 
   const ret = ifelse(conditionFn, undefined, falsePipeline)(options)(state)
@@ -62,13 +61,13 @@ test('should do nothing when true and no truePipeline', t => {
   t.deepEqual(ret, state)
 })
 
-test('should do nothing when false and no falsePipeline', t => {
-  const conditionFn = (data: Data) => isObject(data) && data.active
+test('should do nothing when false and no falsePipeline', (t) => {
+  const conditionFn = (data: unknown) => isObject(data) && data.active
   const data = { active: false }
   const state = {
     root: data,
     context: data,
-    value: data
+    value: data,
   }
 
   const ret = ifelse(conditionFn, truePipeline)(options)(state)
@@ -76,12 +75,12 @@ test('should do nothing when false and no falsePipeline', t => {
   t.deepEqual(ret, state)
 })
 
-test('should run falsePipeline when no conditionFn', t => {
+test('should run falsePipeline when no conditionFn', (t) => {
   const data = { active: true }
   const state = {
     root: data,
     context: data,
-    value: data
+    value: data,
   }
   const expectedValue = { inactive: [data] }
 

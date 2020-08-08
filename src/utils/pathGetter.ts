@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import R = require('ramda')
-import { Data, DataObject, Path } from '../types'
+import { Path } from '../types'
 import { isPath } from './definitionHelpers'
+import { isObject } from '../utils/is'
 
 const numberOrString = (val: string): string | number => {
   const num = Number.parseInt(val, 10)
@@ -10,18 +12,17 @@ const numberOrString = (val: string): string | number => {
 const split = (str: Path): (string | number)[] =>
   str
     .split(/\[|]?\.|]/)
-    .filter(str => str !== '')
+    .filter((str) => str !== '')
     .map(numberOrString)
 
-const getProp = (prop: string) => (object?: DataObject) =>
-  object ? object[prop] : undefined // eslint-disable-line security/detect-object-injection
+const getProp = (prop: string) => (object: unknown) =>
+  isObject(object) ? object[prop] : undefined // eslint-disable-line security/detect-object-injection
 
-const getArrayIndex = (index: number) => (arr?: Data) =>
+const getArrayIndex = (index: number) => (arr: unknown) =>
   Array.isArray(arr) ? arr[index] : undefined // eslint-disable-line security/detect-object-injection
 
-const getObjectOrArray = (fn: (object?: DataObject) => Data) => (
-  object?: DataObject
-) => (Array.isArray(object) ? R.flatten(object.map(fn)) : fn(object))
+const getObjectOrArray = (fn: (object: unknown) => any) => (object: unknown) =>
+  Array.isArray(object) ? R.flatten(object.map(fn)) : fn(object)
 
 const getter = (prop: string | number) =>
   typeof prop === 'number'
@@ -34,14 +35,14 @@ const getGetters = R.compose(
   split
 )
 
-const ensureArray = (value: Data) =>
+const ensureArray = (value: unknown) =>
   Array.isArray(value)
     ? value
     : value === null || typeof value === 'undefined'
     ? []
     : [value]
 
-export type GetFunction = (object?: Data | null) => Data
+export type GetFunction = (object?: unknown) => any
 
 /**
  * Get the value at `path` in `object`.

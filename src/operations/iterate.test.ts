@@ -1,7 +1,6 @@
 import test from 'ava'
 import alt from './alt'
 import transform from './transform'
-import { Data } from '../types'
 
 import iterate from './iterate'
 
@@ -9,27 +8,30 @@ import iterate from './iterate'
 
 const data = [
   { key: 'ent1', headline: 'Entry 1' },
-  { key: 'ent2', headline: 'Entry 2' }
+  { key: 'ent2', headline: 'Entry 2' },
 ]
 
 const options = {}
 
 // Tests
 
-test('should map over a value array', t => {
+test('should map over a value array', (t) => {
   const def = {
     id: 'key',
-    title: 'headline'
+    title: 'headline',
   }
   const state = {
     root: data,
     context: data,
-    value: data
+    value: data,
   }
   const expected = {
     root: data,
     context: data,
-    value: [{ id: 'ent1', title: 'Entry 1' }, { id: 'ent2', title: 'Entry 2' }]
+    value: [
+      { id: 'ent1', title: 'Entry 1' },
+      { id: 'ent2', title: 'Entry 2' },
+    ],
   }
 
   const ret = iterate(def)(options)(state)
@@ -37,15 +39,15 @@ test('should map over a value array', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should map over non-array', t => {
+test('should map over non-array', (t) => {
   const def = {
     id: 'key',
-    title: 'headline'
+    title: 'headline',
   }
   const state = {
     root: data[0],
     context: data[0],
-    value: data[0]
+    value: data[0],
   }
   const expectedValue = { id: 'ent1', title: 'Entry 1' }
 
@@ -54,12 +56,12 @@ test('should map over non-array', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should return undefined when no def', t => {
+test('should return undefined when no def', (t) => {
   const def = {}
   const state = {
     root: data,
     context: data,
-    value: data
+    value: data,
   }
 
   const ret = iterate(def)(options)(state)
@@ -67,26 +69,25 @@ test('should return undefined when no def', t => {
   t.is(typeof ret.value, 'undefined')
 })
 
-test('should also iterate context to support alt operation etc.', t => {
+test('should also iterate context to support alt operation etc.', (t) => {
   const def = alt(
-    transform((item?: Data) =>
-      item &&
-      typeof item === 'object' &&
-      !(item instanceof Date) &&
-      !Array.isArray(item)
-        ? `${item.key}: ${item.headline}`
+    transform((item?: unknown) =>
+      item
+        ? `${(item as Record<string, unknown>).key}: ${
+            (item as Record<string, unknown>).headline
+          }`
         : ''
     )
   )
   const state = {
     root: data,
     context: data,
-    value: ['From somewhere else', undefined]
+    value: ['From somewhere else', undefined],
   }
   const expected = {
     root: data,
     context: data,
-    value: ['From somewhere else', 'ent2: Entry 2']
+    value: ['From somewhere else', 'ent2: Entry 2'],
   }
 
   const ret = iterate(def)(options)(state)

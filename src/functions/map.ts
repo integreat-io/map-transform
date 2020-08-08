@@ -1,17 +1,11 @@
 import mapAny = require('map-any')
-import {
-  Data,
-  Dictionary,
-  DictionaryValue,
-  Dictionaries,
-  DataMapper,
-} from '../types'
+import { Dictionary, DictionaryValue, Dictionaries, DataMapper } from '../types'
 
 interface Operands {
   dictionary?: Dictionary | string
 }
 
-const isSupportedValue = (data: Data): data is DictionaryValue =>
+const isSupportedValue = (data: unknown): data is DictionaryValue =>
   ['string', 'number', 'boolean'].includes(typeof data) ||
   data === null ||
   data === undefined
@@ -26,9 +20,9 @@ function findFirstMatch(
   return match ? match[1 - direction] : undefined
 }
 
-function translate(data: Data, dictionary: Dictionary, rev: boolean) {
+function translate(data: unknown, dictionary: Dictionary, rev: boolean) {
   const direction = Number(rev) as 0 | 1
-  return mapAny((data: Data) => {
+  return mapAny((data: unknown) => {
     const value = isSupportedValue(data) ? data : undefined
     const match = findFirstMatch(value, dictionary, direction)
     if (match === undefined || match === '*') {

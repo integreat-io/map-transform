@@ -1,7 +1,2 @@
-import { DataObject } from '../types'
-
-export const isObject = (obj: unknown): obj is DataObject =>
-  typeof obj === 'object' &&
-  obj !== null &&
-  !Array.isArray(obj) &&
-  !(obj instanceof Date)
+export const isObject = (value: unknown): value is Record<string, unknown> =>
+  Object.prototype.toString.call(value) === '[object Object]'

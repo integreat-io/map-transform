@@ -1,10 +1,4 @@
-export type DataValue = string | number | boolean | Date | null | undefined
-
-export interface DataObject {
-  [key: string]: Data
-}
-
-export type Data = DataValue | DataObject | Data[]
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type Path = string
 
@@ -18,11 +12,11 @@ export interface Dictionaries {
 }
 
 export interface ValueFunction {
-  (): Data
+  (): any
 }
 
 export interface Operands {
-  [key: string]: Data | ValueFunction
+  [key: string]: any | ValueFunction
 }
 
 export interface Context {
@@ -31,7 +25,7 @@ export interface Context {
 }
 
 export interface DataMapper {
-  (data: Data, context: Context): Data
+  (data: unknown, context: Context): any
 }
 
 export interface CustomFunction<T = Operands> {
@@ -39,9 +33,9 @@ export interface CustomFunction<T = Operands> {
 }
 
 export interface State {
-  root: Data
-  context: Data
-  value: Data
+  root: unknown
+  context: unknown
+  value: unknown
   rev?: boolean
   onlyMapped?: boolean
   arr?: boolean
@@ -128,8 +122,8 @@ export type MapDefinition =
   | null
 
 export interface MapTransformWithOnlyMappedValues {
-  (data: Data): Data
-  onlyMappedValues: (data: Data) => Data
+  (data: unknown): any
+  onlyMappedValues: (data: unknown) => any
 }
 
 export interface MapTransform extends MapTransformWithOnlyMappedValues {

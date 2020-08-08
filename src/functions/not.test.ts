@@ -1,11 +1,10 @@
 import test from 'ava'
-import { Data } from '../types'
 
 import not from './not'
 
 // Setup
 
-const returnIt = (value: Data) => !!value
+const returnIt = (value: unknown) => !!value
 const context = { rev: false, onlyMappedValues: false }
 
 // Tests

@@ -10,12 +10,15 @@ export interface KeyValue {
 const isExplodedArray = (data: unknown[]) =>
   data.every((item) => isObject(item) && typeof item.key === 'number')
 
-const setValueOnKey = (target: unknown, keyValue: unknown) => {
+const setValueOnKey = (
+  target: unknown[] | Record<string, unknown>,
+  keyValue: unknown
+) => {
   if (isObject(keyValue)) {
     const { key, value } = keyValue
     if (Array.isArray(target)) {
       target[key as number] = value // eslint-disable-line security/detect-object-injection
-    } else if (isObject(target)) {
+    } else {
       target[String(key)] = value // eslint-disable-line security/detect-object-injection
     }
   }

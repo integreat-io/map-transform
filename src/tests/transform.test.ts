@@ -5,39 +5,41 @@ import { mapTransform, transform, rev, Data } from '..'
 
 // Helpers
 
-const isObject = (item: Data): item is object => (!!item && typeof item === 'object')
+const isObject = (item: Data): item is object =>
+  !!item && typeof item === 'object'
 
-const createTitle = (item: { title: string, author: string }) => `${item.title} - by ${item.author}`
-const removeAuthor = (item: { title: string, author: string }) => (item.title.endsWith(` - by ${item.author}`))
-  ? item.title.substr(0, item.title.length - 6 - item.author.length)
-  : item.title
+const createTitle = (item: { title: string; author: string }) =>
+  `${item.title} - by ${item.author}`
+const removeAuthor = (item: { title: string; author: string }) =>
+  item.title.endsWith(` - by ${item.author}`)
+    ? item.title.substr(0, item.title.length - 6 - item.author.length)
+    : item.title
 
-const appendToTitle = ({ text }: Operands) => (item: Data) => (isObject(item))
-    ? { ...item, title: `${(item as any).title}${text}` }
-    : item
+const appendToTitle = ({ text }: Operands) => (item: Data) =>
+  isObject(item) ? { ...item, title: `${(item as any).title}${text}` } : item
 
-const appendAuthorToTitle = (item: Data) => (isObject(item))
-    ? { ...item, title: createTitle(item as any) }
-    : item
+const appendAuthorToTitle = (item: Data) =>
+  isObject(item) ? { ...item, title: createTitle(item as any) } : item
 
-const removeAuthorFromTitle = (item: Data) => (isObject(item))
-  ? ({ ...item, title: removeAuthor(item as any) })
-  : item
+const removeAuthorFromTitle = (item: Data) =>
+  isObject(item) ? { ...item, title: removeAuthor(item as any) } : item
 
-const setActive = (item: Data) => (isObject(item))
-  ? { ...item, active: true }
-  : item
+const setActive = (item: Data) =>
+  isObject(item) ? { ...item, active: true } : item
 
 const prepareAuthorName = ({ author }: { author: string }) =>
   `${author[0].toUpperCase()}${author.substr(1)}.`
 
-const setAuthorName = (item: Data) => (isObject(item))
-  ? ({ ...item, authorName: prepareAuthorName(item as any) })
-  : item
+const setAuthorName = (item: Data) =>
+  isObject(item)
+    ? { ...item, authorName: prepareAuthorName(item as any) }
+    : item
 
-const appendEllipsis = (str: Data) => (typeof str === 'string') ? str + ' ...' : str
+const appendEllipsis = (str: Data) =>
+  typeof str === 'string' ? str + ' ...' : str
 
-const getLength = () => (str: Data) => (typeof str === 'string') ? str.length : 0
+const getLength = () => (str: Data) =>
+  typeof str === 'string' ? str.length : 0
 
 const customFunctions = {
   appendToTitle,
@@ -46,7 +48,7 @@ const customFunctions = {
 
 // Tests
 
-test('should map simple object with one transform function', (t) => {
+test('should map simple object with one transform function', t => {
   const def = [
     {
       title: 'content.heading',
@@ -68,7 +70,7 @@ test('should map simple object with one transform function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map simple object with several transform functions', (t) => {
+test('should map simple object with several transform functions', t => {
   const def = [
     {
       title: 'content.heading',
@@ -92,7 +94,7 @@ test('should map simple object with several transform functions', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map simple object with rev transform', (t) => {
+test('should reverse map simple object with rev transform', t => {
   const def = [
     {
       title: 'content.heading',
@@ -115,7 +117,7 @@ test('should reverse map simple object with rev transform', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map simple object with dedicated rev transform', (t) => {
+test('should reverse map simple object with dedicated rev transform', t => {
   const def = [
     {
       title: 'content.heading',
@@ -137,7 +139,7 @@ test('should reverse map simple object with dedicated rev transform', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should transform beofre data is set on outer path', (t) => {
+test('should transform beofre data is set on outer path', t => {
   const def = {
     attributes: [
       'result.data',
@@ -168,7 +170,7 @@ test('should transform beofre data is set on outer path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should transform before mapping', (t) => {
+test('should transform before mapping', t => {
   const def = [
     transform(setActive),
     {
@@ -189,7 +191,7 @@ test('should transform before mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform functions from left to right', (t) => {
+test('should apply transform functions from left to right', t => {
   const def = [
     {
       titleLength: [
@@ -211,13 +213,10 @@ test('should apply transform functions from left to right', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object', (t) => {
+test('should apply transform from an operation object', t => {
   const def = [
     {
-      titleLength: [
-        'content.heading',
-        { $transform: 'getLength' }
-      ]
+      titleLength: ['content.heading', { $transform: 'getLength' }]
     }
   ]
   const data = {
@@ -232,7 +231,7 @@ test('should apply transform from an operation object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object with arguments', (t) => {
+test('should apply transform from an operation object with arguments', t => {
   const def = [
     {
       title: 'content.heading'
@@ -251,7 +250,7 @@ test('should apply transform from an operation object with arguments', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip unknown customer function', (t) => {
+test('should skip unknown customer function', t => {
   const def = [
     {
       titleLength: [
@@ -273,9 +272,12 @@ test('should skip unknown customer function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in join function', (t) => {
+test('should use built in join function', t => {
   const def = {
-    title: ['content', { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }]
+    title: [
+      'content',
+      { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }
+    ]
   }
   const data = {
     content: { heading: 'The heading', meta: { user: 'johnf' } }
@@ -289,7 +291,29 @@ test('should use built in join function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in get function', (t) => {
+test('should use built in exclude function', t => {
+  const def = {
+    'ids[]': [
+      'content',
+      { $transform: 'exclude', path: 'ids', excludePath: 'removeIds' }
+    ]
+  }
+  const data = {
+    content: {
+      ids: ['12345', '12346', '12347', '12348'],
+      removeIds: ['12348', '12346']
+    }
+  }
+  const expected = {
+    ids: ['12345', '12347']
+  }
+
+  const ret = mapTransform(def, { customFunctions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use built in get function', t => {
   const def = {
     title: ['content', { $transform: 'get', path: 'heading' }]
   }
@@ -305,11 +329,13 @@ test('should use built in get function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform function to array', (t) => {
+test('should apply transform function to array', t => {
   const def = [
     'content',
     {
-      title: [{ $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }]
+      title: [
+        { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' }
+      ]
     }
   ]
   const data = {

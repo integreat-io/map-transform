@@ -85,8 +85,8 @@ const def2 = [
   {
     title: 'name',
     author: 'meta.author',
-    date: 'meta.date'
-  }
+    date: 'meta.date',
+  },
 ]
 
 const target2 = mapTransform(def2)(source)
@@ -105,15 +105,15 @@ const { mapTransform, transform } = require('map-transform')
 // ....
 
 // Write a transform function, that accepts a value and returns a value
-const msToDate = ms => new Date(ms).toISOString()
+const msToDate = (ms) => new Date(ms).toISOString()
 
 const def3 = [
   'data[0].content',
   {
     title: 'name',
     author: 'meta.author',
-    date: ['meta.date', transform(msToDate)]
-  }
+    date: ['meta.date', transform(msToDate)],
+  },
 ]
 
 const target3 = mapTransform(def3)(source)
@@ -167,15 +167,15 @@ taste.
 
 ```javascript
 const def1 = {
-  'data.entry.title': 'heading'
+  'data.entry.title': 'heading',
 }
 
 const def2 = {
   data: {
     entry: {
-      title: 'heading'
-    }
-  }
+      title: 'heading',
+    },
+  },
 }
 
 // def1 and def2 are identical, and will result in an object like this:
@@ -193,7 +193,7 @@ data array will be be transformed with the mapping object.
 
 ```javascript
 const def3 = {
-  title: 'heading'
+  title: 'heading',
 }
 
 // -->
@@ -252,7 +252,7 @@ is at this path on the source object.
 
 ```javascript
 const def4 = {
-  title: 'data.item.heading'
+  title: 'data.item.heading',
 }
 
 const source1 = {
@@ -260,9 +260,9 @@ const source1 = {
     item: {
       id: 'item1',
       heading: 'The actual heading',
-      intro: 'The actual intro'
-    }
-  }
+      intro: 'The actual intro',
+    },
+  },
 }
 
 // `mapTransform(def4)(source1)` will transform to:
@@ -286,7 +286,7 @@ an array by indicating the array index in the brackets.
 
 ```javascript
 const def5 = {
-  title: 'data.items[0].heading'
+  title: 'data.items[0].heading',
 }
 
 // def5 will pull the heading from the first item in the `items` array, and will
@@ -361,9 +361,9 @@ const def6 = [
     $iterate: true,
     id: 'articleNo',
     title: ['headline', transform(maxLength(20))],
-    sections: 'meta.sections[].id'
+    sections: 'meta.sections[].id',
   },
-  filter(onlyItemsWithSection)
+  filter(onlyItemsWithSection),
 ]
 ```
 
@@ -404,16 +404,16 @@ on an object. You would probably just not get the end result you expected.
 ```javascript
 import { mapTransform, transform } from 'map-transform'
 
-const ensureInteger = data => Number.parseInt(data, 10) || 0
+const ensureInteger = (data) => Number.parseInt(data, 10) || 0
 const def7 = {
-  count: ['statistics.views', transform(ensureInteger)]
+  count: ['statistics.views', transform(ensureInteger)],
 }
 
 const data = {
   statistics: {
-    view: '18'
+    view: '18',
     // ...
-  }
+  },
 }
 
 mapTransform(def7)(data)
@@ -449,7 +449,7 @@ Example transformation pipeline with a `yearsSince` function:
 
 ```javascript
 const def8 = {
-  age: ['birthyear', yearsSince(new Date())]
+  age: ['birthyear', yearsSince(new Date())],
 }
 ```
 
@@ -462,17 +462,17 @@ You may also define a transform operation as an object:
 ```javascript
 import { mapTransform } from 'map-transform'
 
-const ensureInteger = operands => data => Number.parseInt(data, 10) || 0
+const ensureInteger = (operands) => (data) => Number.parseInt(data, 10) || 0
 const functions = { ensureInteger }
 const def7asObject = {
-  count: ['statistics.views', { $transform: 'ensureInteger' }]
+  count: ['statistics.views', { $transform: 'ensureInteger' }],
 }
 
 const data = {
   statistics: {
-    view: '18'
+    view: '18',
     // ...
-  }
+  },
 }
 
 mapTransform(def7asObject, { functions })(data)
@@ -615,26 +615,26 @@ the pipeline definition in the first place.
 ```javascript
 import { mapTransform, apply, transform } from 'map-transform'
 
-const ensureInteger = data => Number.parseInt(data, 10) || 0
+const ensureInteger = (data) => Number.parseInt(data, 10) || 0
 const pipelines = {
   castEntry: {
     title: ['title', transform(String)],
-    count: ['count', transform(ensureInteger)]
-  }
+    count: ['count', transform(ensureInteger)],
+  },
 }
 const def25 = [
   {
     title: 'heading',
-    count: 'statistics.views'
+    count: 'statistics.views',
   },
-  apply('castEntry')
+  apply('castEntry'),
 ]
 
 const data = {
   heading: 'Entry 1',
   statistics: {
-    view: '18'
-  }
+    view: '18',
+  },
 }
 
 mapTransform(def7)(data)
@@ -650,9 +650,9 @@ You may also define the apply operation as an operation object:
 const def25 = [
   {
     title: 'heading',
-    count: 'statistics.views'
+    count: 'statistics.views',
   },
-  { $apply: 'castEntry' }
+  { $apply: 'castEntry' },
 ]
 ```
 
@@ -680,7 +680,7 @@ import { value, alt } from 'map-transform'
 const def10 = {
   id: 'data.customerNo',
   type: value('customer'),
-  name: ['data.name', alt(value('Anonymous'))]
+  name: ['data.name', alt(value('Anonymous'))],
 }
 ```
 
@@ -693,7 +693,7 @@ If you want to define the `value` operation as an operation object, use
 const def10asObject = {
   id: 'data.customerNo',
   type: { $transform: 'value', value: 'customer' },
-  name: ['data.name', { $alt: 'value', value: 'Anonymous' }]
+  name: ['data.name', { $alt: 'value', value: 'Anonymous' }],
 }
 ```
 
@@ -720,8 +720,8 @@ every item in the array, please use the `iterate` operation.
 ```javascript
 import { alt, transform, functions } from 'map-transform'
 const { value } = functions
-const currentDate = data => new Date()
-const formatDate = data => {
+const currentDate = (data) => new Date()
+const formatDate = (data) => {
   /* implementation not included */
 }
 
@@ -732,8 +732,8 @@ const def11 = {
     'data.updateDate',
     alt('data.createDate'),
     alt(transform(currentDate)),
-    transform(formatDate)
-  ]
+    transform(formatDate),
+  ],
 }
 ```
 
@@ -755,8 +755,8 @@ const def11asObject = {
     'data.updateDate',
     { $alt: 'get', path: 'data.createDate' },
     { $alt: 'currentDate' },
-    { $transform: 'formatDate' }
-  ]
+    { $transform: 'formatDate' },
+  ],
 }
 ```
 
@@ -792,7 +792,7 @@ Example:
 import { modify } from 'map-transform'
 
 const def34 = modify({
-  data: 'data.deeply.placed.items'
+  data: 'data.deeply.placed.items',
 })
 ```
 
@@ -802,7 +802,7 @@ prop. Giving this an object like:
 ```javascript
 const response = {
   status: 'ok',
-  data: { deeply: { placed: { items: [{ id: 'ent1' }] } } }
+  data: { deeply: { placed: { items: [{ id: 'ent1' }] } } },
 }
 ```
 
@@ -811,7 +811,7 @@ const response = {
 ```javascript
 const response = {
   status: 'ok',
-  data: [{ id: 'ent1' }]
+  data: [{ id: 'ent1' }],
 }
 ```
 
@@ -830,11 +830,11 @@ pipeline when we're mapping in reverse.
 
 ```javascript
 import { fwd, rev, transform } from 'map-transform'
-const increment = data => data + 1
-const decrement = data => data - 1
+const increment = (data) => data + 1
+const decrement = (data) => data - 1
 
 const def12 = {
-  order: ['index', fwd(transform(increment)), rev(transform(decrement))]
+  order: ['index', fwd(transform(increment)), rev(transform(decrement))],
 }
 ```
 
@@ -887,7 +887,7 @@ This example results in the exact same pipeline as the example above:
 
 ```javascript
 const def14 = {
-  'content[]': 'data.items[].content'
+  'content[]': 'data.items[].content',
 }
 ```
 
@@ -916,13 +916,13 @@ const def15 = [
   {
     id: 'id',
     title: 'headline',
-    section: root('meta.section')
-  }
+    section: root('meta.section'),
+  },
 ]
 
 const data = {
   articles: [{ id: '1', headline: 'An article' } /* ... */],
-  meta: { section: 'news' }
+  meta: { section: 'news' },
 }
 
 mapTransform(def15)(data)
@@ -984,8 +984,8 @@ const data = {
   users: [
     { id: 'user1', name: 'User 1' },
     { id: 'user2', name: 'User 2' },
-    { id: 'user3', name: 'User 3' }
-  ]
+    { id: 'user3', name: 'User 3' },
+  ],
 }
 const mapper = mapTransform(def18)
 const mappedData = mapper(data)
@@ -1025,9 +1025,9 @@ const { compare } = functions
 const def19 = [
   {
     name: 'name',
-    role: 'editor'
+    role: 'editor',
   },
-  filter(compare({ path: 'role', operator: '=', match: 'admin' }))
+  filter(compare({ path: 'role', operator: '=', match: 'admin' })),
 ]
 ```
 
@@ -1037,9 +1037,9 @@ You may also define this with a transform object:
 const def19o = [
   {
     name: 'name',
-    role: 'editor'
+    role: 'editor',
   },
-  { $filter: 'compare', path: 'role', operator: '=', match: 'admin' }
+  { $filter: 'compare', path: 'role', operator: '=', match: 'admin' },
 ]
 ```
 
@@ -1065,7 +1065,7 @@ import { mapTransform, transform, functions } from 'map-transform'
 const { explode } = functions
 
 const data = {
-  currencies: { NOK: 1, USD: 0.125, EUR: 0.1 }
+  currencies: { NOK: 1, USD: 0.125, EUR: 0.1 },
 }
 
 const def32 = ['currencies', transform(explode())]
@@ -1154,11 +1154,11 @@ import { mapTransform, transform, functions } from 'map-transform'
 const { template } = functions
 
 const data = {
-  content: { description: 'Bergen by night', artist: 'John F.' }
+  content: { description: 'Bergen by night', artist: 'John F.' },
 }
 
 const def30 = {
-  caption: ['content', transform(template('{{description}}. By {{artist}}'))]
+  caption: ['content', transform(template('{{description}}. By {{artist}}'))],
 }
 
 const ret = mapTransform(def30)(data)
@@ -1171,8 +1171,8 @@ The `template` function is also available through a transform object:
 const def30o = {
   caption: [
     'content',
-    { $transform: 'template', template: '{{description}}. By {{artist}}' }
-  ]
+    { $transform: 'template', template: '{{description}}. By {{artist}}' },
+  ],
 }
 ```
 
@@ -1200,8 +1200,8 @@ const def20 = [
   'items',
   filter(validate('draft', { const: false })),
   {
-    title: 'heading'
-  }
+    title: 'heading',
+  },
 ]
 ```
 
@@ -1220,9 +1220,9 @@ const { compare } = functions
 const def21 = [
   {
     name: 'name',
-    role: 'role'
+    role: 'role',
   },
-  filter(not(compare('role', 'admin')))
+  filter(not(compare('role', 'admin'))),
 ]
 ```
 
@@ -1249,14 +1249,14 @@ const def22 = [
   'data.customers[]',
   {
     id: 'customerNo',
-    name: ['fullname', alt(value('Anonymous'))]
-  }
+    name: ['fullname', alt(value('Anonymous'))],
+  },
 ]
 
 const dataInTargetState = [
   { id: 'cust1', name: 'Fred Johnsen' },
   // { id: 'cust2', name: 'Lucy Knight' },
-  { id: 'cust3' }
+  { id: 'cust3' },
 ]
 
 const dataInSourceState = mapTransform(def22).rev(dataInTargetState)
@@ -1282,15 +1282,15 @@ For example:
 ```javascript
 import { mapTransform, transform } from 'map-transform'
 
-const username = name => name.replace(/\s+/, '.').toLowerCase()
+const username = (name) => name.replace(/\s+/, '.').toLowerCase()
 
 const def23 = [
   'data.customers[]',
   {
     id: 'customerNo',
     name: 'fullname',
-    'name/1': ['username', rev(transform(username))]
-  }
+    'name/1': ['username', rev(transform(username))],
+  },
 ]
 
 const dataInTargetState = [{ id: 'cust1', name: 'Fred Johnsen' }]
@@ -1329,11 +1329,11 @@ const def33flipped = {
   id: 'key',
   attributes: {
     title: ['headline', transform(threeLetters)],
-    age: ['unknown']
+    age: ['unknown'],
   },
   relationships: {
-    author: value('johnf')
-  }
+    author: value('johnf'),
+  },
 }
 ```
 
@@ -1380,7 +1380,7 @@ import { mapTransform, alt, value } from 'map-transform'
 
 const def24 = {
   id: 'customerNo',
-  name: ['fullname', alt(value('Anonymous'))]
+  name: ['fullname', alt(value('Anonymous'))],
 }
 
 const mapper = mapTransform(def24)

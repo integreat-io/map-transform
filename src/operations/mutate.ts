@@ -33,8 +33,7 @@ const createSubPipeline = (
   path: Path
 ) =>
   isMapObject(pipeline)
-    ? // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      [objectToMapFunction(pipeline, flip, path)]
+    ? [objectToMapFunction(pipeline, flip, path)]
     : flipIfNeeded(ensureArray(pipeline), flip)
 
 const extractRealPath = (path: Path) => {

@@ -87,7 +87,6 @@ export default function pathSetter(path: Path): SetFunction {
     return identity
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setterFn = compose(...(setters as any))
   return (value, object: unknown = null) => {
     const data = setterFn(value)

@@ -17,9 +17,9 @@ const setValueOnKey = (
   if (isObject(keyValue)) {
     const { key, value } = keyValue
     if (Array.isArray(target)) {
-      target[key as number] = value // eslint-disable-line security/detect-object-injection
+      target[key as number] = value
     } else {
-      target[String(key)] = value // eslint-disable-line security/detect-object-injection
+      target[String(key)] = value
     }
   }
   return target

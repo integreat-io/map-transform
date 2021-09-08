@@ -1,4 +1,1 @@
-{
-  "extension": [".ts", ".js"],
-  "exclude": ["**/*.test.js", "**/*.test.ts", "**/*.d.ts"]
-}
+node_modules/@integreat/ts-dev-setup/nycrc.json

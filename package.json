@@ -2,8 +2,6 @@
   "name": "map-transform",
   "version": "0.4.0-alpha.1",
   "description": "Map and transform objects with mapping definitions",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "author": "Kjell-Morten Bratsberg Thorsen <post@kjellmorten.no>",
   "license": "ISC",
   "keywords": [
@@ -13,15 +11,17 @@
     "object",
     "path"
   ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "start": "npm run build && node index.js",
     "test": "npm run lint && npm run build && nyc --reporter=text-summary ava --config ./ava-dist.config.js",
-    "test:watch": "npm run dev",
     "test:inspect": "node --inspect node_modules/ava/profile.js",
+    "test:watch": "npm run dev",
     "dev": "ava --watch",
     "build": "tsc",
+    "prepublish": "npm run build",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "nyc:report": "nyc report",
+    "nyc:report": "nyc report --reporter=text --reporter=html",
     "lint": "eslint --ext .ts src"
   },
   "repository": {
@@ -29,7 +29,7 @@
     "url": "git+https://github.com/integreat-io/map-transform.git"
   },
   "engines": {
-    "node": ">= 10.0"
+    "node": ">= 14"
   },
   "bugs": {
     "url": "https://github.com/integreat-io/map-transform/issues"
@@ -37,31 +37,18 @@
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
     "@types/lodash.merge": "^4.6.6",
-    "@types/ramda": "^0.27.14",
-    "ajv": "^6.12.3",
-    "handlebars": "^4.7.6",
+    "@types/ramda": "^0.27.44",
+    "ajv": "^6.12.6",
+    "handlebars": "^4.7.7",
     "lodash.merge": "^4.6.2",
     "map-any": "^0.2.1",
     "ramda": "^0.27.1"
   },
   "devDependencies": {
-    "@types/deep-freeze": "^0.1.1",
-    "@types/sinon": "^9.0.4",
-    "@typescript-eslint/eslint-plugin": "^3.8.0",
-    "@typescript-eslint/parser": "^3.8.0",
-    "ava": "^3.11.1",
-    "coveralls": "^3.1.0",
+    "@integreat/ts-dev-setup": "^2.0.2",
+    "@types/deep-freeze": "^0.1.2",
+    "@types/sinon": "^9.0.11",
     "deep-freeze": "0.0.1",
-    "eslint": "^7.6.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-ava": "^10.5.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-security": "^1.4.0",
-    "nyc": "^15.1.0",
-    "prettier": "^2.0.5",
-    "sinon": "^9.0.2",
-    "ts-node": "^8.10.2",
-    "typescript": "^3.9.7"
+    "sinon": "^9.2.4"
   }
 }

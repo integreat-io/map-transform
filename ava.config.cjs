@@ -1,0 +1,1 @@
+node_modules/@integreat/ts-dev-setup/ava.config.cjs

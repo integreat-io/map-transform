@@ -135,6 +135,23 @@ test('should support a single dot as path', (t) => {
   t.is(ret, expected)
 })
 
+test('should apply uri encoded template', (t) => {
+  const operands = {
+    template: '/production?query={{{query}}}&%24table=%22{{{tableId}}}%22',
+  }
+  const data = {
+    query:
+      "*%5B_type%3D%3D'table'%26%26key%3D%3D%24table%5D%5B0%5D.fields%7Bkey%2Cname%2Ctype%7D",
+    tableId: 'orders',
+  }
+  const expected =
+    "/production?query=*%5B_type%3D%3D'table'%26%26key%3D%3D%24table%5D%5B0%5D.fields%7Bkey%2Cname%2Ctype%7D&%24table=%22orders%22"
+
+  const ret = template(operands)(data, context)
+
+  t.is(ret, expected)
+})
+
 test('should use template without placeholders', (t) => {
   const operands = { template: 'A string!' }
   const data = {

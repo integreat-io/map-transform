@@ -3,20 +3,20 @@ import * as deepFreeze from 'deep-freeze'
 
 import pathSetter from './pathSetter'
 
-test('should set value at path', t => {
+test('should set value at path', (t) => {
   const path = 'meta.author'
   const object = {}
   const expected = {
     meta: {
-      author: 'johnf'
-    }
+      author: 'johnf',
+    },
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return value when no path', t => {
+test('should return value when no path', (t) => {
   const path = ''
   const object = {}
   const ret = pathSetter(path)('johnf', object)
@@ -24,199 +24,199 @@ test('should return value when no path', t => {
   t.deepEqual(ret, 'johnf')
 })
 
-test('should set value at path with array index', t => {
+test('should set value at path with array index', (t) => {
   const path = 'meta.authors[0]'
   const object = {}
   const expected = {
     meta: {
-      authors: ['johnf']
-    }
+      authors: ['johnf'],
+    },
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value at path with array index larger than 0', t => {
+test('should set value at path with array index larger than 0', (t) => {
   const path = 'meta.authors[2]'
   const object = {}
   const expected = {
     meta: {
-      authors: [undefined, undefined, 'johnf']
-    }
+      authors: [undefined, undefined, 'johnf'],
+    },
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value at path with array index in the middle', t => {
+test('should set value at path with array index in the middle', (t) => {
   const path = 'meta.authors[0].id'
   const object = {}
   const expected = {
     meta: {
-      authors: [{ id: 'johnf' }]
-    }
+      authors: [{ id: 'johnf' }],
+    },
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value at array index path with existing object', t => {
+test('should set value at array index path with existing object', (t) => {
   const path = 'meta.authors[0].id'
   const object = {
     meta: {
-      authors: [{ type: 'author' }]
-    }
+      authors: [{ type: 'author' }],
+    },
   }
   const expected = {
     meta: {
-      authors: [{ id: 'johnf', type: 'author' }]
-    }
+      authors: [{ id: 'johnf', type: 'author' }],
+    },
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should preserve existing array when setting on new index path', t => {
+test('should preserve existing array when setting on new index path', (t) => {
   const path = 'meta.authors[1].id'
   const object = {
     meta: {
-      authors: [{ id: 'lucyk' }]
-    }
+      authors: [{ id: 'lucyk' }],
+    },
   }
   const expected = {
     meta: {
-      authors: [{ id: 'lucyk' }, { id: 'johnf' }]
-    }
+      authors: [{ id: 'lucyk' }, { id: 'johnf' }],
+    },
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should preserve existing array and set index path on existing object', t => {
+test('should preserve existing array and set index path on existing object', (t) => {
   const path = 'meta.authors[1].id'
   const object = {
     meta: {
-      authors: [{ id: 'lucyk', type: 'author' }, { type: 'author' }]
-    }
+      authors: [{ id: 'lucyk', type: 'author' }, { type: 'author' }],
+    },
   }
   const expected = {
     meta: {
       authors: [
         { id: 'lucyk', type: 'author' },
-        { id: 'johnf', type: 'author' }
-      ]
-    }
+        { id: 'johnf', type: 'author' },
+      ],
+    },
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value at sub array index path', t => {
+test('should set value at sub array index path', (t) => {
   const path = 'meta[0].authors[0].id'
   const object = {
     meta: [
       {
-        authors: [{ type: 'author' }]
-      }
-    ]
+        authors: [{ type: 'author' }],
+      },
+    ],
   }
   const expected = {
     meta: [
       {
-        authors: [{ id: 'johnf', type: 'author' }]
-      }
-    ]
+        authors: [{ id: 'johnf', type: 'author' }],
+      },
+    ],
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value array at path', t => {
+test('should set value array at path', (t) => {
   const path = 'meta.authors'
   const object = {}
   const expected = {
     meta: {
-      authors: ['johnf', 'maryk']
-    }
+      authors: ['johnf', 'maryk'],
+    },
   }
   const ret = pathSetter(path)(['johnf', 'maryk'], object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value array at indexed path', t => {
+test('should set value array at indexed path', (t) => {
   const path = 'meta.authors[0]'
   const object = {}
   const expected = {
     meta: {
-      authors: [['johnf', 'maryk']]
-    }
+      authors: [['johnf', 'maryk']],
+    },
   }
   const ret = pathSetter(path)(['johnf', 'maryk'], object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value array at path with array', t => {
+test('should set value array at path with array', (t) => {
   const path = 'meta.authors[].id'
   const object = {}
   const expected = {
     meta: {
-      authors: [{ id: 'johnf' }, { id: 'maryk' }]
-    }
+      authors: [{ id: 'johnf' }, { id: 'maryk' }],
+    },
   }
   const ret = pathSetter(path)(['johnf', 'maryk'], object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value at path with array', t => {
+test('should set value at path with array', (t) => {
   const path = 'meta.authors[]'
   const object = {}
   const expected = {
     meta: {
-      authors: ['johnf']
-    }
+      authors: ['johnf'],
+    },
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set empty array at path when value is undefined', t => {
+test('should set empty array at path when value is undefined', (t) => {
   const path = 'meta.authors[]'
   const object = {}
   const expected = {
     meta: {
-      authors: []
-    }
+      authors: [],
+    },
   }
   const ret = pathSetter(path)(undefined, object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set array at path with array', t => {
+test('should set array at path with array', (t) => {
   const path = 'meta.authors[]'
   const object = {}
   const expected = {
     meta: {
-      authors: ['johnf', 'maryk']
-    }
+      authors: ['johnf', 'maryk'],
+    },
   }
   const ret = pathSetter(path)(['johnf', 'maryk'], object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set array at path with only array brackets', t => {
+test('should set array at path with only array brackets', (t) => {
   const path = '[]'
   const expected = ['johnf', 'maryk']
   const ret = pathSetter(path)(['johnf', 'maryk'], null)
@@ -224,34 +224,34 @@ test('should set array at path with only array brackets', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should set value array at path with indexed array', t => {
+test('should set value array at path with indexed array', (t) => {
   const path = 'meta.authors[0].id'
   const object = {}
   const expected = {
     meta: {
-      authors: [{ id: ['johnf', 'maryk'] }]
-    }
+      authors: [{ id: ['johnf', 'maryk'] }],
+    },
   }
   const ret = pathSetter(path)(['johnf', 'maryk'], object)
 
   t.deepEqual(ret, expected)
 })
 
-test('should preserve untouched values', t => {
+test('should preserve untouched values', (t) => {
   const path = 'meta.author'
   const object = deepFreeze({
     meta: {
       author: 'maryk',
-      section: 'news'
+      section: 'news',
     },
-    content: [{ id: 'ent1' }]
+    content: [{ id: 'ent1' }],
   })
   const expected = {
     meta: {
       author: 'johnf',
-      section: 'news'
+      section: 'news',
     },
-    content: [{ id: 'ent1' }]
+    content: [{ id: 'ent1' }],
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ret = pathSetter(path)('johnf', object as any)
@@ -259,18 +259,34 @@ test('should preserve untouched values', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should preserve props on existing object', t => {
+test('should preserve props on existing object', (t) => {
   const path = 'meta.author'
   const object = {
-    content: [{ id: 'ent1' }]
+    content: [{ id: 'ent1', date: new Date('2021-07-03T13:44:39Z') }],
   }
   const expected = {
     meta: {
-      author: 'johnf'
+      author: 'johnf',
     },
-    content: [{ id: 'ent1' }]
+    content: [{ id: 'ent1', date: new Date('2021-07-03T13:44:39Z') }],
   }
   const ret = pathSetter(path)('johnf', object)
 
   t.deepEqual(ret, expected)
+})
+
+test('should preserve props on existing sub object', (t) => {
+  const path = 'content[0].title'
+  const object = {
+    content: [{ id: 'ent1', date: new Date('2021-07-03T13:44:39Z') }],
+  }
+  const expected = {
+    content: [
+      { id: 'ent1', date: new Date('2021-07-03T13:44:39Z'), title: 'Entry 1' },
+    ],
+  }
+  const ret = pathSetter(path)('Entry 1', object)
+
+  t.deepEqual(ret, expected)
+  t.true(ret.content[0].date instanceof Date)
 })

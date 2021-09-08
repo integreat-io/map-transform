@@ -10,41 +10,43 @@ const data = [
   {
     heading: 'Entry 1',
     createdBy: 'johnf',
-    tags: ['popular', 'news']
+    createdAt: new Date('2021-07-01T07:11:33Z'),
+    tags: ['popular', 'news'],
   },
   {
     heading: 'Entry 2',
     createdBy: 'lucyk',
-    tags: ['tech']
-  }
+    createdAt: new Date('2021-07-05T18:44:54Z'),
+    tags: ['tech'],
+  },
 ]
 
 const stateWithObject = {
   root: data[0],
   context: data[0],
-  value: data[0]
+  value: data[0],
 }
 
 const stateWithArray = {
   root: data,
   context: data,
-  value: data
+  value: data,
 }
 
 const options = {}
 
 // Tests
 
-test('should run pipelines and merge the result', t => {
+test('should run pipelines and merge the result', (t) => {
   const pipelines = [
     ['heading', set('title')],
     ['createdBy', set('author')],
-    ['tags', set('sections[]')]
+    ['tags', set('sections[]')],
   ]
   const expectedValue = {
     title: 'Entry 1',
     author: 'johnf',
-    sections: ['popular', 'news']
+    sections: ['popular', 'news'],
   }
 
   const ret = merge(...pipelines)(options)(stateWithObject)
@@ -52,18 +54,18 @@ test('should run pipelines and merge the result', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should run pipelines and merge the result with several levels', t => {
+test('should run pipelines and merge the result with several levels', (t) => {
   const pipelines = [
     ['heading', set('content.title')],
     ['createdBy', set('meta.author')],
-    ['tags', set('meta.sections[]')]
+    ['tags', set('meta.sections[]')],
   ]
   const expectedValue = {
     content: { title: 'Entry 1' },
     meta: {
       author: 'johnf',
-      sections: ['popular', 'news']
-    }
+      sections: ['popular', 'news'],
+    },
   }
 
   const ret = merge(...pipelines)(options)(stateWithObject)
@@ -71,20 +73,41 @@ test('should run pipelines and merge the result with several levels', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should run pipelines and merge arrays', t => {
+test('should clone Date to new Date', (t) => {
+  const pipelines = [
+    ['heading', set('content.title')],
+    ['createdAt', set('meta.date')],
+    ['createdBy', set('meta.author')],
+  ]
+  const expectedValue = {
+    content: { title: 'Entry 1' },
+    meta: {
+      date: new Date('2021-07-01T07:11:33Z'),
+      author: 'johnf',
+    },
+  }
+
+  const ret = merge(...pipelines)(options)(stateWithObject)
+
+  t.deepEqual(ret.value, expectedValue)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t.true((ret.value as any).meta.date instanceof Date)
+})
+
+test('should run pipelines and merge arrays', (t) => {
   const pipelines = [
     ['heading', set('title')],
-    ['createdBy', set('author')]
+    ['createdBy', set('author')],
   ]
   const expectedValue = [
     {
       title: 'Entry 1',
-      author: 'johnf'
+      author: 'johnf',
     },
     {
       title: 'Entry 2',
-      author: 'lucyk'
-    }
+      author: 'lucyk',
+    },
   ]
 
   const ret = iterate(merge(...pipelines))(options)(stateWithArray)
@@ -92,10 +115,10 @@ test('should run pipelines and merge arrays', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should run one pipeline', t => {
+test('should run one pipeline', (t) => {
   const pipelines = [['heading', set('title')]]
   const expectedValue = {
-    title: 'Entry 1'
+    title: 'Entry 1',
   }
 
   const ret = merge(...pipelines)(options)(stateWithObject)
@@ -103,7 +126,7 @@ test('should run one pipeline', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should run no pipeline', t => {
+test('should run no pipeline', (t) => {
   const pipelines = [] as string[][]
   const expectedValue = undefined
 
@@ -112,7 +135,7 @@ test('should run no pipeline', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should not run pipelines on undefined value', t => {
+test('should not run pipelines on undefined value', (t) => {
   const pipelines = [['heading', set('title')]]
   const state = { ...stateWithObject, value: undefined }
 
@@ -121,7 +144,7 @@ test('should not run pipelines on undefined value', t => {
   t.is(ret.value, undefined)
 })
 
-test('should not run pipelines on null value when mutateNull is false', t => {
+test('should not run pipelines on null value when mutateNull is false', (t) => {
   const pipelines = [[set('title')]]
   const state = { ...stateWithObject, value: null }
   const optionsDontMutateNull = { ...options, mutateNull: false }
@@ -131,7 +154,7 @@ test('should not run pipelines on null value when mutateNull is false', t => {
   t.is(ret.value, undefined)
 })
 
-test('should run pipelines on null value when mutateNull is true', t => {
+test('should run pipelines on null value when mutateNull is true', (t) => {
   const pipelines = [[set('title')]]
   const state = { ...stateWithObject, value: null }
   const optionsMutateNull = { ...options, mutateNull: true }
@@ -142,7 +165,7 @@ test('should run pipelines on null value when mutateNull is true', t => {
   t.deepEqual(ret.value, expected)
 })
 
-test('should run pipelines on null value as default', t => {
+test('should run pipelines on null value as default', (t) => {
   const pipelines = [[set('title')]]
   const state = { ...stateWithObject, value: null }
   const expected = { title: null }

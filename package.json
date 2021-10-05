@@ -37,7 +37,7 @@
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
     "@types/lodash.merge": "^4.6.6",
-    "@types/ramda": "^0.27.44",
+    "@types/ramda": "^0.27.45",
     "ajv": "^6.12.6",
     "handlebars": "^4.7.7",
     "lodash.merge": "^4.6.2",
@@ -45,7 +45,7 @@
     "ramda": "^0.27.1"
   },
   "devDependencies": {
-    "@integreat/ts-dev-setup": "^2.0.2",
+    "@integreat/ts-dev-setup": "^2.1.0",
     "@types/deep-freeze": "^0.1.2",
     "@types/sinon": "^9.0.11",
     "deep-freeze": "0.0.1",

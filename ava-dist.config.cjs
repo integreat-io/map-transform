@@ -1,1 +1,3 @@
-node_modules/@integreat/ts-dev-setup/ava-dist.config.cjs
+module.exports = {
+  files: ['dist/**/*.test.js'],
+}

@@ -1,1 +1,7 @@
-node_modules/@integreat/ts-dev-setup/codeclimate.yml
+version: '2'
+exclude_patterns:
+  - '**/*-test.ts'
+  - 'tests/'
+  - 'node_modules/'
+  - 'coverage/'
+  - 'dist/'

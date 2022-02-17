@@ -1,1 +1,5 @@
-node_modules/@integreat/ts-dev-setup/ava.config.cjs
+module.exports = {
+  extensions: ['ts'],
+  require: ['ts-node/register/transpile-only'],
+  files: ['src/**/*.test.ts']
+}

@@ -1,1 +1,26 @@
-node_modules/@integreat/ts-dev-setup/tsconfig.json
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2020"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "noEmitOnError": false,
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "alwaysStrict": true,
+    "skipLibCheck": true,
+    "removeComments": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*"]
+    },
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"]
+}

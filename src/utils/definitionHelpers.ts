@@ -1,4 +1,3 @@
-import { identity } from 'ramda'
 import {
   Operation,
   DataMapper,
@@ -11,8 +10,9 @@ import {
   FilterObject,
   ApplyObject,
   AltObject,
-  Options
+  Options,
 } from '../types'
+import { identity } from './functional'
 import { get } from '../operations/getSet'
 import mutate from '../operations/mutate'
 import iterate from '../operations/iterate'
@@ -59,17 +59,19 @@ const wrapFromDefinition = (fn: Operation, def: OperationObject) => {
     : fnIterated
 }
 
-const createOperation = <U extends OperationObject>(
-  operationFn: (fn: DataMapper) => Operation,
-  fnProp: string,
-  def: U
-) => (options: Options) => {
-  const { [fnProp]: fnId, ...operands } = def
-  const fn = options.functions && options.functions[fnId as string]
-  return typeof fn === 'function'
-    ? wrapFromDefinition(operationFn(fn(operands, options)), def)(options)
-    : identity
-}
+const createOperation =
+  <U extends OperationObject>(
+    operationFn: (fn: DataMapper) => Operation,
+    fnProp: string,
+    def: U
+  ) =>
+  (options: Options) => {
+    const { [fnProp]: fnId, ...operands } = def
+    const fn = options.functions && options.functions[fnId as string]
+    return typeof fn === 'function'
+      ? wrapFromDefinition(operationFn(fn(operands, options)), def)(options)
+      : identity
+  }
 
 const createApplyOperation = (
   operationFn: (pipelineId: string) => Operation,

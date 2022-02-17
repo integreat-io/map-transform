@@ -1,4 +1,3 @@
-import { compose } from 'ramda'
 import {
   MapDefinition,
   MapTransform,
@@ -44,9 +43,10 @@ const composeMapFunction = (
   mapFn: StateMapper,
   initialState: Partial<State>
 ) => {
-  const map = compose(getStateValue, mapFn, populateState(initialState))
+  const createState = populateState(initialState)
+
   return (data: unknown) =>
-    typeof data === 'undefined' ? undefined : map(data)
+    data === undefined ? undefined : getStateValue(mapFn(createState(data)))
 }
 
 const mergeOptions = (options: Options) => ({

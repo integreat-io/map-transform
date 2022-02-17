@@ -1,4 +1,5 @@
-import mergeDeep = require('lodash.merge')
+import deepmerge = require('deepmerge')
+import { mergeExisting } from '../utils/pathSetter'
 import { Operation, State, MapDefinition } from '../types'
 import {
   getStateValue,
@@ -7,11 +8,21 @@ import {
 } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
-const mergeStates = (state: State, thisState: State) =>
-  setStateValue(
+const isNullOrUndefined = (value: unknown): value is null | undefined =>
+  value === null || value === undefined
+
+function mergeStates(state: State, thisState: State) {
+  const target = getStateValue(state)
+  const source = getStateValue(thisState)
+  return setStateValue(
     state,
-    mergeDeep(getStateValue(state), getStateValue(thisState))
+    isNullOrUndefined(source)
+      ? target
+      : isNullOrUndefined(target)
+      ? source
+      : deepmerge(target, source, { arrayMerge: mergeExisting })
   )
+}
 
 export default function merge(...defs: MapDefinition[]): Operation {
   return (options) => {

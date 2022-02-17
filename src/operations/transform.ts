@@ -1,10 +1,10 @@
-import { identity } from 'ramda'
 import { State, Operation, DataMapper } from '../types'
 import {
   getStateValue,
   setStateValue,
   contextFromState,
 } from '../utils/stateHelpers'
+import { identity } from '../utils/functional'
 
 const callTransformFn = (fn: DataMapper) => (state: State) =>
   setStateValue(state, fn(getStateValue(state), contextFromState(state)))

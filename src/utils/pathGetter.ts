@@ -1,19 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import R = require('ramda')
 import { Path } from '../types'
 import { isPath } from './definitionHelpers'
 import { isObject } from '../utils/is'
+import { identity, pipe } from '../utils/functional'
 
 const numberOrString = (val: string): string | number => {
   const num = Number.parseInt(val, 10)
   return Number.isNaN(num) ? val : num
 }
 
-const split = (str: Path): (string | number)[] =>
-  str
-    .split(/\[|]?\.|]/)
-    .filter((str) => str !== '')
-    .map(numberOrString)
+const split = (str: Path): string[] =>
+  str.split(/\[|]?\.|]/).filter((str) => str !== '')
 
 const getProp = (prop: string) => (object: unknown) =>
   isObject(object) ? object[prop] : undefined // eslint-disable-line security/detect-object-injection
@@ -22,18 +19,14 @@ const getArrayIndex = (index: number) => (arr: unknown) =>
   Array.isArray(arr) ? arr[index] : undefined // eslint-disable-line security/detect-object-injection
 
 const getObjectOrArray = (fn: (object: unknown) => any) => (object: unknown) =>
-  Array.isArray(object) ? R.flatten(object.map(fn)) : fn(object)
+  Array.isArray(object) ? object.flatMap(fn) : fn(object)
 
-const getter = (prop: string | number) =>
-  typeof prop === 'number'
+function createGetter(part: string) {
+  const prop = numberOrString(part)
+  return typeof prop === 'number'
     ? getArrayIndex(prop)
     : getObjectOrArray(getProp(prop))
-
-const getGetters = R.compose(
-  R.ifElse(R.isEmpty, R.always(R.identity), R.apply(R.pipe)),
-  R.map(getter),
-  split
-)
+}
 
 const ensureArray = (value: unknown) =>
   Array.isArray(value)
@@ -55,8 +48,10 @@ export type GetFunction = (object?: unknown) => any
  */
 export default function pathGetter(path: Path | null): GetFunction {
   if (isPath(path)) {
-    const fn = getGetters(path)
-    return path.includes('[]') ? R.compose(ensureArray, fn) : fn
+    const getters = split(path).map(createGetter)
+    const fn = getters.length === 0 ? identity : pipe(...getters)
+
+    return path.includes('[]') ? (value) => ensureArray(fn(value)) : fn
   }
-  return R.identity
+  return identity
 }

@@ -1,13 +1,17 @@
-import {
-  compose,
-  unless,
-  always,
-  ifElse,
-  filter as filterR,
-  identity,
-} from 'ramda'
 import { Operation, DataMapper } from '../types'
-import { getStateValue, contextFromState } from '../utils/stateHelpers'
+import {
+  getStateValue,
+  setStateValue,
+  contextFromState,
+} from '../utils/stateHelpers'
+import { identity } from '../utils/functional'
+
+const filterValue = (value: unknown, filterFn: (data: unknown) => boolean) =>
+  Array.isArray(value)
+    ? value.filter(filterFn)
+    : filterFn(value)
+    ? value
+    : undefined
 
 export default function filter(fn: DataMapper): Operation {
   return (_options) => {
@@ -16,17 +20,9 @@ export default function filter(fn: DataMapper): Operation {
     }
 
     return (state) => {
-      const run = (data: unknown) => !!fn(data, contextFromState(state))
-
-      const runFilter = compose(
-        ifElse(Array.isArray, filterR(run), unless(run, always(undefined))),
-        getStateValue
-      )
-
-      return {
-        ...state,
-        value: runFilter(state),
-      }
+      const filterFn = (data: unknown) => !!fn(data, contextFromState(state))
+      const value = getStateValue(state)
+      return setStateValue(state, filterValue(value, filterFn))
     }
   }
 }

@@ -20,17 +20,17 @@ export const contextFromState = ({
   onlyMappedValues: onlyMapped,
 })
 
-export const populateState = ({
-  rev = false,
-  onlyMapped = false,
-}: Partial<State>) => (data: unknown): State => ({
-  root: data,
-  context: data,
-  value: data,
-  rev,
-  onlyMapped,
-})
+export const populateState =
+  ({ rev = false, onlyMapped = false }: Partial<State>) =>
+  (data: unknown): State => ({
+    root: data,
+    context: data,
+    value: data,
+    rev,
+    onlyMapped,
+  })
 
-export const shouldSkipMutation = ({ mutateNull = true }: Options) => (
-  state: State
-): boolean => state.value === undefined || (!mutateNull && state.value === null)
+export const shouldSkipMutation =
+  ({ mutateNull = true }: Options) =>
+  (state: State): boolean =>
+    state.value === undefined || (!mutateNull && state.value === null)

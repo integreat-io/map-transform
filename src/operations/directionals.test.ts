@@ -1,5 +1,5 @@
 import test from 'ava'
-import { identity } from 'ramda'
+import { identity } from '../utils/functional'
 import { MapFunction, Options } from '../types'
 
 import { fwd, rev, divide } from './directionals'

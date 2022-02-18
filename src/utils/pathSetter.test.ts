@@ -1,7 +1,9 @@
 import test from 'ava'
-import * as deepFreeze from 'deep-freeze'
+import deepFreeze = require('deep-freeze')
 
 import pathSetter from './pathSetter'
+
+// Tests
 
 test('should set value at path', (t) => {
   const path = 'meta.author'
@@ -177,6 +179,26 @@ test('should set value array at path with array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should replace value path with array', (t) => {
+  const path = 'content.items[].value'
+  const object = {
+    content: {
+      items: [{ key: 'externalId' }, { key: 'internalId' }],
+    },
+  }
+  const expected = {
+    content: {
+      items: [
+        { key: 'externalId', value: '314' },
+        { key: 'internalId', value: '000015' },
+      ],
+    },
+  }
+  const ret = pathSetter(path)(['314', '000015'], object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set value at path with array', (t) => {
   const path = 'meta.authors[]'
   const object = {}
@@ -212,6 +234,42 @@ test('should set array at path with array', (t) => {
     },
   }
   const ret = pathSetter(path)(['johnf', 'maryk'], object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set array at path with array below another array', (t) => {
+  const path = 'articles[].authors[]'
+  const object = {}
+  const expected = {
+    articles: [{ authors: ['johnf'] }, { authors: ['maryk'] }],
+  }
+  const ret = pathSetter(path)(['johnf', 'maryk'], object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set array at path with array in object below another array', (t) => {
+  const path = 'articles[].meta.authors[]'
+  const object = {}
+  const expected = {
+    articles: [
+      { meta: { authors: ['johnf'] } },
+      { meta: { authors: ['maryk'] } },
+    ],
+  }
+  const ret = pathSetter(path)(['johnf', 'maryk'], object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set multilevel array at path with array in object below another array', (t) => {
+  const path = 'articles[].meta.authors[]'
+  const object = {}
+  const expected = {
+    articles: [{ meta: { authors: ['johnf', 'maryk'] } }],
+  }
+  const ret = pathSetter(path)([['johnf', 'maryk']], object)
 
   t.deepEqual(ret, expected)
 })
@@ -288,5 +346,34 @@ test('should preserve props on existing sub object', (t) => {
   const ret = pathSetter(path)('Entry 1', object)
 
   t.deepEqual(ret, expected)
-  t.true(ret.content[0].date instanceof Date)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t.true((ret as any).content[0].date instanceof Date)
+})
+
+test('should set object at path', (t) => {
+  const value = { id: 'johnf' }
+  const path = 'meta.author'
+  const object = {}
+  const expected = {
+    meta: {
+      author: { id: 'johnf' },
+    },
+  }
+  const ret = pathSetter(path)(value, object)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should replace object at path', (t) => {
+  const value = { id: 'johnf' }
+  const path = 'meta.author'
+  const object = { meta: { author: { id: 'lucyk', roles: ['editor'] } } }
+  const expected = {
+    meta: {
+      author: { id: 'johnf' },
+    },
+  }
+  const ret = pathSetter(path)(value, object)
+
+  t.deepEqual(ret, expected)
 })

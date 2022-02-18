@@ -1,11 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import deepmerge = require('deepmerge')
-import { compose, identity } from './functional'
+/* eslint-disable security/detect-object-injection */
+import { identity } from './functional'
+import { isObject } from './is'
+import { ensureArray, cloneAsArray } from './array'
 import { Path } from '../types'
+
+interface Setter {
+  (value: unknown, target: unknown): unknown
+}
 
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
   isAfterOpenArray ? `]${part}` : part
 
+/**
+ * Split a dot syntax path into its parts, including array brackets as a part
+ * Note that any part after an open bracket `[]` will be prefixed by `]` to
+ * signal that the setter should be applied to each item in the array.
+ */
 const pathSplitter = function* (path: Path) {
   const regEx = /([^[\].]+|\[\w*])/g
   let match
@@ -14,66 +24,66 @@ const pathSplitter = function* (path: Path) {
     match = regEx.exec(path)
     if (match) {
       yield preparePathPart(match[0], isAfterOpenArray)
-      isAfterOpenArray = isAfterOpenArray || match[0] === '[]'
+      isAfterOpenArray = match[0] === '[]'
     }
   } while (match !== null)
 }
 
-const split = (path: Path): string[] => [...pathSplitter(path)]
-
-const setOnObject =
-  (prop: string) =>
-  (value: unknown): any => ({
-    [prop]: value,
-  })
-
-const setOnOpenArray = (value: unknown) =>
-  Array.isArray(value) ? value : typeof value === 'undefined' ? [] : [value]
-
-const setOnArrayIndex = (index: number, value: unknown) => {
-  const arr: unknown[] = []
-  // eslint-disable-next-line security/detect-object-injection
-  arr[index] = value
-  return arr
-}
-
-const setOnArray = (prop: string) => (value: unknown) => {
-  const index = parseInt(prop.substr(1), 10)
-  return isNaN(index) ? setOnOpenArray(value) : setOnArrayIndex(index, value)
-}
-
-const setOnSubArray = (prop: string) => (value: unknown) =>
-  ([] as unknown[]).concat(value).map(setOnObject(prop.substr(1)))
-
-const createSetter = (prop: string) => {
-  switch (prop[0]) {
-    case '[':
-      return setOnArray(prop)
-    case ']':
-      return setOnSubArray(prop)
-    default:
-      return setOnObject(prop)
+/**
+ * Sets the value returned by next on an object
+ */
+const createObjectSetter = (prop: string, next: Setter) =>
+  function setOnObject(value: unknown, target: unknown): unknown {
+    const obj = isObject(target) ? target : {}
+    return {
+      ...obj,
+      [prop]: next(value, obj[prop]),
+    }
   }
-}
 
-export function mergeExisting<T, U>(
-  target: T[],
-  source: U[]
-): U | (U | T | (U & T))[] {
-  if (Array.isArray(target)) {
-    const arr = source.slice()
-    target.forEach((value, index) => {
-      // eslint-disable-next-line security/detect-object-injection
-      arr[index] = deepmerge(source[index], value, {
-        arrayMerge: mergeExisting,
-      })
+/**
+ *  Sets the value returned by next in an array
+ */
+const createArraySetter = (prop: string, next: Setter) =>
+  function setOnArray(value: unknown, target: unknown) {
+    const index = Number.parseInt(prop.slice(1), 10)
+    if (Number.isNaN(index)) {
+      return ensureArray(next ? next(value, target) : value)
+    } else {
+      const arr = cloneAsArray(target)
+      arr[index] = next(value, arr[index])
+      return arr
+    }
+  }
+
+/**
+ *  Sets the value returned by next in an array from a parent array path
+ */
+function createSubArraySetter(prop: string, nextNext: Setter) {
+  const next = createSetter(prop.slice(1), nextNext)
+
+  return function setOnSubArray(value: unknown, target: unknown) {
+    const arr = cloneAsArray(target)
+    ensureArray(value).forEach((val, index) => {
+      arr[index] = next(val, arr[index])
     })
     return arr
   }
-  return target
 }
 
-export type SetFunction = (value: unknown, object?: unknown) => any
+/**
+ * Create an appropriate setter for the give prop (path part)
+ */
+function createSetter(prop: string, next: Setter) {
+  switch (prop[0]) {
+    case '[':
+      return createArraySetter(prop, next)
+    case ']':
+      return createSubArraySetter(prop, next)
+    default:
+      return createObjectSetter(prop, next)
+  }
+}
 
 /**
  * Set `value` at `path` in `object`. Note that a new object is returned, and
@@ -81,23 +91,10 @@ export type SetFunction = (value: unknown, object?: unknown) => any
  *
  * Path may be a simple dot notation, and may include array brackets with or
  * without an index specified.
- *
- * @param {string} path - The path to set the value at
- * @returns {function} A setter function accepting a value and a target object
  */
-export default function pathSetter(path: Path): SetFunction {
-  const setters = split(path).map(createSetter)
-  if (setters.length === 0) {
-    return identity
-  }
-  const setterFn = compose(...setters)
-
-  return (value, object: unknown = null) => {
-    const data = setterFn(value)
-    return object
-      ? deepmerge(object as Partial<unknown>, data as Partial<unknown>, {
-          arrayMerge: mergeExisting,
-        })
-      : data
-  }
+export default function pathSetter(path: Path): Setter {
+  return [...pathSplitter(path)].reduceRight(
+    (next: Setter, part: string) => createSetter(part, next),
+    identity
+  )
 }

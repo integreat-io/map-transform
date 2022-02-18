@@ -66,7 +66,7 @@ test('should return undefined when no def', (t) => {
 
   const ret = iterate(def)(options)(state)
 
-  t.is(typeof ret.value, 'undefined')
+  t.is(ret.value, undefined)
 })
 
 test('should also iterate context to support alt operation etc.', (t) => {

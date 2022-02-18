@@ -38,7 +38,7 @@ const transformDefFromValue = ({
 export const isOperationType = <T extends OperationObject>(
   def: MapObject | OperationObject,
   prop: string
-): def is T => typeof def[prop] !== 'undefined' // eslint-disable-line security/detect-object-injection
+): def is T => def[prop] !== undefined // eslint-disable-line security/detect-object-injection
 export const hasOperationProps = (
   def: MapObject | OperationObject
 ): def is OperationObject =>

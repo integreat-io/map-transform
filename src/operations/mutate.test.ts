@@ -25,7 +25,7 @@ const stateWithArray = {
 }
 
 const threeLetters = (value: unknown) =>
-  typeof value === 'string' ? value.substr(0, 3) : value
+  typeof value === 'string' ? value.slice(0, 3) : value
 
 const options = {}
 

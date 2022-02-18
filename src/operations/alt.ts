@@ -7,7 +7,7 @@ export default function alt(fn: MapDefinition): Operation {
     const runAlt = mapFunctionFromDef(fn)(options)
 
     return (state) =>
-      typeof getStateValue(state) === 'undefined'
+      getStateValue(state) === undefined
         ? runAlt(setStateValue(state, state.context))
         : state
   }

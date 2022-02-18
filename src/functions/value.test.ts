@@ -39,7 +39,7 @@ test('should not return default value when onlyMappedValues is true', (t) => {
 
   const ret = value({ value: 'The default' })(data, context)
 
-  t.is(typeof ret, 'undefined')
+  t.is(ret, undefined)
 })
 
 test('should return fixed value', (t) => {

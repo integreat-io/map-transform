@@ -38,7 +38,7 @@ test('should return undefined for unknown path', (t) => {
 
   const ret = get({ path })(data, context)
 
-  t.is(typeof ret, 'undefined')
+  t.is(ret, undefined)
 })
 
 test('should return item at given array index', (t) => {
@@ -56,7 +56,7 @@ test('should return undefined when index is too low', (t) => {
 
   const ret = get({ path })(arrayData, context)
 
-  t.is(typeof ret, 'undefined')
+  t.is(ret, undefined)
 })
 
 test('should return undefined when index is too high', (t) => {
@@ -64,7 +64,7 @@ test('should return undefined when index is too high', (t) => {
 
   const ret = get({ path })(arrayData, context)
 
-  t.is(typeof ret, 'undefined')
+  t.is(ret, undefined)
 })
 
 test('should return undefined when data is not an array', (t) => {
@@ -72,7 +72,7 @@ test('should return undefined when data is not an array', (t) => {
 
   const ret = get({ path })(data, context)
 
-  t.is(typeof ret, 'undefined')
+  t.is(ret, undefined)
 })
 
 test('should accept path instead of options object', (t) => {

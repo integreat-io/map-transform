@@ -10,7 +10,7 @@ const createTitle = (item: Record<string, unknown>) =>
   `${item.title} - by ${item.author}`
 const removeAuthor = (item: Record<string, unknown>) =>
   typeof item.title === 'string' && item.title.endsWith(` - by ${item.author}`)
-    ? item.title.substr(
+    ? item.title.slice(
         0,
         item.title.length -
           6 -
@@ -34,7 +34,7 @@ const setActive = (item: unknown) =>
 
 const prepareAuthorName = ({ author }: Record<string, unknown>) =>
   typeof author === 'string'
-    ? `${author[0].toUpperCase()}${author.substr(1)}.`
+    ? `${author[0].toUpperCase()}${author.slice(1)}.`
     : ''
 
 const setAuthorName = (item: unknown) =>

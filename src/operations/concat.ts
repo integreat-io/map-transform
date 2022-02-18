@@ -17,7 +17,7 @@ export default function concat(...defs: MapDefinition[]): Operation {
             (value, fn) => merge(value, getStateValue(fn(state))),
             [] as unknown[]
           )
-          .filter((val) => typeof val !== 'undefined')
+          .filter((val) => val !== undefined)
       )
   }
 }

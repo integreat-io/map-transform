@@ -16,17 +16,16 @@ export default function compare({
   const setFns = pathArr.map(setter)
   const logicalOp =
     operator === 'OR'
-      ? (a: boolean, b: boolean) => Boolean(a) || Boolean(b)
-      : (a: boolean, b: boolean) => Boolean(a) && Boolean(b)
+      ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)
+      : (a: unknown, b: unknown) => Boolean(a) && Boolean(b)
 
   return (data, { rev }) => {
     if (rev) {
-      let ret = {}
       const value = Boolean(data)
-      setFns.forEach((setFn) => {
-        ret = setFn(value, ret)
-      })
-      return ret
+      return setFns.reduce(
+        (obj: unknown, setFn) => setFn(value, obj),
+        undefined
+      )
     } else {
       const values = getFns.map((fn) => fn(data))
       return values.reduce(logicalOp)

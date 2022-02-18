@@ -1,14 +1,16 @@
 import mapAny = require('map-any')
 import { Operation, State, Path } from '../types'
-import getter, { GetFunction } from '../utils/pathGetter'
+import getter, { Getter } from '../utils/pathGetter'
 import { get } from './getSet'
 import { setStateValue } from '../utils/stateHelpers'
 
-const matchPropInArray = (getProp: GetFunction) => (arr: unknown[]) => (
-  value: string | number | boolean | null
-) => arr.find((obj) => getProp(obj) === value)
+const matchPropInArray =
+  (getProp: Getter) =>
+  (arr: unknown[]) =>
+  (value: string | number | boolean | null) =>
+    arr.find((obj) => getProp(obj) === value)
 
-const mapValue = (getArray: Operation, getProp: GetFunction) => {
+const mapValue = (getArray: Operation, getProp: Getter) => {
   const matchInArray = matchPropInArray(getProp)
   return (state: State) => {
     if (state.rev) {

@@ -8,17 +8,27 @@ const object = {
   data: {
     items: [
       { id: 'item1', title: 'First item', tags: ['one', 'odd'], active: true },
-      { id: 'item2', title: 'Second item', tags: ['two', 'even'], active: false },
+      {
+        id: 'item2',
+        title: 'Second item',
+        tags: ['two', 'even'],
+        active: false,
+      },
       { id: 'item3', title: 'Third, but not last', tags: ['three', 'odd'] },
-      { id: 'item4', title: 'Fourth and last', tags: ['four', 'even'], active: true }
-    ]
+      {
+        id: 'item4',
+        title: 'Fourth and last',
+        tags: ['four', 'even'],
+        active: true,
+      },
+    ],
   },
   meta: {
     author: 'Someone',
-    tags: []
+    tags: [],
   },
   list: [{ id: 'no1' }, { id: 'no2' }, { id: 'no3' }],
-  images: null
+  images: null,
 }
 
 // Tests
@@ -64,11 +74,11 @@ test('should return empty array when value is null', (t) => {
 })
 
 test('should get value at path with array index', (t) => {
-  const path = 'data.items[0]'
+  const path = 'data.items[1]'
 
   const ret = pathGetter(path)(object)
 
-  t.deepEqual(ret, object.data.items[0])
+  t.deepEqual(ret, object.data.items[1])
 })
 
 test('should get value at path with array index in the middle', (t) => {
@@ -85,7 +95,7 @@ test('should get array of values at path with open array', (t) => {
     'First item',
     'Second item',
     'Third, but not last',
-    'Fourth and last'
+    'Fourth and last',
   ]
 
   const ret = pathGetter(path)(object)
@@ -95,16 +105,7 @@ test('should get array of values at path with open array', (t) => {
 
 test('should flatten arrays', (t) => {
   const path = 'data.items[].tags[]'
-  const expected = [
-    'one',
-    'odd',
-    'two',
-    'even',
-    'three',
-    'odd',
-    'four',
-    'even'
-  ]
+  const expected = ['one', 'odd', 'two', 'even', 'three', 'odd', 'four', 'even']
 
   const ret = pathGetter(path)(object)
 
@@ -119,8 +120,16 @@ test('should return object when no path', (t) => {
   t.deepEqual(ret, object)
 })
 
-test('should return object when empty path', (t) => {
+test('should return object for empty path', (t) => {
   const path = ''
+
+  const ret = pathGetter(path)(object)
+
+  t.deepEqual(ret, object)
+})
+
+test('should return object for single dot path', (t) => {
+  const path = '.'
 
   const ret = pathGetter(path)(object)
 

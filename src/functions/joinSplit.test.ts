@@ -40,9 +40,9 @@ test('should return the value of only one path', (t) => {
   t.is(ret, expected)
 })
 
-test('should return empty string when no path', (t) => {
+test('should return undefined when no paths', (t) => {
   const data = { firstName: 'John', lastName: 'Fjon', age: 36 }
-  const expected = ''
+  const expected = undefined
 
   const ret = join({})(data, context)
 
@@ -92,13 +92,13 @@ test('should split strings to only one path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return empty object when no paths', (t) => {
+test('should return undefined when no paths in rev', (t) => {
   const data = 'John Fjon'
-  const expected = {}
+  const expected = undefined
 
   const ret = join({})(data, contextRev)
 
-  t.deepEqual(ret, expected)
+  t.is(ret, expected)
 })
 
 // Tests -- split

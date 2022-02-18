@@ -4,7 +4,7 @@ import { isObject } from './is'
 import { ensureArray, cloneAsArray } from './array'
 import { Path } from '../types'
 
-interface Setter {
+export interface Setter {
   (value: unknown, target: unknown): unknown
 }
 

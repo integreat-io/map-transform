@@ -13,6 +13,7 @@ import {
   Options,
 } from '../types'
 import { identity } from './functional'
+import { isObject } from './is'
 import { get } from '../operations/getSet'
 import mutate from '../operations/mutate'
 import iterate from '../operations/iterate'
@@ -25,8 +26,14 @@ import { fwd, rev } from '../operations/directionals'
 
 const altOperation = (fn: DataMapper) => alt(transform(fn))
 
-const isObject = (def: unknown): def is MapObject | OperationObject =>
-  typeof def === 'object' && def !== null && !Array.isArray(def)
+const transformDefFromValue = ({
+  $value: value,
+  ...def
+}: OperationObject | MapObject) => ({
+  ...def,
+  $transform: 'value',
+  value,
+})
 
 export const isOperationType = <T extends OperationObject>(
   def: MapObject | OperationObject,
@@ -42,7 +49,7 @@ export const hasOperationProps = (
 
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isMapObject = (def: unknown): def is MapObject =>
-  isObject(def) && !hasOperationProps(def)
+  isObject(def) && !hasOperationProps(def as MapObject | OperationObject)
 export const isMapPipe = (def: unknown): def is MapPipe => Array.isArray(def)
 export const isOperation = (def: unknown): def is Operation =>
   typeof def === 'function'
@@ -90,6 +97,8 @@ const createApplyOperation = (
 const operationFromObject = (def: OperationObject | MapObject) => {
   if (isOperationType<TransformObject>(def, '$transform')) {
     return createOperation(transform, '$transform', def)
+  } else if (isOperationType<TransformObject>(def, '$value')) {
+    return createOperation(transform, '$transform', transformDefFromValue(def))
   } else if (isOperationType<FilterObject>(def, '$filter')) {
     return createOperation(filter, '$filter', def)
   } else if (isOperationType<ApplyObject>(def, '$apply')) {

@@ -18,8 +18,10 @@ const removeAuthor = (item: Record<string, unknown>) =>
       )
     : item.title
 
-const appendToTitle = ({ text }: Operands) => (item: unknown) =>
-  isObject(item) ? { ...item, title: `${item.title}${text}` } : item
+const appendToTitle =
+  ({ text }: Operands) =>
+  (item: unknown) =>
+    isObject(item) ? { ...item, title: `${item.title}${text}` } : item
 
 const appendAuthorToTitle = (item: unknown) =>
   isObject(item) ? { ...item, title: createTitle(item) } : item
@@ -544,6 +546,22 @@ test('should do nothing when transform operation has unknown function', (t) => {
   }
 
   const expected = [{ title: 'The heading' }, { title: 'The other' }]
+
+  const ret = mapTransform(def, { functions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support $value shorthand', (t) => {
+  const def = [
+    {
+      title: ['content.heading', { $value: 'Default title' }],
+    },
+  ]
+  const data = {}
+  const expected = {
+    title: 'Default title',
+  }
 
   const ret = mapTransform(def, { functions })(data)
 

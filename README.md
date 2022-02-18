@@ -708,6 +708,8 @@ const def10asObject = {
 }
 ```
 
+There is also a shortcut for `{ $transform: 'value', value: 'customer' }`: `{ $value: 'customer' }`, which might be useful when typing definitions by hand.
+
 #### `fixed(data)` operation
 
 The data given to the fixed operation, will be inserted in the pipeline in place

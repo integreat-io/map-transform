@@ -383,7 +383,7 @@ test('should flip and mutate object', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should skip transform object with $direction: rev going forward', (t) => {
+test('should skip transform object wlith $direction: rev going forward', (t) => {
   const def = {
     $direction: 'rev',
     id: value('ent1'),
@@ -460,6 +460,45 @@ test('should transform object with $direction: fwd going forward', (t) => {
   }
 
   const ret = mutate(def)(options)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use forward alias', (t) => {
+  const optionsWithAlias = { ...options, fwdAlias: 'from' }
+  const def = {
+    $direction: 'from',
+    content: {
+      title: 'headline',
+    },
+  }
+  const state = {
+    root: {},
+    context: {},
+    value: {
+      content: {
+        title: 'The title',
+      },
+    },
+    rev: true,
+  }
+  const expected = state
+
+  const ret = mutate(def)(optionsWithAlias)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use reverse alias', (t) => {
+  const optionsWithAlias = { ...options, revAlias: 'to' }
+  const def = {
+    $direction: 'to',
+    id: value('ent1'),
+    title: get('headline'),
+  }
+  const expected = stateWithObject
+
+  const ret = mutate(def)(optionsWithAlias)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })

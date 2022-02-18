@@ -79,14 +79,17 @@ export default function mutate(def: MapObject): Operation {
   const flip = def.$flip || false
   const runMutation = objectToMapFunction(def, flip)
 
-  switch (def.$direction) {
-    case 'fwd':
-      return (options: Options) => (state: State) =>
-        !state.rev ? runMutation(options)(state) : state
-    case 'rev':
-      return (options: Options) => (state: State) =>
-        state.rev ? runMutation(options)(state) : state
-    default:
-      return runMutation
+  return function mutateFn(options: Options) {
+    const dir = def.$direction
+    if (typeof dir === 'string') {
+      if (dir === 'fwd' || dir === options.fwdAlias) {
+        return (state: State) =>
+          !state.rev ? runMutation(options)(state) : state
+      } else if (dir === 'rev' || dir === options.revAlias) {
+        return (state: State) =>
+          state.rev ? runMutation(options)(state) : state
+      }
+    }
+    return runMutation(options)
   }
 }

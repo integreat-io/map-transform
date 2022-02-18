@@ -307,6 +307,24 @@ test('should skip transform object with $direction: fwd', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should skip transform object when $direction is fwdAlias', (t) => {
+  const options = { fwdAlias: 'from' }
+  const def = {
+    $direction: 'from',
+    title: 'content.heading',
+    author: 'meta.writer.username',
+  }
+  const data = {
+    title: 'The heading',
+    author: 'johnf',
+  }
+  const expected = data
+
+  const ret = mapTransform(def, options).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should treat lookup as get in reverse', (t) => {
   const def = {
     title: 'content.heading',

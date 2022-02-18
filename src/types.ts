@@ -50,6 +50,8 @@ export interface Options {
   }
   dictionaries?: Dictionaries
   mutateNull?: boolean
+  fwdAlias?: string
+  revAlias?: string
 }
 
 export interface TransformObject extends Operands {

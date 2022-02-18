@@ -326,6 +326,17 @@ When running a forward transformation, transform objects marked with
 `$direction: 'rev'` will be skipped. The same goes for `$direction: 'fwd'` in
 reverse.
 
+You may specify aliases for `fwd` and `rev` in the `mapTransform` options:
+
+```javascript
+const options = { fwdAlias: 'from', revAlias: 'to' }
+const mapper = mapTransform(def, options)
+```
+
+In this case, `from` and `to` may be used to specify forward and reverse
+direction respectively. `fwd` and `rev` will still work in addition to the
+aliases.
+
 ### Transform pipeline
 
 The idea of the transform pipeline, is that you describe a set of

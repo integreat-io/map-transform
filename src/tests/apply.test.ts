@@ -6,97 +6,99 @@ import { mapTransform, transform, apply } from '..'
 
 const castEntry = {
   title: ['title', transform(String)],
-  viewCount: ['viewCount', transform(Number)]
+  viewCount: ['viewCount', transform(Number)],
 }
 
 const getItems = 'data.entries'
 
 const pipelines = {
   castEntry,
-  getItems
+  getItems,
 }
+
+const options = { pipelines }
 
 // Tests
 
-test('should apply pipeline by id', t => {
+test('should apply pipeline by id', (t) => {
   const def = [
     {
       title: 'content.heading',
-      viewCount: 'meta.hits'
+      viewCount: 'meta.hits',
     },
-    apply('castEntry')
+    apply('castEntry'),
   ]
   const data = {
     content: { heading: 'The heading' },
-    meta: { hits: '45' }
+    meta: { hits: '45' },
   }
   const expected = {
     title: 'The heading',
-    viewCount: 45
+    viewCount: 45,
   }
 
-  const ret = mapTransform(def, { pipelines })(data)
+  const ret = mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply path pipeline by id', t => {
+test('should apply path pipeline by id', (t) => {
   const def = [
     apply('getItems'),
     {
-      title: 'content.heading'
-    }
+      title: 'content.heading',
+    },
   ]
   const data = {
     data: {
       entries: {
-        content: { heading: 'The heading' }
-      }
-    }
+        content: { heading: 'The heading' },
+      },
+    },
   }
   const expected = {
-    title: 'The heading'
+    title: 'The heading',
   }
 
-  const ret = mapTransform(def, { pipelines })(data)
+  const ret = mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply pipeline by id in reverse', t => {
+test('should apply pipeline by id in reverse', (t) => {
   const def = [
     apply('getItems'),
     {
-      title: 'content.heading'
-    }
+      title: 'content.heading',
+    },
   ]
   const data = {
-    title: 'The heading'
+    title: 'The heading',
   }
   const expected = {
     data: {
       entries: {
-        content: { heading: 'The heading' }
-      }
-    }
+        content: { heading: 'The heading' },
+      },
+    },
   }
 
-  const ret = mapTransform(def, { pipelines }).rev(data)
+  const ret = mapTransform(def, options).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when no pipelines is supplied', t => {
+test('should return undefined when no pipelines is supplied', (t) => {
   const def = [
     {
       title: 'content.heading',
-      viewCount: 'meta.hits'
+      viewCount: 'meta.hits',
     },
-    apply('castEntry')
+    apply('castEntry'),
   ]
   const data = {
     content: { heading: 'The heading' },
-    meta: { hits: '45' }
+    meta: { hits: '45' },
   }
 
   const ret = mapTransform(def)(data)
@@ -104,116 +106,158 @@ test('should return undefined when no pipelines is supplied', t => {
   t.is(ret, undefined)
 })
 
-test('should apply pipeline as operation object', t => {
+test('should apply pipeline as operation object', (t) => {
   const def = [
     {
       title: 'content.heading',
-      viewCount: 'meta.hits'
+      viewCount: 'meta.hits',
     },
-    { $apply: 'castEntry' }
+    { $apply: 'castEntry' },
   ]
   const data = {
     content: { heading: 'The heading' },
-    meta: { hits: '45' }
+    meta: { hits: '45' },
   }
   const expected = {
     title: 'The heading',
-    viewCount: 45
+    viewCount: 45,
   }
 
-  const ret = mapTransform(def, { pipelines })(data)
+  const ret = mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should iterate applied pipeline', t => {
+test('should iterate applied pipeline', (t) => {
   const def = [
     {
       $iterate: true,
       title: 'content.heading',
-      viewCount: 'meta.hits'
+      viewCount: 'meta.hits',
     },
-    { $apply: 'castEntry', $iterate: true }
+    { $apply: 'castEntry', $iterate: true },
   ]
   const data = [
     {
       content: { heading: 'The heading' },
-      meta: { hits: '45' }
+      meta: { hits: '45' },
     },
     {
       content: { heading: 'The next heading' },
-      meta: { hits: '111' }
-    }
+      meta: { hits: '111' },
+    },
   ]
   const expected = [
     {
       title: 'The heading',
-      viewCount: 45
+      viewCount: 45,
     },
     {
       title: 'The next heading',
-      viewCount: 111
-    }
+      viewCount: 111,
+    },
   ]
 
-  const ret = mapTransform(def, { pipelines })(data)
+  const ret = mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined on unknown pipeline in operation object', t => {
+test('should return undefined on unknown pipeline in operation object', (t) => {
   const def = [
     {
       title: 'content.heading',
-      viewCount: 'meta.hits'
+      viewCount: 'meta.hits',
     },
-    { $apply: 'unknown' }
+    { $apply: 'unknown' },
   ]
   const data = {
     content: { heading: 'The heading' },
-    meta: { hits: '45' }
+    meta: { hits: '45' },
   }
 
-  const ret = mapTransform(def, { pipelines })(data)
+  const ret = mapTransform(def, options)(data)
 
   t.is(ret, undefined)
 })
 
-test('should apply pipeline as operation object online going forward only', t => {
+test('should apply pipeline as operation object online going forward only', (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
-    { $apply: 'castEntry', $direction: 'fwd' }
+    { $apply: 'castEntry', $direction: 'fwd' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: 45 }
   const dataRev = { title: 'The heading', viewCount: '45' }
   const expectedRev = {
     content: { heading: 'The heading' },
-    meta: { hits: '45' }
+    meta: { hits: '45' },
   }
 
-  const retFwd = mapTransform(def, { pipelines })(dataFwd)
-  const retRev = mapTransform(def, { pipelines }).rev(dataRev)
+  const retFwd = mapTransform(def, options)(dataFwd)
+  const retRev = mapTransform(def, options).rev(dataRev)
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should apply pipeline as operation object online going in reverse only', t => {
+test('should apply pipeline as operation object online going in reverse only', (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
-    { $apply: 'castEntry', $direction: 'rev' }
+    { $apply: 'castEntry', $direction: 'rev' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: '45' }
   const dataRev = { title: 'The heading', viewCount: '45' }
   const expectedRev = {
     content: { heading: 'The heading' },
-    meta: { hits: 45 }
+    meta: { hits: 45 },
   }
 
-  const retFwd = mapTransform(def, { pipelines })(dataFwd)
-  const retRev = mapTransform(def, { pipelines }).rev(dataRev)
+  const retFwd = mapTransform(def, options)(dataFwd)
+  const retRev = mapTransform(def, options).rev(dataRev)
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
+
+test('should use forward alias', (t) => {
+  const optionsWithAlias = { ...options, fwdAlias: 'from' }
+  const def = [
+    { title: 'content.heading', viewCount: 'meta.hits' },
+    { $apply: 'castEntry', $direction: 'from' },
+  ]
+  const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
+  const expectedFwd = { title: 'The heading', viewCount: 45 }
+  const dataRev = { title: 'The heading', viewCount: '45' }
+  const expectedRev = {
+    content: { heading: 'The heading' },
+    meta: { hits: '45' },
+  }
+
+  const retFwd = mapTransform(def, optionsWithAlias)(dataFwd)
+  const retRev = mapTransform(def, optionsWithAlias).rev(dataRev)
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
+
+test('should use reverse alias', (t) => {
+  const optionsWithAlias = { ...options, pipelines }
+  const def = [
+    { title: 'content.heading', viewCount: 'meta.hits' },
+    { $apply: 'castEntry', $direction: 'rev' },
+  ]
+  const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
+  const expectedFwd = { title: 'The heading', viewCount: '45' }
+  const dataRev = { title: 'The heading', viewCount: '45' }
+  const expectedRev = {
+    content: { heading: 'The heading' },
+    meta: { hits: 45 },
+  }
+
+  const retFwd = mapTransform(def, optionsWithAlias)(dataFwd)
+  const retRev = mapTransform(def, optionsWithAlias).rev(dataRev)
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)

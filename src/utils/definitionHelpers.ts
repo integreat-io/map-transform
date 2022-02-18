@@ -52,11 +52,17 @@ const iterateIf = (fn: Operation, should: boolean) =>
 
 const wrapFromDefinition = (fn: Operation, def: OperationObject) => {
   const fnIterated = iterateIf(fn, def.$iterate === true)
-  return def.$direction === 'rev'
-    ? rev(fnIterated)
-    : def.$direction === 'fwd'
-    ? fwd(fnIterated)
-    : fnIterated
+  return (options: Options) => {
+    const dir = def.$direction
+    if (typeof dir === 'string') {
+      if (dir === 'rev') {
+        return rev(fnIterated)(options)
+      } else if (dir === 'fwd' || dir === options.fwdAlias) {
+        return fwd(fnIterated)(options)
+      }
+    }
+    return fnIterated(options)
+  }
 }
 
 const createOperation =

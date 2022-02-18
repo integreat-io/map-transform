@@ -109,6 +109,31 @@ test('should skip transform object with $direction: rev', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should skip transform object when $direction is revAlias', (t) => {
+  const options = {
+    revAlias: 'to',
+  }
+  const def = {
+    $direction: 'to',
+    attributes: {
+      title: 'content.heading',
+      text: 'content.copy',
+    },
+    relationships: {
+      author: 'meta.writer.username',
+    },
+  }
+  const data = {
+    content: { heading: 'The heading', copy: 'A long text' },
+    meta: { writer: { username: 'johnf' } },
+  }
+  const expected = data
+
+  const ret = mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map null values path', (t) => {
   const def = [
     'content.article',

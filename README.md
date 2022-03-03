@@ -1093,6 +1093,13 @@ Or as a transform object:
 const def32o = ['currencies', { $transform: 'explode' }]
 ```
 
+#### `implode()` function
+
+This is the exact opposite of the `explode` helper, imploding from a service and
+explode in reverse (to a service). See
+[the documentation for `explode()`](#explode-function), but remember that the
+directions will be reversed for `implode()`.
+
 #### `map(dictionary)` function
 
 This helper function accepts a dictionary described as an array of tuples, where

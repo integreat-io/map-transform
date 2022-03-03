@@ -40,10 +40,12 @@ function doImplode(data: unknown) {
 
 function doExplode(data: unknown): any[] | undefined {
   if (isObject(data)) {
-    return Object.entries(data).map(([key, value]: [string, unknown]) => ({
-      key,
-      value,
-    }))
+    return Object.entries(data)
+      .filter(([, value]) => value !== undefined)
+      .map(([key, value]: [string, unknown]) => ({
+        key,
+        value,
+      }))
   } else if (Array.isArray(data)) {
     return data.map((value: unknown, key: number) => ({ key, value }))
   } else {
@@ -51,6 +53,10 @@ function doExplode(data: unknown): any[] | undefined {
   }
 }
 
-export default function explode(): DataMapper {
+export function explode(): DataMapper {
   return (data, context) => (context.rev ? doImplode(data) : doExplode(data))
+}
+
+export function implode(): DataMapper {
+  return (data, context) => (context.rev ? doExplode(data) : doImplode(data))
 }

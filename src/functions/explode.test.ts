@@ -1,13 +1,13 @@
 import test from 'ava'
 
-import explode from './explode'
+import { explode, implode } from './explode'
 
 // Setup
 
 const context = { rev: false, onlyMappedValues: false }
 const contextRev = { rev: true, onlyMappedValues: false }
 
-// Tests
+// Tests -- explode
 
 test('should explode object to array of key value objects', (t) => {
   const data = { NOK: 1, USD: 0.125, EUR: 0.1 }
@@ -15,6 +15,18 @@ test('should explode object to array of key value objects', (t) => {
     { key: 'NOK', value: 1 },
     { key: 'USD', value: 0.125 },
     { key: 'EUR', value: 0.1 },
+  ]
+
+  const ret = explode()(data, context)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not explode properties with undefined value', (t) => {
+  const data = { NOK: 1, USD: 0.125, EUR: undefined }
+  const expected = [
+    { key: 'NOK', value: 1 },
+    { key: 'USD', value: 0.125 },
   ]
 
   const ret = explode()(data, context)
@@ -110,4 +122,32 @@ test('should not implode non-arrays in revers', (t) => {
   t.deepEqual(explode()(3, contextRev), undefined)
   t.deepEqual(explode()(true, contextRev), undefined)
   t.deepEqual(explode()(new Date(), contextRev), undefined)
+})
+
+// Tests -- implode
+
+test('should implode array of key value objects to object ', (t) => {
+  const data = [
+    { key: 'NOK', value: 1 },
+    { key: 'USD', value: 0.125 },
+    { key: 'EUR', value: 0.1 },
+  ]
+  const expected = { NOK: 1, USD: 0.125, EUR: 0.1 }
+
+  const ret = implode()(data, context)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should explode object to array of key value objects in reverse', (t) => {
+  const data = { NOK: 1, USD: 0.125, EUR: 0.1 }
+  const expected = [
+    { key: 'NOK', value: 1 },
+    { key: 'USD', value: 0.125 },
+    { key: 'EUR', value: 0.1 },
+  ]
+
+  const ret = implode()(data, contextRev)
+
+  t.deepEqual(ret, expected)
 })

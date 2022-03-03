@@ -470,6 +470,19 @@ test('should use built in explode function', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should use built in implode function', (t) => {
+  const def = { properties: { $transform: 'implode' } }
+  const data = [
+    { key: 'value', value: 32 },
+    { key: 'unit', value: 'KG' },
+  ]
+  const expected = { properties: { value: 32, unit: 'KG' } }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should only use transform going forward', (t) => {
   const def = {
     title: [

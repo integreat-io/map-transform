@@ -69,6 +69,7 @@ test('should reverse map with dot only notation', (t) => {
 
 test('should reverse map array of objects', (t) => {
   const def = {
+    $iterate: true,
     title: 'content.heading',
     author: 'meta.writer.username',
   }

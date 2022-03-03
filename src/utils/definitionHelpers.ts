@@ -45,7 +45,8 @@ export const hasOperationProps = (
   isOperationType<TransformObject>(def, '$transform') ||
   isOperationType<FilterObject>(def, '$filter') ||
   isOperationType<ApplyObject>(def, '$apply') ||
-  isOperationType<AltObject>(def, '$alt')
+  isOperationType<AltObject>(def, '$alt') ||
+  isOperationType<AltObject>(def, '$value')
 
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isMapObject = (def: unknown): def is MapObject =>

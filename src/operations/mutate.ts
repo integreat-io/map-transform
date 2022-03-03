@@ -14,8 +14,7 @@ import { divide } from './directionals'
 import plug from './plug'
 import iterate from './iterate'
 import { isMapObject } from '../utils/definitionHelpers'
-
-const ensureArray = (value: unknown) => (Array.isArray(value) ? value : [value])
+import { ensureArray } from '../utils/array'
 
 const setIfPath = (map: unknown) => (typeof map === 'string' ? set(map) : map)
 

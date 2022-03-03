@@ -259,6 +259,7 @@ test('should map with object array path', (t) => {
 
 test('should handle array paths in object mappings', (t) => {
   const def = {
+    $iterate: true,
     id: 'key',
     relationships: {
       'sections[]': 'sections',
@@ -407,6 +408,7 @@ test('should map with root array path', (t) => {
 
 test('should map array of objects', (t) => {
   const def = {
+    $iterate: true,
     content: {
       heading: 'title',
     },
@@ -456,6 +458,7 @@ test('should set empty data array', (t) => {
 
 test('should not hijack array', (t) => {
   const def = {
+    $iterate: true,
     content: { title: 'heading' },
     meta: {
       'sections[].id': 'tags',

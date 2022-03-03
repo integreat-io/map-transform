@@ -5,7 +5,7 @@ import {
   StateMapper,
   Options,
 } from './types'
-import { mapFunctionFromDef, isMapObject } from './utils/definitionHelpers'
+import { mapFunctionFromDef } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
 import functions from './functions'
 import iterate from './operations/iterate'
@@ -57,15 +57,12 @@ const mergeOptions = (options: Options) => ({
   },
 })
 
-const createRootMapper = (def: MapDefinition) =>
-  isMapObject(def) ? iterate(def) : mapFunctionFromDef(def)
-
 export function mapTransform(
   def: MapDefinition,
   options: Options = {}
 ): MapTransform {
   const completeOptions = mergeOptions(options)
-  const mapFn = createRootMapper(def)(completeOptions)
+  const mapFn = mapFunctionFromDef(def)(completeOptions)
 
   return Object.assign(composeMapFunction(mapFn, {}), {
     onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),

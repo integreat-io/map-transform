@@ -188,11 +188,14 @@ const def2 = {
 // }
 ```
 
-When you transform an array of data with a mapping object, each item in the
-data array will be be transformed with the mapping object.
+When you transform an array of data with a mapping object, you'll have to set
+`$iterate: true` to have each item in the data array be transformed with the
+mapping object. If you don't the entire array will be passed to the mapping
+object.
 
 ```javascript
 const def3 = {
+  $iterate: true,
   title: 'heading',
 }
 
@@ -203,12 +206,8 @@ const def3 = {
 // ]
 ```
 
-If you want to apply the mapping object to the entire array – not each item in
-the array – set `$iterate: false` on the mapping object or wrap the object in a
-transform pipeline.
-
-**Note:** When a mapping object is part of a transform pipeline, the default is
-to not iterate. See [**transform pipeline**](#transform-pipeline) for more.
+**Note:** Iterating used to be the default behavior, but it has been changed due
+to the contradiction with how the mapping object behaves everywhere else.
 
 A key will set whatever is returned by the pipeline (see
 [next section](#values-on-the-transform-object)), whether it is a string, a

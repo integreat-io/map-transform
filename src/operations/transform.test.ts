@@ -9,6 +9,7 @@ const upper = (str: unknown) =>
   typeof str === 'string' ? str.toUpperCase() : str
 const lower = (str: unknown) =>
   typeof str === 'string' ? str.toLowerCase() : str
+const length = (arr: unknown) => (Array.isArray(arr) ? arr.length : 0)
 
 const options = {}
 
@@ -27,6 +28,23 @@ test('should run transform function on value', (t) => {
   }
 
   const ret = transform(upper)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run transform function on array value', (t) => {
+  const state = {
+    root: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
+    context: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
+    value: ['Entry 1', 'Entry 2'],
+  }
+  const expected = {
+    root: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
+    context: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
+    value: 2,
+  }
+
+  const ret = transform(length)(options)(state)
 
   t.deepEqual(ret, expected)
 })

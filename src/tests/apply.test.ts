@@ -243,10 +243,10 @@ test('should use forward alias', (t) => {
 })
 
 test('should use reverse alias', (t) => {
-  const optionsWithAlias = { ...options, pipelines }
+  const optionsWithAlias = { ...options, revAlias: 'to' }
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
-    { $apply: 'castEntry', $direction: 'rev' },
+    { $apply: 'castEntry', $direction: 'to' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: '45' }

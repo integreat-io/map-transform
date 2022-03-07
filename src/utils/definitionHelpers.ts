@@ -63,7 +63,7 @@ const wrapFromDefinition = (fn: Operation, def: OperationObject) => {
   return (options: Options) => {
     const dir = def.$direction
     if (typeof dir === 'string') {
-      if (dir === 'rev') {
+      if (dir === 'rev' || dir === options.revAlias) {
         return rev(fnIterated)(options)
       } else if (dir === 'fwd' || dir === options.fwdAlias) {
         return fwd(fnIterated)(options)

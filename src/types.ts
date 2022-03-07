@@ -35,6 +35,7 @@ export interface CustomFunction<T = Operands> {
 export interface State {
   root: unknown
   context: unknown
+  target?: unknown
   value: unknown
   rev?: boolean
   onlyMapped?: boolean
@@ -95,7 +96,7 @@ export interface MapFunction {
   (options: Options): (state: State) => State
 }
 
-type MapPipeSimple = (MapObject | Operation | OperationObject | Path)[]
+export type MapPipeSimple = (MapObject | Operation | OperationObject | Path)[]
 
 export type MapPipe = (
   | MapObject

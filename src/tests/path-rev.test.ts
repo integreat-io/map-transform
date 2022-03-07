@@ -99,15 +99,54 @@ test('should reverse map with object array path', (t) => {
     {
       $iterate: true,
       title: 'content.heading',
+      abstract: 'content.intro',
     },
   ]
-  const data = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
+  const data = [
+    { title: 'Heading 1', abstract: 'Read on' },
+    { title: 'Heading 2', abstract: 'This is good' },
+  ]
   const expected = {
     content: {
       articles: [
-        { content: { heading: 'Heading 1' } },
-        { content: { heading: 'Heading 2' } },
+        { content: { heading: 'Heading 1', intro: 'Read on' } },
+        { content: { heading: 'Heading 2', intro: 'This is good' } },
       ],
+    },
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should reverse map several layers', (t) => {
+  const def = [
+    'content.articles',
+    {
+      $iterate: true,
+      attributes: {
+        title: 'content.heading',
+      },
+      relationships: {
+        'topics[].id': 'meta.keywords',
+        'author.id': 'meta.user_id',
+      },
+    },
+  ]
+  const data = {
+    attributes: { title: 'Heading 1' },
+    relationships: {
+      topics: [{ id: 'news' }, { id: 'latest' }],
+      author: { id: 'johnf' },
+    },
+  }
+  const expected = {
+    content: {
+      articles: {
+        content: { heading: 'Heading 1' },
+        meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
+      },
     },
   }
 

@@ -12,7 +12,9 @@ const isGet = (isGetOperation: boolean, isRev = false) =>
 const setWithOnlyMapped =
   (state: State, setFn: Setter): Setter =>
   (value) =>
-    state.onlyMapped && value === undefined ? value : setFn(value, undefined)
+    state.onlyMapped && value === undefined
+      ? state.target
+      : setFn(value, state.target)
 
 const getValueFromState = (path: Path) => (state: State) =>
   getter(path)(getStateValue(state))

@@ -54,6 +54,25 @@ test('should run pipelines and merge the result', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
+test('should merge with existing object', (t) => {
+  const pipelines = [
+    ['.'],
+    ['createdBy', set('heading')],
+    ['heading', set('title')],
+  ]
+  const expectedValue = {
+    heading: 'johnf',
+    title: 'Entry 1',
+    createdBy: 'johnf',
+    createdAt: new Date('2021-07-01T07:11:33Z'),
+    tags: ['popular', 'news'],
+  }
+
+  const ret = merge(...pipelines)(options)(stateWithObject)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should run pipelines and merge the result with several levels', (t) => {
   const pipelines = [
     ['heading', set('content.title')],

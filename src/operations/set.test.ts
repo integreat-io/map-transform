@@ -8,28 +8,28 @@ const options = {}
 
 // Tests
 
-test('should set value on path', t => {
+test('should set value on path', (t) => {
   const data = { user: 'johnf' }
   const state = {
     root: data,
     context: data,
-    value: 'johnf'
+    value: 'johnf',
   }
   const expected = {
     root: data,
     context: data,
-    value: { meta: { author: 'johnf' } }
+    value: { meta: { author: 'johnf' } },
   }
   const ret = set('meta.author')(options)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not strip away star', t => {
+test('should not strip away star', (t) => {
   const state = {
     root: { token: 's3cr3t' },
     context: { token: 's3cr3t' },
-    value: 's3cr3t'
+    value: 's3cr3t',
   }
   const expectedValue = { 's:header': { '*tu:api-key': 's3cr3t' } }
 
@@ -38,11 +38,11 @@ test('should not strip away star', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should set undefined', t => {
+test('should set undefined', (t) => {
   const state = {
     root: {},
     context: {},
-    value: undefined
+    value: undefined,
   }
   const expectedValue = { meta: { author: undefined } }
 
@@ -51,12 +51,12 @@ test('should set undefined', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should not set undefined when onlyMapped is true', t => {
+test('should not set undefined when onlyMapped is true', (t) => {
   const state = {
     root: {},
     context: {},
     value: undefined,
-    onlyMapped: true
+    onlyMapped: true,
   }
   const expectedValue = undefined
 
@@ -65,30 +65,30 @@ test('should not set undefined when onlyMapped is true', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should get from path when reverse mapping', t => {
+test('should get from path when reverse mapping', (t) => {
   const data = { user: 'johnf' }
   const state = {
     root: data,
     context: data,
     value: { meta: { author: 'johnf' } },
-    rev: true
+    rev: true,
   }
   const expected = {
     root: data,
     context: data,
     value: 'johnf',
-    rev: true
+    rev: true,
   }
   const ret = set('meta.author')(options)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not set on root path', t => {
+test('should not set on root path', (t) => {
   const state = {
     root: { section: 'news', items: [{ id: 'no1' }] },
     context: { id: 'no1' },
-    value: { id: 'no1' }
+    value: { id: 'no1' },
   }
   const expectedValue = undefined
 
@@ -97,16 +97,56 @@ test('should not set on root path', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should get from root path', t => {
+test('should get from root path', (t) => {
   const state = {
     root: { section: 'news', items: [{ id: 'no1' }] },
     context: { id: 'no1' },
     value: { id: 'no1' },
-    rev: true
+    rev: true,
   }
   const expectedValue = 'news'
 
   const ret = set('^section')(options)(state)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+test('should set value on target', (t) => {
+  const data = { user: 'johnf' }
+  const state = {
+    root: data,
+    context: data,
+    target: { meta: { category: 'news' } },
+    value: 'johnf',
+  }
+  const expected = {
+    root: data,
+    context: data,
+    target: { meta: { category: 'news' } },
+    value: { meta: { author: 'johnf', category: 'news' } },
+  }
+  const ret = set('meta.author')(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return target when onlyMapped is true', (t) => {
+  const data = { user: 'johnf' }
+  const state = {
+    root: data,
+    context: data,
+    target: { meta: { category: 'news' } },
+    value: undefined,
+    onlyMapped: true,
+  }
+  const expected = {
+    root: data,
+    context: data,
+    target: { meta: { category: 'news' } },
+    value: { meta: { category: 'news' } },
+    onlyMapped: true,
+  }
+  const ret = set('meta.author')(options)(state)
+
+  t.deepEqual(ret, expected)
 })

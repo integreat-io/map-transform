@@ -91,3 +91,46 @@ test('should run falsePipeline when no conditionFn', (t) => {
 
   t.deepEqual(ret.value, expectedValue)
 })
+
+test('should set primitive value', (t) => {
+  const truePipeline = 'age'
+  const conditionFn = (data: unknown) =>
+    isObject(data) && typeof data.age === 'number'
+  const data = { age: 32 }
+  const state = {
+    root: data,
+    context: data,
+    value: data,
+  }
+  const expected = {
+    root: data,
+    context: data,
+    value: 32,
+  }
+
+  const ret = ifelse(conditionFn, truePipeline, falsePipeline)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set primitive value in reverse', (t) => {
+  const truePipeline = 'age'
+  const conditionFn = (data: unknown) => typeof data === 'number'
+  const data = 32
+  const state = {
+    root: data,
+    context: data,
+    value: data,
+    rev: true,
+  }
+  const expected = {
+    root: data,
+    context: data,
+    value: { age: 32 },
+    rev: true,
+  }
+
+  const ret = ifelse(conditionFn, truePipeline, falsePipeline)(options)(state)
+
+  t.deepEqual(ret, expected)
+})

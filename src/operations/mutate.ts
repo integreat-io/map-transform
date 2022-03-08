@@ -11,6 +11,7 @@ import { setStateValue, shouldSkipMutation } from '../utils/stateHelpers'
 import { set } from './getSet'
 import { divide } from './directionals'
 import iterate from './iterate'
+import plug from './plug'
 import { isMapObject, mapFunctionFromDef } from '../utils/definitionHelpers'
 import { ensureArray } from '../utils/array'
 
@@ -74,7 +75,7 @@ const objectToMapFunction = (
       } else {
         // Create a new level -- either because this is a operation or a iterating transform object
         const subPipeline = isMapObject(def)
-          ? [runAndIterate(def, flip, shouldIterate(def, nextPath))]
+          ? [runAndIterate(def, flip, shouldIterate(def, realPath))]
           : flipIfNeeded(ensureArray(def), flip)
         const pipeline = mapFunctionFromDef([
           flip ? nextPath : null,
@@ -82,12 +83,7 @@ const objectToMapFunction = (
           flip ? null : set(nextPath),
         ] as MapPipe)
 
-        return revOnly
-          ? divide(
-              () => (state) => setStateValue(state, state.target), // Simply pass on target going forward
-              pipeline
-            )
-          : pipeline
+        return revOnly ? divide(plug(), pipeline) : pipeline
       }
     })
     .filter((pipeline): pipeline is Operation => !!pipeline)

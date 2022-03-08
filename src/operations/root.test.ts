@@ -13,13 +13,13 @@ test('should apply pipeline to root', (t) => {
     root: { content: { title: 'An article' }, section: 'news' },
     context: { title: 'An article' },
     value: { title: 'An article' },
-    arr: false
+    arr: false,
   }
   const expected = {
     root: { content: { title: 'An article' }, section: 'news' },
     context: { title: 'An article' },
     value: 'news',
-    arr: false
+    arr: false,
   }
 
   const ret = root('section')(options)(state)

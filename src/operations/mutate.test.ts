@@ -13,7 +13,7 @@ const data = [
 ]
 
 const stateWithObject = {
-  root: { data },
+  root: { data, params: { source: 'news1' } },
   context: data[0],
   value: data[0],
 }
@@ -36,15 +36,17 @@ test('should mutate shallow object with map functions', (t) => {
     id: value('ent1'),
     title: get('headline'),
     text: value('The text'),
+    source: '^params.source',
     age: get('unknown'),
   }
   const expected = {
-    root: { data },
+    root: { data, params: { source: 'news1' } },
     context: data[0],
     value: {
       id: 'ent1',
       title: 'Entry 1',
       text: 'The text',
+      source: 'news1',
       age: undefined,
     },
   }
@@ -306,10 +308,11 @@ test('should reverse map', (t) => {
   const def = {
     content: {
       title: 'headline',
+      source: '^params.source',
     },
   }
   const state = {
-    root: {},
+    root: { params: { source: 'news1' } },
     context: {},
     value: {
       content: {
@@ -340,6 +343,33 @@ test('should reverse map with value array', (t) => {
   }
   const state = {
     root: data,
+    context: data,
+    value: data,
+    rev: true,
+  }
+  const expectedValue = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
+
+  const ret = mutate(def)(options)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should reverse map with root path', (t) => {
+  const data = {
+    data: {
+      items: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
+    },
+  }
+  const def = {
+    data: {
+      'items[]': {
+        title: get('headline'),
+        source: '^params.source', // Keep in this position to ensure it does not clear the previous fields
+      },
+    },
+  }
+  const state = {
+    root: { data, params: { source: 'news1' } },
     context: data,
     value: data,
     rev: true,
@@ -451,7 +481,7 @@ test('should transform object with $direction: fwd going forward', (t) => {
     title: get('headline'),
   }
   const expected = {
-    root: { data },
+    root: { data, params: { source: 'news1' } },
     context: data[0],
     value: {
       id: 'ent1',

@@ -199,6 +199,32 @@ test('should replace value path with array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set object as array', (t) => {
+  const path = 'content.data[].createOrMutate'
+  const object = {}
+  const data = {
+    id: 'ent1',
+    title: 'The heading',
+    views: 42,
+  }
+  const expected = {
+    content: {
+      data: [
+        {
+          createOrMutate: {
+            id: 'ent1',
+            title: 'The heading',
+            views: 42,
+          },
+        },
+      ],
+    },
+  }
+  const ret = pathSetter(path)(data, object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set value at path with array', (t) => {
   const path = 'meta.authors[]'
   const object = {}

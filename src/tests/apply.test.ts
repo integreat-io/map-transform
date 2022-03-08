@@ -1,19 +1,40 @@
 import test from 'ava'
 
-import { mapTransform, transform, apply } from '..'
+import { mapTransform, transform, apply, fwd, rev, filter } from '..'
 
 // Setup
 
-const castEntry = {
-  title: ['title', transform(String)],
-  viewCount: ['viewCount', transform(Number)],
-}
+const castEntry = [
+  fwd(filter(() => true)),
+  rev(transform((data) => data)),
+  {
+    $iterate: true,
+    id: 'id',
+    title: ['title', transform(String)],
+    viewCount: ['viewCount', transform(Number)],
+  },
+  fwd(transform((data) => data)),
+  rev(filter(() => true)),
+]
 
 const getItems = 'data.entries'
+
+const entryMutation = [
+  'items[]',
+  {
+    $iterate: true,
+    id: 'key',
+    title: 'header',
+    source: '^params.source',
+    viewCount: 'views',
+  },
+  { $apply: 'castEntry' },
+]
 
 const pipelines = {
   castEntry,
   getItems,
+  entry: entryMutation,
 }
 
 const options = { pipelines }
@@ -33,6 +54,7 @@ test('should apply pipeline by id', (t) => {
     meta: { hits: '45' },
   }
   const expected = {
+    id: undefined,
     title: 'The heading',
     viewCount: 45,
   }
@@ -119,6 +141,7 @@ test('should apply pipeline as operation object', (t) => {
     meta: { hits: '45' },
   }
   const expected = {
+    id: undefined,
     title: 'The heading',
     viewCount: 45,
   }
@@ -149,16 +172,86 @@ test('should iterate applied pipeline', (t) => {
   ]
   const expected = [
     {
+      id: undefined,
       title: 'The heading',
       viewCount: 45,
     },
     {
+      id: undefined,
       title: 'The next heading',
       viewCount: 111,
     },
   ]
 
   const ret = mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply pipeline from array path', (t) => {
+  const def = { data: ['content.data[].createOrMutate', apply('entry')] }
+  const data = {
+    content: {
+      data: [
+        {
+          createOrMutate: {
+            items: [
+              {
+                key: 'ent1',
+                header: 'The heading',
+                views: 42,
+              },
+            ],
+          },
+        },
+      ],
+    },
+  }
+  const expected = {
+    data: [
+      {
+        id: 'ent1',
+        title: 'The heading',
+        viewCount: 42,
+      },
+    ],
+  }
+
+  const ret = mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply pipeline from array path in reverse', (t) => {
+  const def = { data: ['content.data[].createOrMutate', apply('entry')] }
+  const data = {
+    data: [
+      {
+        id: 'ent1',
+        title: 'The heading',
+        viewCount: 42,
+      },
+    ],
+  }
+  const expected = {
+    content: {
+      data: [
+        {
+          createOrMutate: {
+            items: [
+              {
+                key: 'ent1',
+                header: 'The heading',
+                views: 42,
+              },
+            ],
+          },
+        },
+      ],
+    },
+  }
+
+  const ret = mapTransform(def, options).rev(data)
 
   t.deepEqual(ret, expected)
 })
@@ -187,7 +280,7 @@ test('should apply pipeline as operation object online going forward only', (t) 
     { $apply: 'castEntry', $direction: 'fwd' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
-  const expectedFwd = { title: 'The heading', viewCount: 45 }
+  const expectedFwd = { title: 'The heading', viewCount: 45, id: undefined }
   const dataRev = { title: 'The heading', viewCount: '45' }
   const expectedRev = {
     content: { heading: 'The heading' },
@@ -228,7 +321,7 @@ test('should use forward alias', (t) => {
     { $apply: 'castEntry', $direction: 'from' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
-  const expectedFwd = { title: 'The heading', viewCount: 45 }
+  const expectedFwd = { title: 'The heading', viewCount: 45, id: undefined }
   const dataRev = { title: 'The heading', viewCount: '45' }
   const expectedRev = {
     content: { heading: 'The heading' },

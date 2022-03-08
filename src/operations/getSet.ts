@@ -37,12 +37,22 @@ const getOrSet =
     const getFn = getValueFromState(path)
     const setFn = setValueFromState(path)
 
-    return () => (state) =>
-      setStateValue(
-        state,
-        isGet(isGetOperation, state.rev) ? getFn(state) : setFn(state)
+    return () =>
+      Object.assign(
+        (state: State) =>
+          setStateValue(
+            state,
+            isGet(isGetOperation, state.rev) ? getFn(state) : setFn(state)
+          ),
+        {
+          getTarget: (state: State) =>
+            !isGet(isGetOperation, state.rev)
+              ? getter(path)(state.target)
+              : state.target,
+        }
       )
   }
+// getRevTarget
 
 export const get = getOrSet(true)
 export const set = getOrSet(false)

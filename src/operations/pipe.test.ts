@@ -1,6 +1,6 @@
 import test from 'ava'
 import { State } from '../types'
-import { get } from './getSet'
+import { get, set } from './getSet'
 
 import pipe from './pipe'
 
@@ -80,6 +80,50 @@ test('should reverse map pipe on reverse mapping', (t) => {
     root: 'John F.',
     context: 'John F.',
     value: { data: { name: 'John F.' } },
+    rev: true,
+  }
+
+  const ret = pipe(def)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should treat target right going forward', (t) => {
+  const def = [set('name'), set('data')]
+  const state = {
+    root: 'John F.',
+    context: 'John F.',
+    target: { data: { age: 32 } },
+    value: 'John F.',
+    rev: false,
+  }
+  const expected = {
+    root: 'John F.',
+    context: 'John F.',
+    target: { data: { age: 32 } },
+    value: { data: { name: 'John F.', age: 32 } },
+    rev: false,
+  }
+
+  const ret = pipe(def)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should treat target right in reverse', (t) => {
+  const def = [get('data'), get('name')]
+  const state = {
+    root: 'John F.',
+    context: 'John F.',
+    target: { data: { age: 32 } },
+    value: 'John F.',
+    rev: true,
+  }
+  const expected = {
+    root: 'John F.',
+    context: 'John F.',
+    target: { data: { age: 32 } },
+    value: { data: { name: 'John F.', age: 32 } },
     rev: true,
   }
 

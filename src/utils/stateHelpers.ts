@@ -12,6 +12,11 @@ export const setValueFromState = (state: State, { value }: State): State => ({
   value,
 })
 
+export const setTargetOnState = (state: State, target?: unknown): State => ({
+  ...state,
+  target,
+})
+
 export const contextFromState = ({
   rev = false,
   onlyMapped = false,

@@ -1,6 +1,6 @@
 import test from 'ava'
 import value from './value'
-import { get } from './getSet'
+import { get, set } from './getSet'
 import transform from './transform'
 
 import mutate from './mutate'
@@ -114,6 +114,25 @@ test('should mutate object with props in the given order', (t) => {
   t.deepEqual(Object.keys(item), expectedPropsItem)
   t.deepEqual(Object.keys(item.attributes), expectedPropsAttrs)
   t.deepEqual(Object.keys(item.relationships), expectedPropsRels)
+})
+
+test('should mutate with several sets', (t) => {
+  const def = {
+    id: value('ent1'),
+    meta: ['user', set('user')],
+  }
+  const expected = {
+    root: { data, params: { source: 'news1' } },
+    context: data[0],
+    value: {
+      id: 'ent1',
+      meta: { user: 'johnf' },
+    },
+  }
+
+  const ret = mutate(def)(options)(stateWithObject)
+
+  t.deepEqual(ret, expected)
 })
 
 test('should iterate when $iterate is true', (t) => {
@@ -348,6 +367,36 @@ test('should reverse map with value array', (t) => {
     rev: true,
   }
   const expectedValue = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
+
+  const ret = mutate(def)(options)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should reverse map with several sets', (t) => {
+  const def = {
+    content: {
+      title: 'headline',
+      author: ['meta', 'user'],
+      section: ['meta', 'tag'],
+    },
+  }
+  const state = {
+    root: { params: { source: 'news1' } },
+    context: {},
+    value: {
+      content: {
+        title: 'The title',
+        author: 'johnf',
+        section: 'news',
+      },
+    },
+    rev: true,
+  }
+  const expectedValue = {
+    headline: 'The title',
+    meta: { user: 'johnf', tag: 'news' },
+  }
 
   const ret = mutate(def)(options)(state)
 

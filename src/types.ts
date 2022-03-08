@@ -86,6 +86,7 @@ export type OperationObject =
 
 export interface StateMapper {
   (state: State): State
+  getTarget?: (state: State) => unknown
 }
 
 export interface Operation {

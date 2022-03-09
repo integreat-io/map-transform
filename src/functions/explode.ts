@@ -8,6 +8,7 @@ export interface KeyValue {
 }
 
 const isExplodedArray = (data: unknown[]) =>
+  data.length > 0 &&
   data.every((item) => isObject(item) && typeof item.key === 'number')
 
 const setValueOnKey = (

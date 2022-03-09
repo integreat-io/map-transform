@@ -139,6 +139,15 @@ test('should implode array of key value objects to object ', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should implode empty array to empty object object ', (t) => {
+  const data: unknown[] = []
+  const expected = {}
+
+  const ret = implode()(data, context)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should explode object to array of key value objects in reverse', (t) => {
   const data = { NOK: 1, USD: 0.125, EUR: 0.1 }
   const expected = [

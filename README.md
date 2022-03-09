@@ -1157,6 +1157,40 @@ const def29 = {
 const mapper = mapTransform(def29, { dictionaries: { statusCodes: dictionary } })
 ```
 
+#### `sort({asc, path})` function
+
+The `sort` helper function will sort the given array of items in ascending or
+descending (depending on whether `asc` is `true` or `false`). Ascending is the
+default. When a `path` is given, the sort is performed on the value at that path
+on each object in the array. With no `path`, the values in the array are sorted
+directly.
+
+Example:
+
+```javascript
+import { mapTransform, transform, functions } from 'map-transform'
+const { sort } = functions
+
+const data = {
+  items: [{ id: 'ent5' }, { id: 'ent1' }, { id: 'ent3' }],
+}
+
+const def35 = {
+  data: ['items', transform(sort({ asc: true, path: 'id' }))],
+}
+
+const ret = mapTransform(def35)(data)
+// --> { caption: 'Bergen by night. By John F.' }
+```
+
+The `sort` function is also available through a transform object:
+
+```javascript
+const def35o = {
+  data: ['items', { $transform: 'sort', asc: true, path: 'id' }],
+}
+```
+
 #### `template(template)` function
 
 The `template` helper function takes a [handlebars] template and applies the

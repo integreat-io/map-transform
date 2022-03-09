@@ -5,6 +5,7 @@ import get from './get'
 import { join, split } from './joinSplit'
 import logical from './logical'
 import map from './map'
+import sort from './sort'
 import template from './template'
 
 export default {
@@ -16,6 +17,7 @@ export default {
   join,
   logical,
   map,
+  sort,
   split,
   template,
   value,

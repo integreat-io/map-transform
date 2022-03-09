@@ -1,6 +1,7 @@
 import test from 'ava'
-import { State } from '../types'
+import { State, MapPipe } from '../types'
 import { get, set } from './getSet'
+import transform from './transform'
 
 import pipe from './pipe'
 
@@ -20,6 +21,8 @@ const getNameFromContext = () => (state: State) => ({
   ...state,
   value: (state.context as Record<string, unknown>).name,
 })
+
+const json = (data: unknown) => JSON.stringify(data)
 
 // Tests
 
@@ -89,19 +92,19 @@ test('should reverse map pipe on reverse mapping', (t) => {
 })
 
 test('should treat target right going forward', (t) => {
-  const def = [set('name'), set('data')]
+  const def = [set('name'), set('personal'), transform(json), set('data')]
   const state = {
     root: 'John F.',
     context: 'John F.',
-    target: { data: { age: 32 } },
+    target: { data: { personal: { age: 32 } } },
     value: 'John F.',
     rev: false,
   }
   const expected = {
     root: 'John F.',
     context: 'John F.',
-    target: { data: { age: 32 } },
-    value: { data: { name: 'John F.', age: 32 } },
+    target: { data: { personal: { age: 32 } } },
+    value: { data: '{"personal":{"age":32,"name":"John F."}}' },
     rev: false,
   }
 
@@ -111,19 +114,19 @@ test('should treat target right going forward', (t) => {
 })
 
 test('should treat target right in reverse', (t) => {
-  const def = [get('data'), get('name')]
+  const def = ['data', transform(json), get('personal'), 'name']
   const state = {
     root: 'John F.',
     context: 'John F.',
-    target: { data: { age: 32 } },
+    target: { data: { personal: { age: 32 } } },
     value: 'John F.',
     rev: true,
   }
   const expected = {
     root: 'John F.',
     context: 'John F.',
-    target: { data: { age: 32 } },
-    value: { data: { name: 'John F.', age: 32 } },
+    target: { data: { personal: { age: 32 } } },
+    value: { data: '{"personal":{"age":32,"name":"John F."}}' },
     rev: true,
   }
 
@@ -147,4 +150,21 @@ test('should update context when entering a pipeline in reverse', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test.todo('should handle empty pipeline')
+test('should handle empty pipeline', (t) => {
+  const def: MapPipe = []
+  const expected = state
+
+  const ret = pipe(def)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should handle empty pipeline in reverse', (t) => {
+  const def: MapPipe = []
+  const stateRev = { ...state, rev: true }
+  const expected = stateRev
+
+  const ret = pipe(def)(options)(stateRev)
+
+  t.deepEqual(ret, expected)
+})

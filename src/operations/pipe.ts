@@ -1,7 +1,7 @@
 import { MapPipe, Operation, State, StateMapper } from '../types'
-import { pipe as pipeFn, compose } from '../utils/functional'
 import { setValueFromState, setTargetOnState } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
+import { identity } from '../utils/functional'
 
 const liftState = (state: State) => ({
   ...state,
@@ -9,23 +9,32 @@ const liftState = (state: State) => ({
 })
 
 const callWithNextTarget =
-  (nextFn: StateMapper, thisFn?: StateMapper) => (state: State) => {
+  (next: StateMapper, thisMapper: StateMapper, prevMapper?: StateMapper) =>
+  (state: State) => {
     const nextTarget =
-      thisFn && typeof thisFn.getTarget === 'function'
-        ? thisFn.getTarget(state)
+      prevMapper && typeof prevMapper.getTarget === 'function'
+        ? prevMapper.getTarget(state)
         : state.target
-    const nextState = nextFn(setTargetOnState(state, nextTarget))
-    return setTargetOnState(nextState, state.target)
+    const nextState = setTargetOnState(state, nextTarget)
+    return setTargetOnState(thisMapper(next(nextState)), state.target)
   }
 
 export default function pipe(defs: MapPipe): Operation {
   return (options) => {
+    if (defs.length === 0) {
+      return identity
+    }
+
     const fns = defs.map((def) => mapFunctionFromDef(def)(options))
-    const runPipe = pipeFn(
-      ...fns.map((fn, index) => callWithNextTarget(fn, fns[index + 1]))
+    const runPipe = fns.reduce(
+      (next: StateMapper, fn, index) =>
+        callWithNextTarget(next, fn, fns[index + 1]),
+      identity
     )
-    const runRevPipe: StateMapper = compose(
-      ...fns.map((fn, index) => callWithNextTarget(fn, fns[index - 1]))
+    const runRevPipe = fns.reduceRight(
+      (next: StateMapper, fn, index) =>
+        callWithNextTarget(next, fn, fns[index - 1]),
+      identity
     )
 
     return (state) =>

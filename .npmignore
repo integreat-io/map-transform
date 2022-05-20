@@ -4,3 +4,4 @@ src/
 tsconfig.json
 tsconfig.json
 *.config.js
+*.config.cjs

@@ -478,8 +478,8 @@ test('should map with sub pipeline', (t) => {
 
 test('should shallow merge (modify) original object with transformed object', (t) => {
   const def = {
-    content: {
-      $modify: true,
+    article: {
+      $modify: 'content',
       title: 'name',
     },
   }
@@ -491,7 +491,7 @@ test('should shallow merge (modify) original object with transformed object', (t
     },
   }
   const expected = {
-    content: {
+    article: {
       title: 'The real title',
       text: 'This is high quality content for sure',
     },

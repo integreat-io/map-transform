@@ -7,14 +7,18 @@ import {
   MapPipe,
   Path,
 } from '../types'
-import { setStateValue, shouldSkipMutation } from '../utils/stateHelpers'
+import {
+  getStateValue,
+  setStateValue,
+  shouldSkipMutation,
+} from '../utils/stateHelpers'
 import { getValueFromState, set } from './getSet'
 import { divide } from './directionals'
 import iterate from './iterate'
 import plug from './plug'
 import { isMapObject, mapFunctionFromDef } from '../utils/definitionHelpers'
 import { ensureArray } from '../utils/array'
-import { isArrayPath } from '../utils/is'
+import { isArrayPath, isObject } from '../utils/is'
 
 const setIfPath = (map: unknown) => (typeof map === 'string' ? set(map) : map)
 
@@ -24,10 +28,17 @@ const flipIfNeeded = (pipe: MapPipe, shouldFlip: boolean) => {
 }
 
 const shouldIterate = (def: MapDefinition, path: Path) =>
-  (isMapObject(def) && def['$iterate'] === true) || isArrayPath(path)
+  (isMapObject(def) && def.$iterate === true) || isArrayPath(path)
 
 const shouldModify = (def: MapDefinition): def is MapObject =>
-  isMapObject(def) && def['$modify'] === true
+  isMapObject(def) && !!def.$modify
+
+const extractModifyPath = (def: MapDefinition): string | undefined =>
+  shouldModify(def)
+    ? def.$modify === true
+      ? '.'
+      : def.$modify || undefined
+    : undefined
 
 const extractRealPath = (path: Path) => {
   const [realPath, index] = path.split('/')
@@ -47,20 +58,38 @@ const runWithTarget =
 const revertTarget = ({ target, ...state }: State, originalState: State) =>
   originalState.target ? setTargetOnState(state, originalState.target) : state
 
-const run = (operations: Operation[], doModify: boolean, path: string) =>
+// Merges values from previous state with next state, in favor of next state
+function modifyStateValue(prevStateValue: unknown, nextState: State) {
+  const nextStateValue = getStateValue(nextState)
+
+  if (isObject(prevStateValue) && isObject(nextStateValue)) {
+    return setStateValue(nextState, {
+      ...prevStateValue,
+      ...nextStateValue,
+    })
+  } else {
+    return nextState
+  }
+}
+
+const run = (operations: Operation[], modifySourcePath?: string) =>
   function (options: Options) {
     const shouldSkip = shouldSkipMutation(options)
-    return (state: State) => {
-      const prevState = doModify
-        ? setStateValue(state, getValueFromState(path)(state))
-        : undefined
-      return shouldSkip(state)
-        ? setStateValue(state, undefined)
-        : revertTarget(
-            operations.reduce(runWithTarget(options, state), prevState) ||
-              state,
-            state
-          )
+    return function runMutation(state: State) {
+      if (shouldSkip(state)) {
+        return setStateValue(state, undefined)
+      } else {
+        const nextState = revertTarget(
+          operations.reduce(runWithTarget(options, state), undefined) || state,
+          state
+        )
+        return modifySourcePath
+          ? modifyStateValue(
+              getValueFromState(modifySourcePath)(state),
+              nextState
+            )
+          : nextState
+      }
     }
   }
 
@@ -103,10 +132,10 @@ const objectToMapFunction = (
 
 function runAndIterate(def: MapObject, shouldFlip: boolean, nextPath = '') {
   const operations = objectToMapFunction(def, shouldFlip)
-  const doModify = shouldModify(def)
+  const modifySourcePath = extractModifyPath(def)
   return shouldIterate(def, nextPath)
-    ? iterate(run(operations, doModify, nextPath))
-    : run(operations, doModify, nextPath)
+    ? iterate(run(operations, modifySourcePath))
+    : run(operations, modifySourcePath)
 }
 
 export default function mutate(def: MapObject): Operation {

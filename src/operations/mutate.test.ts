@@ -158,18 +158,21 @@ test('should shallow merge original object and transformed object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should shallow merge in sub object', (t) => {
+test('should shallow merge in sub object and use $modify path', (t) => {
   const stateWithObject = {
     root: { data, params: { source: 'news1' } },
     context: data[0],
-    value: { content: data[0] },
+    value: { data: { article: data[0], tags: ['news', 'sports'] } },
   }
   const def = {
     content: {
-      $modify: true,
-      id: value('ent1'),
-      title: get('content.headline'),
-      headline: '^params.source',
+      $modify: 'data',
+      article: {
+        id: value('ent1'),
+        title: get('data.article.headline'),
+        headline: '^params.source',
+      },
+      user: 'data.article.user',
     },
   }
   const expected = {
@@ -177,10 +180,13 @@ test('should shallow merge in sub object', (t) => {
     context: data[0],
     value: {
       content: {
-        id: 'ent1',
-        title: 'Entry 1',
-        headline: 'news1',
+        article: {
+          id: 'ent1',
+          title: 'Entry 1',
+          headline: 'news1',
+        },
         user: 'johnf',
+        tags: ['news', 'sports'],
       },
     },
   }

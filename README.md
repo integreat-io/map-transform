@@ -840,7 +840,16 @@ const def34b = {
 }
 ```
 
-Note that `$modify` may also be set further down in the object structure.
+Note that `$modify` may also be set further down in the object structure. Also,
+in some cases it may make more sense to specify a path in the source data to
+merge with:
+
+```javascript
+const def34c = {
+  $modify: 'response',
+  data: 'response.data.deeply.placed.items',
+}
+```
 
 #### `fwd(pipeline)` and `rev(pipeline)` operation
 

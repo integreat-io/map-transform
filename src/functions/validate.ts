@@ -1,4 +1,4 @@
-import Ajv = require('ajv')
+import Ajv from 'ajv'
 import { Path, DataMapper } from '../types'
 import getter from '../utils/pathGetter'
 

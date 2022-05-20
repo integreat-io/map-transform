@@ -1010,7 +1010,7 @@ mapper.rev(mappedData)
 // --> { content: { meta: { authors: ['user1', 'user3'] } } }
 ```
 
-#### `compare({ path, operator, match, matchPath })` function
+#### `compare({ path, operator, match, matchPath, not })` function
 
 This is a helper function intended for use with the `filter()` operation. You
 pass a dot notation `path` and a `match` value (string, number, boolean) to
@@ -1028,6 +1028,8 @@ property. Alternatives: `'='`, `'!='`, `'>'`, `'>='`, `'<'`, or `'<='`, or `in`
 
 If the `path` points to an array, the value is expected to be one of the values
 in the array.
+
+Set `not` to `true` to reverse the result of the comparison.
 
 Here's an example where only data where role is set to 'admin' will be kept:
 

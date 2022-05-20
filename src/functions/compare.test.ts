@@ -212,3 +212,23 @@ test('should return false when value array has none of the items in match array'
 
   t.false(ret)
 })
+
+test('should return false when comparison is true and `not` is set', (t) => {
+  const match = 'admin'
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: { role: 'admin' } }
+
+  const ret = compare({ path, operator: '=', match, not: true })(data, context)
+
+  t.false(ret)
+})
+
+test('should return true when comparison is false and `not` is set', (t) => {
+  const match = 'admin'
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: { role: 'viewer' } }
+
+  const ret = compare({ path, operator: '=', match, not: true })(data, context)
+
+  t.true(ret)
+})

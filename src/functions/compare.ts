@@ -14,6 +14,7 @@ interface CompareOperands extends Operands {
   operator?: string
   match?: unknown
   matchPath?: Path
+  not?: boolean
 }
 
 const not = (comparer: Comparer) => (value: unknown, match: unknown) =>
@@ -76,6 +77,7 @@ export default function compare({
   operator = '=',
   match,
   matchPath,
+  not = false,
 }: CompareOperands): DataMapper {
   const getValue = getter(path)
   const getMatch = matchPath ? getter(matchPath) : () => match
@@ -85,6 +87,7 @@ export default function compare({
   return (data) => {
     const value = getValue(data)
     const match = getMatch(data)
-    return comparer(value, match)
+    const result = comparer(value, match)
+    return not ? !result : result
   }
 }

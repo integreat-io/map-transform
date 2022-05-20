@@ -37,6 +37,11 @@ export {
   MapTransform,
   Dictionary,
   Dictionaries,
+  OperationObject,
+  TransformObject,
+  FilterObject,
+  ApplyObject,
+  AltObject,
 } from './types'
 
 const composeMapFunction = (

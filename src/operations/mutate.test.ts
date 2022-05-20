@@ -135,6 +135,61 @@ test('should mutate with several sets', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should shallow merge original object and transformed object', (t) => {
+  const def = {
+    $modify: true,
+    id: value('ent1'),
+    title: get('headline'),
+    headline: '^params.source',
+  }
+  const expected = {
+    root: { data, params: { source: 'news1' } },
+    context: data[0],
+    value: {
+      id: 'ent1',
+      title: 'Entry 1',
+      headline: 'news1',
+      user: 'johnf',
+    },
+  }
+
+  const ret = mutate(def)(options)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should shallow merge in sub object', (t) => {
+  const stateWithObject = {
+    root: { data, params: { source: 'news1' } },
+    context: data[0],
+    value: { content: data[0] },
+  }
+  const def = {
+    content: {
+      $modify: true,
+      id: value('ent1'),
+      title: get('content.headline'),
+      headline: '^params.source',
+    },
+  }
+  const expected = {
+    root: { data, params: { source: 'news1' } },
+    context: data[0],
+    value: {
+      content: {
+        id: 'ent1',
+        title: 'Entry 1',
+        headline: 'news1',
+        user: 'johnf',
+      },
+    },
+  }
+
+  const ret = mutate(def)(options)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should iterate when $iterate is true', (t) => {
   const def = {
     $iterate: true,

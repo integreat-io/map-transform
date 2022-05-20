@@ -830,6 +830,18 @@ const response = {
 Had we ran this without the `modify()` operation, the returned object would only
 have the `data` prop.
 
+This is equivalent to setting the `$modify` property to `true` on the object
+mutation object:
+
+```javascript
+const def34b = {
+  $modify: true,
+  data: 'data.deeply.placed.items',
+}
+```
+
+Note that `$modify` may also be set further down in the object structure.
+
 #### `fwd(pipeline)` and `rev(pipeline)` operation
 
 All operations in MapTransform will apply in both directions, although some of

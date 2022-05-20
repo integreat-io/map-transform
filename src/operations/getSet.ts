@@ -16,7 +16,7 @@ const setWithOnlyMapped =
       ? state.target
       : setFn(value, state.target)
 
-const getValueFromState = (path: Path) => (state: State) =>
+export const getValueFromState = (path: Path) => (state: State) =>
   getter(path)(getStateValue(state))
 
 const setValueFromState = (path: Path) => (state: State) => {

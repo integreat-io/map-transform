@@ -476,6 +476,32 @@ test('should map with sub pipeline', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should shallow merge (modify) original object with transformed object', (t) => {
+  const def = {
+    content: {
+      $modify: true,
+      title: 'name',
+    },
+  }
+  const data = {
+    name: 'The real title',
+    content: {
+      title: 'Oh, this must go',
+      text: 'This is high quality content for sure',
+    },
+  }
+  const expected = {
+    content: {
+      title: 'The real title',
+      text: 'This is high quality content for sure',
+    },
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return data when no mapping def', (t) => {
   const def = null
   const data = [

@@ -1023,10 +1023,11 @@ data.
 
 The default is to compare the values resulting from `path` and `match` or
 `matchPath` with equality, but other operations may be set on the `operator`
-property. Alternatives: `'='`, `'!='`, `'>'`, `'>='`, `'<'`, or `'<='`.
+property. Alternatives: `'='`, `'!='`, `'>'`, `'>='`, `'<'`, or `'<='`, or `in`
+(equality to at least one of the elements in an array).
 
-If the path points to an array, the value is expected to be one of the values in
-the array.
+If the `path` points to an array, the value is expected to be one of the values
+in the array.
 
 Here's an example where only data where role is set to 'admin' will be kept:
 

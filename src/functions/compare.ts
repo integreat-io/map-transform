@@ -19,13 +19,11 @@ interface CompareOperands extends Operands {
 const not = (comparer: Comparer) => (value: unknown, match: unknown) =>
   !comparer(value, match)
 
-const compareArrayOrValue = (comparer: Comparer) => (
-  value: unknown,
-  match: unknown
-) =>
-  Array.isArray(value)
-    ? value.some((value: unknown) => comparer(value, match))
-    : comparer(value, match)
+const compareArrayOrValue =
+  (comparer: Comparer) => (value: unknown, match: unknown) =>
+    Array.isArray(value)
+      ? value.some((value: unknown) => comparer(value, match))
+      : comparer(value, match)
 
 const isNumeric = (value: unknown): value is number => typeof value === 'number'
 
@@ -38,6 +36,11 @@ const compareArrayOrValueNumeric = (comparer: NumericComparer) =>
 const compareEqual = compareArrayOrValue(
   (value: unknown, match: unknown) => value === match
 )
+
+const compareIn = (value: unknown, match: unknown) =>
+  Array.isArray(match)
+    ? match.some((item) => compareEqual(value, item))
+    : compareEqual(value, match)
 
 function createComparer(operator: string) {
   switch (operator) {
@@ -61,6 +64,8 @@ function createComparer(operator: string) {
       return compareArrayOrValueNumeric(
         (value: number, match: number) => value <= match
       )
+    case 'in':
+      return compareIn
     default:
       return (_value: unknown, _match: unknown) => false
   }

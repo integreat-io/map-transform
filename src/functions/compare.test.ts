@@ -172,3 +172,43 @@ test('should support require numeric value and match', (t) => {
   t.false(compare({ path: 'age', operator: '>=', match: '37' })(data, context))
   t.false(compare({ path: 'age', operator: '<=', match: '35' })(data, context))
 })
+
+test('should return true when value is in array', (t) => {
+  const match = ['admin', 'editor']
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: { role: 'admin' } }
+
+  const ret = compare({ path, operator: 'in', match })(data, context)
+
+  t.true(ret)
+})
+
+test('should return false when value is not in array', (t) => {
+  const match = ['admin', 'editor']
+  const path = 'meta.role'
+  const data = { name: 'Fred J.', meta: { role: 'viewer' } }
+
+  const ret = compare({ path, operator: 'in', match })(data, context)
+
+  t.false(ret)
+})
+
+test('should return true when value array has at least one of the items in match array', (t) => {
+  const match = ['admin', 'editor']
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: { role: ['viewer', 'admin'] } }
+
+  const ret = compare({ path, operator: 'in', match })(data, context)
+
+  t.true(ret)
+})
+
+test('should return false when value array has none of the items in match array', (t) => {
+  const match = ['admin', 'editor']
+  const path = 'meta.role'
+  const data = { name: 'Fred J.', meta: { role: ['viewer', 'user'] } }
+
+  const ret = compare({ path, operator: 'in', match })(data, context)
+
+  t.false(ret)
+})

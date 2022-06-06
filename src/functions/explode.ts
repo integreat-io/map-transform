@@ -55,9 +55,9 @@ function doExplode(data: unknown): any[] | undefined {
 }
 
 export function explode(): DataMapper {
-  return (data, context) => (context.rev ? doImplode(data) : doExplode(data))
+  return (data, state) => (state.rev ? doImplode(data) : doExplode(data))
 }
 
 export function implode(): DataMapper {
-  return (data, context) => (context.rev ? doExplode(data) : doImplode(data))
+  return (data, state) => (state.rev ? doExplode(data) : doImplode(data))
 }

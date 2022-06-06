@@ -1,4 +1,5 @@
 import test from 'ava'
+import { State } from '../types'
 
 import filter from './filter'
 
@@ -6,6 +7,9 @@ import filter from './filter'
 
 const beginsWithA = (str: unknown) =>
   typeof str === 'string' ? str.startsWith('A') : false
+
+const isParam = (str: unknown, state: State) =>
+  str === (state.root as Record<string, unknown>).allowedUser
 
 const options = {}
 
@@ -53,6 +57,23 @@ test('should remove values in array when filter returns false', (t) => {
   }
 
   const ret = filter(beginsWithA)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should provide state to filter function', (t) => {
+  const state = {
+    root: { users: ['John F', 'Andy'], allowedUser: 'John F' },
+    context: { users: ['John F', 'Andy'] },
+    value: ['John F', 'Andy'],
+  }
+  const expected = {
+    root: { users: ['John F', 'Andy'], allowedUser: 'John F' },
+    context: { users: ['John F', 'Andy'] },
+    value: ['John F'],
+  }
+
+  const ret = filter(isParam)(options)(state)
 
   t.deepEqual(ret, expected)
 })

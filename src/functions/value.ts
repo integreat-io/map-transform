@@ -15,10 +15,10 @@ export const extractValue = (value: unknown): any => {
 
 export function value(operands: unknown): DataMapper {
   const value = extractValue(operands)
-  return (_data, context) => (context.onlyMappedValues ? undefined : value)
+  return (_data, state) => (state.onlyMapped ? undefined : value)
 }
 
 export function fixed(operands: unknown): DataMapper {
   const value = extractValue(operands)
-  return (_data, _context) => value
+  return (_data, _state) => value
 }

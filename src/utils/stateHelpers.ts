@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { State, Options, Context } from '../types'
+import { State, Options } from '../types'
 
 export const setStateValue = (state: State, value: unknown): State => ({
   ...state,
@@ -15,14 +15,6 @@ export const setValueFromState = (state: State, { value }: State): State => ({
 export const setTargetOnState = (state: State, target?: unknown): State => ({
   ...state,
   target,
-})
-
-export const contextFromState = ({
-  rev = false,
-  onlyMapped = false,
-}: State): Context => ({
-  rev,
-  onlyMappedValues: onlyMapped,
 })
 
 export const populateState =

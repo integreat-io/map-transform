@@ -119,7 +119,7 @@ test('should not mind reverse transform going forward', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should pass rev and onlyMapped to transform function', (t) => {
+test('should pass state to transform function', (t) => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
     root: { title: 'Entry 1' },
@@ -128,17 +128,14 @@ test('should pass rev and onlyMapped to transform function', (t) => {
     rev: false,
     onlyMapped: true,
   }
-  const expected = {
-    rev: false,
-    onlyMappedValues: true,
-  }
+  const expected = state
 
   transform(fn)(options)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })
 
-test('should pass rev and onlyMapped to rev transform function', (t) => {
+test('should pass state to rev transform function', (t) => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
     root: { title: 'Entry 1' },
@@ -147,10 +144,7 @@ test('should pass rev and onlyMapped to rev transform function', (t) => {
     rev: true,
     onlyMapped: false,
   }
-  const expected = {
-    rev: true,
-    onlyMappedValues: false,
-  }
+  const expected = state
 
   transform(upper, fn)(options)(state)
 

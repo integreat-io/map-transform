@@ -25,81 +25,93 @@ const selective = [
   ['*', '*'],
 ] as Dictionary
 
-const context = { rev: false, onlyMappedValues: false }
-const contextRev = { rev: true, onlyMappedValues: false }
+const state = {
+  rev: false,
+  onlyMapped: false,
+  root: {},
+  context: {},
+  value: {},
+}
+const stateRev = {
+  rev: true,
+  onlyMapped: false,
+  root: {},
+  context: {},
+  value: {},
+}
 
 // Tests
 
 test('should map', (t) => {
   const mapping = map({ dictionary: simple })
 
-  t.is(mapping('1', context), 'stripe')
-  t.is(mapping('2', context), 'paypal')
-  t.is(mapping('0', context), undefined)
+  t.is(mapping('1', state), 'stripe')
+  t.is(mapping('2', state), 'paypal')
+  t.is(mapping('0', state), undefined)
 })
 
 test('should map in reverse', (t) => {
   const mapping = map({ dictionary: simple })
 
-  t.is(mapping('stripe', contextRev), '1')
-  t.is(mapping('paypal', contextRev), '2')
-  t.is(mapping('shilling', contextRev), undefined)
+  t.is(mapping('stripe', stateRev), '1')
+  t.is(mapping('paypal', stateRev), '2')
+  t.is(mapping('shilling', stateRev), undefined)
 })
 
 test('should map with several alternatives and defaults', (t) => {
   const mapping = map({ dictionary: complex })
 
-  t.is(mapping('200', context), 'ok')
-  t.is(mapping('201', context), 'ok')
-  t.is(mapping('404', context), 'notfound')
-  t.is(mapping('500', context), 'error')
-  t.is(mapping('507', context), 'error')
+  t.is(mapping('200', state), 'ok')
+  t.is(mapping('201', state), 'ok')
+  t.is(mapping('404', state), 'notfound')
+  t.is(mapping('500', state), 'error')
+  t.is(mapping('507', state), 'error')
 })
 
 test('should map with several alternatives and defaults in reverse', (t) => {
   const mapping = map({ dictionary: complex })
 
-  t.is(mapping('ok', contextRev), '200')
-  t.is(mapping('notfound', contextRev), '404')
-  t.is(mapping('noaction', contextRev), '404')
-  t.is(mapping('error', contextRev), '500')
-  t.is(mapping('timeout', contextRev), '500')
+  t.is(mapping('ok', stateRev), '200')
+  t.is(mapping('notfound', stateRev), '404')
+  t.is(mapping('noaction', stateRev), '404')
+  t.is(mapping('error', stateRev), '500')
+  t.is(mapping('timeout', stateRev), '500')
 })
 
 test('should pick first star', (t) => {
   const mapping = map({ dictionary: selective })
 
-  t.is(mapping('LOCAL', context), 'NOK')
-  t.is(mapping('EUR', context), 'UNKNOWN')
+  t.is(mapping('LOCAL', state), 'NOK')
+  t.is(mapping('EUR', state), 'UNKNOWN')
 })
 
 test('should map to source value for double star', (t) => {
   const mapping = map({ dictionary: selective })
 
-  t.is(mapping('NOK', contextRev), 'LOCAL')
-  t.is(mapping('EUR', contextRev), 'EUR')
-  t.is(mapping('USD', contextRev), 'USD')
+  t.is(mapping('NOK', stateRev), 'LOCAL')
+  t.is(mapping('EUR', stateRev), 'EUR')
+  t.is(mapping('USD', stateRev), 'USD')
 })
 
 test('should map to undefined when no dictionary', (t) => {
   const mapping = map({})
 
-  t.is(mapping('1', context), undefined)
-  t.is(mapping('2', contextRev), undefined)
+  t.is(mapping('1', state), undefined)
+  t.is(mapping('2', stateRev), undefined)
 })
 
 test('should map disallowed dictionary values using star', (t) => {
   const mapping = map({ dictionary: complex })
 
-  t.is(mapping({}, context), 'error')
-  t.is(mapping(new Date(), context), 'error')
+  t.is(mapping({}, state), 'error')
+  t.is(mapping(new Date(), state), 'error')
 })
 
 test('should map with named dictionary', (t) => {
   const options = { dictionaries: { simple } }
   const mapping = map({ dictionary: 'simple' }, options)
 
-  t.is(mapping('1', context), 'stripe')
-  t.is(mapping('2', context), 'paypal')
-  t.is(mapping('0', context), undefined)
+  t.is(mapping('1', state), 'stripe')
+  t.is(mapping('2', state), 'paypal')
+  t.is(mapping('0', state), undefined)
 })

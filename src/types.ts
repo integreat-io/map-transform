@@ -19,13 +19,8 @@ export interface Operands {
   [key: string]: any | ValueFunction
 }
 
-export interface Context {
-  rev: boolean
-  onlyMappedValues: boolean
-}
-
 export interface DataMapper {
-  (data: unknown, context: Context): any
+  (data: unknown, state: State): any
 }
 
 export interface CustomFunction<T = Operands> {

@@ -1,5 +1,5 @@
 import { DataMapper, MapDefinition, Operation } from '../types'
-import { getStateValue, contextFromState } from '../utils/stateHelpers'
+import { getStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
 export default function (
@@ -18,8 +18,6 @@ export default function (
     const runFalse = falseFn(options)
 
     return (state) =>
-      fn(getStateValue(state), contextFromState(state))
-        ? runTrue(state)
-        : runFalse(state)
+      fn(getStateValue(state), state) ? runTrue(state) : runFalse(state)
   }
 }

@@ -55,8 +55,8 @@ export default function map(
   if (!dictionary) {
     return () => undefined
   }
-  return (data, context) => {
-    const { rev } = context
+  return (data, state) => {
+    const { rev = false } = state
     const match = translate(data, dictionary, rev)
     return match === '*' ? data : match
   }

@@ -4,8 +4,20 @@ import { explode, implode } from './explode'
 
 // Setup
 
-const context = { rev: false, onlyMappedValues: false }
-const contextRev = { rev: true, onlyMappedValues: false }
+const state = {
+  rev: false,
+  onlyMapped: false,
+  root: {},
+  context: {},
+  value: {},
+}
+const stateRev = {
+  rev: true,
+  onlyMapped: false,
+  root: {},
+  context: {},
+  value: {},
+}
 
 // Tests -- explode
 
@@ -17,7 +29,7 @@ test('should explode object to array of key value objects', (t) => {
     { key: 'EUR', value: 0.1 },
   ]
 
-  const ret = explode()(data, context)
+  const ret = explode()(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -29,7 +41,7 @@ test('should not explode properties with undefined value', (t) => {
     { key: 'USD', value: 0.125 },
   ]
 
-  const ret = explode()(data, context)
+  const ret = explode()(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -38,7 +50,7 @@ test('should explode empty object to empty array', (t) => {
   const data = {}
   const expected: unknown[] = []
 
-  const ret = explode()(data, context)
+  const ret = explode()(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -51,18 +63,18 @@ test('should explode array to array of key value objects', (t) => {
     { key: 2, value: 'two smoking barrels' },
   ]
 
-  const ret = explode()(data, context)
+  const ret = explode()(data, state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should not explode non-objects', (t) => {
-  t.deepEqual(explode()(undefined, context), undefined)
-  t.deepEqual(explode()(null, context), undefined)
-  t.deepEqual(explode()('The text', context), undefined)
-  t.deepEqual(explode()(3, context), undefined)
-  t.deepEqual(explode()(true, context), undefined)
-  t.deepEqual(explode()(new Date(), context), undefined)
+  t.deepEqual(explode()(undefined, state), undefined)
+  t.deepEqual(explode()(null, state), undefined)
+  t.deepEqual(explode()('The text', state), undefined)
+  t.deepEqual(explode()(3, state), undefined)
+  t.deepEqual(explode()(true, state), undefined)
+  t.deepEqual(explode()(new Date(), state), undefined)
 })
 
 test('should implode array of key value objects to object in reverse', (t) => {
@@ -73,7 +85,7 @@ test('should implode array of key value objects to object in reverse', (t) => {
   ]
   const expected = { NOK: 1, USD: 0.125, EUR: 0.1 }
 
-  const ret = explode()(data, contextRev)
+  const ret = explode()(data, stateRev)
 
   t.deepEqual(ret, expected)
 })
@@ -92,7 +104,7 @@ test('should implode array of key value objects to array in reverse', (t) => {
     'two smoking barrels',
   ]
 
-  const ret = explode()(data, contextRev)
+  const ret = explode()(data, stateRev)
 
   t.deepEqual(ret, expected)
 })
@@ -110,18 +122,18 @@ test('should skip non-object value when imploding in reverse', (t) => {
   ]
   const expected = { NOK: 1, EUR: 0.1 }
 
-  const ret = explode()(data, contextRev)
+  const ret = explode()(data, stateRev)
 
   t.deepEqual(ret, expected)
 })
 
 test('should not implode non-arrays in revers', (t) => {
-  t.deepEqual(explode()(undefined, contextRev), undefined)
-  t.deepEqual(explode()(null, contextRev), undefined)
-  t.deepEqual(explode()('The text', contextRev), undefined)
-  t.deepEqual(explode()(3, contextRev), undefined)
-  t.deepEqual(explode()(true, contextRev), undefined)
-  t.deepEqual(explode()(new Date(), contextRev), undefined)
+  t.deepEqual(explode()(undefined, stateRev), undefined)
+  t.deepEqual(explode()(null, stateRev), undefined)
+  t.deepEqual(explode()('The text', stateRev), undefined)
+  t.deepEqual(explode()(3, stateRev), undefined)
+  t.deepEqual(explode()(true, stateRev), undefined)
+  t.deepEqual(explode()(new Date(), stateRev), undefined)
 })
 
 // Tests -- implode
@@ -134,7 +146,7 @@ test('should implode array of key value objects to object ', (t) => {
   ]
   const expected = { NOK: 1, USD: 0.125, EUR: 0.1 }
 
-  const ret = implode()(data, context)
+  const ret = implode()(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -143,7 +155,7 @@ test('should implode empty array to empty object object ', (t) => {
   const data: unknown[] = []
   const expected = {}
 
-  const ret = implode()(data, context)
+  const ret = implode()(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -156,7 +168,7 @@ test('should explode object to array of key value objects in reverse', (t) => {
     { key: 'EUR', value: 0.1 },
   ]
 
-  const ret = implode()(data, contextRev)
+  const ret = implode()(data, stateRev)
 
   t.deepEqual(ret, expected)
 })

@@ -1,9 +1,5 @@
 import { Operation, DataMapper } from '../types'
-import {
-  getStateValue,
-  setStateValue,
-  contextFromState,
-} from '../utils/stateHelpers'
+import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import { identity } from '../utils/functional'
 
 const filterValue = (value: unknown, filterFn: (data: unknown) => boolean) =>
@@ -20,7 +16,7 @@ export default function filter(fn: DataMapper): Operation {
     }
 
     return (state) => {
-      const filterFn = (data: unknown) => !!fn(data, contextFromState(state))
+      const filterFn = (data: unknown) => !!fn(data, state)
       const value = getStateValue(state)
       return setStateValue(state, filterValue(value, filterFn))
     }

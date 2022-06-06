@@ -84,6 +84,21 @@ test('should use matchPath to get match value from data', (t) => {
   t.true(ret)
 })
 
+test('should support carret (root) in matchPath', (t) => {
+  const path = 'meta.role'
+  const matchPath = '^acceptLevel'
+  const data = { name: 'John F.', meta: { role: 'editor' }, level: 'admin' }
+  const stateWithRoot = {
+    root: { user: data, acceptLevel: 'editor' },
+    context: data,
+    value: data,
+  }
+
+  const ret = compare({ path, operator: '=', matchPath })(data, stateWithRoot)
+
+  t.true(ret)
+})
+
 test('should use equality as default operator', (t) => {
   const match = 'admin'
   const path = 'meta.role'

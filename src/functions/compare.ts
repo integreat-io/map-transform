@@ -80,13 +80,15 @@ export default function compare({
   not = false,
 }: CompareOperands): DataMapper {
   const getValue = getter(path)
-  const getMatch = matchPath ? getter(matchPath) : () => match
-
+  const useRoot = typeof matchPath === 'string' && matchPath[0] === '^'
+  const realMatchPath = useRoot ? matchPath.slice(1) : matchPath
+  const getMatch =
+    typeof realMatchPath === 'string' ? getter(realMatchPath) : () => match
   const comparer = createComparer(operator)
 
-  return (data) => {
+  return (data, state) => {
     const value = getValue(data)
-    const match = getMatch(data)
+    const match = getMatch(useRoot ? state.root : data)
     const result = comparer(value, match)
     return not ? !result : result
   }

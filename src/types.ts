@@ -61,6 +61,11 @@ export interface FilterObject extends Operands {
   $direction?: string
 }
 
+export interface IfObject extends Operands {
+  $if: string | MapDefinition
+  $direction?: string
+}
+
 export interface ApplyObject extends Operands {
   $apply: string
   $iterate?: boolean
@@ -76,6 +81,7 @@ export interface AltObject extends Operands {
 export type OperationObject =
   | TransformObject
   | FilterObject
+  | IfObject
   | ApplyObject
   | AltObject
 
@@ -109,6 +115,7 @@ export interface MapObject {
   $flip?: boolean
   $transform?: undefined
   $filter?: undefined
+  $if?: undefined
   $apply?: undefined
   $alt?: undefined
 }

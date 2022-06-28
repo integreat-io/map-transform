@@ -1,23 +1,35 @@
-import { DataMapper, MapDefinition, Operation } from '../types'
-import { getStateValue } from '../utils/stateHelpers'
+import { DataMapper, MapDefinition, Operation, State } from '../types'
+import { getStateValue, setStateValue } from '../utils/stateHelpers'
 import { mapFunctionFromDef } from '../utils/definitionHelpers'
 
 export default function (
-  fn: DataMapper,
+  conditionDef: DataMapper | MapDefinition,
   trueDef?: MapDefinition,
   falseDef?: MapDefinition
 ): Operation {
   const falseFn = mapFunctionFromDef(falseDef)
-  if (typeof fn !== 'function') {
+  if (!conditionDef) {
     return falseFn
   }
+  const conditionFn: Operation =
+    typeof conditionDef === 'function'
+      ? () =>
+          (state: State): State =>
+            setStateValue(
+              state,
+              (conditionDef as DataMapper)(getStateValue(state), state)
+            )
+      : mapFunctionFromDef(conditionDef)
   const trueFn = mapFunctionFromDef(trueDef)
 
   return (options) => {
+    const runCondition = conditionFn(options)
     const runTrue = trueFn(options)
     const runFalse = falseFn(options)
 
-    return (state) =>
-      fn(getStateValue(state), state) ? runTrue(state) : runFalse(state)
+    return (state) => {
+      const bool = !!getStateValue(runCondition(state))
+      return bool ? runTrue(state) : runFalse(state)
+    }
   }
 }

@@ -563,10 +563,10 @@ See the `transform()` operation for more on how defining as an object works.
 
 #### `ifelse(conditionFn, truePipeline, falsePipeline)` operation
 
-The `ifelse()` operation will run the `truePipeline` if the `conditionFn` results
-in `true`, otherwise it will run the `falsePipeline`. See
-[the `filter()` operation](#filterconditionFn-operation) for more on the
-requirements for the `conditionFn`.
+The `ifelse()` operation will run the `truePipeline` if the `conditionFn`
+results in something truthy, JavaScript tstyle, otherwise it will run the
+`falsePipeline`. See [the `filter()` operation](#filterconditionFn-operation)
+for more on the requirements for the `conditionFn`.
 
 Both `truePipeline` and `falsePipeline` are optional, in case you only need to
 apply a pipeline in one of the cases.
@@ -586,6 +586,29 @@ const def31 = [
   ifelse(onlyActives, set('active[]'), set('inactive[]'))
 ]
 ```
+
+Defining an if operation as an object:
+
+```javascript
+import { mapTransform, ifelse } from 'map-transform'
+
+const def31b = [
+  'members'
+  {
+    name: 'name',
+    active: 'hasPayed'
+  },
+  {
+    $if: 'active',
+    then: set('active[]'),
+    else: set('inactive[]')
+  }
+]
+```
+
+Note that `$if`, `then`, and `else` in the object notation may be any type of
+pipeline definition. The only gotcha is that if `$if` is a function, it is
+treated as a `conditionFn`, like in `def31`, not as a state mapper.
 
 #### `iterate(pipeline)` operation
 

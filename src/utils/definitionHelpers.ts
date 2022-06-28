@@ -8,6 +8,7 @@ import {
   OperationObject,
   TransformObject,
   FilterObject,
+  IfObject,
   ApplyObject,
   AltObject,
   Options,
@@ -20,6 +21,7 @@ import iterate from '../operations/iterate'
 import pipe from '../operations/pipe'
 import transform from '../operations/transform'
 import filter from '../operations/filter'
+import ifelse from '../operations/ifelse'
 import apply from '../operations/apply'
 import alt from '../operations/alt'
 import { fwd, rev } from '../operations/directionals'
@@ -44,6 +46,7 @@ export const hasOperationProps = (
 ): def is OperationObject =>
   isOperationType<TransformObject>(def, '$transform') ||
   isOperationType<FilterObject>(def, '$filter') ||
+  isOperationType<IfObject>(def, '$if') ||
   isOperationType<ApplyObject>(def, '$apply') ||
   isOperationType<AltObject>(def, '$alt') ||
   isOperationType<AltObject>(def, '$value')
@@ -87,6 +90,14 @@ const createOperation =
       : identity
   }
 
+const createIfOperation = (def: IfObject) => (options: Options) => {
+  const { $if: conditionPipeline, then: thenPipeline, else: elsePipeline } = def
+  return wrapFromDefinition(
+    ifelse(conditionPipeline, thenPipeline, elsePipeline),
+    def
+  )(options)
+}
+
 const createApplyOperation = (
   operationFn: (pipelineId: string) => Operation,
   def: ApplyObject
@@ -102,6 +113,8 @@ const operationFromObject = (def: OperationObject | MapObject) => {
     return createOperation(transform, '$transform', transformDefFromValue(def))
   } else if (isOperationType<FilterObject>(def, '$filter')) {
     return createOperation(filter, '$filter', def)
+  } else if (isOperationType<IfObject>(def, '$if')) {
+    return createIfOperation(def)
   } else if (isOperationType<ApplyObject>(def, '$apply')) {
     return createApplyOperation(apply, def)
   } else if (isOperationType<AltObject>(def, '$alt')) {

@@ -134,3 +134,41 @@ test('should set primitive value in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should run truePipeline with pipeline as condition', (t) => {
+  const conditionPipeline = 'active'
+  const data = { active: true }
+  const state = {
+    root: data,
+    context: data,
+    value: data,
+  }
+  const expected = {
+    root: data,
+    context: data,
+    value: { active: [data] },
+  }
+
+  const ret = ifelse(conditionPipeline, truePipeline, falsePipeline)(options)(
+    state
+  )
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run falsePipeline with pipeline as condition', (t) => {
+  const conditionPipeline = 'active'
+  const data = { active: false }
+  const state = {
+    root: data,
+    context: data,
+    value: data,
+  }
+  const expectedValue = { inactive: [data] }
+
+  const ret = ifelse(conditionPipeline, truePipeline, falsePipeline)(options)(
+    state
+  )
+
+  t.deepEqual(ret.value, expectedValue)
+})

@@ -1,6 +1,4 @@
 import test from 'ava'
-import { isObject } from '../utils/is'
-
 import {
   mapTransform,
   get,
@@ -11,7 +9,6 @@ import {
   root,
   plug,
   lookup,
-  ifelse,
   value,
 } from '..'
 
@@ -307,31 +304,6 @@ test('should map null to undefined when mutateNull is false', (t) => {
   const ret = mapTransform(def, { mutateNull: false })(data)
 
   t.is(ret, undefined)
-})
-
-test('should map with ifelse', (t) => {
-  const isPublished = (data: unknown) => isObject(data) && !!data.published
-  const def = [
-    'content.article',
-    {
-      title: 'content.heading',
-      published: 'published',
-    },
-    ifelse(isPublished, set('articles[]'), set('drafts[]')),
-  ]
-  const data = {
-    content: {
-      article: {
-        content: { heading: 'Heading 1' },
-        published: false,
-      },
-    },
-  }
-  const expected = { drafts: [{ title: 'Heading 1', published: false }] }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
 })
 
 test('should map with root operation', (t) => {

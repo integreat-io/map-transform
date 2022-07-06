@@ -1,5 +1,7 @@
+import mapAny = require('map-any')
 import { Operands, Path, DataMapper } from '../types'
 import getter from '../utils/pathGetter'
+import { unescapeValue } from '../utils/escape'
 
 interface Comparer {
   (value: unknown, match: unknown): boolean
@@ -86,8 +88,11 @@ export default function compare({
   const getValue = getter(path)
   const useRoot = typeof matchPath === 'string' && matchPath[0] === '^'
   const realMatchPath = useRoot ? matchPath.slice(1) : matchPath
+  const realMatchValue = mapAny(unescapeValue, match)
   const getMatch =
-    typeof realMatchPath === 'string' ? getter(realMatchPath) : () => match
+    typeof realMatchPath === 'string'
+      ? getter(realMatchPath)
+      : () => realMatchValue
   const comparer = createComparer(operator)
 
   return (data, state) => {

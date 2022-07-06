@@ -1103,6 +1103,9 @@ const def19o = [
 ]
 ```
 
+When you define the `compare` function as a transform object in JSON and need to
+compare to `undefined`, use `**undefined**` instead.
+
 #### `explode()` function
 
 Given an object, the `explode` helper function will return an array with one
@@ -1163,7 +1166,8 @@ is returned instead.
 
 The `map` function only supports primitive values, so any object will be mapped to
 `undefined` or the value given by the wildcard in the dictionary. Arrays will be
-iterated to map each value in the array.
+iterated to map each value in the array. To map to or from `undefined` with a
+dictionary defined in JSON, use the value `**undefined**`.
 
 Example:
 
@@ -1182,7 +1186,7 @@ const def28 = {
 }
 ```
 
-When using `map` in an operation object, you may provice a dictionary array
+When using `map` in an operation object, you may provide a dictionary array
 or a named dictionary on the `dictionary` property. An example of with a named
 dictionary:
 

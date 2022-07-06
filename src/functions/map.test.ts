@@ -25,6 +25,12 @@ const selective = [
   ['*', '*'],
 ] as Dictionary
 
+const withUndefined = [
+  ['LOCAL', 'NOK'],
+  ['*', '**undefined**'],
+  ['**undefined**', 'USD'],
+] as Dictionary
+
 const state = {
   rev: false,
   onlyMapped: false,
@@ -105,6 +111,14 @@ test('should map disallowed dictionary values using star', (t) => {
 
   t.is(mapping({}, state), 'error')
   t.is(mapping(new Date(), state), 'error')
+})
+
+test('should map to and from undefined', (t) => {
+  const mapping = map({ dictionary: withUndefined })
+
+  t.is(mapping('SEK', state), undefined)
+  t.is(mapping(undefined, state), 'USD')
+  t.is(mapping('LOCAL', state), 'NOK') // Just to verify
 })
 
 test('should map with named dictionary', (t) => {

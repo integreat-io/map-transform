@@ -203,10 +203,30 @@ test('should return true when the value at path is not undefined', (t) => {
   t.true(ret)
 })
 
+test('should support **undefined** when comparing to undefined in JSON', (t) => {
+  const match = '**undefined**'
+  const path = 'meta.role'
+  const data = { name: 'John F.' }
+
+  const ret = compare({ path, operator: '=', match })(data, state)
+
+  t.true(ret)
+})
+
 test('should return true when value is in array', (t) => {
   const match = ['admin', 'editor']
   const path = 'meta.role'
   const data = { name: 'John F.', meta: { role: 'admin' } }
+
+  const ret = compare({ path, operator: 'in', match })(data, state)
+
+  t.true(ret)
+})
+
+test('should return true when value is in array and is undefined', (t) => {
+  const match = ['admin', '**undefined**', 'editor']
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: {} }
 
   const ret = compare({ path, operator: 'in', match })(data, state)
 

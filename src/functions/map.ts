@@ -1,4 +1,5 @@
 import mapAny = require('map-any')
+import { escapeValue, unescapeValue } from '../utils/escape'
 import { Dictionary, DictionaryValue, Dictionaries, DataMapper } from '../types'
 
 interface Operands {
@@ -57,7 +58,7 @@ export default function map(
   }
   return (data, state) => {
     const { rev = false } = state
-    const match = translate(data, dictionary, rev)
-    return match === '*' ? data : match
+    const match = translate(escapeValue(data), dictionary, rev)
+    return match === '*' ? data : unescapeValue(match)
   }
 }

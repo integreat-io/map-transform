@@ -194,6 +194,15 @@ test('should support require numeric value and match', (t) => {
   t.false(compare({ path: 'age', operator: '<=', match: '35' })(data, state))
 })
 
+test('should return true when the value at path is not undefined', (t) => {
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: { role: 'admin' } }
+
+  const ret = compare({ path, operator: 'exists' })(data, state)
+
+  t.true(ret)
+})
+
 test('should return true when value is in array', (t) => {
   const match = ['admin', 'editor']
   const path = 'meta.role'

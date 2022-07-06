@@ -43,6 +43,8 @@ const compareIn = (value: unknown, match: unknown) =>
     ? match.some((item) => compareEqual(value, item))
     : compareEqual(value, match)
 
+const exists = (value: unknown) => value !== undefined
+
 function createComparer(operator: string) {
   switch (operator) {
     case '=':
@@ -67,6 +69,8 @@ function createComparer(operator: string) {
       )
     case 'in':
       return compareIn
+    case 'exists':
+      return exists
     default:
       return (_value: unknown, _match: unknown) => false
   }

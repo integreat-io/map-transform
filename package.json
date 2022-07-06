@@ -1,6 +1,6 @@
 {
   "name": "map-transform",
-  "version": "0.4.0-alpha.14",
+  "version": "0.4.0-alpha.15",
   "description": "Map and transform objects with mapping definitions",
   "author": "Kjell-Morten Bratsberg Thorsen <post@kjellmorten.no>",
   "license": "ISC",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@integreat/ts-dev-setup": "^2.3.0",
     "@types/deep-freeze": "^0.1.2",
-    "@types/sinon": "^10.0.11",
+    "@types/sinon": "^10.0.12",
     "deep-freeze": "0.0.1",
     "sinon": "^14.0.0"
   }

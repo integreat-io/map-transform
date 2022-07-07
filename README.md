@@ -645,6 +645,9 @@ When an id is passed to the apply operation as `pipelinedId`, the pipeline will
 be applied in the place of the apply operation and executed as if it was part of
 the pipeline definition in the first place.
 
+When no pipeline is provided, e.g. because the id is unknown, no pipeline will
+be applied and the data will pass through untouched.
+
 ```javascript
 import { mapTransform, apply, transform } from 'map-transform'
 

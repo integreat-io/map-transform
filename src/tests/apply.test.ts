@@ -110,7 +110,7 @@ test('should apply pipeline by id in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when no pipelines is supplied', (t) => {
+test('should return value when no pipelines is supplied', (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -125,7 +125,7 @@ test('should return undefined when no pipelines is supplied', (t) => {
 
   const ret = mapTransform(def)(data)
 
-  t.is(ret, undefined)
+  t.deepEqual(ret, { title: 'The heading', viewCount: '45' })
 })
 
 test('should apply pipeline as operation object', (t) => {
@@ -256,7 +256,7 @@ test('should apply pipeline from array path in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined on unknown pipeline in operation object', (t) => {
+test('should return value on unknown pipeline in operation object', (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -271,7 +271,7 @@ test('should return undefined on unknown pipeline in operation object', (t) => {
 
   const ret = mapTransform(def, options)(data)
 
-  t.is(ret, undefined)
+  t.deepEqual(ret, { title: 'The heading', viewCount: '45' })
 })
 
 test('should apply pipeline as operation object online going forward only', (t) => {

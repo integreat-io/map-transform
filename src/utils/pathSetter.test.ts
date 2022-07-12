@@ -140,6 +140,21 @@ test('should set value at sub array index path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should allow escaped brackets in path', (t) => {
+  const path = 'meta.options.created\\[gt]'
+  const object = {}
+  const expected = {
+    meta: {
+      options: {
+        'created[gt]': new Date('2022-05-01T18:43:11Z'),
+      },
+    },
+  }
+  const ret = pathSetter(path)(new Date('2022-05-01T18:43:11Z'), object)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set value array at path', (t) => {
   const path = 'meta.authors'
   const object = {}

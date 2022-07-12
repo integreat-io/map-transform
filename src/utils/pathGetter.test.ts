@@ -112,6 +112,15 @@ test('should flatten arrays', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should allow escaped brackets in path', (t) => {
+  const data = { 'items[]': { id: 'item1' } }
+  const path = 'items\\[].id'
+
+  const ret = pathGetter(path)(data)
+
+  t.deepEqual(ret, 'item1')
+})
+
 test('should return object when no path', (t) => {
   const path = null
 

@@ -8,23 +8,34 @@ export interface Setter {
   (value: unknown, target: unknown): unknown
 }
 
+const removeEscaping = (value: string) => value.replace('\\[', '[')
+
 const preparePathPart = (part: string, isAfterOpenArray: boolean) =>
-  isAfterOpenArray ? `]${part}` : part
+  removeEscaping(isAfterOpenArray ? `]${part}` : part)
 
 /**
  * Split a dot syntax path into its parts, including array brackets as a part
  * Note that any part after an open bracket `[]` will be prefixed by `]` to
  * signal that the setter should be applied to each item in the array.
  */
-const pathSplitter = function* (path: Path) {
-  const regEx = /([^[\].]+|\[\w*])/g
+export const pathSplitter = function* (path: Path, markAfterOpen = false) {
+  const regEx = /[^[\].]+|\[\w*]/g
   let match
   let isAfterOpenArray = false
+  let prev = ''
   do {
     match = regEx.exec(path)
     if (match) {
-      yield preparePathPart(match[0], isAfterOpenArray)
-      isAfterOpenArray = match[0] === '[]'
+      if (match[0].endsWith('\\')) {
+        prev = match[0]
+      } else {
+        yield preparePathPart(
+          prev + match[0],
+          markAfterOpen && isAfterOpenArray
+        )
+        prev = ''
+        isAfterOpenArray = match[0] === '[]'
+      }
     }
   } while (match !== null)
 }
@@ -93,7 +104,7 @@ function createSetter(prop: string, next: Setter) {
  * without an index specified.
  */
 export default function pathSetter(path: Path): Setter {
-  return [...pathSplitter(path)].reduceRight(
+  return [...pathSplitter(path, true)].reduceRight(
     (next: Setter, part: string) => createSetter(part, next),
     identity
   )

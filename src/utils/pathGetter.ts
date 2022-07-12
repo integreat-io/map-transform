@@ -4,6 +4,7 @@ import { isPath } from './definitionHelpers'
 import { isObject } from './is'
 import { ensureArray } from './array'
 import { identity, pipe } from './functional'
+import { pathSplitter } from './pathSetter'
 
 export interface Getter {
   (object?: unknown): unknown
@@ -13,9 +14,6 @@ const numberOrString = (val: string): string | number => {
   const num = Number.parseInt(val, 10)
   return Number.isNaN(num) ? val : num
 }
-
-const split = (str: Path): string[] =>
-  str.split(/\[|]?\.|]/).filter((str) => str !== '')
 
 const getProp = (prop: string) => (object: unknown) =>
   isObject(object) ? object[prop] : undefined
@@ -34,6 +32,11 @@ function createGetter(part: string) {
     : getObjectOrArray(getProp(prop))
 }
 
+const removeBrackets = (value: string) =>
+  value[0] === '[' && value[value.length - 1] === ']'
+    ? value.slice(1, value.length - 1)
+    : value
+
 /**
  * Get the value at `path` in `value`.
  *
@@ -42,10 +45,16 @@ function createGetter(part: string) {
  */
 export default function pathGetter(path: Path | null): Getter {
   if (isPath(path)) {
-    const getters = split(path).map(createGetter)
+    const parts = [...pathSplitter(path)]
+    const getters = parts
+      .map(removeBrackets)
+      .filter((str) => str !== '')
+      .map(createGetter)
     const fn = getters.length === 0 ? identity : pipe(...getters)
 
-    return path.includes('[]') ? (value) => ensureArray(fn(value)) : fn
+    return parts.some((part) => part === '[]')
+      ? (value) => ensureArray(fn(value))
+      : fn
   }
   return identity
 }

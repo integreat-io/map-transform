@@ -166,6 +166,36 @@ test('should allow colons in paths', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should allow escaped brackets in target paths', (t) => {
+  const def = [
+    {
+      'created\\[gt]': 'payload.updatedAfter',
+    },
+  ]
+  const data = { payload: { updatedAfter: new Date('2022-05-01T00:18:14Z') } }
+  const expected = { 'created[gt]': new Date('2022-05-01T00:18:14Z') }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should allow escaped brackets in source paths', (t) => {
+  const def = [
+    {
+      'payload.updatedAfter': 'created\\[gt]',
+    },
+  ]
+  const data = { 'created[gt]': new Date('2022-05-01T00:18:14Z') }
+  const expected = {
+    payload: { updatedAfter: new Date('2022-05-01T00:18:14Z') },
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should skip slashed properties going forward', (t) => {
   const def = [
     'content.article',

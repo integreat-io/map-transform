@@ -43,6 +43,8 @@ export {
   ApplyObject,
   AltObject,
 } from './types'
+export { default as pathGetter } from './utils/pathGetter'
+export { default as pathSetter } from './utils/pathSetter'
 
 const composeMapFunction = (
   mapFn: StateMapper,

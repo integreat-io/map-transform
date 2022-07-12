@@ -590,7 +590,7 @@ const def31 = [
 Defining an if operation as an object:
 
 ```javascript
-import { mapTransform, ifelse } from 'map-transform'
+import { mapTransform } from 'map-transform'
 
 const def31b = [
   'members'
@@ -1055,6 +1055,44 @@ const mappedData = mapper(data)
 
 mapper.rev(mappedData)
 // --> { content: { meta: { authors: ['user1', 'user3'] } } }
+```
+
+#### `and(pipeline, pipeline, ...)` operation
+
+Will run all provided pipelines, force their return values to boolean, according
+to JavaScript rules, and return `true` if they are all `true`, otherwise
+`false`.
+
+Typically used together with [`ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
+to support AND logic:
+
+```javascript
+const def36 = [
+  {
+    $if: { $and: ['active', 'authorized'] },
+    then: 'content',
+    else: { $value: undefined },
+  },
+]
+```
+
+#### `or(pipeline, pipeline, ...)` operation
+
+Will run all provided pipelines, force their return values to boolean, according
+to JavaScript rules, and return `true` if any of the are `true`, otherwise
+`false`.
+
+Typically used together with [`ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
+to support OR logic:
+
+```javascript
+const def37 = [
+  {
+    $if: { $or: ['active', 'draft'] },
+    then: 'content',
+    else: { $value: undefined },
+  },
+]
 ```
 
 #### `compare({ path, operator, match, matchPath, not })` function

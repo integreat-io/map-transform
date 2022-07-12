@@ -28,7 +28,7 @@ export default function (
     const runFalse = falseFn(options)
 
     return (state) => {
-      const bool = !!getStateValue(runCondition(state))
+      const bool = getStateValue(runCondition(state))
       return bool ? runTrue(state) : runFalse(state)
     }
   }

@@ -11,6 +11,9 @@ import {
   IfObject,
   ApplyObject,
   AltObject,
+  ValueObject,
+  AndObject,
+  OrObject,
   Options,
 } from '../types'
 import { identity } from './functional'
@@ -25,6 +28,7 @@ import ifelse from '../operations/ifelse'
 import apply from '../operations/apply'
 import alt from '../operations/alt'
 import { fwd, rev } from '../operations/directionals'
+import { and, or } from '../operations/logical'
 
 const altOperation = (fn: DataMapper) => alt(transform(fn))
 
@@ -49,7 +53,9 @@ export const hasOperationProps = (
   isOperationType<IfObject>(def, '$if') ||
   isOperationType<ApplyObject>(def, '$apply') ||
   isOperationType<AltObject>(def, '$alt') ||
-  isOperationType<AltObject>(def, '$value')
+  isOperationType<ValueObject>(def, '$value') ||
+  isOperationType<AndObject>(def, '$and') ||
+  isOperationType<OrObject>(def, '$or')
 
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isMapObject = (def: unknown): def is MapObject =>
@@ -106,10 +112,19 @@ const createApplyOperation = (
   return wrapFromDefinition(operationFn(pipelineId), def)
 }
 
+const createLogicalOperation = (
+  operationFn: (...fn: MapDefinition[]) => Operation,
+  fnProp: '$and' | '$or',
+  def: AndObject | OrObject
+) => {
+  const pipelines = def[fnProp] // eslint-disable-line security/detect-object-injection
+  return operationFn(...pipelines)
+}
+
 const operationFromObject = (def: OperationObject | MapObject) => {
   if (isOperationType<TransformObject>(def, '$transform')) {
     return createOperation(transform, '$transform', def)
-  } else if (isOperationType<TransformObject>(def, '$value')) {
+  } else if (isOperationType<ValueObject>(def, '$value')) {
     return createOperation(transform, '$transform', transformDefFromValue(def))
   } else if (isOperationType<FilterObject>(def, '$filter')) {
     return createOperation(filter, '$filter', def)
@@ -119,6 +134,10 @@ const operationFromObject = (def: OperationObject | MapObject) => {
     return createApplyOperation(apply, def)
   } else if (isOperationType<AltObject>(def, '$alt')) {
     return createOperation(altOperation, '$alt', def)
+  } else if (isOperationType<AndObject>(def, '$and')) {
+    return createLogicalOperation(and, '$and', def)
+  } else if (isOperationType<OrObject>(def, '$or')) {
+    return createLogicalOperation(or, '$or', def)
   } else {
     return mutate(def)
   }

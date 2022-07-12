@@ -89,3 +89,119 @@ test('should run $if deeper in the structure', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should support $and filter - matching', (t) => {
+  const def = [
+    'content',
+    {
+      $if: {
+        $and: [
+          { $filter: 'compare', path: 'section', match: 'news' },
+          { $filter: 'compare', path: 'archived', match: false },
+        ],
+      },
+      then: { title: 'heading' },
+      else: { title: 'title' },
+    },
+  ]
+  const data = {
+    content: {
+      heading: 'The heading',
+      title: 'The title',
+      section: 'news',
+      archived: false,
+    },
+  }
+  const expected = { title: 'The heading' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support $and filter - not matching', (t) => {
+  const def = [
+    'content',
+    {
+      $if: {
+        $and: [
+          { $filter: 'compare', path: 'section', match: 'news' },
+          { $filter: 'compare', path: 'archived', match: true },
+        ],
+      },
+      then: { title: 'heading' },
+      else: { title: 'title' },
+    },
+  ]
+  const data = {
+    content: {
+      heading: 'The heading',
+      title: 'The title',
+      section: 'news',
+      archived: false,
+    },
+  }
+  const expected = { title: 'The title' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support $or filter - matching', (t) => {
+  const def = [
+    'content',
+    {
+      $if: {
+        $or: [
+          { $filter: 'compare', path: 'section', match: 'news' },
+          { $filter: 'compare', path: 'archived', match: true },
+        ],
+      },
+      then: { title: 'heading' },
+      else: { title: 'title' },
+    },
+  ]
+  const data = {
+    content: {
+      heading: 'The heading',
+      title: 'The title',
+      section: 'news',
+      archived: false,
+    },
+  }
+  const expected = { title: 'The heading' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support $or filter - not matching', (t) => {
+  const def = [
+    'content',
+    {
+      $if: {
+        $or: [
+          { $filter: 'compare', path: 'section', match: 'news' },
+          { $filter: 'compare', path: 'archived', match: true },
+        ],
+      },
+      then: { title: 'heading' },
+      else: { title: 'title' },
+    },
+  ]
+  const data = {
+    content: {
+      heading: 'The heading',
+      title: 'The title',
+      section: 'sports',
+      archived: false,
+    },
+  }
+  const expected = { title: 'The title' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})

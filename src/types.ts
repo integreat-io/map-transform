@@ -78,12 +78,29 @@ export interface AltObject extends Operands {
   $direction?: string
 }
 
+export interface ValueObject extends Operands {
+  $value: string
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface AndObject extends Operands {
+  $and: MapDefinition[]
+}
+
+export interface OrObject extends Operands {
+  $or: MapDefinition[]
+}
+
 export type OperationObject =
   | TransformObject
   | FilterObject
   | IfObject
   | ApplyObject
   | AltObject
+  | ValueObject
+  | AndObject
+  | OrObject
 
 export interface StateMapper {
   (state: State): State
@@ -117,7 +134,10 @@ export interface MapObject {
   $filter?: undefined
   $if?: undefined
   $apply?: undefined
+  $valud?: undefined
   $alt?: undefined
+  $and?: undefined
+  $or?: undefined
 }
 
 export type MapDefinition =

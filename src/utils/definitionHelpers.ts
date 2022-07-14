@@ -14,6 +14,7 @@ import {
   ValueObject,
   AndObject,
   OrObject,
+  ConcatObject,
   Options,
 } from '../types'
 import { identity } from './functional'
@@ -29,6 +30,7 @@ import apply from '../operations/apply'
 import alt from '../operations/alt'
 import { fwd, rev } from '../operations/directionals'
 import { and, or } from '../operations/logical'
+import concat from '../operations/concat'
 
 const altOperation = (fn: DataMapper) => alt(transform(fn))
 
@@ -55,7 +57,8 @@ export const hasOperationProps = (
   isOperationType<AltObject>(def, '$alt') ||
   isOperationType<ValueObject>(def, '$value') ||
   isOperationType<AndObject>(def, '$and') ||
-  isOperationType<OrObject>(def, '$or')
+  isOperationType<OrObject>(def, '$or') ||
+  isOperationType<ConcatObject>(def, '$concat')
 
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isMapObject = (def: unknown): def is MapObject =>
@@ -112,10 +115,10 @@ const createApplyOperation = (
   return wrapFromDefinition(operationFn(pipelineId), def)
 }
 
-const createLogicalOperation = (
+const createPipelineOperation = (
   operationFn: (...fn: MapDefinition[]) => Operation,
-  fnProp: '$and' | '$or',
-  def: AndObject | OrObject
+  fnProp: '$and' | '$or' | '$concat',
+  def: AndObject | OrObject | ConcatObject
 ) => {
   const pipelines = def[fnProp] // eslint-disable-line security/detect-object-injection
   return operationFn(...pipelines)
@@ -135,9 +138,11 @@ const operationFromObject = (def: OperationObject | MapObject) => {
   } else if (isOperationType<AltObject>(def, '$alt')) {
     return createOperation(altOperation, '$alt', def)
   } else if (isOperationType<AndObject>(def, '$and')) {
-    return createLogicalOperation(and, '$and', def)
+    return createPipelineOperation(and, '$and', def)
   } else if (isOperationType<OrObject>(def, '$or')) {
-    return createLogicalOperation(or, '$or', def)
+    return createPipelineOperation(or, '$or', def)
+  } else if (isOperationType<ConcatObject>(def, '$concat')) {
+    return createPipelineOperation(concat, '$concat', def)
   } else {
     return mutate(def)
   }

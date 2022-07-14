@@ -581,6 +581,23 @@ test('should support $value shorthand', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should concat arrays with $concat', (t) => {
+  const def = [
+    'org',
+    {
+      $concat: ['users', 'admins'],
+    },
+  ]
+  const data = {
+    org: { users: ['johnf', 'maryk'], admins: ['theboss'] },
+  }
+  const expected = ['johnf', 'maryk', 'theboss']
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should do nothing when transform operation has invalid function id', (t) => {
   const def = [
     'content',

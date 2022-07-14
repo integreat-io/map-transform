@@ -92,6 +92,10 @@ export interface OrObject extends Operands {
   $or: MapDefinition[]
 }
 
+export interface ConcatObject extends Operands {
+  $concat: MapDefinition[]
+}
+
 export type OperationObject =
   | TransformObject
   | FilterObject
@@ -101,6 +105,7 @@ export type OperationObject =
   | ValueObject
   | AndObject
   | OrObject
+  | ConcatObject
 
 export interface StateMapper {
   (state: State): State
@@ -138,6 +143,7 @@ export interface MapObject {
   $alt?: undefined
   $and?: undefined
   $or?: undefined
+  $concat?: undefined
 }
 
 export type MapDefinition =

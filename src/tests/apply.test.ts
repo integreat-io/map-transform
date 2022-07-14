@@ -28,12 +28,15 @@ const entryMutation = [
     source: '^params.source',
     viewCount: 'views',
   },
-  { $apply: 'castEntry' },
+  { $apply: 'cast_entry' },
 ]
 
+const hitsOnly = { hits: 'meta.hits' }
+
 const pipelines = {
-  castEntry,
+  cast_entry: castEntry,
   getItems,
+  hitsOnly,
   entry: entryMutation,
 }
 
@@ -47,7 +50,7 @@ test('should apply pipeline by id', (t) => {
       title: 'content.heading',
       viewCount: 'meta.hits',
     },
-    apply('castEntry'),
+    apply('cast_entry'),
   ]
   const data = {
     content: { heading: 'The heading' },
@@ -116,7 +119,7 @@ test('should return value when no pipelines is supplied', (t) => {
       title: 'content.heading',
       viewCount: 'meta.hits',
     },
-    apply('castEntry'),
+    apply('cast_entry'),
   ]
   const data = {
     content: { heading: 'The heading' },
@@ -134,7 +137,7 @@ test('should apply pipeline as operation object', (t) => {
       title: 'content.heading',
       viewCount: 'meta.hits',
     },
-    { $apply: 'castEntry' },
+    { $apply: 'cast_entry' },
   ]
   const data = {
     content: { heading: 'The heading' },
@@ -152,14 +155,7 @@ test('should apply pipeline as operation object', (t) => {
 })
 
 test('should iterate applied pipeline', (t) => {
-  const def = [
-    {
-      $iterate: true,
-      title: 'content.heading',
-      viewCount: 'meta.hits',
-    },
-    { $apply: 'castEntry', $iterate: true },
-  ]
+  const def = [{ $apply: 'hitsOnly', $iterate: true }]
   const data = [
     {
       content: { heading: 'The heading' },
@@ -172,14 +168,10 @@ test('should iterate applied pipeline', (t) => {
   ]
   const expected = [
     {
-      id: undefined,
-      title: 'The heading',
-      viewCount: 45,
+      hits: '45',
     },
     {
-      id: undefined,
-      title: 'The next heading',
-      viewCount: 111,
+      hits: '111',
     },
   ]
 
@@ -277,7 +269,7 @@ test('should return value on unknown pipeline in operation object', (t) => {
 test('should apply pipeline as operation object online going forward only', (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
-    { $apply: 'castEntry', $direction: 'fwd' },
+    { $apply: 'cast_entry', $direction: 'fwd' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: 45, id: undefined }
@@ -297,7 +289,7 @@ test('should apply pipeline as operation object online going forward only', (t) 
 test('should apply pipeline as operation object online going in reverse only', (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
-    { $apply: 'castEntry', $direction: 'rev' },
+    { $apply: 'cast_entry', $direction: 'rev' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: '45' }
@@ -318,7 +310,7 @@ test('should use forward alias', (t) => {
   const optionsWithAlias = { ...options, fwdAlias: 'from' }
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
-    { $apply: 'castEntry', $direction: 'from' },
+    { $apply: 'cast_entry', $direction: 'from' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: 45, id: undefined }
@@ -339,7 +331,7 @@ test('should use reverse alias', (t) => {
   const optionsWithAlias = { ...options, revAlias: 'to' }
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
-    { $apply: 'castEntry', $direction: 'to' },
+    { $apply: 'cast_entry', $direction: 'to' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
   const expectedFwd = { title: 'The heading', viewCount: '45' }

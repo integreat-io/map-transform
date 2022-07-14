@@ -10,16 +10,16 @@ const options = {}
 
 // Tests
 
-test('should set alt value when value is undefined', t => {
+test('should set alt value when value is undefined', (t) => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
-    value: undefined
+    value: undefined,
   }
   const expected = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
-    value: 'johnf'
+    value: 'johnf',
   }
 
   const ret = alt(get('user'))(options)(state)
@@ -27,16 +27,16 @@ test('should set alt value when value is undefined', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when value is set', t => {
+test('should do nothing when value is set', (t) => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
-    value: 'maryk'
+    value: 'maryk',
   }
   const expected = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
-    value: 'maryk'
+    value: 'maryk',
   }
 
   const ret = alt(get('user'))(options)(state)
@@ -44,11 +44,47 @@ test('should do nothing when value is set', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should accept path', t => {
+test('should set alt value when value is on of the supplied undefined values', (t) => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
-    value: undefined
+    value: null,
+  }
+  const expected = {
+    root: { user: 'johnf' },
+    context: { user: 'johnf' },
+    value: 'johnf',
+  }
+  const undefinedValues = [undefined, null]
+
+  const ret = alt(get('user'), undefinedValues)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should unescape **undefined**', (t) => {
+  const state = {
+    root: { user: 'johnf' },
+    context: { user: 'johnf' },
+    value: undefined,
+  }
+  const expected = {
+    root: { user: 'johnf' },
+    context: { user: 'johnf' },
+    value: 'johnf',
+  }
+  const undefinedValues = ['**undefined**', null]
+
+  const ret = alt(get('user'), undefinedValues)(options)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should accept path', (t) => {
+  const state = {
+    root: { user: 'johnf' },
+    context: { user: 'johnf' },
+    value: undefined,
   }
   const expectedValue = 'johnf'
 
@@ -57,11 +93,11 @@ test('should accept path', t => {
   t.is(ret.value, expectedValue)
 })
 
-test('should accept transform pipeline', t => {
+test('should accept transform pipeline', (t) => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
-    value: undefined
+    value: undefined,
   }
   const expectedValue = 'johnf'
 
@@ -70,11 +106,11 @@ test('should accept transform pipeline', t => {
   t.is(ret.value, expectedValue)
 })
 
-test('should treat array as a value and not iterate', t => {
+test('should treat array as a value and not iterate', (t) => {
   const state = {
     root: { user: 'johnf' },
     context: { user: 'johnf' },
-    value: ['maryk', undefined]
+    value: ['maryk', undefined],
   }
   const expectedValue = ['maryk', undefined]
 
@@ -83,11 +119,11 @@ test('should treat array as a value and not iterate', t => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should behave correctly when iterated', t => {
+test('should behave correctly when iterated', (t) => {
   const state = {
     root: [{ user: 'admin' }, { user: 'johnf' }],
     context: [{ user: 'admin' }, { user: 'johnf' }],
-    value: ['maryk', undefined]
+    value: ['maryk', undefined],
   }
   const expectedValue = ['maryk', 'johnf']
 

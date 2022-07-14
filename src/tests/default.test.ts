@@ -3,12 +3,33 @@ import { mapTransform, alt, fwd, rev } from '..'
 import value from '../operations/value'
 import { get } from '../operations/getSet'
 
+// Tests
+
 test('should use default value', (t) => {
   const def = {
     $iterate: true,
     title: ['content.heading', alt(value('Default heading'))],
   }
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
+  const expected = [{ title: 'Default heading' }, { title: 'From data' }]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use default value for null', (t) => {
+  const def = {
+    $iterate: true,
+    title: [
+      'content.heading',
+      alt(value('Default heading'), [undefined, null]),
+    ],
+  }
+  const data = [
+    { content: { heading: null } },
+    { content: { heading: 'From data' } },
+  ]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
   const ret = mapTransform(def)(data)
@@ -249,6 +270,32 @@ test('should apply default value from an operation object', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should apply default value to null from an operation object', (t) => {
+  const def = [
+    '[]',
+    {
+      $iterate: true,
+      title: [
+        'content.heading',
+        {
+          $alt: 'value',
+          value: 'Default heading',
+          $undefined: ['**undefined**', null],
+        },
+      ],
+    },
+  ]
+  const data = [
+    { content: { heading: null } },
+    { content: { heading: 'From data' } },
+  ]
+  const expected = [{ title: 'Default heading' }, { title: 'From data' }]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should apply default value from a function given in an operation object', (t) => {
   const def = [
     '[]',
@@ -317,6 +364,25 @@ test('should apply default value from an operation object going in reverse only'
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
+})
+
+test('should apply default value from a path on an operation object', (t) => {
+  const def = [
+    '[]',
+    {
+      $iterate: true,
+      title: ['content.heading', { $alt: 'get', path: 'content.title' }],
+    },
+  ]
+  const data = [
+    { content: { title: 'The title 1' } },
+    { content: { heading: 'From data', title: 'The title 2' } },
+  ]
+  const expected = [{ title: 'The title 1' }, { title: 'From data' }]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
 })
 
 test('should apply default in iterated deep structure', (t) => {

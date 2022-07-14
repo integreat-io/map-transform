@@ -76,6 +76,7 @@ export interface AltObject extends Operands {
   $alt: string
   $iterate?: boolean
   $direction?: string
+  undefined?: unknown[]
 }
 
 export interface ValueObject extends Operands {

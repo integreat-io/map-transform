@@ -32,8 +32,6 @@ import { fwd, rev } from '../operations/directionals'
 import { and, or } from '../operations/logical'
 import concat from '../operations/concat'
 
-const altOperation = (fn: DataMapper) => alt(transform(fn))
-
 const transformDefFromValue = ({
   $value: value,
   ...def
@@ -99,6 +97,22 @@ const createOperation =
       : identity
   }
 
+const createAltOperation =
+  (
+    operationFn: (fn: MapDefinition, _def?: unknown[]) => Operation,
+    def: AltObject
+  ) =>
+  (options: Options) => {
+    const { $alt: fnId, $undefined: undefinedValues, ...operands } = def
+    const fn = options.functions && options.functions[fnId as string]
+    return typeof fn === 'function'
+      ? wrapFromDefinition(
+          operationFn(transform(fn(operands, options)), undefinedValues),
+          def
+        )(options)
+      : identity
+  }
+
 const createIfOperation = (def: IfObject) => (options: Options) => {
   const { $if: conditionPipeline, then: thenPipeline, else: elsePipeline } = def
   return wrapFromDefinition(
@@ -136,7 +150,7 @@ const operationFromObject = (def: OperationObject | MapObject) => {
   } else if (isOperationType<ApplyObject>(def, '$apply')) {
     return createApplyOperation(apply, def)
   } else if (isOperationType<AltObject>(def, '$alt')) {
-    return createOperation(altOperation, '$alt', def)
+    return createAltOperation(alt, def)
   } else if (isOperationType<AndObject>(def, '$and')) {
     return createPipelineOperation(and, '$and', def)
   } else if (isOperationType<OrObject>(def, '$or')) {

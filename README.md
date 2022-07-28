@@ -1057,6 +1057,12 @@ mapper.rev(mappedData)
 // --> { content: { meta: { authors: ['user1', 'user3'] } } }
 ```
 
+You may also define this as a transform object:
+
+```javascript
+const def18o = ['content.meta.authors[]', { $lookup: '$users[]', path: 'id' }]
+```
+
 #### `and(pipeline, pipeline, ...)` operation
 
 Will run all provided pipelines, force their return values to boolean, according

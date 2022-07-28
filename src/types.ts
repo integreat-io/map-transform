@@ -97,6 +97,11 @@ export interface ConcatObject extends Operands {
   $concat: MapDefinition[]
 }
 
+export interface LookupObject extends Operands {
+  $lookup: Path
+  path: Path
+}
+
 export type OperationObject =
   | TransformObject
   | FilterObject
@@ -107,6 +112,7 @@ export type OperationObject =
   | AndObject
   | OrObject
   | ConcatObject
+  | LookupObject
 
 export interface StateMapper {
   (state: State): State

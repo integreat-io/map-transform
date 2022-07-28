@@ -15,6 +15,7 @@ import {
   AndObject,
   OrObject,
   ConcatObject,
+  LookupObject,
   Options,
 } from '../types'
 import { identity } from './functional'
@@ -31,6 +32,7 @@ import alt from '../operations/alt'
 import { fwd, rev } from '../operations/directionals'
 import { and, or } from '../operations/logical'
 import concat from '../operations/concat'
+import lookup from '../operations/lookup'
 
 const transformDefFromValue = ({
   $value: value,
@@ -56,7 +58,8 @@ export const hasOperationProps = (
   isOperationType<ValueObject>(def, '$value') ||
   isOperationType<AndObject>(def, '$and') ||
   isOperationType<OrObject>(def, '$or') ||
-  isOperationType<ConcatObject>(def, '$concat')
+  isOperationType<ConcatObject>(def, '$concat') ||
+  isOperationType<LookupObject>(def, '$lookup')
 
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isMapObject = (def: unknown): def is MapObject =>
@@ -138,6 +141,15 @@ const createPipelineOperation = (
   return operationFn(...pipelines)
 }
 
+const createLookupOperation = (
+  operationFn: (arrayPath: Path, propPath: Path) => Operation,
+  def: LookupObject
+) => {
+  const arrayPath = def.$lookup
+  const propPath = def.path
+  return wrapFromDefinition(operationFn(arrayPath, propPath), def)
+}
+
 const operationFromObject = (def: OperationObject | MapObject) => {
   if (isOperationType<TransformObject>(def, '$transform')) {
     return createOperation(transform, '$transform', def)
@@ -157,6 +169,8 @@ const operationFromObject = (def: OperationObject | MapObject) => {
     return createPipelineOperation(or, '$or', def)
   } else if (isOperationType<ConcatObject>(def, '$concat')) {
     return createPipelineOperation(concat, '$concat', def)
+  } else if (isOperationType<LookupObject>(def, '$lookup')) {
+    return createLookupOperation(lookup, def)
   } else {
     return mutate(def)
   }

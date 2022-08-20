@@ -1,6 +1,7 @@
 import test from 'ava'
 import alt from './alt'
 import transform from './transform'
+import { identity } from '../utils/functional'
 
 import iterate from './iterate'
 
@@ -21,20 +22,18 @@ test('should map over a value array', (t) => {
     title: 'headline',
   }
   const state = {
-    root: data,
-    context: data,
+    context: [data],
     value: data,
   }
   const expected = {
-    root: data,
-    context: data,
+    context: [data],
     value: [
       { id: 'ent1', title: 'Entry 1' },
       { id: 'ent2', title: 'Entry 2' },
     ],
   }
 
-  const ret = iterate(def)(options)(state)
+  const ret = iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -45,13 +44,12 @@ test('should map over non-array', (t) => {
     title: 'headline',
   }
   const state = {
-    root: data[0],
-    context: data[0],
+    context: [data[0]],
     value: data[0],
   }
   const expectedValue = { id: 'ent1', title: 'Entry 1' }
 
-  const ret = iterate(def)(options)(state)
+  const ret = iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -59,17 +57,16 @@ test('should map over non-array', (t) => {
 test('should return undefined when no def', (t) => {
   const def = {}
   const state = {
-    root: data,
-    context: data,
+    context: [data],
     value: data,
   }
 
-  const ret = iterate(def)(options)(state)
+  const ret = iterate(def)(options)(identity)(state)
 
   t.is(ret.value, undefined)
 })
 
-test('should also iterate context to support alt operation etc.', (t) => {
+test.failing('should iterate context to support alt operation etc.', (t) => {
   const def = alt(
     transform((item?: unknown) =>
       item
@@ -80,17 +77,38 @@ test('should also iterate context to support alt operation etc.', (t) => {
     )
   )
   const state = {
-    root: data,
-    context: data,
+    context: [data],
     value: ['From somewhere else', undefined],
   }
   const expected = {
-    root: data,
-    context: data,
+    context: [data],
     value: ['From somewhere else', 'ent2: Entry 2'],
   }
 
-  const ret = iterate(def)(options)(state)
+  const ret = iterate(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map over a value array in reverse', (t) => {
+  const def = {
+    key: 'id',
+    headline: 'title',
+  }
+  const state = {
+    context: [data],
+    value: data,
+    rev: true,
+  }
+  const expected = {
+    ...state,
+    value: [
+      { id: 'ent1', title: 'Entry 1' },
+      { id: 'ent2', title: 'Entry 2' },
+    ],
+  }
+
+  const ret = iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

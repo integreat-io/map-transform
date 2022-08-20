@@ -457,7 +457,7 @@ test('should use built in explode function', (t) => {
       'currencies',
       { $transform: 'explode' },
       { $filter: 'compare', path: 'key', match: 'EUR' },
-      '[0]value',
+      '[0].value',
     ],
   }
   const data = {

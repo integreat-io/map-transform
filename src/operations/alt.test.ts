@@ -1,6 +1,7 @@
 import test from 'ava'
 import iterate from './iterate'
 import { get } from './getSet'
+import { identity } from '../utils/functional'
 
 import alt from './alt'
 
@@ -11,123 +12,135 @@ const options = {}
 // Tests
 
 test('should set alt value when value is undefined', (t) => {
+  const def = get('user')
   const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: undefined,
   }
   const expected = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: 'johnf',
   }
 
-  const ret = alt(get('user'))(options)(state)
+  const ret = alt(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should do nothing when value is set', (t) => {
+  const def = get('user')
   const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: 'maryk',
   }
   const expected = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: 'maryk',
   }
 
-  const ret = alt(get('user'))(options)(state)
+  const ret = alt(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set alt value when value is on of the supplied undefined values', (t) => {
+test('should set alt value from a dot path', (t) => {
+  const def = get('meta.user')
   const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ meta: { user: 'johnf' } }],
+    value: undefined,
+  }
+  const expected = {
+    context: [{ meta: { user: 'johnf' } }, { user: 'johnf' }],
+    value: 'johnf',
+  }
+
+  const ret = alt(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set alt value when value is one of the supplied undefined values', (t) => {
+  const def = get('user')
+  const state = {
+    context: [{ user: 'johnf' }],
     value: null,
   }
   const expected = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: 'johnf',
   }
   const undefinedValues = [undefined, null]
 
-  const ret = alt(get('user'), undefinedValues)(options)(state)
+  const ret = alt(def, undefinedValues)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should unescape **undefined**', (t) => {
+  const def = get('user')
   const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: undefined,
   }
   const expected = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: 'johnf',
   }
   const undefinedValues = ['**undefined**', null]
 
-  const ret = alt(get('user'), undefinedValues)(options)(state)
+  const ret = alt(def, undefinedValues)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should accept path', (t) => {
+  const def = 'user'
   const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: undefined,
   }
   const expectedValue = 'johnf'
 
-  const ret = alt('user')(options)(state)
+  const ret = alt(def)(options)(identity)(state)
 
   t.is(ret.value, expectedValue)
 })
 
 test('should accept transform pipeline', (t) => {
+  const def = ['user']
   const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: undefined,
   }
   const expectedValue = 'johnf'
 
-  const ret = alt(['user'])(options)(state)
+  const ret = alt(def)(options)(identity)(state)
 
   t.is(ret.value, expectedValue)
 })
 
 test('should treat array as a value and not iterate', (t) => {
+  const def = 'user'
   const state = {
-    root: { user: 'johnf' },
-    context: { user: 'johnf' },
+    context: [{ user: 'johnf' }],
     value: ['maryk', undefined],
   }
   const expectedValue = ['maryk', undefined]
 
-  const ret = alt('user')(options)(state)
+  const ret = alt(def)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should behave correctly when iterated', (t) => {
+test.failing('should behave correctly when iterated', (t) => {
+  const def = 'user'
   const state = {
-    root: [{ user: 'admin' }, { user: 'johnf' }],
-    context: [{ user: 'admin' }, { user: 'johnf' }],
+    context: [[{ user: 'admin' }, { user: 'johnf' }]],
     value: ['maryk', undefined],
   }
   const expectedValue = ['maryk', 'johnf']
 
-  const ret = iterate(alt('user'))(options)(state)
+  const ret = iterate(alt(def))(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })

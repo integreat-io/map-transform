@@ -155,7 +155,7 @@ test('should reverse map several layers', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map several layers of arrays', (t) => {
+test.failing('should reverse map several layers of arrays', (t) => {
   const def = [
     'content.articles[]',
     {
@@ -202,54 +202,57 @@ test('should reverse map several layers of arrays', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map several layers of arrays - as pipelines', (t) => {
-  const def = [
-    'content.articles[]',
-    iterate(
-      merge(
-        [merge(['content.heading', set('title')]), set('attributes')],
-        [
-          merge(
-            ['meta.keywords', set('topics[].id')],
-            ['meta.user_id', set('author.id')]
-          ),
-          set('relationships'),
-        ]
-      )
-    ),
-  ]
-  const data = [
-    {
-      attributes: { title: 'Heading 1' },
-      relationships: {
-        topics: [{ id: 'news' }, { id: 'latest' }],
-        author: { id: 'johnf' },
+test.failing(
+  'should reverse map several layers of arrays - as pipelines',
+  (t) => {
+    const def = [
+      'content.articles[]',
+      iterate(
+        merge(
+          [merge(['content.heading', set('title')]), set('attributes')],
+          [
+            merge(
+              ['meta.keywords', set('topics[].id')],
+              ['meta.user_id', set('author.id')]
+            ),
+            set('relationships'),
+          ]
+        )
+      ),
+    ]
+    const data = [
+      {
+        attributes: { title: 'Heading 1' },
+        relationships: {
+          topics: [{ id: 'news' }, { id: 'latest' }],
+          author: { id: 'johnf' },
+        },
       },
-    },
-    {
-      attributes: { title: 'Heading 2' },
-      relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } },
-    },
-  ]
-  const expected = {
-    content: {
-      articles: [
-        {
-          content: { heading: 'Heading 1' },
-          meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
-        },
-        {
-          content: { heading: 'Heading 2' },
-          meta: { keywords: ['tech'], ['user_id']: 'maryk' },
-        },
-      ],
-    },
+      {
+        attributes: { title: 'Heading 2' },
+        relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } },
+      },
+    ]
+    const expected = {
+      content: {
+        articles: [
+          {
+            content: { heading: 'Heading 1' },
+            meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
+          },
+          {
+            content: { heading: 'Heading 2' },
+            meta: { keywords: ['tech'], ['user_id']: 'maryk' },
+          },
+        ],
+      },
+    }
+
+    const ret = mapTransform(def).rev(data)
+
+    t.deepEqual(ret, expected)
   }
-
-  const ret = mapTransform(def).rev(data)
-
-  t.deepEqual(ret, expected)
-})
+)
 
 test('should set several props in array in reverse', (t) => {
   const def = {

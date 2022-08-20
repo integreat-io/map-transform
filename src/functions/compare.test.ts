@@ -7,8 +7,7 @@ import compare from './compare'
 const state = {
   rev: false,
   onlyMapped: false,
-  root: {},
-  context: {},
+  context: [],
   value: {},
 }
 
@@ -84,13 +83,26 @@ test('should use matchPath to get match value from data', (t) => {
   t.true(ret)
 })
 
-test('should support carret (root) in matchPath', (t) => {
+test('should support root prefix in matchPath', (t) => {
+  const path = 'meta.role'
+  const matchPath = '^^acceptLevel'
+  const data = { name: 'John F.', meta: { role: 'editor' }, level: 'admin' }
+  const stateWithRoot = {
+    context: [{ user: data, acceptLevel: 'editor' }, data],
+    value: data,
+  }
+
+  const ret = compare({ path, operator: '=', matchPath })(data, stateWithRoot)
+
+  t.true(ret)
+})
+
+test('should support obsolete root prefix in matchPath', (t) => {
   const path = 'meta.role'
   const matchPath = '^acceptLevel'
   const data = { name: 'John F.', meta: { role: 'editor' }, level: 'admin' }
   const stateWithRoot = {
-    root: { user: data, acceptLevel: 'editor' },
-    context: data,
+    context: [{ user: data, acceptLevel: 'editor' }, data],
     value: data,
   }
 

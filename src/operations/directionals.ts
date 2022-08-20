@@ -1,10 +1,11 @@
 import { MapDefinition, Operation, Options } from '../types'
-import { mapFunctionFromDef } from '../utils/definitionHelpers'
+import { operationFromDef } from '../utils/definitionHelpers'
+import xor from '../utils/xor'
 
 const applyInDirection = (def: MapDefinition, rev: boolean): Operation => {
-  return (options: Options) => {
-    const fn = mapFunctionFromDef(def)(options)
-    return (state) => ((rev ? state.rev : !state.rev) ? fn(state) : state)
+  return (options: Options) => (next) => {
+    const fn = operationFromDef(def)(options)(next)
+    return (state) => (xor(rev, !state.rev) ? fn(state) : next(state))
   }
 }
 
@@ -20,9 +21,9 @@ export function divide(
   fwdDef: MapDefinition,
   revDef: MapDefinition
 ): Operation {
-  return (options) => {
-    const fwdFn = mapFunctionFromDef(fwdDef)(options)
-    const revFn = mapFunctionFromDef(revDef)(options)
+  return (options) => (next) => {
+    const fwdFn = operationFromDef(fwdDef)(options)(next)
+    const revFn = operationFromDef(revDef)(options)(next)
     return (state) => (state.rev ? revFn(state) : fwdFn(state))
   }
 }

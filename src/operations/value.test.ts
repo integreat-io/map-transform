@@ -1,4 +1,6 @@
 import test from 'ava'
+import sinon = require('sinon')
+import { identity } from '../utils/functional'
 
 import value from './value'
 
@@ -8,56 +10,62 @@ const options = {}
 
 // Tests
 
-test('should set value', t => {
+test('should set value', (t) => {
   const state = {
-    root: {},
-    context: {},
-    value: 'Something'
+    context: [{}],
+    value: 'Something',
   }
   const expected = {
-    root: {},
-    context: {},
-    value: 'Splendid!'
+    context: [{}],
+    value: 'Splendid!',
   }
 
-  const ret = value('Splendid!')(options)(state)
+  const ret = value('Splendid!')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value from a function', t => {
+test('should set value from a function', (t) => {
   const state = {
-    root: {},
-    context: {},
-    value: 'Something'
+    context: [{}],
+    value: 'Something',
   }
   const expected = {
-    root: {},
-    context: {},
-    value: 'Default from function'
+    context: [{}],
+    value: 'Default from function',
   }
   const valueFunction = () => 'Default from function'
 
-  const ret = value(valueFunction)(options)(state)
+  const ret = value(valueFunction)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not set value when onlyMapped', t => {
+test('should not set value when onlyMapped', (t) => {
   const state = {
-    root: {},
-    context: {},
+    context: [{}],
     value: 'Something',
-    onlyMapped: true
+    onlyMapped: true,
   }
   const expected = {
-    root: {},
-    context: {},
+    context: [{}],
     value: undefined,
-    onlyMapped: true
+    onlyMapped: true,
   }
 
-  const ret = value('Splendid!')(options)(state)
+  const ret = value('Splendid!')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
+})
+
+test('should not call next', (t) => {
+  const next = sinon.stub()
+  const state = {
+    context: [{}],
+    value: 'Something',
+  }
+
+  value('Splendid!')(options)(next)(state)
+
+  t.is(next.callCount, 0)
 })

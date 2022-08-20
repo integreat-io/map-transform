@@ -1,32 +1,46 @@
 import mapAny = require('map-any')
-import { Operation, MapDefinition } from '../types'
-import { getStateValue, setStateValue } from '../utils/stateHelpers'
-import { mapFunctionFromDef } from '../utils/definitionHelpers'
+import { Operation, MapDefinition, State, StateMapper } from '../types'
+import {
+  getStateValue,
+  setStateValue,
+  getTargetFromState,
+  setTargetOnState,
+} from '../utils/stateHelpers'
+import { operationFromDef } from '../utils/definitionHelpers'
+import { indexOfIfArray } from '../utils/array'
+import { identity } from '../utils/functional'
 
-const indexOfIfArray = (arr: unknown, index?: number) =>
-  Array.isArray(arr) && typeof index === 'number' ? arr[index] : arr // eslint-disable-line security/detect-object-injection
+export const iterateState =
+  (fn: StateMapper) => (state: State, target: unknown) =>
+    mapAny(
+      (value, index) =>
+        getStateValue(
+          fn(
+            setTargetOnState(
+              setStateValue(state, value),
+              indexOfIfArray(target, index)
+            )
+          )
+        ),
+      getStateValue(state)
+    )
 
 export default function iterate(def: MapDefinition): Operation {
-  return (options) => {
-    if (!def || (typeof def === 'object' && Object.keys(def).length === 0)) {
-      return (state) => setStateValue(state, undefined)
-    }
-    const fn = mapFunctionFromDef(def)(options)
+  if (!def || (typeof def === 'object' && Object.keys(def).length === 0)) {
+    return (_options) => (next) => (state) =>
+      setStateValue(next(state), undefined)
+  }
+  const fn = operationFromDef(def)
 
-    return (state) =>
-      setStateValue(
-        state,
-        mapAny(
-          (value, index) =>
-            getStateValue(
-              fn({
-                ...state,
-                context: indexOfIfArray(state.context, index),
-                value,
-              })
-            ),
-          getStateValue(state)
+  return (options) => {
+    const runIteration = iterateState(fn(options)(identity))
+    return (next) =>
+      function doIterate(state) {
+        const nextState = next(state)
+        return setStateValue(
+          nextState,
+          runIteration(nextState, getTargetFromState(state))
         )
-      )
+      }
   }
 }

@@ -5,10 +5,11 @@ import {
   StateMapper,
   Options,
 } from './types'
-import { mapFunctionFromDef } from './utils/definitionHelpers'
+import { operationFromDef } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
 import functions from './functions'
 import iterate from './operations/iterate'
+import { identity } from './utils/functional'
 
 export { get, set } from './operations/getSet'
 export { default as root } from './operations/root'
@@ -69,7 +70,7 @@ export function mapTransform(
   options: Options = {}
 ): MapTransform {
   const completeOptions = mergeOptions(options)
-  const mapFn = mapFunctionFromDef(def)(completeOptions)
+  const mapFn = operationFromDef(def)(completeOptions)(identity)
 
   return Object.assign(composeMapFunction(mapFn, {}), {
     onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),

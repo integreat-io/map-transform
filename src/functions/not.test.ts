@@ -8,8 +8,7 @@ const returnIt = (value: unknown) => !!value
 const state = {
   rev: false,
   onlyMapped: false,
-  root: {},
-  context: {},
+  context: [],
   value: {},
 }
 

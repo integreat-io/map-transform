@@ -1,5 +1,6 @@
 import test from 'ava'
 import { set } from './getSet'
+import { identity } from '../utils/functional'
 
 import apply from './apply'
 
@@ -19,77 +20,69 @@ const options = {
 
 test('should run pipeline by id', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [],
     value: { title: 'Entry 1' },
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
   }
 
-  const ret = apply('extractTitle')(options)(state)
+  const ret = apply('extractTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should run pipeline by id - in rev', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [],
     value: 'Entry 1',
     rev: true,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [],
     value: { title: 'Entry 1' },
     rev: true,
   }
 
-  const ret = apply('extractTitle')(options)(state)
+  const ret = apply('extractTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return value untouched when pipieline is unknown', (t) => {
+test('should return value untouched when pipeline is unknown', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [],
     value: { title: 'Entry 1' },
   }
 
-  const ret = apply('unknown')(options)(state)
+  const ret = apply('unknown')(options)(identity)(state)
 
   t.deepEqual(ret.value, { title: 'Entry 1' })
 })
 
 test('should return value when no pipielines are supplied', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [],
     value: { title: 'Entry 1' },
   }
 
-  const ret = apply('extractTitle')({})(state)
+  const ret = apply('extractTitle')({})(identity)(state)
 
   t.deepEqual(ret.value, { title: 'Entry 1' })
 })
 
 test('should run pipeline on undefined', (t) => {
   const state = {
-    root: undefined,
-    context: undefined,
+    context: [],
     value: undefined,
   }
   const expected = {
-    root: undefined,
-    context: undefined,
+    context: [],
     value: { title: undefined },
   }
 
-  const ret = apply('setTitle')(options)(state)
+  const ret = apply('setTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

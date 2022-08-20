@@ -1,58 +1,177 @@
-import { Operation, State, Path } from '../types'
-import getter from '../utils/pathGetter'
-import setter, { Setter } from '../utils/pathSetter'
-import { getStateValue, setStateValue } from '../utils/stateHelpers'
-import root from './root'
-import plug from './plug'
-import { divide } from './directionals'
+/* eslint-disable security/detect-object-injection */
+import mapAny = require('map-any')
+import {
+  getStateValue,
+  setStateValue,
+  getTargetFromState,
+  setTargetOnState,
+  getLastContext,
+  getRootFromState,
+} from '../utils/stateHelpers'
+import { isObject } from '../utils/is'
+import { ensureArray, indexOfIfArray } from '../utils/array'
+import { compose, identity } from '../utils/functional'
+import { Path, Operation, State, StateMapper } from '../types'
+import xor from '../utils/xor'
 
-const isGet = (isGetOperation: boolean, isRev = false) =>
-  isGetOperation ? !isRev : isRev
+const adjustIsSet = (isSet: boolean, { rev = false, flip = false }: State) =>
+  xor(isSet, xor(rev, flip))
 
-const setWithOnlyMapped =
-  (state: State, setFn: Setter): Setter =>
-  (value) =>
-    state.onlyMapped && value === undefined
-      ? state.target
-      : setFn(value, state.target)
-
-export const getValueFromState = (path: Path) => (state: State) =>
-  getter(path)(getStateValue(state))
-
-const setValueFromState = (path: Path) => (state: State) => {
-  const setFn = setWithOnlyMapped(state, setter(path))
-  return setFn(getStateValue(state), undefined)
+function flatMapAny(fn: (value: unknown, target?: unknown) => unknown) {
+  return (value: unknown, target?: unknown) =>
+    Array.isArray(value)
+      ? value.flatMap((value) => fn(value, target))
+      : fn(value, target)
 }
 
-const getOrSet =
-  (isGetOperation: boolean) =>
-  (path: Path): Operation => {
-    if (path && path.startsWith('^')) {
-      const rootGetSet = root(getOrSet(isGetOperation)(path.slice(1)))
-      return isGetOperation
-        ? divide(rootGetSet, plug())
-        : divide(plug(), rootGetSet)
+function preparePath(path: string | number): [string | number, boolean] {
+  if (typeof path === 'string' && path.includes('[')) {
+    const pos = path.indexOf('[')
+    if (path[pos - 1] === '\\') {
+      return [path.replace('\\[', '['), false]
+    } else {
+      const isArr = path[pos + 1] === ']'
+      return [path.slice(0, pos), isArr]
+    }
+  }
+
+  return [path, false]
+}
+
+function getSetProp(path: string) {
+  if (path === '') {
+    // Don't set empty path
+    return identity
+  }
+
+  const getFn = flatMapAny((value) =>
+    isObject(value) ? value[path] : undefined
+  )
+  const setFn = (value: unknown, target?: unknown) =>
+    isObject(target) ? { ...target, [path]: value } : { [path]: value }
+
+  return (value: unknown, isSet: boolean, target?: unknown) => {
+    if (isSet) {
+      return setFn(value, target)
+    } else {
+      return getFn(value)
+    }
+  }
+}
+
+function getSetIndex(index: number) {
+  return (value: unknown, isSet: boolean, target?: unknown) => {
+    if (isSet) {
+      const arr = Array.isArray(target) ? [...target] : []
+      arr[index] = value
+      return arr
+    } else {
+      return Array.isArray(value) ? value[index] : undefined
+    }
+  }
+}
+
+function getParent(state: State) {
+  const nextValue = getLastContext(state)
+  const nextContext = state.context.slice(0, -1)
+  return { ...state, context: nextContext, value: nextValue }
+}
+
+function getRoot(state: State) {
+  const nextValue = getRootFromState(state)
+  const nextContext: unknown[] = []
+  return { ...state, context: nextContext, value: nextValue }
+}
+
+function getSet(isSet = false) {
+  return (path: string | number) => {
+    if (typeof path === 'string' && path[0] === '^') {
+      const getFn = path[1] === '^' ? getRoot : getParent
+      return (next: StateMapper) => (state: State) => {
+        if (adjustIsSet(isSet, state)) {
+          return setStateValue(next(state), undefined)
+        } else {
+          return next(getFn(state))
+        }
+      }
     }
 
-    const getFn = getValueFromState(path)
-    const setFn = setValueFromState(path)
+    const [basePath, isArr] = preparePath(path)
+    const getSetFn =
+      typeof basePath === 'number'
+        ? getSetIndex(basePath)
+        : getSetProp(basePath)
+    const getValue = isArr ? compose(ensureArray, getStateValue) : getStateValue
 
-    return () =>
-      Object.assign(
-        (state: State) =>
-          setStateValue(
-            state,
-            isGet(isGetOperation, state.rev) ? getFn(state) : setFn(state)
-          ),
-        {
-          getTarget: (state: State) =>
-            !isGet(isGetOperation, state.rev)
-              ? getter(path)(state.target)
-              : state.target,
+    return (next: StateMapper) =>
+      (state: State): State => {
+        if (adjustIsSet(isSet, state)) {
+          // We're setting, so we'll go backwards first. Start by preparing target for the next set
+          const target = getTargetFromState(state)
+          const nextTarget = getSetFn(target, false)
+
+          // Invoke the "previous" path part with the right target, iterate if array
+          const nextState = next(
+            setTargetOnState(
+              { ...state, iterate: state.iterate || isArr },
+              nextTarget
+            )
+          )
+
+          // Now it's our turn. Set the state value - and iterate it if necessary
+          const setIt = (value: unknown, index?: number) =>
+            getSetFn(value, true, indexOfIfArray(target, index))
+          const nextValue = state.iterate
+            ? mapAny(setIt, getValue(nextState))
+            : setIt(getValue(nextState))
+
+          // Return the value
+          return setStateValue(state, nextValue)
+        } else {
+          // Go backwards
+          const nextState = next(state)
+          const nextValue = getSetFn(getValue(nextState), false)
+          return setStateValue(nextState, nextValue, true)
         }
-      )
+      }
   }
-// getRevTarget
+}
 
-export const get = getOrSet(true)
-export const set = getOrSet(false)
+function dividePath(path: string) {
+  const pos = path.indexOf('[')
+  if (pos > -1 && path[pos - 1] !== '\\') {
+    const index = Number.parseInt(path.slice(pos + 1), 10)
+    if (!Number.isNaN(index)) {
+      const basePath = path.slice(0, pos).trim()
+      return basePath ? [basePath, index] : index
+    }
+  } else if (path.startsWith('^')) {
+    if (path.startsWith('^^') && path.length > 2) {
+      return ['^^', path.slice(2)]
+    } else if (path.length > 1 && path !== '^^') {
+      return ['^^', path.slice(1)]
+    }
+  }
+  return path.trim()
+}
+
+function pathToNextOperations(path: Path, isSet = false): Operation[] {
+  if (!path || path === '.') {
+    return [() => (next: StateMapper) => (state: State) => next(state)]
+  }
+
+  if (path[0] === '>') {
+    path = path.slice(1)
+    isSet = true
+  }
+
+  const parts = path.split('.').flatMap(dividePath)
+  const operations = parts.map(getSet(isSet)).map((fn) => () => fn)
+  if (isSet) {
+    operations.reverse()
+  }
+  return operations
+}
+
+export const get = (path: Path) => pathToNextOperations(path, false)
+export const set = (path: Path) => pathToNextOperations(path, true)

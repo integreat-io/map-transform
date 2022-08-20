@@ -1,4 +1,5 @@
 import test from 'ava'
+import { identity } from '../utils/functional'
 
 import fixed from './fixed'
 
@@ -8,56 +9,50 @@ const options = {}
 
 // Tests
 
-test('should set value', t => {
+test('should set value', (t) => {
   const state = {
-    root: {},
-    context: {},
-    value: 'Something'
+    context: [],
+    value: 'Something',
   }
   const expected = {
-    root: {},
-    context: {},
-    value: 'Splendid!'
+    context: [],
+    value: 'Splendid!',
   }
 
-  const ret = fixed('Splendid!')(options)(state)
+  const ret = fixed('Splendid!')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value from function', t => {
+test('should set value from function', (t) => {
   const state = {
-    root: {},
-    context: {},
-    value: 'Something'
+    context: [],
+    value: 'Something',
   }
   const expected = {
-    root: {},
-    context: {},
-    value: 'Value from function'
+    context: [],
+    value: 'Value from function',
   }
   const valueFunction = () => 'Value from function'
 
-  const ret = fixed(valueFunction)(options)(state)
+  const ret = fixed(valueFunction)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value for onlyMapped too', t => {
+test('should set value for onlyMapped too', (t) => {
   const state = {
-    root: {},
-    context: {},
+    context: [],
     value: 'Something',
-    onlyMapped: true
+    onlyMapped: true,
   }
   const expected = {
-    root: {},
-    context: {},
+    context: [],
     value: 'Splendid!',
-    onlyMapped: true
+    onlyMapped: true,
   }
 
-  const ret = fixed('Splendid!')(options)(state)
+  const ret = fixed('Splendid!')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

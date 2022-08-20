@@ -7,15 +7,13 @@ import logical from './logical'
 const state = {
   rev: false,
   onlyMapped: false,
-  root: {},
-  context: {},
+  context: [],
   value: {},
 }
 const stateRev = {
   rev: true,
   onlyMapped: false,
-  root: {},
-  context: {},
+  context: [],
   value: {},
 }
 

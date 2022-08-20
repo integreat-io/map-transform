@@ -1,4 +1,5 @@
 import test from 'ava'
+import { identity } from '../utils/functional'
 
 import root from './root'
 
@@ -10,19 +11,15 @@ const options = {}
 
 test('should apply pipeline to root', (t) => {
   const state = {
-    root: { content: { title: 'An article' }, section: 'news' },
-    context: { title: 'An article' },
+    context: [{ content: { title: 'An article' }, section: 'news' }],
     value: { title: 'An article' },
-    arr: false,
   }
   const expected = {
-    root: { content: { title: 'An article' }, section: 'news' },
-    context: { title: 'An article' },
+    context: [{ content: { title: 'An article' }, section: 'news' }],
     value: 'news',
-    arr: false,
   }
 
-  const ret = root('section')(options)(state)
+  const ret = root('section')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

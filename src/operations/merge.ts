@@ -5,7 +5,7 @@ import {
   setStateValue,
   shouldSkipMutation,
 } from '../utils/stateHelpers'
-import { mapFunctionFromDef } from '../utils/definitionHelpers'
+import { operationFromDef } from '../utils/definitionHelpers'
 
 const isNullOrUndefined = (value: unknown): value is null | undefined =>
   value === null || value === undefined
@@ -41,16 +41,18 @@ function mergeStates(state: State, thisState: State) {
 }
 
 export default function merge(...defs: MapDefinition[]): Operation {
-  return (options) => {
+  return (options) => (next) => {
     const skipMutation = shouldSkipMutation(options)
     if (defs.length === 0) {
-      return (state) => setStateValue(state, undefined)
+      return (state) => setStateValue(next(state), undefined)
     }
-    const pipelines = defs.map((def) => mapFunctionFromDef(def)(options))
+    const pipelines = defs.map((def) => operationFromDef(def)(options)(next))
 
-    return (state) =>
-      skipMutation(state)
-        ? setStateValue(state, undefined)
-        : pipelines.map((pipeline) => pipeline(state)).reduce(mergeStates)
+    return function (state) {
+      const nextState = next(state)
+      return skipMutation(nextState)
+        ? setStateValue(nextState, undefined)
+        : pipelines.map((pipeline) => pipeline(nextState)).reduce(mergeStates)
+    }
   }
 }

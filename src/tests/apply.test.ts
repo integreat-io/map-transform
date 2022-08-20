@@ -4,6 +4,7 @@ import { mapTransform, transform, apply, fwd, rev, filter } from '..'
 
 // Setup
 
+// TODO: Figure out why we have the fwd and rev operations here, and why they don't work
 const castEntry = [
   fwd(filter(() => true)),
   rev(transform((data) => data)),
@@ -113,7 +114,8 @@ test('should apply pipeline by id in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return value when no pipelines is supplied', (t) => {
+test('should not touch value when no pipelines are supplied', (t) => {
+  const options = {} // No pipelines
   const def = [
     {
       title: 'content.heading',
@@ -125,10 +127,11 @@ test('should return value when no pipelines is supplied', (t) => {
     content: { heading: 'The heading' },
     meta: { hits: '45' },
   }
+  const expected = { title: 'The heading', viewCount: '45' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransform(def, options)(data)
 
-  t.deepEqual(ret, { title: 'The heading', viewCount: '45' })
+  t.deepEqual(ret, expected)
 })
 
 test('should apply pipeline as operation object', (t) => {
@@ -214,8 +217,10 @@ test('should apply pipeline from array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply pipeline from array path in reverse', (t) => {
-  const def = { data: ['content.data[].createOrMutate', apply('entry')] }
+test.failing('should apply pipeline from array path in reverse', (t) => {
+  const def = {
+    data: ['content.data[].createOrMutate', apply('entry')],
+  }
   const data = {
     data: [
       {
@@ -266,7 +271,7 @@ test('should return value on unknown pipeline in operation object', (t) => {
   t.deepEqual(ret, { title: 'The heading', viewCount: '45' })
 })
 
-test('should apply pipeline as operation object online going forward only', (t) => {
+test('should apply pipeline as operation object going forward only', (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
     { $apply: 'cast_entry', $direction: 'fwd' },
@@ -286,7 +291,7 @@ test('should apply pipeline as operation object online going forward only', (t) 
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should apply pipeline as operation object online going in reverse only', (t) => {
+test('should apply pipeline as operation object going in reverse only', (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
     { $apply: 'cast_entry', $direction: 'rev' },

@@ -7,8 +7,7 @@ import { value, fixed } from './value'
 const state = {
   rev: false,
   onlyMapped: false,
-  root: {},
-  context: {},
+  context: [],
   value: {},
 }
 

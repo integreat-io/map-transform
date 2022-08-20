@@ -14,8 +14,7 @@ const arrayData = ['first', 'second', 'third']
 const state = {
   rev: false,
   onlyMapped: false,
-  root: {},
-  context: {},
+  context: [],
   value: {},
 }
 

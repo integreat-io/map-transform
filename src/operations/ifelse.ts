@@ -1,31 +1,36 @@
-import { DataMapper, MapDefinition, Operation, State } from '../types'
+import { DataMapper, MapDefinition, Operation } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
-import { mapFunctionFromDef } from '../utils/definitionHelpers'
+import { operationFromDef } from '../utils/definitionHelpers'
+
+function runCondition(conditionDef: DataMapper): Operation {
+  return () => (next) => (state) => {
+    const nextState = next(state)
+    return setStateValue(
+      nextState,
+      conditionDef(getStateValue(nextState), nextState)
+    )
+  }
+}
 
 export default function (
   conditionDef: DataMapper | MapDefinition,
   trueDef?: MapDefinition,
   falseDef?: MapDefinition
 ): Operation {
-  const falseFn = mapFunctionFromDef(falseDef)
+  const falseFn = operationFromDef(falseDef)
   if (!conditionDef) {
     return falseFn
   }
   const conditionFn: Operation =
     typeof conditionDef === 'function'
-      ? () =>
-          (state: State): State =>
-            setStateValue(
-              state,
-              (conditionDef as DataMapper)(getStateValue(state), state)
-            )
-      : mapFunctionFromDef(conditionDef)
-  const trueFn = mapFunctionFromDef(trueDef)
+      ? runCondition(conditionDef as DataMapper) // We know to expect a datamapper here
+      : operationFromDef(conditionDef)
+  const trueFn = operationFromDef(trueDef)
 
-  return (options) => {
-    const runCondition = conditionFn(options)
-    const runTrue = trueFn(options)
-    const runFalse = falseFn(options)
+  return (options) => (next) => {
+    const runCondition = conditionFn(options)(next)
+    const runTrue = trueFn(options)(next)
+    const runFalse = falseFn(options)(next)
 
     return (state) => {
       const bool = getStateValue(runCondition(state))

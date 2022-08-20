@@ -28,13 +28,14 @@ export interface CustomFunction<T = Operands> {
 }
 
 export interface State {
-  root: unknown
-  context: unknown
-  target?: unknown
+  context: unknown[]
   value: unknown
+  target?: unknown
   rev?: boolean
+  flip?: boolean
   onlyMapped?: boolean
   arr?: boolean
+  iterate?: boolean
 }
 
 export interface Options {
@@ -120,7 +121,7 @@ export interface StateMapper {
 }
 
 export interface Operation {
-  (options: Options): StateMapper
+  (options: Options): (next: StateMapper) => StateMapper
 }
 
 export interface MapFunction {

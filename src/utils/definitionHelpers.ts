@@ -21,9 +21,9 @@ import {
 import { identity } from './functional'
 import { isObject } from './is'
 import { get } from '../operations/getSet'
-import mutate from '../operations/mutate'
+import props from '../operations/props'
 import iterate from '../operations/iterate'
-import pipe from '../operations/pipe'
+// import pipe from '../operations/pipe'
 import transform from '../operations/transform'
 import filter from '../operations/filter'
 import ifelse from '../operations/ifelse'
@@ -33,6 +33,7 @@ import { fwd, rev } from '../operations/directionals'
 import { and, or } from '../operations/logical'
 import concat from '../operations/concat'
 import lookup from '../operations/lookup'
+import pipe from '../operations/pipe'
 
 const transformDefFromValue = ({
   $value: value,
@@ -67,22 +68,24 @@ export const isMapObject = (def: unknown): def is MapObject =>
 export const isMapPipe = (def: unknown): def is MapPipe => Array.isArray(def)
 export const isOperation = (def: unknown): def is Operation =>
   typeof def === 'function'
+export const isMapDefinition = (def: unknown): def is MapDefinition =>
+  isPath(def) || isObject(def) || isMapPipe(def) || isOperation(def)
 
 const iterateIf = (fn: Operation, should: boolean) =>
   should ? iterate(fn) : fn
 
-const wrapFromDefinition = (fn: Operation, def: OperationObject) => {
+const wrapFromDefinition = (fn: Operation, def: OperationObject): Operation => {
   const fnIterated = iterateIf(fn, def.$iterate === true)
-  return (options: Options) => {
+  return (options) => (next) => {
     const dir = def.$direction
     if (typeof dir === 'string') {
       if (dir === 'rev' || dir === options.revAlias) {
-        return rev(fnIterated)(options)
+        return rev(fnIterated)(options)(next)
       } else if (dir === 'fwd' || dir === options.fwdAlias) {
-        return fwd(fnIterated)(options)
+        return fwd(fnIterated)(options)(next)
       }
     }
-    return fnIterated(options)
+    return fnIterated(options)(next)
   }
 }
 
@@ -91,38 +94,49 @@ const createOperation =
     operationFn: (fn: DataMapper) => Operation,
     fnProp: string,
     def: U
-  ) =>
-  (options: Options) => {
+  ): Operation =>
+  (options) =>
+  (next) => {
     const { [fnProp]: fnId, ...operands } = def
     const fn = options.functions && options.functions[fnId as string]
     return typeof fn === 'function'
-      ? wrapFromDefinition(operationFn(fn(operands, options)), def)(options)
-      : identity
+      ? wrapFromDefinition(operationFn(fn(operands, options)), def)(options)(
+          next
+        )
+      : (state) => next(state)
   }
 
 const createAltOperation =
   (
     operationFn: (fn: MapDefinition, _def?: unknown[]) => Operation,
     def: AltObject
-  ) =>
-  (options: Options) => {
+  ): Operation =>
+  (options) =>
+  (next) => {
     const { $alt: fnId, $undefined: undefinedValues, ...operands } = def
     const fn = options.functions && options.functions[fnId as string]
     return typeof fn === 'function'
       ? wrapFromDefinition(
           operationFn(transform(fn(operands, options)), undefinedValues),
           def
-        )(options)
-      : identity
+        )(options)(next)
+      : (state) => next(state)
   }
 
-const createIfOperation = (def: IfObject) => (options: Options) => {
-  const { $if: conditionPipeline, then: thenPipeline, else: elsePipeline } = def
-  return wrapFromDefinition(
-    ifelse(conditionPipeline, thenPipeline, elsePipeline),
-    def
-  )(options)
-}
+const createIfOperation =
+  (def: IfObject): Operation =>
+  (options) =>
+  (next) => {
+    const {
+      $if: conditionPipeline,
+      then: thenPipeline,
+      else: elsePipeline,
+    } = def
+    return wrapFromDefinition(
+      ifelse(conditionPipeline, thenPipeline, elsePipeline),
+      def
+    )(options)(next)
+  }
 
 const createApplyOperation = (
   operationFn: (pipelineId: string) => Operation,
@@ -172,13 +186,15 @@ const operationFromObject = (def: OperationObject | MapObject) => {
   } else if (isOperationType<LookupObject>(def, '$lookup')) {
     return createLookupOperation(lookup, def)
   } else {
-    return mutate(def)
+    return props(def)
   }
 }
 
-export const mapFunctionFromDef = (def?: MapDefinition): Operation =>
-  isMapPipe(def)
-    ? pipe(def)
+export const operationsFromDef = (
+  def?: MapDefinition
+): Operation[] | Operation =>
+  Array.isArray(def)
+    ? def.flatMap(operationsFromDef)
     : isObject(def)
     ? operationFromObject(def)
     : isPath(def)
@@ -186,3 +202,8 @@ export const mapFunctionFromDef = (def?: MapDefinition): Operation =>
     : isOperation(def)
     ? def
     : (_options: Options) => identity
+
+export function operationFromDef(def?: MapDefinition): Operation {
+  const operations = operationsFromDef(def)
+  return Array.isArray(operations) ? pipe(operations) : operations
+}

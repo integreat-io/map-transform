@@ -1,6 +1,5 @@
 import { Operation, DataMapper } from '../types'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
-import { identity } from '../utils/functional'
 
 const filterValue = (value: unknown, filterFn: (data: unknown) => boolean) =>
   Array.isArray(value)
@@ -10,15 +9,18 @@ const filterValue = (value: unknown, filterFn: (data: unknown) => boolean) =>
     : undefined
 
 export default function filter(fn: DataMapper): Operation {
-  return (_options) => {
+  return (_options) => (next) => {
     if (typeof fn !== 'function') {
-      return identity
+      return (state) => next(state)
     }
 
     return (state) => {
-      const filterFn = (data: unknown) => !!fn(data, state)
-      const value = getStateValue(state)
-      return setStateValue(state, filterValue(value, filterFn))
+      const nextState = next(state)
+      const filterFn = (data: unknown) => !!fn(data, nextState)
+      return setStateValue(
+        nextState,
+        filterValue(getStateValue(nextState), filterFn)
+      )
     }
   }
 }

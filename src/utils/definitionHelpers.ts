@@ -34,6 +34,7 @@ import { and, or } from '../operations/logical'
 import concat from '../operations/concat'
 import lookup from '../operations/lookup'
 import pipe from '../operations/pipe'
+import { unescapeValue } from './escape'
 
 const transformDefFromValue = ({
   $value: value,
@@ -71,10 +72,13 @@ export const isOperation = (def: unknown): def is Operation =>
 export const isMapDefinition = (def: unknown): def is MapDefinition =>
   isPath(def) || isObject(def) || isMapPipe(def) || isOperation(def)
 
-const iterateIf = (fn: Operation, should: boolean) =>
+const iterateIf = (fn: Operation | Operation[], should: boolean) =>
   should ? iterate(fn) : fn
 
-const wrapFromDefinition = (fn: Operation, def: OperationObject): Operation => {
+const wrapFromDefinition = (
+  fn: Operation | Operation[],
+  def: OperationObject
+): Operation => {
   const fnIterated = iterateIf(fn, def.$iterate === true)
   return (options) => (next) => {
     const dir = def.$direction
@@ -85,7 +89,9 @@ const wrapFromDefinition = (fn: Operation, def: OperationObject): Operation => {
         return fwd(fnIterated)(options)(next)
       }
     }
-    return fnIterated(options)(next)
+    return Array.isArray(fnIterated)
+      ? pipe(fnIterated)(options)(next)
+      : fnIterated(options)(next)
   }
 }
 
@@ -106,20 +112,24 @@ const createOperation =
       : (state) => next(state)
   }
 
+const setNoneValuesOnOptions = (options: Options, noneValues?: unknown[]) =>
+  Array.isArray(noneValues)
+    ? { ...options, noneValues: noneValues.map(unescapeValue) }
+    : options
+
 const createAltOperation =
   (
-    operationFn: (fn: MapDefinition, _def?: unknown[]) => Operation,
+    operationFn: (...defs: MapDefinition[]) => Operation[],
     def: AltObject
-  ): Operation =>
+  ): Operation | Operation[] =>
   (options) =>
   (next) => {
-    const { $alt: fnId, $undefined: undefinedValues, ...operands } = def
-    const fn = options.functions && options.functions[fnId as string]
-    return typeof fn === 'function'
+    const { $alt: defs, $undefined: noneValues } = def
+    return Array.isArray(defs)
       ? wrapFromDefinition(
-          operationFn(transform(fn(operands, options)), undefinedValues),
+          operationFn(...defs),
           def
-        )(options)(next)
+        )(setNoneValuesOnOptions(options, noneValues))(next)
       : (state) => next(state)
   }
 

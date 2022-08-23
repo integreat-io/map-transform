@@ -148,8 +148,8 @@ npm install map-transform --save
 - Map objects won't be mapped over an array by default. You have to specify
   `$iterate: true`
 - The `alt` operation now accepts any type of pipeline, but not a helper
-  function
-- The root path prefix is changed from `$` to `^`
+  function, and all alternative pipelines must be given as arguments to `alt()`
+- The root path prefix is changed from `$` to `^^`
 
 ## Usage
 
@@ -716,24 +716,22 @@ import { value, alt } from 'map-transform'
 const def10 = {
   id: 'data.customerNo',
   type: value('customer'),
-  name: ['data.name', alt(value('Anonymous'))],
+  name: alt('data.name', value('Anonymous')),
 }
 ```
 
 The operation will not set anything when mapping with `.onlyMappedValues()`.
 
 If you want to define the `value` operation as an operation object, use
-`$transform` or `$alt`:
+`$transform` or the short form `$value`:
 
 ```javascript
 const def10asObject = {
   id: 'data.customerNo',
   type: { $transform: 'value', value: 'customer' },
-  name: ['data.name', { $alt: 'value', value: 'Anonymous' }],
+  name: { $alt: ['data.name', { $value: 'Anonymous' }] },
 }
 ```
-
-There is also a shortcut for `{ $transform: 'value', value: 'customer' }`: `{ $value: 'customer' }`, which might be useful when typing definitions by hand.
 
 #### `fixed(data)` operation
 
@@ -746,14 +744,15 @@ will be included when mapping with `.onlyMappedValues()` as well.
 
 #### `alt(pipeline)` operation
 
-The alt operation will apply the pipeline it is given when the data already in
-the pipeline is `undefined`. This is how you provide default values in
-MapTransform. The pipeline may be as simple as a `value()` operation, a dot
-notation path into the source data, or a full pipeline of several operations.
+The alt operation will apply the pipelines in turn until it gets a value,
+meaning that if the first pipeline returns `undefined`, it will try the next and
+so on. This is how you provide default values in MapTransform. The pipeline may
+be as simple as a `value()` operation, a dot notation path into the source data,
+or a full pipeline of several operations.
 
-When given an array, the `alt` operation will treat it as a value and do
-nothing, as it is not an `undefined` value. To provide the `alt` operation to
-every item in the array, please use the `iterate` operation.
+Note that when the return value is an array, it is treated as a value, as it is
+not an `undefined` value. To provide the `alt` operation to every item in the
+array, use the `iterate` operation.
 
 ```javascript
 import { alt, transform, functions } from 'map-transform'
@@ -765,11 +764,9 @@ const formatDate = (data) => {
 
 const def11 = {
   id: 'data.id',
-  name: ['data.name', alt(value('Anonymous'))],
+  name: alt('data.name', value('Anonymous')),
   updatedAt: [
-    'data.updateDate',
-    alt('data.createDate'),
-    alt(transform(currentDate)),
+    alt('data.updateDate', 'data.createDate', transform(currentDate)),
     transform(formatDate),
   ],
 }
@@ -783,16 +780,19 @@ we still have `undefined`, the second alt will call the customer function
 another transform operation pipes whatever data we get from all of this through
 the `formatDate` function.
 
+When `alt` is run in reverse, the alternative pipelines are run in the oposite
+order, with the last being run first. The first pipeline is always run, though,
+as it is common practice to let the first be a `get` that acts like a `set` in
+reverse.
+
 You may also define an alt operation as an object:
 
 ```javascript
 const def11asObject = {
   id: 'data.id',
-  name: ['data.name', { $alt: 'value', value: 'Anonymous' }],
+  name: { $alt: ['data.name', { $value: 'Anonymous' }] },
   updatedAt: [
-    'data.updateDate',
-    { $alt: 'get', path: 'data.createDate' },
-    { $alt: 'currentDate' },
+    { $alt: ['data.updateDate', 'data.createDate', 'currentDate'] },
     { $transform: 'formatDate' },
   ],
 }
@@ -1401,7 +1401,7 @@ const def22 = [
   'data.customers[]',
   {
     id: 'customerNo',
-    name: ['fullname', alt(value('Anonymous'))],
+    name: [alt('fullname', value('Anonymous'))],
   },
 ]
 
@@ -1515,8 +1515,8 @@ same goes for flipped transform objects if you want to forward transform.
 
 MapTransform will try its best to map the data it gets to the state you want,
 and will always set all properties, even though the mapping you defined result
-in `undefined`. You may include `alt()` operations to provide default or fallback
-values for these cases.
+in `undefined`. You may include `alt()` operations to provide default or
+fallback values for these cases.
 
 But sometimes, you want just the data that is actually present in the source
 data, without defaults or properties set to `undefined`. MapTransform's
@@ -1532,7 +1532,7 @@ import { mapTransform, alt, value } from 'map-transform'
 
 const def24 = {
   id: 'customerNo',
-  name: ['fullname', alt(value('Anonymous'))],
+  name: alt('fullname', value('Anonymous')),
 }
 
 const mapper = mapTransform(def24)

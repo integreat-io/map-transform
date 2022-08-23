@@ -66,8 +66,15 @@ test('should return undefined when no def', (t) => {
   t.is(ret.value, undefined)
 })
 
-test.failing('should iterate context to support alt operation etc.', (t) => {
+test('should iterate context to support alt operation etc.', (t) => {
   const def = alt(
+    // First set value for all items with key === 'ent1' ...
+    transform((item?: unknown) =>
+      item && (item as Record<string, unknown>).key === 'ent1'
+        ? 'From somewhere else'
+        : undefined
+    ),
+    // ... then set value for all that got `undefined` from the previous transform
     transform((item?: unknown) =>
       item
         ? `${(item as Record<string, unknown>).key}: ${
@@ -77,11 +84,11 @@ test.failing('should iterate context to support alt operation etc.', (t) => {
     )
   )
   const state = {
-    context: [data],
-    value: ['From somewhere else', undefined],
+    context: [],
+    value: data,
   }
   const expected = {
-    context: [data],
+    context: [],
     value: ['From somewhere else', 'ent2: Entry 2'],
   }
 

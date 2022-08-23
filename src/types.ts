@@ -46,7 +46,7 @@ export interface Options {
     [key: string]: MapDefinition
   }
   dictionaries?: Dictionaries
-  mutateNull?: boolean
+  noneValues?: unknown[]
   fwdAlias?: string
   revAlias?: string
 }
@@ -63,7 +63,7 @@ export interface FilterObject extends Operands {
 }
 
 export interface IfObject extends Operands {
-  $if: string | MapDefinition
+  $if: MapDefinition
   $direction?: string
 }
 
@@ -74,7 +74,7 @@ export interface ApplyObject extends Operands {
 }
 
 export interface AltObject extends Operands {
-  $alt: string
+  $alt: MapDefinition[]
   $iterate?: boolean
   $direction?: string
   undefined?: unknown[]

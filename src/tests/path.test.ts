@@ -37,8 +37,7 @@ test('should map with object path', (t) => {
 
 test('should get object from alt path', (t) => {
   const def = [
-    'Content.Article',
-    fwd(alt('content.article')),
+    alt('Content.Article', fwd('content.article')),
     {
       title: 'content.heading',
     },
@@ -354,11 +353,11 @@ test('should map undefined to undefined', (t) => {
   t.is(ret, undefined)
 })
 
-test.failing('should map null to undefined when mutateNull is false', (t) => {
+test.failing('should treat noneValues as undefined', (t) => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
   const data = { items: null }
 
-  const ret = mapTransform(def, { mutateNull: false })(data)
+  const ret = mapTransform(def, { noneValues: [undefined, null] })(data)
 
   t.is(ret, undefined)
 })

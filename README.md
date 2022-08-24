@@ -788,6 +788,11 @@ order, with the last being run first. The first pipeline is always run, though,
 as it is common practice to let the first be a `get` that acts like a `set` in
 reverse.
 
+With only one pipeline, `alt` will behave a bit differently. A single pipeline
+will be run if the state has an `undefined` value, but skipped otherwise. This
+is different from the multi-pipeline behavor, where the first is always run and
+the rest is only run if the previous returns `undefined`.
+
 You may also define an alt operation as an object:
 
 ```javascript

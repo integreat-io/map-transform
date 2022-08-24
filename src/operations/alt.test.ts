@@ -11,9 +11,9 @@ import alt from './alt'
 
 const options = {}
 
-// Tests
+// Tests -- several pipelines
 
-test('should use alternative operation when first yields undefined', (t) => {
+test('should use alternative pipeline when first yields undefined', (t) => {
   const def1 = get('name')
   const def2 = get('id')
   const state = {
@@ -30,7 +30,7 @@ test('should use alternative operation when first yields undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use first operation when it yields a value', (t) => {
+test('should use first pipeline when it yields a value', (t) => {
   const def1 = get('name')
   const def2 = get('id')
   const state = {
@@ -47,7 +47,7 @@ test('should use first operation when it yields a value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use third operation when the first two yields undefined', (t) => {
+test('should use third pipeline when the first two yields undefined', (t) => {
   const def1 = get('name')
   const def2 = get('nickname')
   const def3 = get('id')
@@ -82,7 +82,7 @@ test('should yield alt value from a dot path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not polute context from unyielding operations', (t) => {
+test('should not polute context from unyielding pipeline', (t) => {
   const def1 = get('meta.cid')
   const def2 = get('id')
   const state = {
@@ -99,7 +99,7 @@ test('should not polute context from unyielding operations', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should treat path as an operation', (t) => {
+test('should treat path as an pipeline', (t) => {
   const def1 = get('name')
   const def2 = 'id'
   const state = {
@@ -133,7 +133,7 @@ test('should use value from value operation', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should treat transform pipeline as an operation', (t) => {
+test('should support transform pipeline', (t) => {
   const def1 = get('name')
   const def2 = ['id']
   const state = {
@@ -208,4 +208,55 @@ test('should behave correctly when iterated', (t) => {
   const ret = iterate(alt(def1, def2))(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+// Tests -- one pipeline
+
+test('should run if value is undefined when only one pipeline', (t) => {
+  const def = get('id')
+  const state = {
+    context: [{ id: 'johnf' }],
+    value: undefined,
+  }
+  const expected = {
+    context: [{ id: 'johnf' }],
+    value: 'johnf',
+  }
+
+  const ret = pipe(alt(def))(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not run if value is not undefined when only one pipeline', (t) => {
+  const def = get('id')
+  const state = {
+    context: [{ name: 'John F.' }],
+    value: 'John F.',
+  }
+  const expected = {
+    context: [{ name: 'John F.' }],
+    value: 'John F.',
+  }
+
+  const ret = pipe(alt(def))(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run if value is null when included in noneValues only one pipeline', (t) => {
+  const optionsWithNullAsNoValue = { ...options, noneValues: [undefined, null] }
+  const def = get('id')
+  const state = {
+    context: [{ id: 'johnf' }],
+    value: null,
+  }
+  const expected = {
+    context: [{ id: 'johnf' }],
+    value: 'johnf',
+  }
+
+  const ret = pipe(alt(def))(optionsWithNullAsNoValue)(identity)(state)
+
+  t.deepEqual(ret, expected)
 })

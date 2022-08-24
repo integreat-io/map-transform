@@ -27,9 +27,6 @@ import {
 import { identity } from '../utils/functional'
 import { isObject } from '../utils/is'
 
-const setFlipOnState = (state: State, flip: boolean) =>
-  flip ? { ...state, flip } : state
-
 function isRegularProp(
   entry: [string, unknown]
 ): entry is [string, MapDefinition] {
@@ -176,7 +173,7 @@ export default function props(def: MapObject): Operation {
       ) {
         return state
       }
-      const stateWithFlip = setFlipOnState(state, shouldFlip)
+      const stateWithFlip = { ...state, flip: shouldFlip }
 
       const thisState = shouldIterate
         ? iterate(() => () => run)(options)(next)(stateWithFlip)

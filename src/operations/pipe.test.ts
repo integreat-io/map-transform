@@ -109,6 +109,27 @@ test('should not reverse map when rev and flipping', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not leak flipping between objects', (t) => {
+  const def = [
+    { $flip: true, items: 'items' },
+    { data: { name: 'items.name' } },
+  ]
+  const state = {
+    context: [],
+    value: { data: { name: 'John F.' } },
+    rev: true,
+  }
+  const expected = {
+    context: [],
+    value: { items: { name: 'John F.' } },
+    rev: true,
+  }
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set on target', (t) => {
   const def = ['>name', '>data.personal']
   const state = {

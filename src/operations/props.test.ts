@@ -461,22 +461,25 @@ test('should flip and mutate object', (t) => {
     context: [],
     value: { entry: data[0] },
   }
-  const expectedValue = {
-    item: {
-      // id: 'ent1',
-      attributes: {
-        title: 'Ent',
-        age: undefined,
-      },
-      relationships: {
-        author: 'johnf',
+  const expected = {
+    ...stateWithObject,
+    value: {
+      item: {
+        // id: 'ent1',
+        attributes: {
+          title: 'Ent',
+          age: undefined,
+        },
+        relationships: {
+          author: 'johnf',
+        },
       },
     },
   }
 
   const ret = props(def)(options)(identity)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  t.deepEqual(ret, expected)
 })
 
 test('should flip and mutate object in reverse', (t) => {
@@ -493,22 +496,26 @@ test('should flip and mutate object in reverse', (t) => {
       },
     },
   }
-  const expectedValue = {
-    item: {
-      id: 'ent1',
-      attributes: {
-        title: 'Ent',
-        age: undefined,
-      },
-      relationships: {
-        author: 'johnf',
+  const state = { ...stateWithObject, rev: true }
+  const expected = {
+    ...state,
+    value: {
+      item: {
+        id: 'ent1',
+        attributes: {
+          title: 'Ent',
+          age: undefined,
+        },
+        relationships: {
+          author: 'johnf',
+        },
       },
     },
   }
 
-  const ret = props(def)(options)(identity)({ ...stateWithObject, rev: true })
+  const ret = props(def)(options)(identity)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  t.deepEqual(ret, expected)
 })
 
 test('should map complex shape', (t) => {

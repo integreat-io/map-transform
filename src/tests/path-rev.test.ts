@@ -333,6 +333,54 @@ test('should reverse map with root array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should shallow merge (modify) original object with transformed object in reverse', (t) => {
+  const def = {
+    $modify: true,
+    name: 'title',
+  }
+  const data = {
+    name: 'The real title',
+    title: 'Oh, this must go',
+    text: 'This is high quality content for sure',
+  }
+  const expected = {
+    name: 'The real title',
+    title: 'The real title',
+    text: 'This is high quality content for sure',
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should shallow merge (modify) original object with transformed object in reverse - flipped', (t) => {
+  const def = {
+    $flip: true,
+    article: {
+      $modify: 'content',
+      title: 'name',
+    },
+  }
+  const data = {
+    name: 'The real title',
+    content: {
+      title: 'Oh, this must go',
+      text: 'This is high quality content for sure',
+    },
+  }
+  const expected = {
+    article: {
+      title: 'The real title',
+      text: 'This is high quality content for sure',
+    },
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should skip transform object with $direction: fwd', (t) => {
   const def = {
     $direction: 'fwd',

@@ -165,7 +165,7 @@ export default function props(def: MapObject): Operation {
 
   // Return operation
   return (options) => (next) => {
-    const modifyFn = modifyWithGivenPath(modifyPath, options, next)
+    const modifyFn = modifyWithGivenPath(modifyPath, options, identity) // TODO: next or identity?
     const run = runOperations(modifyFn, operations, options)
     const isWrongDirectionFn = isWrongDirection(direction, options)
 

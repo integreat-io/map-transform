@@ -284,6 +284,57 @@ test('should shallow merge in sub object and use $modify path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should modify on several levels', (t) => {
+  const def = {
+    $modify: '.',
+    payload: {
+      $modify: 'payload',
+      data: 'payload.data.items[]',
+    },
+    meta: {
+      $modify: 'meta',
+      options: {
+        $modify: 'meta.options',
+        'Content-Type': value('application/json'),
+      },
+    },
+  }
+  const state = {
+    context: [],
+    value: {
+      type: 'DELETE',
+      payload: {
+        data: { items: [{ id: 'ent1', $type: 'entry' }] },
+        service: 'entries',
+      },
+      meta: {
+        ident: { id: 'johnf' },
+        options: {
+          uri: 'http://api1.test/database/bulk_delete',
+        },
+      },
+    },
+  }
+  const expectedValue = {
+    type: 'DELETE',
+    payload: {
+      data: [{ id: 'ent1', $type: 'entry' }],
+      service: 'entries',
+    },
+    meta: {
+      ident: { id: 'johnf' },
+      options: {
+        uri: 'http://api1.test/database/bulk_delete',
+        'Content-Type': 'application/json',
+      },
+    },
+  }
+
+  const ret = props(def)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should iterate when $iterate is true', (t) => {
   const def = {
     $iterate: true,

@@ -2,6 +2,7 @@ import test from 'ava'
 import { MapPipe } from '../types'
 import { get, set } from './getSet'
 import transform from './transform'
+import value from './value'
 import { identity } from '../utils/functional'
 
 import pipe from './pipe'
@@ -257,6 +258,63 @@ test('should handle empty pipeline in reverse', (t) => {
   const ret = pipe(def)(options)(identity)(stateRev)
 
   t.deepEqual(ret, expected)
+})
+
+test('should modify on several levels and with several objects', (t) => {
+  const def = [
+    {
+      $modify: '.',
+      payload: {
+        $modify: 'payload',
+        data: 'payload.data.items[]',
+      },
+      meta: {
+        $modify: 'meta',
+        options: {
+          $modify: 'meta.options',
+          'Content-Type': value('application/json'),
+        },
+      },
+    },
+    {
+      $modify: '.',
+      payload: { $modify: 'payload', 'data.docs[]': ['payload.data'] },
+    },
+  ]
+  const state = {
+    context: [],
+    value: {
+      type: 'DELETE',
+      payload: {
+        data: { items: [{ id: 'ent1', $type: 'entry' }] },
+        service: 'entries',
+      },
+      meta: {
+        ident: { id: 'johnf' },
+        options: {
+          uri: 'http://api1.test/database/bulk_delete',
+        },
+      },
+    },
+  }
+  const expectedValue = {
+    type: 'DELETE',
+    payload: {
+      data: { docs: [{ id: 'ent1', $type: 'entry' }] },
+      service: 'entries',
+    },
+    meta: {
+      ident: { id: 'johnf' },
+      options: {
+        uri: 'http://api1.test/database/bulk_delete',
+        'Content-Type': 'application/json',
+      },
+    },
+  }
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should run complex case forward', (t) => {

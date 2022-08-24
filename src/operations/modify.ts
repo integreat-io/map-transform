@@ -3,7 +3,6 @@ import {
   getStateValue,
   setStateValue,
   getTargetFromState,
-  removeLastContext,
 } from '../utils/stateHelpers'
 import { operationFromDef } from '../utils/definitionHelpers'
 import { isObject } from '../utils/is'
@@ -14,10 +13,11 @@ export default function modify(def: MapDefinition): Operation {
 
   return (options) => (next) => (state) => {
     const nextState = next(state)
-    const contextState = removeLastContext(
-      setStateValue(nextState, getTargetFromState(nextState))
-    )
-    const thisState = runFn(options)(identity)(contextState)
+    const contextState = setStateValue(nextState, getTargetFromState(nextState))
+    const thisState = runFn(options)(identity)({
+      ...contextState,
+      rev: state.flip,
+    })
 
     const thisValue = getStateValue(thisState)
     const nextValue = getStateValue(nextState)

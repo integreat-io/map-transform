@@ -46,6 +46,47 @@ test('should shallow merge objects', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should shallow merge objects in reverse', (t) => {
+  const pipeline = 'data.personal'
+  const state = {
+    context: [],
+    target: {
+      data: { personal: { id: '1', name: 'John F.', meta: { viewed: 134 } } },
+    },
+    value: { name: 'John', meta: { count: 134 } },
+    rev: true,
+  }
+  const expected = {
+    ...state,
+    value: { id: '1', name: 'John', meta: { count: 134 } },
+  }
+
+  const ret = modify(pipeline)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should shallow merge objects flipped and in reverse', (t) => {
+  const pipeline = 'data.personal'
+  const state = {
+    context: [],
+    target: {
+      data: { personal: { id: '1', name: 'John F.', meta: { viewed: 134 } } },
+    },
+    value: { name: 'John', meta: { count: 134 } },
+    rev: true,
+    flip: true,
+  }
+  const expected = {
+    ...state,
+    value: { id: '1', name: 'John', meta: { count: 134 } },
+  }
+
+  const ret = modify(pipeline)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should support pipeline more complex than path', (t) => {
   const pipeline = { id: 'data.personal.id' }
   const state = {

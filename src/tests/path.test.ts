@@ -1,14 +1,14 @@
 import test from 'ava'
 import {
   mapTransform,
-  get,
-  set,
-  fwd,
-  rev,
   alt,
-  root,
-  plug,
+  fwd,
+  get,
   lookup,
+  plug,
+  rev,
+  root,
+  set,
   value,
 } from '..'
 
@@ -522,6 +522,56 @@ test('should shallow merge (modify) original object with transformed object', (t
     article: {
       title: 'The real title',
       text: 'This is high quality content for sure',
+    },
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should shallow merge (modify) original object with transformed object on several levels', (t) => {
+  const def = {
+    $modify: '.',
+    payload: {
+      $modify: 'payload',
+      data: 'payload.data.items[]',
+    },
+    meta: {
+      $modify: 'meta',
+      options: {
+        $modify: 'meta.options',
+        'Content-Type': {
+          $value: 'application/json',
+        },
+      },
+    },
+  }
+  const data = {
+    type: 'DELETE',
+    payload: {
+      data: { items: [{ id: 'ent1', $type: 'entry' }] },
+      service: 'entries',
+    },
+    meta: {
+      ident: { id: 'johnf' },
+      options: {
+        uri: 'http://api1.test/database/bulk_delete',
+      },
+    },
+  }
+  const expected = {
+    type: 'DELETE',
+    payload: {
+      data: [{ id: 'ent1', $type: 'entry' }],
+      service: 'entries',
+    },
+    meta: {
+      ident: { id: 'johnf' },
+      options: {
+        uri: 'http://api1.test/database/bulk_delete',
+        'Content-Type': 'application/json',
+      },
     },
   }
 

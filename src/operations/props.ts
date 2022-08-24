@@ -16,8 +16,8 @@ import {
   getStateValue,
   setStateValue,
   setTargetOnState,
-  // shouldSkipMutation,
   setValueFromState,
+  isNoneValueState,
 } from '../utils/stateHelpers'
 import {
   isMapObject,
@@ -135,15 +135,15 @@ const runOperations =
     options: Options
   ) =>
   (state: State) => {
-    return getStateValue(state) !== undefined
-      ? modifyFn(
+    return isNoneValueState(state, options.noneValues)
+      ? state
+      : modifyFn(
           operations.reduce(
             runOperationWithOriginalValue(state, options),
             setTargetOnState(state, {})
           ),
           state
         )
-      : state
   }
 
 export default function props(def: MapObject): Operation {
@@ -170,7 +170,10 @@ export default function props(def: MapObject): Operation {
     const isWrongDirectionFn = isWrongDirection(direction, options)
 
     return function doMutate(state) {
-      if (getStateValue(state) === undefined || isWrongDirectionFn(state.rev)) {
+      if (
+        isNoneValueState(state, options.noneValues) ||
+        isWrongDirectionFn(state.rev)
+      ) {
         return state
       }
       const stateWithFlip = setFlipOnState(state, shouldFlip)

@@ -1,29 +1,26 @@
 import { Operation, MapDefinition } from '../types'
 import {
   setStateValue,
-  getStateValue,
   getLastContext,
   removeLastContext,
+  isNoneValueState,
 } from '../utils/stateHelpers'
 import { operationFromDef } from '../utils/definitionHelpers'
 import { identity } from '../utils/functional'
 
-const isNoValue = (value: unknown, noneValues: unknown[]) =>
-  noneValues.includes(value)
-
 function runAlt(operation: Operation, index: number): Operation {
   return (options) => (next) => (state) => {
     const nextState = next(state)
-    const { noneValues = [undefined] } = options
+    const { noneValues } = options
     const isFirst = index === 0
 
     if (isFirst) {
       const thisState = operation(options)(identity)(nextState)
-      return isNoValue(getStateValue(thisState), noneValues)
+      return isNoneValueState(thisState, noneValues)
         ? { ...thisState, context: [...nextState.context, nextState.value] }
         : thisState
     } else {
-      if (isNoValue(getStateValue(nextState), noneValues)) {
+      if (isNoneValueState(nextState, noneValues)) {
         return operation(options)(identity)(
           removeLastContext(setStateValue(nextState, getLastContext(nextState)))
         )
@@ -43,16 +40,3 @@ export default function alt(...defs: MapDefinition[]): Operation[] {
   // context) and the rest are run only if the state value is not set
   return altOperations.map(runAlt)
 }
-
-//   return function doAlt(state) {
-//     const nextState = next(state)
-
-//     return altOperations.reduce(
-//       (prevState, operation) =>
-//         isNoValue(getStateValue(prevState), noneValues)
-//           ? operation(nextState)
-//           : prevState,
-//       setStateValue(nextState, undefined)
-//     )
-//   }
-// }

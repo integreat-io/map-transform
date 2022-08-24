@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { State, Options } from '../types'
+import { State } from '../types'
 
 export const setStateValue = (
   state: State,
@@ -54,7 +54,7 @@ export const populateState =
     onlyMapped,
   })
 
-export const shouldSkipMutation =
-  ({ mutateNull = true }: Options) =>
-  (state: State): boolean =>
-    state.value === undefined || (!mutateNull && state.value === null)
+export const isNoneValueState = (
+  state: State,
+  noneValues: unknown[] = [undefined]
+) => noneValues.includes(state.value)

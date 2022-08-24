@@ -84,10 +84,10 @@ function getRoot(state: State) {
 }
 
 function getSet(isSet = false) {
-  return (path: string | number) => {
+  return (path: string | number): Operation => {
     if (typeof path === 'string' && path[0] === '^') {
       const getFn = path[1] === '^' ? getRoot : getParent
-      return (next: StateMapper) => (state: State) => {
+      return () => (next) => (state) => {
         if (adjustIsSet(isSet, state)) {
           return setStateValue(next(state), undefined)
         } else {
@@ -103,7 +103,8 @@ function getSet(isSet = false) {
         : getSetProp(basePath)
     const getValue = isArr ? compose(ensureArray, getStateValue) : getStateValue
 
-    return (next: StateMapper) =>
+    return (_options) =>
+      (next) =>
       (state: State): State => {
         if (adjustIsSet(isSet, state)) {
           // We're setting, so we'll go backwards first. Start by preparing target for the next set
@@ -166,7 +167,7 @@ function pathToNextOperations(path: Path, isSet = false): Operation[] {
   }
 
   const parts = path.split('.').flatMap(dividePath)
-  const operations = parts.map(getSet(isSet)).map((fn) => () => fn)
+  const operations = parts.map(getSet(isSet))
   if (isSet) {
     operations.reverse()
   }

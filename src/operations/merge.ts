@@ -3,7 +3,7 @@ import { Operation, State, MapDefinition } from '../types'
 import {
   getStateValue,
   setStateValue,
-  shouldSkipMutation,
+  isNoneValueState,
 } from '../utils/stateHelpers'
 import { operationFromDef } from '../utils/definitionHelpers'
 
@@ -42,7 +42,6 @@ function mergeStates(state: State, thisState: State) {
 
 export default function merge(...defs: MapDefinition[]): Operation {
   return (options) => (next) => {
-    const skipMutation = shouldSkipMutation(options)
     if (defs.length === 0) {
       return (state) => setStateValue(next(state), undefined)
     }
@@ -50,7 +49,7 @@ export default function merge(...defs: MapDefinition[]): Operation {
 
     return function (state) {
       const nextState = next(state)
-      return skipMutation(nextState)
+      return isNoneValueState(nextState, options.noneValues)
         ? setStateValue(nextState, undefined)
         : pipelines.map((pipeline) => pipeline(nextState)).reduce(mergeStates)
     }

@@ -523,6 +523,23 @@ test('should not mutate undefined value', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not mutate null value when included in noneValues', (t) => {
+  const optionsWithNullAsNone = { ...options, noneValues: [undefined, null] }
+  const def = {
+    id: value('ent1'),
+    title: get('headline'),
+  }
+  const state = {
+    context: [{ data }],
+    value: null,
+  }
+  const expected = state
+
+  const ret = props(def)(optionsWithNullAsNone)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not mutate undefined value in array', (t) => {
   const def = {
     $iterate: true,
@@ -536,6 +553,24 @@ test('should not mutate undefined value in array', (t) => {
   const expected = state
 
   const ret = props(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not mutate null value in array when included in noneValues', (t) => {
+  const optionsWithNullAsNone = { ...options, noneValues: [undefined, null] }
+  const def = {
+    $iterate: true,
+    id: value('ent1'),
+    title: get('headline'),
+  }
+  const state = {
+    context: [{ data }, data],
+    value: [null],
+  }
+  const expected = state
+
+  const ret = props(def)(optionsWithNullAsNone)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

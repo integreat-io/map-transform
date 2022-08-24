@@ -110,20 +110,17 @@ test('should not mutate undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should honor mutateNull', (t) => {
-  const options = { mutateNull: false }
+test('should return undefined for null when included in noneValues', (t) => {
+  const optionsWithNullAsNone = { ...options, noneValues: [undefined, null] }
   const pipeline = { data: '.' }
   const value = null
   const state = {
     context: [{ status: 'ok', data: { value } }, { value }],
     value: value,
   }
-  const expected = {
-    ...state,
-    value: undefined,
-  }
+  const expected = state
 
-  const ret = modify(pipeline)(options)(identity)(state)
+  const ret = modify(pipeline)(optionsWithNullAsNone)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

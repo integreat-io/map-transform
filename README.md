@@ -305,15 +305,18 @@ below.
 
 MapTransform will treat `undefined` as a value that is not set, and so a
 transform object will not be applied to it. So if an `undefined` value meets
-a transform object, it will produce `undefined`, regardsless of the shape of the
+a transform object, it will produce `undefined`, regardless of the shape of the
 transform object.
 
 This is not the case for `null`, though. MapTransform treats `null` as a value,
 an intended nothing, and will apply a transform object to it, even though it
 will most likely produce nothing but default values. To change this behavior,
-set `mutateNull: false` on the `options` object passed to MapTransform. This
-will essentially make MapTransform treat `null` the same way as `undefined` when
-it comes to the transform object.
+set `noneValues: [undefined, null]` on the `options` object passed to
+MapTransform. This will essentially make MapTransform treat `null` the same way
+as `undefined` when it meets to the transform object.
+
+The example above sets `undefined` and `null` as none-values, but you could in
+principle set any primitive values here.
 
 #### Directional transform objects
 

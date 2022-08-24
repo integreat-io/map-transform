@@ -353,13 +353,13 @@ test('should map undefined to undefined', (t) => {
   t.is(ret, undefined)
 })
 
-test.failing('should treat noneValues as undefined', (t) => {
+test('should treat noneValues as undefined', (t) => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
   const data = { items: null }
 
   const ret = mapTransform(def, { noneValues: [undefined, null] })(data)
 
-  t.is(ret, undefined)
+  t.is(ret, null)
 })
 
 test('should map with root operation', (t) => {

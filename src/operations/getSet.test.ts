@@ -857,18 +857,6 @@ test('should return value when path is dot - for set', (t) => {
 })
 
 test('should set null value', (t) => {
-  const path = 'name'
-  const value = null
-  const state = stateFromValue(value)
-  const expected = { ...state, context: [], value: { name: null } }
-
-  const fn = pipe(set(path))
-  const ret = fn(options)(identity)(state)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should set null as value', (t) => {
   const path = 'scientists[].name'
   const value = null
   const state = stateFromValue(value)

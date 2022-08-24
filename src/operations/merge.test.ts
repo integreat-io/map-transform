@@ -162,20 +162,20 @@ test('should not run pipelines on undefined value', (t) => {
   t.is(ret.value, undefined)
 })
 
-test('should not run pipelines on null value when mutateNull is false', (t) => {
-  const pipelines = [[set('title')]]
+test('should not run pipelines on null value when null is included in noneValues', (t) => {
+  const pipelines = [set('title')]
   const state = { ...stateWithObject, value: null }
-  const optionsDontMutateNull = { ...options, mutateNull: false }
+  const optionsNullAsNone = { ...options, noneValues: [undefined, null] }
 
-  const ret = merge(...pipelines)(optionsDontMutateNull)(identity)(state)
+  const ret = merge(...pipelines)(optionsNullAsNone)(identity)(state)
 
   t.is(ret.value, undefined)
 })
 
-test('should run pipelines on null value when mutateNull is true', (t) => {
-  const pipelines = [[set('title')]]
+test('should run pipelines on null value when null is notincluded in noneValues', (t) => {
+  const pipelines = [set('title')]
   const state = { ...stateWithObject, value: null }
-  const optionsMutateNull = { ...options, mutateNull: true }
+  const optionsMutateNull = { ...options, noneValues: [undefined] }
   const expected = { title: null }
 
   const ret = merge(...pipelines)(optionsMutateNull)(identity)(state)

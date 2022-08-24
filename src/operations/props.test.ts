@@ -341,6 +341,28 @@ test('should iterate sub objects on brackets notation paths', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
+test('should map missing array to empty array', (t) => {
+  const stateWithArray = {
+    context: [],
+    value: {},
+  }
+  const def = {
+    'articles[]': [
+      'articles[]',
+      {
+        title: get('headline'),
+      },
+    ],
+  }
+  const expectedValue = {
+    articles: [],
+  }
+
+  const ret = props(def)(options)(identity)(stateWithArray)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should iterate pipelines on brackets notation paths', (t) => {
   const def = {
     'articles[]': ['headline'],

@@ -7,7 +7,6 @@ import { get, set } from './getSet'
 // Setup
 
 const stateFromValue = (value: unknown, rev = false) => ({
-  root: value,
   context: [],
   value,
   rev,
@@ -309,6 +308,22 @@ test('should return empty array when path does not match, but expecting array', 
       { scientists: { name: 'Bohm' } },
       [],
     ],
+    value: [],
+  }
+
+  const fn = pipe(get(path))
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return empty array for missing array', (t) => {
+  const path = 'articles[]'
+  const value = {}
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    context: [{}],
     value: [],
   }
 

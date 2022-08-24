@@ -97,11 +97,13 @@ function getSet(isSet = false) {
     }
 
     const [basePath, isArr] = preparePath(path)
+    const getArrAwareStateValue = isArr
+      ? compose(ensureArray, getStateValue)
+      : getStateValue
     const getSetFn =
       typeof basePath === 'number'
         ? getSetIndex(basePath)
         : getSetProp(basePath)
-    const getValue = isArr ? compose(ensureArray, getStateValue) : getStateValue
 
     return (_options) =>
       (next) =>
@@ -122,17 +124,22 @@ function getSet(isSet = false) {
           // Now it's our turn. Set the state value - and iterate it if necessary
           const setIt = (value: unknown, index?: number) =>
             getSetFn(value, true, indexOfIfArray(target, index))
-          const nextValue = state.iterate
-            ? mapAny(setIt, getValue(nextState))
-            : setIt(getValue(nextState))
+          const thisValue = state.iterate
+            ? mapAny(setIt, getArrAwareStateValue(nextState))
+            : setIt(getArrAwareStateValue(nextState))
 
           // Return the value
-          return setStateValue(state, nextValue)
+          return setStateValue(state, thisValue)
         } else {
           // Go backwards
           const nextState = next(state)
-          const nextValue = getSetFn(getValue(nextState), false)
-          return setStateValue(nextState, nextValue, true)
+          const thisValue = getSetFn(getStateValue(nextState), false)
+
+          return setStateValue(
+            nextState,
+            isArr ? ensureArray(thisValue) : thisValue,
+            true
+          )
         }
       }
   }

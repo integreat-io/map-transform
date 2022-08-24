@@ -16,7 +16,8 @@ export default function modify(def: MapDefinition): Operation {
     const contextState = setStateValue(nextState, getTargetFromState(nextState))
     const thisState = runFn(options)(identity)({
       ...contextState,
-      rev: state.flip,
+      rev: false,
+      flip: false,
     })
 
     const thisValue = getStateValue(thisState)

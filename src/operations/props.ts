@@ -131,13 +131,14 @@ const runOperations =
     operations: Operation[],
     options: Options
   ) =>
+  (shouldFlip: boolean) =>
   (state: State) => {
     return isNoneValueState(state, options.noneValues)
       ? state
       : modifyFn(
           operations.reduce(
             runOperationWithOriginalValue(state, options),
-            setTargetOnState(state, {})
+            setTargetOnState({ ...state, flip: shouldFlip }, {})
           ),
           state
         )
@@ -171,13 +172,12 @@ export default function props(def: MapObject): Operation {
         isNoneValueState(state, options.noneValues) ||
         isWrongDirectionFn(state.rev)
       ) {
-        return state
+        return next(state)
       }
-      const stateWithFlip = { ...state, flip: shouldFlip }
 
       const thisState = shouldIterate
-        ? iterate(() => () => run)(options)(next)(stateWithFlip)
-        : run(next(stateWithFlip))
+        ? iterate(() => () => run(shouldFlip))(options)(next)(state)
+        : run(shouldFlip)(next(state))
 
       return setValueFromState(state, thisState)
     }

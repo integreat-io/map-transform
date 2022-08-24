@@ -109,9 +109,10 @@ test('should not reverse map when rev and flipping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not leak flipping between objects', (t) => {
+test('should not leak flipping between objects and skip the fwd dir', (t) => {
   const def = [
     { $flip: true, items: 'items' },
+    { $direction: 'fwd', items: 'items' },
     { data: { name: 'items.name' } },
   ]
   const state = {

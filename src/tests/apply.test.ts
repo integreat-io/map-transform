@@ -26,7 +26,7 @@ const entryMutation = [
     $iterate: true,
     id: 'key',
     title: 'header',
-    source: '^params.source',
+    source: '^^params.source',
     viewCount: 'views',
   },
   { $apply: 'cast_entry' },
@@ -217,7 +217,7 @@ test('should apply pipeline from array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should apply pipeline from array path in reverse', (t) => {
+test('should apply pipeline from array path in reverse', (t) => {
   const def = {
     data: ['content.data[].createOrMutate', apply('entry')],
   }

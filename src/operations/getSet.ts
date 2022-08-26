@@ -89,8 +89,10 @@ function getSet(isSet = false) {
       const getFn = path[1] === '^' ? getRoot : getParent
       return () => (next) => (state) => {
         if (adjustIsSet(isSet, state)) {
-          return setStateValue(next(state), undefined)
+          // Simple return target instead of setting anything
+          return setStateValue(next(state), state.target)
         } else {
+          // Get root
           return next(getFn(state))
         }
       }
@@ -124,9 +126,10 @@ function getSet(isSet = false) {
           // Now it's our turn. Set the state value - and iterate it if necessary
           const setIt = (value: unknown, index?: number) =>
             getSetFn(value, true, indexOfIfArray(target, index))
-          const thisValue = state.iterate
-            ? mapAny(setIt, getArrAwareStateValue(nextState))
-            : setIt(getArrAwareStateValue(nextState))
+          const thisValue =
+            nextState.iterate && !isArr
+              ? mapAny(setIt, getArrAwareStateValue(nextState))
+              : setIt(getArrAwareStateValue(nextState))
 
           // Return the value
           return setStateValue(state, thisValue)

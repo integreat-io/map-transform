@@ -427,25 +427,22 @@ test('should iterate pipelines on brackets notation paths', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test.failing(
-  'should not iterate sub pipeline on brackets notation paths',
-  (t) => {
-    const def = {
-      'articles[]': [
-        {
-          title: get('headline'),
-        },
-      ],
-    }
-    const expectedValue = {
-      articles: [{ title: ['Entry 1', 'Entry 2'] }],
-    }
-
-    const ret = props(def)(options)(identity)(stateWithArray)
-
-    t.deepEqual(ret.value, expectedValue)
+test('should iterate sub pipeline on brackets notation paths', (t) => {
+  const def = {
+    'articles[]': [
+      {
+        title: get('headline'),
+      },
+    ],
   }
-)
+  const expectedValue = {
+    articles: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
+  }
+
+  const ret = props(def)(options)(identity)(stateWithArray)
+
+  t.deepEqual(ret.value, expectedValue)
+})
 
 test('should flip and mutate object', (t) => {
   const def = {
@@ -862,7 +859,7 @@ test('should reverse map with several sets', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test.failing('should skip root path in reverse', (t) => {
+test('should skip root path in reverse', (t) => {
   const data = {
     data: {
       items: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
@@ -872,7 +869,7 @@ test.failing('should skip root path in reverse', (t) => {
     data: {
       'items[]': {
         title: get('headline'),
-        source: '^^params.source', // Keep in this position to ensure it does not clear the previous fields
+        source: '^^params.source', // Keep in this position to test if it clears the previous fields
       },
     },
   }

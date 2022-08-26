@@ -815,7 +815,7 @@ test('should not set with when both rev and flipping', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test.failing('should set path with several arrays', (t) => {
+test('should set path with several arrays', (t) => {
   const path = 'data[].scientists[].name'
   const value = ['Bohr', 'Bohm']
   const state = stateFromValue(value)

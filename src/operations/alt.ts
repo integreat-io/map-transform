@@ -2,8 +2,9 @@ import { Operation, MapDefinition } from '../types'
 import {
   setStateValue,
   getLastContext,
-  removeLastContext,
   isNoneValueState,
+  setValueFromState,
+  removeLastContext,
 } from '../utils/stateHelpers'
 import { operationFromDef } from '../utils/definitionHelpers'
 import { identity } from '../utils/functional'
@@ -22,11 +23,14 @@ const runAlt = (isOneMode: boolean) =>
           : thisState
       } else {
         if (isNoneValueState(nextState, noneValues)) {
-          return operation(options)(identity)(
+          const thisState = operation(options)(identity)(
             removeLastContext(
               setStateValue(nextState, getLastContext(nextState))
             )
           )
+          return isNoneValueState(thisState, noneValues)
+            ? setValueFromState(nextState, thisState)
+            : thisState
         } else {
           return nextState
         }

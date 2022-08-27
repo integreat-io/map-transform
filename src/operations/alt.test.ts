@@ -83,18 +83,20 @@ test('should yield alt value from a dot path', (t) => {
 })
 
 test('should not polute context from unyielding pipeline', (t) => {
-  const def1 = get('meta.cid')
-  const def2 = get('id')
+  const def1 = get('title')
+  const def2 = get('content.heading')
+  const def3 = get('headline')
+  const data = { headline: 'Entry 1', user: 'johnf', content: {} }
   const state = {
-    context: [],
-    value: { id: '12345', meta: { create: 1661193390742 } },
+    context: [{ data }],
+    value: data,
   }
   const expected = {
-    context: [{ id: '12345', meta: { create: 1661193390742 } }],
-    value: '12345',
+    context: [{ data }, data],
+    value: 'Entry 1',
   }
 
-  const ret = pipe(alt(def1, def2))(options)(identity)(state)
+  const ret = pipe(alt(def1, def2, def3))(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

@@ -33,7 +33,7 @@ test('should reverse map with dot only notation', (t) => {
     article: {
       '.': 'content',
       title: 'content.heading',
-      // heading: value('Just in:') // TODO: Should skip this in reverse
+      heading: value('Just in:'),
     },
   }
   const data = {
@@ -47,7 +47,7 @@ test('should reverse map with dot only notation', (t) => {
     content: {
       heading: 'The heading',
       abstract: 'So it begins ...',
-      title: 'The heading', // TODO: How to avoid this going backwards?
+      title: 'The heading',
     },
   }
 

@@ -59,15 +59,23 @@ function runOperationWithOriginalValue({ value }: State, options: Options) {
 
     const target = state.target
     const nextValue = getStateValue(nextState)
+    const thisState = setTargetOnState(nextState, nextValue)
 
     if (isObject(target) && isObject(nextValue)) {
       // TODO: This is a hack for making several sub objects work in reverse.
       // It's not clear to me why this is needed, and there is probably
       // something wrong somewhere else, that should be fixed instead
       const thisValue = { ...target, ...nextValue }
-      return setStateValue(setTargetOnState(nextState, nextValue), thisValue)
+      return setStateValue(thisState, thisValue)
+    } else if (isObject(target)) {
+      // If the pipeline returns a non-object value, but the target is an
+      // object, we return the target. The reason behind this is that we're
+      // building an object here, and when a pipeline returns a non-object, it's
+      // usually because of a `value()` intended for only one direction.
+      return setStateValue(thisState, target)
     } else {
-      return setTargetOnState(nextState, nextValue)
+      // The normal case -- return what the pipeline returned
+      return thisState
     }
   }
 }
@@ -138,7 +146,7 @@ const runOperations =
       : modifyFn(
           operations.reduce(
             runOperationWithOriginalValue(state, options),
-            setTargetOnState({ ...state, flip: shouldFlip }, {})
+            setTargetOnState({ ...state, flip: shouldFlip }, undefined)
           ),
           state
         )
@@ -163,7 +171,7 @@ export default function props(def: MapObject): Operation {
 
   // Return operation
   return (options) => (next) => {
-    const modifyFn = modifyWithGivenPath(modifyPath, options, identity) // TODO: next or identity?
+    const modifyFn = modifyWithGivenPath(modifyPath, options, identity)
     const run = runOperations(modifyFn, operations, options)
     const isWrongDirectionFn = isWrongDirection(direction, options)
 

@@ -692,6 +692,54 @@ test('should reverse map', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
+test('should skip values with no set in reverse', (t) => {
+  const def = {
+    id: value('ent1'), // This value has no place to go
+    content: {
+      title: 'headline',
+      sections: value('news'), // This value has no place to go
+    },
+  }
+  const state = {
+    context: [{ params: { source: 'news1' } }],
+    value: {
+      content: {
+        title: 'The title',
+      },
+    },
+    rev: true,
+  }
+  const expectedValue = { headline: 'The title' }
+
+  const ret = props(def)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should set value in reverse', (t) => {
+  const def = {
+    id: ['key', value('ent1')], // A value with both get and set
+    content: {
+      title: 'headline',
+      sections: ['tags[]', value('news')], // A value with both get and set
+    },
+  }
+  const state = {
+    context: [{ params: { source: 'news1' } }],
+    value: {
+      content: {
+        title: 'The title',
+      },
+    },
+    rev: true,
+  }
+  const expectedValue = { key: 'ent1', headline: 'The title', tags: ['news'] }
+
+  const ret = props(def)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should reverse map with sub objects', (t) => {
   const def = {
     $iterate: true,

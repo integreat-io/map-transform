@@ -40,6 +40,11 @@ export function setTargetOnState(state: State, target: unknown): State {
 export const getLastContext = (state: State) =>
   state.context[state.context.length - 1]
 
+export const pushContext = (state: State, nextContext: unknown) => ({
+  ...state,
+  context: [...state.context, nextContext],
+})
+
 export const removeLastContext = (state: State) => ({
   ...state,
   context: state.context.slice(0, -1),

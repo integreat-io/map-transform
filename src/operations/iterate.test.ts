@@ -22,11 +22,11 @@ test('should map over a value array', (t) => {
     title: 'headline',
   }
   const state = {
-    context: [data],
+    context: [],
     value: data,
   }
   const expected = {
-    context: [data],
+    context: [],
     value: [
       { id: 'ent1', title: 'Entry 1' },
       { id: 'ent2', title: 'Entry 2' },
@@ -44,7 +44,7 @@ test('should map over non-array', (t) => {
     title: 'headline',
   }
   const state = {
-    context: [data[0]],
+    context: [],
     value: data[0],
   }
   const expectedValue = { id: 'ent1', title: 'Entry 1' }
@@ -54,10 +54,34 @@ test('should map over non-array', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
+test('should provide array as context', (t) => {
+  const def = {
+    id: 'key',
+    title: 'headline',
+    first: '^[0].key',
+    tag: '^.^.section',
+  }
+  const state = {
+    context: [{ items: data, section: 'news' }],
+    value: data,
+  }
+  const expected = {
+    context: [{ items: data, section: 'news' }],
+    value: [
+      { id: 'ent1', title: 'Entry 1', first: 'ent1', tag: 'news' },
+      { id: 'ent2', title: 'Entry 2', first: 'ent1', tag: 'news' },
+    ],
+  }
+
+  const ret = iterate(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return undefined when no def', (t) => {
   const def = {}
   const state = {
-    context: [data],
+    context: [],
     value: data,
   }
 
@@ -103,7 +127,7 @@ test('should map over a value array in reverse', (t) => {
     headline: 'title',
   }
   const state = {
-    context: [data],
+    context: [],
     value: data,
     rev: true,
   }

@@ -444,6 +444,33 @@ test('should iterate sub pipeline on brackets notation paths', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
+test('should add array to context when iterating', (t) => {
+  const state = {
+    context: [],
+    value: { items: data, section: 'news' },
+  }
+  const def = {
+    'articles[]': [
+      'items[]',
+      {
+        $iterate: true,
+        title: get('headline'),
+        tags: get('^.^.section'),
+      },
+    ],
+  }
+  const expectedValue = {
+    articles: [
+      { title: 'Entry 1', tags: 'news' },
+      { title: 'Entry 2', tags: 'news' },
+    ],
+  }
+
+  const ret = props(def)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should flip and mutate object', (t) => {
   const def = {
     $flip: true,

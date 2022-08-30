@@ -126,7 +126,7 @@ test('should use value from value operation', (t) => {
     value: { id: 'johnf' },
   }
   const expected = {
-    context: [], // TODO: value() should push to context
+    context: [{ id: 'johnf' }],
     value: 'No user',
   }
 
@@ -173,7 +173,7 @@ test('should support set on first path in reverse, and set default value', (t) =
     rev: true,
   }
   const expected = {
-    context: [], // TODO: value() should push to context
+    context: [{ meta: { created: 1661193390742 } }],
     value: { name: 'No user' },
     rev: true,
   }

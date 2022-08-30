@@ -249,20 +249,6 @@ test('should treat target correctly in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: This test was added at some point, but I'm sure what the right behavior really is here
-test.skip('should not set undefined on path', (t) => {
-  const def = [set('items[]')]
-  const state = {
-    context: [{ data: { name: 'John F.' } }],
-    value: undefined,
-  }
-  const expectedValue = undefined
-
-  const ret = pipe(def)(options)(identity)(state)
-
-  t.deepEqual(ret.value, expectedValue)
-})
-
 test('should handle empty pipeline', (t) => {
   const def: MapPipe = []
   const expected = state

@@ -12,11 +12,11 @@ const options = {}
 
 test('should set value', (t) => {
   const state = {
-    context: [{}],
-    value: 'Something',
+    context: [],
+    value: { text: 'Something' },
   }
   const expected = {
-    context: [{}],
+    context: [{ text: 'Something' }],
     value: 'Splendid!',
   }
 
@@ -31,7 +31,7 @@ test('should set value from a function', (t) => {
     value: 'Something',
   }
   const expected = {
-    context: [{}],
+    context: [{}, 'Something'],
     value: 'Default from function',
   }
   const valueFunction = () => 'Default from function'
@@ -43,13 +43,13 @@ test('should set value from a function', (t) => {
 
 test('should not set value when onlyMapped', (t) => {
   const state = {
-    context: [{}],
+    context: [],
     value: 'Something',
     onlyMapped: true,
   }
   const expected = {
-    context: [{}],
-    value: undefined,
+    context: [],
+    value: 'Something',
     onlyMapped: true,
   }
 
@@ -61,7 +61,7 @@ test('should not set value when onlyMapped', (t) => {
 test('should not call next', (t) => {
   const next = sinon.stub()
   const state = {
-    context: [{}],
+    context: [],
     value: 'Something',
   }
 
@@ -69,5 +69,3 @@ test('should not call next', (t) => {
 
   t.is(next.callCount, 0)
 })
-
-test.todo('should push value to context when setting new value')

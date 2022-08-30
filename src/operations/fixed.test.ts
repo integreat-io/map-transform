@@ -12,10 +12,10 @@ const options = {}
 test('should set value', (t) => {
   const state = {
     context: [],
-    value: 'Something',
+    value: { text: 'Something' },
   }
   const expected = {
-    context: [],
+    context: [{ text: 'Something' }],
     value: 'Splendid!',
   }
 
@@ -30,7 +30,7 @@ test('should set value from function', (t) => {
     value: 'Something',
   }
   const expected = {
-    context: [],
+    context: ['Something'],
     value: 'Value from function',
   }
   const valueFunction = () => 'Value from function'
@@ -47,7 +47,7 @@ test('should set value for onlyMapped too', (t) => {
     onlyMapped: true,
   }
   const expected = {
-    context: [],
+    context: ['Something'],
     value: 'Splendid!',
     onlyMapped: true,
   }

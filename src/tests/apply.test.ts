@@ -4,7 +4,6 @@ import { mapTransform, transform, apply, fwd, rev, filter } from '..'
 
 // Setup
 
-// TODO: Figure out why we have the fwd and rev operations here, and why they don't work
 const castEntry = [
   fwd(filter(() => true)),
   rev(transform((data) => data)),

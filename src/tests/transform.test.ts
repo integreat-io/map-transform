@@ -546,6 +546,52 @@ test('should apply transform function to array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should provide index when iterating', (t) => {
+  const def = [
+    'content',
+    {
+      $iterate: true,
+      title: 'heading',
+      sequence: { $transform: 'index' },
+    },
+  ]
+  const data = {
+    content: [{ heading: 'The heading' }, { heading: 'The other' }],
+  }
+
+  const expected = [
+    { title: 'The heading', sequence: 0 },
+    { title: 'The other', sequence: 1 },
+  ]
+
+  const ret = mapTransform(def, { functions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should provide index when iterating in reverse', (t) => {
+  const def = [
+    'content',
+    {
+      $iterate: true,
+      title: 'heading',
+      sequence: ['index', { $transform: 'index' }],
+    },
+  ]
+  const data = [{ title: 'The heading' }, { title: 'The other' }]
+
+  const expected = {
+    content: [
+      { heading: 'The heading', index: 0 },
+      { heading: 'The other', index: 1 },
+    ],
+  }
+
+  const ret = mapTransform(def, { functions }).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should do nothing when transform operation has unknown function', (t) => {
   const def = [
     'content',

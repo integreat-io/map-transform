@@ -2,6 +2,7 @@ import { value, fixed } from './value'
 import compare from './compare'
 import { explode, implode } from './explode'
 import get from './get'
+import index from './indexFn'
 import { join, split } from './joinSplit'
 import logical from './logical'
 import map from './map'
@@ -14,6 +15,7 @@ export default {
   fixed,
   get,
   implode,
+  index,
   join,
   logical,
   map,

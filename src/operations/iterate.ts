@@ -18,7 +18,7 @@ export const iterateState =
         getStateValue(
           fn(
             setTargetOnState(
-              setStateValue(state, value),
+              setStateValue({ ...state, index }, value),
               indexOfIfArray(target, index)
             )
           )

@@ -36,6 +36,7 @@ export interface State {
   onlyMapped?: boolean
   arr?: boolean
   iterate?: boolean
+  index?: number
 }
 
 export interface Options {

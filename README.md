@@ -1199,6 +1199,11 @@ Or as a transform object:
 const def32o = ['currencies', { $transform: 'explode' }]
 ```
 
+### `index()` function
+
+When iterating, this will return the index of the current item in the array.
+When used outside of an iteration, it always returns `0`.
+
 #### `implode()` function
 
 This is the exact opposite of the `explode` helper, imploding from a service and

@@ -82,3 +82,5 @@ export function mapTransform(
     }),
   })
 }
+
+export default mapTransform

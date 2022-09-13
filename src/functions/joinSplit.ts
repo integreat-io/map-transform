@@ -1,27 +1,33 @@
 /* eslint-disable security/detect-object-injection */
-import { Operands, DataMapper } from '../types'
+import { Operands as BaseOperands, DataMapper } from '../types'
 import getter from '../utils/pathGetter'
 import setter from '../utils/pathSetter'
+import xor from '../utils/xor'
+import { ensureArray } from '../utils/array'
 
-interface Options extends Operands {
+interface Operands extends BaseOperands {
   path?: string | string[]
   sep?: string
 }
 
-function joinSplit(
-  { path = [], sep = ' ' }: Options,
-  split: boolean
-): DataMapper {
-  const pathArr = ([] as string[]).concat(path)
+function joinSplit({ path, sep = ' ' }: Operands, split: boolean): DataMapper {
+  const pathArr = ensureArray(path)
   if (pathArr.length === 0) {
-    return (_data, _context) => undefined
+    return (data, { rev }) =>
+      xor(split, rev)
+        ? typeof data === 'string'
+          ? data.split(sep)
+          : undefined
+        : Array.isArray(data)
+        ? data.join(sep)
+        : undefined
   }
 
   const getFns = pathArr.map(getter)
   const setFns = pathArr.map(setter)
 
   return (data, { rev }) => {
-    if (split ? !rev : rev) {
+    if (xor(split, rev)) {
       const values = typeof data === 'string' ? data.split(sep) : []
       return setFns.reduce(
         (obj: unknown, setFn, index) => setFn(values[index], obj),
@@ -34,10 +40,10 @@ function joinSplit(
   }
 }
 
-export function join(options: Options): DataMapper {
+export function join(options: Operands): DataMapper {
   return joinSplit(options, false)
 }
 
-export function split(options: Options): DataMapper {
+export function split(options: Operands): DataMapper {
   return joinSplit(options, true)
 }

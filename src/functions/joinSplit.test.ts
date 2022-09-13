@@ -50,21 +50,40 @@ test('should return the value of only one path', (t) => {
   t.is(ret, expected)
 })
 
-test('should return undefined when no paths', (t) => {
-  const data = { firstName: 'John', lastName: 'Fjon', age: 36 }
-  const expected = undefined
-
-  const ret = join({})(data, state)
-
-  t.is(ret, expected)
-})
-
 test('should skip unknown paths', (t) => {
   const path = ['firstName', 'unknown', 'lastName']
   const data = { firstName: 'John', lastName: 'Fjon', age: 36 }
   const expected = 'John Fjon'
 
   const ret = join({ path })(data, state)
+
+  t.is(ret, expected)
+})
+
+test('should join array of strings when no paths', (t) => {
+  const data = ['John', 'Fjon']
+  const expected = 'John Fjon'
+
+  const ret = join({})(data, state)
+
+  t.is(ret, expected)
+})
+
+test('should join array of strings with separator', (t) => {
+  const sep = ', '
+  const data = ['Fjon', 'John']
+  const expected = 'Fjon, John'
+
+  const ret = join({ sep })(data, state)
+
+  t.is(ret, expected)
+})
+
+test('should return undefined when no paths and not an array', (t) => {
+  const data = { firstName: 'John', lastName: 'Fjon', age: 36 }
+  const expected = undefined
+
+  const ret = join({})(data, state)
 
   t.is(ret, expected)
 })
@@ -102,8 +121,18 @@ test('should split strings to only one path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when no paths in rev', (t) => {
-  const data = 'John Fjon'
+test('should split to array of strings when no paths', (t) => {
+  const data = 'Fjon, John'
+  const sep = ', '
+  const expected = ['Fjon', 'John']
+
+  const ret = join({ sep })(data, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return undefined when no paths and not string in rev', (t) => {
+  const data = {}
   const expected = undefined
 
   const ret = join({})(data, stateRev)
@@ -124,6 +153,16 @@ test('should split strings going forward', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should split strings without paths going forward', (t) => {
+  const sep = ', '
+  const data = 'Fjon, John'
+  const expected = ['Fjon', 'John']
+
+  const ret = split({ sep })(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should join string in reverse', (t) => {
   const path = ['lastName', 'firstName']
   const sep = ', '
@@ -131,6 +170,16 @@ test('should join string in reverse', (t) => {
   const expected = 'Fjon, John'
 
   const ret = split({ path, sep })(data, stateRev)
+
+  t.is(ret, expected)
+})
+
+test('should join string wihtout paths in reverse', (t) => {
+  const sep = ', '
+  const data = ['Fjon', 'John']
+  const expected = 'Fjon, John'
+
+  const ret = split({ sep })(data, stateRev)
 
   t.is(ret, expected)
 })

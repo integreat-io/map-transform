@@ -24,18 +24,23 @@ function flatMapAny(fn: (value: unknown, target?: unknown) => unknown) {
       : fn(value, target)
 }
 
-function preparePath(path: string | number): [string | number, boolean] {
+function preparePath(
+  path: string | number
+): [string | number, boolean, boolean] {
   if (typeof path === 'string' && path.includes('[')) {
+    if (path.endsWith('][')) {
+      return [path.slice(0, path.length - 2), false, true]
+    }
     const pos = path.indexOf('[')
     if (path[pos - 1] === '\\') {
-      return [path.replace('\\[', '['), false]
+      return [path.replace('\\[', '['), false, false]
     } else {
       const isArr = path[pos + 1] === ']'
-      return [path.slice(0, pos), isArr]
+      return [path.slice(0, pos), isArr, false]
     }
   }
 
-  return [path, false]
+  return [path, false, false]
 }
 
 function getSetProp(path: string) {
@@ -98,14 +103,12 @@ function getSet(isSet = false) {
       }
     }
 
-    const [basePath, isArr] = preparePath(path)
+    const [basePath, isArr, isIndexProp] = preparePath(path)
+    const isIndex = typeof basePath === 'number'
     const getArrAwareStateValue = isArr
       ? compose(ensureArray, getStateValue)
       : getStateValue
-    const getSetFn =
-      typeof basePath === 'number'
-        ? getSetIndex(basePath)
-        : getSetProp(basePath)
+    const getSetFn = isIndex ? getSetIndex(basePath) : getSetProp(basePath)
 
     return (_options) =>
       (next) =>
@@ -127,8 +130,8 @@ function getSet(isSet = false) {
           const setIt = (value: unknown, index?: number) =>
             getSetFn(value, true, indexOfIfArray(target, index))
           const thisValue =
-            nextState.iterate && !isArr
-              ? mapAny(setIt, getArrAwareStateValue(nextState))
+            nextState.iterate && !isArr && !isIndexProp
+              ? mapAny(setIt, getStateValue(nextState))
               : setIt(getArrAwareStateValue(nextState))
 
           // Return the value
@@ -154,7 +157,7 @@ function dividePath(path: string) {
     const index = Number.parseInt(path.slice(pos + 1), 10)
     if (!Number.isNaN(index)) {
       const basePath = path.slice(0, pos).trim()
-      return basePath ? [basePath, index] : index
+      return basePath ? [`${basePath}][`, index] : [index] // `][` is a crazy notation for an index prop
     }
   } else if (path.startsWith('^')) {
     if (path.startsWith('^^') && path.length > 2) {

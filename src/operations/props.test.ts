@@ -471,6 +471,19 @@ test('should add array to context when iterating', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
+test('should set on index notation paths', (t) => {
+  const def = {
+    'articles[0]': { title: 'headline' },
+  }
+  const expectedValue = {
+    articles: [{ title: 'Entry 1' }],
+  }
+
+  const ret = props(def)(options)(identity)(stateWithObject)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should flip and mutate object', (t) => {
   const def = {
     $flip: true,

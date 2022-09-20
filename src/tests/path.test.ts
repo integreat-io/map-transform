@@ -246,6 +246,71 @@ test('should map with root path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set on array index', (t) => {
+  const def = {
+    'props[0].value': 'content.prop1',
+    'props[1].value': 'content.prop2',
+  }
+  const data = {
+    content: {
+      prop1: 'Value 1',
+      prop2: 'Value 2',
+    },
+  }
+  const expected = {
+    props: [{ value: 'Value 1' }, { value: 'Value 2' }],
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test.only('should set on array index when iterating to an array prop', (t) => {
+  const def = {
+    'data[]': [
+      'values',
+      {
+        $direction: 'fwd',
+        $iterate: true,
+        $modify: '.',
+        'props[0]': { id: { $value: 'prop1' }, value: 'prop1', name: 'name' },
+      },
+      {
+        $iterate: true,
+        $modify: '.',
+        person: 'name',
+        props: [
+          'props',
+          { $filter: 'compare', path: 'value', not: true, operator: 'in' },
+        ],
+      },
+    ],
+  }
+  const data = {
+    values: [
+      {
+        prop1: 'Value 1',
+        name: 'Someone',
+      },
+    ],
+  }
+  const expected = {
+    data: [
+      {
+        prop1: 'Value 1',
+        name: 'Someone',
+        person: 'Someone',
+        props: [{ id: 'prop1', value: 'Value 1', name: 'Someone' }],
+      },
+    ],
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with lookup', (t) => {
   const def = {
     title: 'content.heading',

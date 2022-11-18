@@ -471,6 +471,37 @@ test('should add array to context when iterating', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
+test('should add array to context when iterating through two arrays', (t) => {
+  const state = {
+    context: [
+      { data: [{ items: data, section: 'news' }], author: 'johnf' },
+      [{ items: data, section: 'news' }],
+    ],
+    value: { items: data, section: 'news' },
+  }
+  const def = {
+    'articles[]': [
+      'items[]',
+      {
+        $iterate: true,
+        title: get('headline'),
+        tags: get('^.^.section'),
+        author: get('^.^.^.^.author'),
+      },
+    ],
+  }
+  const expectedValue = {
+    articles: [
+      { title: 'Entry 1', tags: 'news', author: 'johnf' },
+      { title: 'Entry 2', tags: 'news', author: 'johnf' },
+    ],
+  }
+
+  const ret = props(def)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should set on index notation paths', (t) => {
   const def = {
     'articles[0]': { title: 'headline' },

@@ -221,6 +221,30 @@ test('should skip slashed properties going forward', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should fetch item from array within bigger mutation', (t) => {
+  const def = [
+    '$action',
+    {
+      '.': '.',
+      'response.data': 'response.data[0]',
+    },
+  ]
+  const data = {
+    $action: {
+      type: 'GET',
+      response: { data: [{ id: 'ent1', $type: 'entry' }] },
+    },
+  }
+  const expected = {
+    type: 'GET',
+    response: { data: { id: 'ent1', $type: 'entry' } },
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with root path', (t) => {
   const def = [
     {
@@ -266,7 +290,7 @@ test('should set on array index', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.only('should set on array index when iterating to an array prop', (t) => {
+test('should set on array index when iterating to an array prop', (t) => {
   const def = {
     'data[]': [
       'values',
@@ -679,6 +703,48 @@ test('should try to map even when no data is given', (t) => {
   }
 
   const ret = mapTransform(def)(null)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with parent', (t) => {
+  const def = [
+    'invoices[]',
+    {
+      $iterate: true,
+      '.': [
+        'lines[]',
+        {
+          $iterate: true,
+          id: 'rowId',
+          quantity: 'count',
+          invoiceNo: '^.^.number',
+        },
+      ],
+    },
+    '[0]',
+  ]
+  const data = {
+    invoices: [
+      {
+        number: '18843-11',
+        lines: [
+          { rowId: 1, count: 2 },
+          { rowId: 2, count: 1 },
+        ],
+      },
+      {
+        number: '18843-12',
+        lines: [],
+      },
+    ],
+  }
+  const expected = [
+    { id: 1, quantity: 2, invoiceNo: '18843-11' },
+    { id: 2, quantity: 1, invoiceNo: '18843-11' },
+  ]
+
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

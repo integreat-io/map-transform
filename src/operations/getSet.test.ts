@@ -403,9 +403,39 @@ test('should get path with parents from array index', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should get from parent outside array', (t) => {
+  const preparePath = 'data.scientists[]'
+  const path = '^.field'
+  const value = {
+    data: {
+      scientists: [{ name: 'Bohr' }, { name: 'Bohm' }],
+      field: 'physics',
+    },
+  }
+  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
+  const expected = {
+    ...state,
+    context: [
+      {
+        data: {
+          scientists: [{ name: 'Bohr' }, { name: 'Bohm' }],
+          field: 'physics',
+        },
+      },
+      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }], field: 'physics' },
+    ],
+    value: 'physics',
+  }
+
+  const fn = pipe(get(path))
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should get path with parent from array', (t) => {
   const preparePath = 'data[].scientists[]'
-  const path = '^[0].field'
+  const path = '^[0].field' // TODO: Should we be able to fetch from parent without specifying index?
   const value = {
     data: [
       { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }], field: 'physics' },

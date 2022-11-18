@@ -5,7 +5,6 @@ import {
   setStateValue,
   getTargetFromState,
   setTargetOnState,
-  pushContext,
 } from '../utils/stateHelpers'
 import { operationFromDef } from '../utils/definitionHelpers'
 import { indexOfIfArray } from '../utils/array'
@@ -18,7 +17,7 @@ export const iterateState =
         getStateValue(
           fn(
             setTargetOnState(
-              setStateValue({ ...state, index }, value),
+              setStateValue({ ...state, index }, value, true),
               indexOfIfArray(target, index)
             )
           )
@@ -40,10 +39,7 @@ export default function iterate(def: MapDefinition): Operation {
         const nextState = next(state)
         return setStateValue(
           nextState,
-          runIteration(
-            pushContext(nextState, state.value),
-            getTargetFromState(state)
-          )
+          runIteration(nextState, getTargetFromState(state))
         )
       }
   }

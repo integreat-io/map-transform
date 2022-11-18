@@ -78,6 +78,40 @@ test('should provide array as context', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should provide array as context through double arrays', (t) => {
+  const def = {
+    articles: [
+      'items[]',
+      {
+        $iterate: true,
+        id: 'key',
+        title: 'headline',
+        first: '^[0].key',
+        tag: '^.^.section',
+      },
+    ],
+  }
+  const state = {
+    context: [{ entries: [{ items: data, section: 'news' }] }],
+    value: [{ items: data, section: 'news' }],
+  }
+  const expected = {
+    context: [{ entries: [{ items: data, section: 'news' }] }],
+    value: [
+      {
+        articles: [
+          { id: 'ent1', title: 'Entry 1', first: 'ent1', tag: 'news' },
+          { id: 'ent2', title: 'Entry 2', first: 'ent1', tag: 'news' },
+        ],
+      },
+    ],
+  }
+
+  const ret = iterate(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return undefined when no def', (t) => {
   const def = {}
   const state = {

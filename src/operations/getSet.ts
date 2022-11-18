@@ -144,7 +144,7 @@ function getSet(isSet = false) {
           return setStateValue(
             nextState,
             isArr ? ensureArray(thisValue) : thisValue,
-            true
+            true // Push to context
           )
         }
       }
@@ -157,7 +157,7 @@ function dividePath(path: string) {
     const index = Number.parseInt(path.slice(pos + 1), 10)
     if (!Number.isNaN(index)) {
       const basePath = path.slice(0, pos).trim()
-      return basePath ? [`${basePath}][`, index] : [index] // `][` is a crazy notation for an index prop
+      return basePath ? [`${basePath}][`, index] : [index] // `][` is our crazy notation for an index prop
     }
   } else if (path.startsWith('^')) {
     if (path.startsWith('^^') && path.length > 2) {

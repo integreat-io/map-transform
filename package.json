@@ -37,7 +37,7 @@
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
     "@types/mustache": "^4.2.1",
-    "ajv": "^8.11.0",
+    "ajv": "^8.11.2",
     "deepmerge": "^4.2.2",
     "map-any": "^0.2.1",
     "mustache": "^4.2.0"
@@ -47,6 +47,6 @@
     "@types/deep-freeze": "^0.1.2",
     "@types/sinon": "^10.0.13",
     "deep-freeze": "0.0.1",
-    "sinon": "^14.0.0"
+    "sinon": "^14.0.2"
   }
 }

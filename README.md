@@ -821,6 +821,12 @@ This operation will always return an array, even when it is given only one
 pipeline that does not return an array. Pipelines that does not result in a
 value (i.e. return `undefined`) will be filtered away.
 
+```javascript
+{
+  $concat: ['data.users', 'data.admins']
+}
+```
+
 #### `merge(pipeline, pipeline, ...)` operation
 
 `merge()` will run all given pipelines and deep merge their results. Conflicts

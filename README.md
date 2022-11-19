@@ -1205,6 +1205,11 @@ Or as a transform object:
 const def32o = ['currencies', { $transform: 'explode' }]
 ```
 
+### `flatten({ depth })` function
+
+Will flatten an array the number of depths given by `depth`. Default depth is
+`1`.
+
 ### `index()` function
 
 When iterating, this will return the index of the current item in the array.

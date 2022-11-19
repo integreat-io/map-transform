@@ -358,3 +358,92 @@ test('should run complex case in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should map with parent', (t) => {
+  const def = [
+    'invoices[].lines[]',
+    {
+      $iterate: true,
+      id: 'rowId',
+      quantity: 'count',
+      invoiceNo: '^.^.number',
+    },
+  ]
+  const data = {
+    invoices: [
+      {
+        number: '18843-11',
+        lines: [
+          { rowId: 1, count: 2 },
+          { rowId: 2, count: 1 },
+        ],
+      },
+      {
+        number: '18843-12',
+        lines: [
+          { rowId: 3, count: 1 },
+          { rowId: 4, count: 5 },
+        ],
+      },
+    ],
+  }
+  const state = {
+    context: [],
+    value: data,
+    rev: false,
+  }
+  const expected = {
+    context: [],
+    value: [
+      { id: 1, quantity: 2, invoiceNo: '18843-11' },
+      { id: 2, quantity: 1, invoiceNo: '18843-11' },
+      { id: 3, quantity: 1, invoiceNo: '18843-12' },
+      { id: 4, quantity: 5, invoiceNo: '18843-12' },
+    ],
+    rev: false,
+  }
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with parent in reverse', (t) => {
+  const def = [
+    'invoices[].lines[]',
+    {
+      $iterate: true,
+      id: 'rowId',
+      quantity: 'count',
+      invoiceNo: '^.^.number',
+    },
+  ]
+  const data = [
+    { id: 1, quantity: 2, invoiceNo: '18843-11' },
+    { id: 2, quantity: 1, invoiceNo: '18843-11' },
+  ]
+  const state = {
+    context: [],
+    value: data,
+    rev: true,
+  }
+  const expected = {
+    context: [],
+    value: {
+      invoices: [
+        {
+          // number: '18843-11', // TODO: Make parent path work in reverse
+          lines: [
+            { rowId: 1, count: 2 },
+            { rowId: 2, count: 1 },
+          ],
+        },
+      ],
+    },
+    rev: true,
+  }
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})

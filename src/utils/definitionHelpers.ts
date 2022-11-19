@@ -214,6 +214,6 @@ export const operationsFromDef = (
     : (_options: Options) => identity
 
 export function operationFromDef(def?: MapDefinition): Operation {
-  const operations = operationsFromDef(def)
+  const operations = Array.isArray(def) ? def : operationsFromDef(def)
   return Array.isArray(operations) ? pipe(operations) : operations
 }

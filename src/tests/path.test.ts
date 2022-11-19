@@ -709,20 +709,13 @@ test('should try to map even when no data is given', (t) => {
 
 test('should map with parent', (t) => {
   const def = [
-    'invoices[]',
+    'invoices[].lines[]',
     {
       $iterate: true,
-      '.': [
-        'lines[]',
-        {
-          $iterate: true,
-          id: 'rowId',
-          quantity: 'count',
-          invoiceNo: '^.^.number',
-        },
-      ],
+      id: 'rowId',
+      quantity: 'count',
+      invoiceNo: '^.^.number',
     },
-    '[0]',
   ]
   const data = {
     invoices: [

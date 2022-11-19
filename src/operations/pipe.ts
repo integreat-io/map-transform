@@ -1,8 +1,39 @@
+import { divide, fwd } from './directionals'
+import iterate from './iterate'
+import transform from './transform'
+import flatten from '../functions/flatten'
 import { MapPipe, Operation } from '../types'
 import { operationsFromDef } from '../utils/definitionHelpers'
 import { identity } from '../utils/functional'
 import { compose as composeFn, pipe as pipeFn } from '../utils/functional'
 import xor from '../utils/xor'
+
+// Run through a pipeline def and split up any paths with open array brackets
+// in the middle. The path after the brackets will be iterated along with the
+// rest of the pipeline, and then flattened – in the forward direction. Nothing
+// will happen in reverse.
+function splitArrayPaths(defs: MapPipe) {
+  const pipeline: MapPipe = []
+
+  for (const [index, step] of defs.entries()) {
+    if (typeof step === 'string' && step.includes('[].')) {
+      const pos = step.indexOf('[].')
+      pipeline.push(step.slice(0, pos + 2))
+      pipeline.push(
+        divide(iterate([step.slice(pos + 3), ...defs.slice(index + 1)]), [
+          step.slice(pos + 3),
+          ...defs.slice(index + 1),
+        ])
+      )
+      pipeline.push(fwd(transform(flatten({ depth: 1 }))))
+      break
+    } else {
+      pipeline.push(step)
+    }
+  }
+
+  return pipeline
+}
 
 export default function pipe(defs: MapPipe): Operation {
   return (options) => {
@@ -10,7 +41,7 @@ export default function pipe(defs: MapPipe): Operation {
       return identity
     }
 
-    const fns = defs
+    const fns = splitArrayPaths(defs)
       .flat()
       .flatMap((def) => operationsFromDef(def))
       .map((fn) => fn(options))

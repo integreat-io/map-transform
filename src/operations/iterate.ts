@@ -38,7 +38,7 @@ export default function iterate(def: MapDefinition): Operation {
       function doIterate(state) {
         const nextState = next(state)
         return setStateValue(
-          nextState,
+          { ...nextState, context: state.context },
           runIteration(nextState, getTargetFromState(state))
         )
       }

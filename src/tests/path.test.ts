@@ -708,34 +708,42 @@ test('should try to map even when no data is given', (t) => {
 })
 
 test('should map with parent', (t) => {
-  const def = [
-    'invoices[].lines[]',
-    {
-      $iterate: true,
-      id: 'rowId',
-      quantity: 'count',
-      invoiceNo: '^.^.number',
-    },
-  ]
-  const data = {
-    invoices: [
+  const def = {
+    items: [
+      'response.data.invoices[].lines[]',
       {
-        number: '18843-11',
-        lines: [
-          { rowId: 1, count: 2 },
-          { rowId: 2, count: 1 },
-        ],
-      },
-      {
-        number: '18843-12',
-        lines: [],
+        $iterate: true,
+        id: 'rowId',
+        quantity: 'count',
+        invoiceNo: '^.^.number',
       },
     ],
   }
-  const expected = [
-    { id: 1, quantity: 2, invoiceNo: '18843-11' },
-    { id: 2, quantity: 1, invoiceNo: '18843-11' },
-  ]
+  const data = {
+    response: {
+      data: {
+        invoices: [
+          {
+            number: '18843-11',
+            lines: [
+              { rowId: 1, count: 2 },
+              { rowId: 2, count: 1 },
+            ],
+          },
+          {
+            number: '18843-12',
+            lines: [],
+          },
+        ],
+      },
+    },
+  }
+  const expected = {
+    items: [
+      { id: 1, quantity: 2, invoiceNo: '18843-11' },
+      { id: 2, quantity: 1, invoiceNo: '18843-11' },
+    ],
+  }
 
   const ret = mapTransform(def)(data)
 

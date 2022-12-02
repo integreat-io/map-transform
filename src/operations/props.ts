@@ -22,7 +22,7 @@ import {
 import {
   isMapObject,
   isMapDefinition,
-  operationsFromDef,
+  operationFromDef,
 } from '../utils/definitionHelpers'
 import { identity } from '../utils/functional'
 import { isObject } from '../utils/is'
@@ -114,7 +114,7 @@ function createSetPipeline(shouldFlip: boolean) {
     const onlyRev = prop !== unslashedProp // If these are different, we have removed a slash. Run in rev only
 
     // Prepare the operations and return as an operation
-    const operations = [operationsFromDef(pipeline), set(unslashedProp)].flat()
+    const operations = [operationFromDef(pipeline), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
     return onlyRev ? divide(plug(), operations) : pipe(operations)
   }
 }

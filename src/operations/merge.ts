@@ -18,7 +18,7 @@ export function mergeExisting<T, U>(
     const arr = source.slice()
     target.forEach((value, index) => {
       // eslint-disable-next-line security/detect-object-injection
-      arr[index] = deepmerge(source[index], value, {
+      arr[index] = deepmerge<U, T>(source[index], value, {
         arrayMerge: mergeExisting,
       })
     })

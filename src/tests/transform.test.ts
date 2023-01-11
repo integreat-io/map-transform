@@ -569,6 +569,78 @@ test('should provide index when iterating', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should provide index deep down when iterating', (t) => {
+  const def = [
+    'content',
+    {
+      $iterate: true,
+      title: 'heading',
+      meta: {
+        sectionId: [
+          {
+            sequence: { $transform: 'index' },
+            tag: 'tags[0]',
+          },
+          { $transform: 'template', template: '{{tag}}-{{sequence}}' },
+        ],
+      },
+    },
+  ]
+  const data = {
+    content: [
+      { heading: 'The heading', tags: ['news'] },
+      { heading: 'The other', tags: ['sports'] },
+    ],
+  }
+
+  const expected = [
+    { title: 'The heading', meta: { sectionId: 'news-0' } },
+    { title: 'The other', meta: { sectionId: 'sports-1' } },
+  ]
+
+  const ret = mapTransform(def, { functions })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should provide index through apply when iterating', (t) => {
+  const sectionIdDef = [
+    {
+      sequence: { $transform: 'index' },
+      tag: 'tags[0]',
+    },
+    { $transform: 'template', template: '{{tag}}-{{sequence}}' },
+  ]
+  const def = [
+    'content',
+    {
+      $iterate: true,
+      title: 'heading',
+      meta: {
+        sectionId: { $apply: 'sectionId' },
+      },
+    },
+  ]
+  const data = {
+    content: [
+      { heading: 'The heading', tags: ['news'] },
+      { heading: 'The other', tags: ['sports'] },
+    ],
+  }
+
+  const expected = [
+    { title: 'The heading', meta: { sectionId: 'news-0' } },
+    { title: 'The other', meta: { sectionId: 'sports-1' } },
+  ]
+
+  const ret = mapTransform(def, {
+    functions,
+    pipelines: { sectionId: sectionIdDef },
+  })(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should provide index when iterating in reverse', (t) => {
   const def = [
     'content',

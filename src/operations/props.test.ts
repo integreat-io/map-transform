@@ -340,11 +340,14 @@ test('should iterate when $iterate is true', (t) => {
     $iterate: true,
     title: get('headline'),
   }
-  const expectedValue = [{ title: 'Entry 1' }, { title: 'Entry 2' }]
+  const expected = {
+    context: [{ data }],
+    value: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
+  }
 
   const ret = props(def)(options)(identity)(stateWithArray)
 
-  t.deepEqual(ret.value, expectedValue)
+  t.deepEqual(ret, expected)
 })
 
 test('should not iterate when $iterate is false', (t) => {
@@ -446,7 +449,7 @@ test('should iterate sub pipeline on brackets notation paths', (t) => {
 
 test('should add array to context when iterating', (t) => {
   const state = {
-    context: [],
+    context: [{ content: { items: data, section: 'news' } }],
     value: { items: data, section: 'news' },
   }
   const def = {
@@ -459,16 +462,19 @@ test('should add array to context when iterating', (t) => {
       },
     ],
   }
-  const expectedValue = {
-    articles: [
-      { title: 'Entry 1', tags: 'news' },
-      { title: 'Entry 2', tags: 'news' },
-    ],
+  const expected = {
+    context: [{ content: { items: data, section: 'news' } }],
+    value: {
+      articles: [
+        { title: 'Entry 1', tags: 'news' },
+        { title: 'Entry 2', tags: 'news' },
+      ],
+    },
   }
 
   const ret = props(def)(options)(identity)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  t.deepEqual(ret, expected)
 })
 
 test('should add array to context when iterating through two arrays', (t) => {
@@ -494,6 +500,63 @@ test('should add array to context when iterating through two arrays', (t) => {
     articles: [
       { title: 'Entry 1', tags: 'news', author: 'johnf' },
       { title: 'Entry 2', tags: 'news', author: 'johnf' },
+    ],
+  }
+
+  const ret = props(def)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should add array to context through two transform objects', (t) => {
+  const state = {
+    context: [],
+    value: { item: data[0], section: 'news' },
+  }
+  const def = {
+    'articles[]': [
+      'item',
+      {
+        title: get('headline'),
+      },
+      {
+        title: get('title'),
+        tags: get('^.section'),
+      },
+    ],
+  }
+  const expectedValue = {
+    articles: [{ title: 'Entry 1', tags: 'news' }],
+  }
+
+  const ret = props(def)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should add array to context through two iterations', (t) => {
+  const state = {
+    context: [],
+    value: { items: data, section: 'news' },
+  }
+  const def = {
+    'articles[]': [
+      'items[]',
+      {
+        $iterate: true,
+        title: get('headline'),
+      },
+      {
+        $iterate: true,
+        title: get('title'),
+        tags: get('^.^.section'),
+      },
+    ],
+  }
+  const expectedValue = {
+    articles: [
+      { title: 'Entry 1', tags: 'news' },
+      { title: 'Entry 2', tags: 'news' },
     ],
   }
 

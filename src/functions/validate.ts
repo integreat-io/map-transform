@@ -4,6 +4,7 @@ import getter from '../utils/pathGetter'
 
 const ajv = new Ajv()
 
+// TODO: Should accept operands instead of two args?
 export default function validate(
   path: Path,
   schema: Record<string, unknown> | boolean

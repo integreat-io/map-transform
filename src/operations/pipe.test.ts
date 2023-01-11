@@ -23,7 +23,23 @@ const json = (data: unknown) => JSON.stringify(data)
 test('should run simple map pipe', (t) => {
   const def = ['data', 'name']
   const expected = {
-    context: [{ data: { name: 'John F.' } }, { name: 'John F.' }],
+    context: [],
+    value: 'John F.',
+  }
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return with same context as it got', (t) => {
+  const def = ['name']
+  const state = {
+    context: [{ data: { name: 'John F.' } }],
+    value: { name: 'John F.' },
+  }
+  const expected = {
+    context: [{ data: { name: 'John F.' } }],
     value: 'John F.',
   }
 
@@ -35,7 +51,7 @@ test('should run simple map pipe', (t) => {
 test('should allow combination of string path and get operation', (t) => {
   const def = ['data', get('name')]
   const expected = {
-    context: [{ data: { name: 'John F.' } }, { name: 'John F.' }],
+    context: [],
     value: 'John F.',
   }
 
@@ -100,7 +116,6 @@ test('should not reverse map when rev and flipping', (t) => {
   }
   const expected = {
     ...stateFlipRev,
-    context: [{ data: { name: 'John F.' } }, { name: 'John F.' }],
     value: 'John F.',
   }
 
@@ -399,6 +414,49 @@ test('should map with parent', (t) => {
       { id: 2, quantity: 1, invoiceNo: '18843-11' },
       { id: 3, quantity: 1, invoiceNo: '18843-12' },
       { id: 4, quantity: 5, invoiceNo: '18843-12' },
+    ],
+    rev: false,
+  }
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with parent through several iterations', (t) => {
+  const def = [
+    'invoice.lines[]',
+    {
+      $iterate: true,
+      id: 'rowId',
+      quantity: 'count',
+    },
+    {
+      $iterate: true,
+      id: 'id',
+      quantity: 'quantity',
+      invoiceNo: '^.^.number',
+    },
+  ]
+  const data = {
+    invoice: {
+      number: '18843-11',
+      lines: [
+        { rowId: 1, count: 2 },
+        { rowId: 2, count: 1 },
+      ],
+    },
+  }
+  const state = {
+    context: [],
+    value: data,
+    rev: false,
+  }
+  const expected = {
+    context: [],
+    value: [
+      { id: 1, quantity: 2, invoiceNo: '18843-11' },
+      { id: 2, quantity: 1, invoiceNo: '18843-11' },
     ],
     rev: false,
   }

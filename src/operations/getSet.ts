@@ -84,8 +84,7 @@ function getParent(state: State) {
 
 function getRoot(state: State) {
   const nextValue = getRootFromState(state)
-  const nextContext: unknown[] = []
-  return { ...state, context: nextContext, value: nextValue }
+  return { ...state, context: [], value: nextValue }
 }
 
 function getSet(isSet = false) {

@@ -750,4 +750,49 @@ test('should map with parent', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with parent through several iterations', (t) => {
+  const def = {
+    items: [
+      'response.data.invoice.lines[]',
+      {
+        $iterate: true,
+        $modify: true,
+        id: [
+          { rowId: 'rowId', invoiceNo: '^.^.number' },
+          { $transform: 'template', template: '{{invoiceNo}}-{{rowId}}' },
+        ],
+      },
+      {
+        $iterate: true,
+        id: 'id',
+        quantity: 'count',
+        invoiceNo: '^.^.number',
+      },
+    ],
+  }
+  const data = {
+    response: {
+      data: {
+        invoice: {
+          number: '18843-11',
+          lines: [
+            { rowId: 1, count: 2 },
+            { rowId: 2, count: 1 },
+          ],
+        },
+      },
+    },
+  }
+  const expected = {
+    items: [
+      { id: '18843-11-1', quantity: 2, invoiceNo: '18843-11' },
+      { id: '18843-11-2', quantity: 1, invoiceNo: '18843-11' },
+    ],
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test.todo('should set on given target')

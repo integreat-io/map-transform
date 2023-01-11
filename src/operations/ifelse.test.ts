@@ -103,7 +103,7 @@ test('should set primitive value', (t) => {
     value: data,
   }
   const expected = {
-    context: [data],
+    context: [],
     value: 32,
   }
 

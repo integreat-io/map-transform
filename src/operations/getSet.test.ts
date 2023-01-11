@@ -22,7 +22,7 @@ test('should return simple get function', (t) => {
   const state = stateFromValue(value)
   const expected = { ...state, context: [{ name: 'Bohm' }], value: 'Bohm' }
 
-  const fn = pipe(get(path))
+  const fn = get(path)[0] // Note: `get()` returns an array, but we'll run the first operation directly as there will be only one
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -34,15 +34,10 @@ test('should get dot path', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { scientist: { name: 'Bohm' } } },
-      { scientist: { name: 'Bohm' } },
-      { name: 'Bohm' },
-    ],
     value: 'Bohm',
   }
 
-  const fn = pipe(get(path))
+  const fn = pipe(get(path)) // Note: `get()` returns an array and needs to be run through pipe
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -54,12 +49,6 @@ test('should split up path with array index', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] } },
-      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] },
-      [{ name: 'Bohr' }, { name: 'Bohm' }],
-      { name: 'Bohm' },
-    ],
     value: 'Bohm',
   }
 
@@ -75,13 +64,6 @@ test('should get path with several array indeces', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }] },
-      [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
-      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] },
-      [{ name: 'Bohr' }, { name: 'Bohm' }],
-      { name: 'Bohm' },
-    ],
     value: 'Bohm',
   }
 
@@ -97,7 +79,6 @@ test('should get array index as root', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [[{ name: 'Bohr' }, { name: 'Bohm' }], { name: 'Bohm' }],
     value: 'Bohm',
   }
 
@@ -117,21 +98,6 @@ test('should handle array notation in path', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      {
-        data: {
-          scientists: [
-            { names: { last: 'Bohr' } },
-            { names: { last: 'Bohm' } },
-          ],
-        },
-      },
-      {
-        scientists: [{ names: { last: 'Bohr' } }, { names: { last: 'Bohm' } }],
-      },
-      [{ names: { last: 'Bohr' } }, { names: { last: 'Bohm' } }],
-      [{ last: 'Bohr' }, { last: 'Bohm' }],
-    ],
     value: ['Bohr', 'Bohm'],
   }
 
@@ -147,11 +113,6 @@ test('should return a flattened array', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }] },
-      [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
-      [{ name: 'Bohr' }, { name: 'Bohm' }],
-    ],
     value: ['Bohr', 'Bohm'],
   }
 
@@ -167,11 +128,6 @@ test('should not touch escaped brackets', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { 'scientists[]': { name: 'Bohr' } } },
-      { 'scientists[]': { name: 'Bohr' } },
-      { name: 'Bohr' },
-    ],
     value: 'Bohr',
   }
 
@@ -187,11 +143,6 @@ test('should force array', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { scientists: { name: 'Bohm' } } },
-      { scientists: { name: 'Bohm' } },
-      [{ name: 'Bohm' }], // TODO: Correct context?
-    ],
     value: ['Bohm'],
   }
 
@@ -207,7 +158,7 @@ test('should return undefined when object is null', (t) => {
   const state = stateFromValue(value)
   const expected = { ...state, context: [null], value: undefined }
 
-  const fn = pipe(get(path))
+  const fn = get(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -219,11 +170,6 @@ test('should return empty array with null when value is null and expecting array
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { scientists: { name: null } } },
-      { scientists: { name: null } },
-      [{ name: null }], // TODO: Correct context?
-    ],
     value: [null],
   }
 
@@ -239,7 +185,7 @@ test('should return value when path is empty', (t) => {
   const state = stateFromValue(value)
   const expected = state
 
-  const fn = pipe(get(path))
+  const fn = get(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -251,7 +197,7 @@ test('should return value when path is dot', (t) => {
   const state = stateFromValue(value)
   const expected = state
 
-  const fn = pipe(get(path))
+  const fn = get(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -263,12 +209,6 @@ test('should disregard spaces in path', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] } },
-      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] },
-      [{ name: 'Bohr' }, { name: 'Bohm' }],
-      { name: 'Bohm' },
-    ],
     value: 'Bohm',
   }
 
@@ -284,10 +224,6 @@ test('should return undefined when path does not match data', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] } },
-      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] },
-    ],
     value: undefined,
   }
 
@@ -303,11 +239,6 @@ test('should return empty array when path does not match, but expecting array', 
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { scientists: { name: 'Bohm' } } },
-      { scientists: { name: 'Bohm' } },
-      [],
-    ],
     value: [],
   }
 
@@ -327,7 +258,7 @@ test('should return empty array for missing array', (t) => {
     value: [],
   }
 
-  const fn = pipe(get(path))
+  const fn = get(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -336,85 +267,69 @@ test('should return empty array for missing array', (t) => {
 // Tests -- get path with parent
 
 test('should get path with parent', (t) => {
-  const preparePath = 'data.scientist'
   const path = '^.meta.field'
-  const value = {
-    data: { scientist: { name: 'Bohm' }, meta: { field: 'physics' } },
-  }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
+  const state = {
     context: [
-      { data: { scientist: { name: 'Bohm' }, meta: { field: 'physics' } } },
+      {
+        data: { scientist: { name: 'Bohm' }, meta: { field: 'physics' } },
+      },
       { scientist: { name: 'Bohm' }, meta: { field: 'physics' } },
-      { field: 'physics' },
     ],
-    value: 'physics',
+    value: { name: 'Bohm' },
   }
+  const expectedValue = 'physics'
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should get path with several parents', (t) => {
-  const preparePath = 'data.scientist'
   const path = '^.^.page'
-  const value = {
-    data: { scientist: { name: 'Bohm' } },
-    page: 0,
+  const state = {
+    context: [
+      {
+        data: { scientist: { name: 'Bohm' } },
+        page: 0,
+      },
+      { scientist: { name: 'Bohm' } },
+    ],
+    value: { name: 'Bohm' },
   }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
-    context: [{ data: { scientist: { name: 'Bohm' } }, page: 0 }],
-    value: 0,
-  }
+  const expectedValue = 0
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should get path with parents from array index', (t) => {
-  const preparePath = 'data[0].scientists[1]'
   const path = '^.^.^.^.page'
-  const value = {
-    data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
-    page: 0,
-  }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
+  const state = {
     context: [
       {
         data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
         page: 0,
       },
+      [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
+      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] },
+      [{ name: 'Bohr' }, { name: 'Bohm' }],
     ],
-    value: 0,
+    value: { name: 'Bohm' },
   }
+  const expectedValue = 0
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should get from parent outside array', (t) => {
-  const preparePath = 'data.scientists[]'
   const path = '^.field'
-  const value = {
-    data: {
-      scientists: [{ name: 'Bohr' }, { name: 'Bohm' }],
-      field: 'physics',
-    },
-  }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
+  const state = {
     context: [
       {
         data: {
@@ -422,28 +337,24 @@ test('should get from parent outside array', (t) => {
           field: 'physics',
         },
       },
-      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }], field: 'physics' },
+      {
+        scientists: [{ name: 'Bohr' }, { name: 'Bohm' }],
+        field: 'physics',
+      },
     ],
-    value: 'physics',
+    value: [{ name: 'Bohr' }, { name: 'Bohm' }],
   }
+  const expectedValue = 'physics'
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should get path with parent from array', (t) => {
-  const preparePath = 'data[].scientists[]'
   const path = '^[0].field' // TODO: Should we be able to fetch from parent without specifying index?
-  const value = {
-    data: [
-      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }], field: 'physics' },
-    ],
-  }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
+  const state = {
     context: [
       {
         data: [
@@ -454,62 +365,58 @@ test('should get path with parent from array', (t) => {
         ],
       },
       [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }], field: 'physics' }],
-      { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }], field: 'physics' },
     ],
-    value: 'physics',
+    value: [{ name: 'Bohr' }, { name: 'Bohm' }],
   }
+  const expectedValue = 'physics'
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should get path with several parents from array', (t) => {
-  const preparePath = 'data[].scientists[]'
   const path = '^.^.page'
-  const value = {
-    data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
-    page: 0,
-  }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
+  const state = {
     context: [
       {
         data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
         page: 0,
       },
+      [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
     ],
-    value: 0,
+    value: [{ name: 'Bohr' }, { name: 'Bohm' }],
   }
+
+  const expectedValue = 0
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 // Tests -- get path with root
 
 test('should get path with root from context', (t) => {
-  const preparePath = 'data.scientist'
   const path = '^^.page'
-  const value = {
-    data: { scientist: { name: 'Bohm' } },
-    page: 0,
+  const state = {
+    context: [
+      {
+        data: { scientist: { name: 'Bohm' } },
+        page: 0,
+      },
+      { scientist: { name: 'Bohm' } },
+    ],
+    value: { name: 'Bohm' },
   }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
-    context: [{ data: { scientist: { name: 'Bohm' } }, page: 0 }],
-    value: 0,
-  }
+  const expectedValue = 0
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should get path with root from value', (t) => {
@@ -521,10 +428,6 @@ test('should get path with root from value', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [
-      { data: { scientist: { name: 'Bohm' } }, meta: { page: 0 } },
-      { page: 0 },
-    ],
     value: 0,
   }
 
@@ -535,43 +438,43 @@ test('should get path with root from value', (t) => {
 })
 
 test('should get path with root without dot', (t) => {
-  const preparePath = 'data.scientist'
   const path = '^^page'
-  const value = {
-    data: { scientist: { name: 'Bohm' } },
-    page: 0,
+  const state = {
+    context: [
+      {
+        data: { scientist: { name: 'Bohm' } },
+        page: 0,
+      },
+      { scientist: { name: 'Bohm' } },
+    ],
+    value: { name: 'Bohm' },
   }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
-    context: [{ data: { scientist: { name: 'Bohm' } }, page: 0 }],
-    value: 0,
-  }
+  const expectedValue = 0
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should support obsolete root notation with one carret', (t) => {
-  const preparePath = 'data.scientist'
   const path = '^page'
-  const value = {
-    data: { scientist: { name: 'Bohm' } },
-    page: 0,
+  const state = {
+    context: [
+      {
+        data: { scientist: { name: 'Bohm' } },
+        page: 0,
+      },
+      { scientist: { name: 'Bohm' } },
+    ],
+    value: { name: 'Bohm' },
   }
-  const state = pipe(get(preparePath))(options)(identity)(stateFromValue(value))
-  const expected = {
-    ...state,
-    context: [{ data: { scientist: { name: 'Bohm' } }, page: 0 }],
-    value: 0,
-  }
+  const expectedValue = 0
 
   const fn = pipe(get(path))
   const ret = fn(options)(identity)(state)
 
-  t.deepEqual(ret, expected)
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should get root when value is root', (t) => {
@@ -583,16 +486,37 @@ test('should get root when value is root', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
+    value: 0,
+  }
+
+  const fn = pipe(get(path))
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should clear context when getting root', (t) => {
+  const path = '^^'
+  const value = { scientist: { name: 'Bohm' } }
+  const state = {
     context: [
       {
         data: { scientist: { name: 'Bohm' } },
         page: 0,
       },
     ],
-    value: 0,
+    value,
+  }
+  const expected = {
+    ...state,
+    context: [],
+    value: {
+      data: { scientist: { name: 'Bohm' } },
+      page: 0,
+    },
   }
 
-  const fn = pipe(get(path))
+  const fn = get(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -606,7 +530,7 @@ test('should set with simple path', (t) => {
   const state = stateFromValue(value)
   const expected = { ...state, context: [], value: { name: 'Bohm' } }
 
-  const fn = pipe(set(path))
+  const fn = set(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -618,7 +542,6 @@ test('should set with dot path', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: { data: { scientist: { name: 'Bohm' } } },
   }
 
@@ -634,7 +557,6 @@ test('should set path with array index', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: { data: { scientists: [undefined, { name: 'Bohm' }] } },
   }
 
@@ -650,7 +572,6 @@ test('should set path with several array indeces', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: { data: [{ scientists: [undefined, { name: 'Bohm' }] }] },
   }
 
@@ -666,7 +587,7 @@ test('should treat path prefixed by > as set', (t) => {
   const state = stateFromValue(value)
   const expected = { ...state, context: [], value: { name: 'Bohm' } }
 
-  const fn = pipe(get(path))
+  const fn = get(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -678,7 +599,6 @@ test('should set array index as root', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: [undefined, { name: 'Bohm' }],
   }
 
@@ -694,7 +614,6 @@ test('should iterate array at array notation', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: {
       data: {
         scientists: [{ names: { last: 'Bohr' } }, { names: { last: 'Bohm' } }],
@@ -743,7 +662,6 @@ test('should set simple path in root array', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: [{ name: 'Bohr' }, { name: 'Bohm' }],
   }
 
@@ -756,10 +674,7 @@ test('should set simple path in root array', (t) => {
 test('should set array for path without array notation', (t) => {
   const path = 'data.scientists'
   const value = [{ name: 'Bohm' }]
-  const state = {
-    ...stateFromValue(value),
-    context: [],
-  }
+  const state = stateFromValue(value)
   const expected = {
     ...state,
     value: { data: { scientists: [{ name: 'Bohm' }] } },
@@ -777,7 +692,6 @@ test('should set path with array notation in reverse', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: {
       data: {
         scientists: [{ names: { last: 'Bohr' } }, { names: { last: 'Bohm' } }],
@@ -815,7 +729,6 @@ test('should set path with array notation when flipping', (t) => {
   const state = { ...stateFromValue(value), flip: true }
   const expected = {
     ...state,
-    context: [],
     value: {
       data: {
         scientists: [{ names: { last: 'Bohr' } }, { names: { last: 'Bohm' } }],
@@ -851,7 +764,6 @@ test('should set path with several arrays', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: { data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }] },
   }
 
@@ -867,7 +779,6 @@ test('should set with escaped brackets', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: { data: { 'scientists[]': { name: 'Bohr' } } },
   }
 
@@ -883,7 +794,7 @@ test('should return value when path is empty - for set', (t) => {
   const state = stateFromValue(value)
   const expected = state
 
-  const fn = pipe(set(path))
+  const fn = set(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -895,7 +806,7 @@ test('should return value when path is dot - for set', (t) => {
   const state = stateFromValue(value)
   const expected = state
 
-  const fn = pipe(set(path))
+  const fn = set(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -907,7 +818,6 @@ test('should set null value', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: { scientists: [{ name: null }] },
   }
 
@@ -923,7 +833,6 @@ test('should not set when parent path -- for now', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: undefined,
   }
 
@@ -939,7 +848,6 @@ test('should not set with root path -- for now', (t) => {
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    context: [],
     value: undefined,
   }
 
@@ -963,7 +871,7 @@ test('should set on target', (t) => {
     value: { id: 1, name: 'Bohm' },
   }
 
-  const fn = pipe(set(path))
+  const fn = set(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)
@@ -999,7 +907,7 @@ test('should set array index on target', (t) => {
     value: ['Bohr', 'Bohm'],
   }
 
-  const fn = pipe(set(path))
+  const fn = set(path)[0]
   const ret = fn(options)(identity)(state)
 
   t.deepEqual(ret, expected)

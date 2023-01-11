@@ -22,11 +22,11 @@ test('should map over a value array', (t) => {
     title: 'headline',
   }
   const state = {
-    context: [],
+    context: [{ items: data }],
     value: data,
   }
   const expected = {
-    context: [],
+    context: [{ items: data }],
     value: [
       { id: 'ent1', title: 'Entry 1' },
       { id: 'ent2', title: 'Entry 2' },
@@ -78,6 +78,35 @@ test('should provide array as context', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should provide array as context through several iterations', (t) => {
+  const def1 = {
+    key: 'key',
+    headline: 'key',
+  }
+  const def2 = {
+    id: 'key',
+    title: 'headline',
+    first: '^[0].key',
+    tag: '^.^.section',
+  }
+  const state = {
+    context: [{ items: data, section: 'news' }],
+    value: data,
+  }
+  const expected = {
+    context: [{ items: data, section: 'news' }],
+    value: [
+      { id: 'ent1', title: 'ent1', first: 'ent1', tag: 'news' },
+      { id: 'ent2', title: 'ent2', first: 'ent1', tag: 'news' },
+    ],
+  }
+
+  const ret1 = iterate(def1)(options)(identity)(state)
+  const ret2 = iterate(def2)(options)(identity)(ret1)
+
+  t.deepEqual(ret2, expected)
+})
+
 test('should provide array as context through double arrays', (t) => {
   const def = {
     articles: [
@@ -92,11 +121,14 @@ test('should provide array as context through double arrays', (t) => {
     ],
   }
   const state = {
-    context: [{ entries: [{ items: data, section: 'news' }] }],
+    context: [
+      { entries: [{ items: data, section: 'news' }] },
+      [{ items: data, section: 'news' }],
+    ],
     value: [{ items: data, section: 'news' }],
   }
   const expected = {
-    context: [{ entries: [{ items: data, section: 'news' }] }],
+    ...state,
     value: [
       {
         articles: [

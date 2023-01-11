@@ -21,7 +21,7 @@ test('should use alternative pipeline when first yields undefined', (t) => {
     value: { id: 'johnf' },
   }
   const expected = {
-    context: [{ id: 'johnf' }],
+    context: [],
     value: 'johnf',
   }
 
@@ -38,7 +38,7 @@ test('should use first pipeline when it yields a value', (t) => {
     value: { id: 'johnf', name: 'John F.' },
   }
   const expected = {
-    context: [{ id: 'johnf', name: 'John F.' }],
+    context: [],
     value: 'John F.',
   }
 
@@ -56,7 +56,7 @@ test('should use third pipeline when the first two yields undefined', (t) => {
     value: { id: 'johnf' },
   }
   const expected = {
-    context: [{ id: 'johnf' }],
+    context: [],
     value: 'johnf',
   }
 
@@ -73,7 +73,7 @@ test('should yield alt value from a dot path', (t) => {
     value: { meta: { cid: '12345' } },
   }
   const expected = {
-    context: [{ meta: { cid: '12345' } }, { cid: '12345' }],
+    context: [],
     value: '12345',
   }
 
@@ -92,7 +92,7 @@ test('should not polute context from unyielding pipeline', (t) => {
     value: data,
   }
   const expected = {
-    context: [{ data }, data],
+    context: [{ data }],
     value: 'Entry 1',
   }
 
@@ -109,7 +109,7 @@ test('should treat path as an pipeline', (t) => {
     value: { id: 'johnf' },
   }
   const expected = {
-    context: [{ id: 'johnf' }],
+    context: [],
     value: 'johnf',
   }
 
@@ -126,7 +126,7 @@ test('should use value from value operation', (t) => {
     value: { id: 'johnf' },
   }
   const expected = {
-    context: [{ id: 'johnf' }],
+    context: [],
     value: 'No user',
   }
 

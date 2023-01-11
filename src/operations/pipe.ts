@@ -7,6 +7,7 @@ import { operationsFromDef } from '../utils/definitionHelpers'
 import { identity } from '../utils/functional'
 import { compose as composeFn, pipe as pipeFn } from '../utils/functional'
 import xor from '../utils/xor'
+import { setValueFromState } from '../utils/stateHelpers'
 
 // Run through a pipeline def and split up any paths with open array brackets
 // in the middle. The path after the brackets will be iterated along with the
@@ -51,7 +52,7 @@ export default function pipe(defs: MapPipe): Operation {
       const runRev = composeFn(...fns)(next)
       return function doPipe(state) {
         const isRev = xor(state.rev, state.flip)
-        return isRev ? runRev(state) : run(state)
+        return setValueFromState(state, isRev ? runRev(state) : run(state))
       }
     }
   }

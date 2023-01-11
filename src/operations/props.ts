@@ -140,8 +140,8 @@ const runOperations =
     options: Options
   ) =>
   (shouldFlip: boolean) =>
-  (state: State) => {
-    return isNoneValueState(state, options.noneValues)
+  (state: State) =>
+    isNoneValueState(state, options.noneValues)
       ? state
       : modifyFn(
           operations.reduce(
@@ -150,7 +150,6 @@ const runOperations =
           ),
           state
         )
-  }
 
 export default function props(def: MapObject): Operation {
   if (Object.keys(def).length === 0) {
@@ -176,18 +175,19 @@ export default function props(def: MapObject): Operation {
     const isWrongDirectionFn = isWrongDirection(direction, options)
 
     return function doMutate(state) {
+      const nextState = next(state)
       if (
         isNoneValueState(state, options.noneValues) ||
         isWrongDirectionFn(state.rev)
       ) {
-        return next(state)
+        return nextState
       }
 
       const thisState = shouldIterate
-        ? iterate(() => () => run(shouldFlip))(options)(next)(state)
-        : run(shouldFlip)(next(state))
+        ? iterate(() => () => run(shouldFlip))(options)(identity)(nextState)
+        : run(shouldFlip)(nextState)
 
-      return setValueFromState(state, thisState)
+      return setValueFromState(nextState, thisState)
     }
   }
 }

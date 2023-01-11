@@ -26,7 +26,7 @@ test('should run pipeline by id', (t) => {
     value: { title: 'Entry 1' },
   }
   const expected = {
-    context: [{ title: 'Entry 1' }],
+    context: [],
     value: 'Entry 1',
   }
 

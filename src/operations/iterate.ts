@@ -1,6 +1,6 @@
-import mapAny = require('map-any')
 import { Operation, MapDefinition, State, StateMapper } from '../types'
 import {
+  pushContext,
   getStateValue,
   setStateValue,
   getTargetFromState,
@@ -11,19 +11,31 @@ import { indexOfIfArray } from '../utils/array'
 import { identity } from '../utils/functional'
 
 export const iterateState =
-  (fn: StateMapper) => (state: State, target: unknown) =>
-    mapAny(
-      (value, index) =>
+  (fn: StateMapper) => (state: State, target: unknown) => {
+    const value = getStateValue(state)
+    if (Array.isArray(value)) {
+      const nextState = pushContext(state, value)
+      return value.map((item, index) =>
         getStateValue(
           fn(
             setTargetOnState(
-              setStateValue({ ...state, index }, value, true),
+              { ...nextState, index, value: item },
               indexOfIfArray(target, index)
             )
           )
-        ),
-      getStateValue(state)
-    )
+        )
+      )
+    } else {
+      return getStateValue(
+        fn(
+          setTargetOnState(
+            { ...state, index: 0, value },
+            indexOfIfArray(target, 0)
+          )
+        )
+      )
+    }
+  }
 
 export default function iterate(def: MapDefinition): Operation {
   if (!def || (typeof def === 'object' && Object.keys(def).length === 0)) {
@@ -37,9 +49,10 @@ export default function iterate(def: MapDefinition): Operation {
     return (next) =>
       function doIterate(state) {
         const nextState = next(state)
+
         return setStateValue(
-          { ...nextState, context: state.context },
-          runIteration(nextState, getTargetFromState(state))
+          nextState,
+          runIteration(nextState, getTargetFromState(nextState))
         )
       }
   }

@@ -44,7 +44,7 @@ test('should validate entiry array', (t) => {
 })
 
 test('should validate entiry array items according to json schema sec', (t) => {
-  const schema = { items: { type: 'string' } }
+  const schema = { items: { type: 'string' }, type: 'array' }
   const path = 'item.value'
   const data = { item: { value: ['firstValue', 'secondValue'] } }
 

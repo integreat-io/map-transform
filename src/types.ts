@@ -23,6 +23,10 @@ export interface DataMapper {
   (data: unknown, state: State): any
 }
 
+export interface SimpleDataMapper {
+  (data: unknown, target?: unknown): any
+}
+
 export interface CustomFunction<T = Operands> {
   (operands: T, options: Options): DataMapper
 }
@@ -50,6 +54,7 @@ export interface Options {
   noneValues?: unknown[]
   fwdAlias?: string
   revAlias?: string
+  defsToDataMapper?: (def: MapDefinition) => SimpleDataMapper
 }
 
 export interface TransformObject extends Operands {

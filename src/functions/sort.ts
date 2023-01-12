@@ -1,8 +1,8 @@
-import { Path, DataMapper } from '../types'
-import getter from '../utils/pathGetter'
+import { Path, DataMapper, Options, Operands as BaseOperands } from '../types'
 import { identity } from '../utils/functional'
+import { defsToDataMapper } from '../utils/definitionHelpers'
 
-interface Operands {
+interface Operands extends BaseOperands {
   asc?: boolean
   path?: Path
 }
@@ -24,9 +24,12 @@ const compare = (direction: number, getFn: (data: unknown) => unknown) =>
     }
   }
 
-export default function template(operands: Operands): DataMapper {
+export default function template(
+  operands: Operands,
+  _options: Options = {}
+): DataMapper {
   const direction = operands?.asc === false ? -1 : 1
-  const getFn = operands?.path ? getter(operands.path) : identity
+  const getFn = operands?.path ? defsToDataMapper(operands.path) : identity
 
   return (data) => {
     return Array.isArray(data)

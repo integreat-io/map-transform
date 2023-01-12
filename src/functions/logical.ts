@@ -1,19 +1,18 @@
-import { Operands, Path, DataMapper } from '../types'
-import getter from '../utils/pathGetter'
-import setter from '../utils/pathSetter'
+import { Operands, Path, DataMapper, Options } from '../types'
+import { defsToDataMapper } from '../utils/definitionHelpers'
 
 interface CompareOperands extends Operands {
   path?: Path | Path[]
   operator?: string
 }
 
-export default function compare({
-  path = '.',
-  operator = 'AND',
-}: CompareOperands): DataMapper {
+export default function compare(
+  { path = '.', operator = 'AND' }: CompareOperands,
+  _options: Options = {}
+): DataMapper {
   const pathArr = ([] as string[]).concat(path)
-  const getFns = pathArr.map(getter)
-  const setFns = pathArr.map(setter)
+  const getFns = pathArr.map(defsToDataMapper)
+  const setFns = pathArr.map((path) => `>${path}`).map(defsToDataMapper)
   const logicalOp =
     operator === 'OR'
       ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)

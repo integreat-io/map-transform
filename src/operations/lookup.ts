@@ -1,17 +1,18 @@
 import mapAny = require('map-any')
 import pipe from './pipe'
-import { Operation, State, Path } from '../types'
-import getter, { Getter } from '../utils/pathGetter'
+import { Operation, State, Path, SimpleDataMapper } from '../types'
+import { get } from './getSet'
 import { getStateValue, setStateValue } from '../utils/stateHelpers'
+import { dataMapperFromOperation } from '../utils/definitionHelpers'
 import { identity } from '../utils/functional'
 
 const matchPropInArray =
-  (getProp: Getter) =>
+  (getProp: SimpleDataMapper) =>
   (arr: unknown[]) =>
   (value: string | number | boolean | null) =>
     arr.find((obj) => getProp(obj) === value)
 
-const mapValue = (getArray: Operation, getProp: Getter) => {
+const mapValue = (getArray: Operation, getProp: SimpleDataMapper) => {
   const matchInArray = matchPropInArray(getProp)
   return (state: State) => {
     if (state.rev) {
@@ -25,7 +26,8 @@ const mapValue = (getArray: Operation, getProp: Getter) => {
 
 export default function lookup(arrayPath: Path, propPath: Path): Operation {
   return () => (next) => {
-    const mapValueFn = mapValue(pipe([arrayPath]), getter(propPath))
+    const getter = dataMapperFromOperation(pipe(get(propPath)))
+    const mapValueFn = mapValue(pipe([arrayPath]), getter)
 
     return function doLookup(state) {
       const nextState = next(state)

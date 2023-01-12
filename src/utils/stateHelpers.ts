@@ -58,10 +58,11 @@ export const setValueFromState = (
 })
 
 export const populateState =
-  ({ rev = false, onlyMapped = false }: Partial<State>) =>
+  ({ rev = false, onlyMapped = false, target = undefined }: Partial<State>) =>
   (data: unknown): State => ({
     context: [],
     value: data,
+    target,
     rev,
     onlyMapped,
   })

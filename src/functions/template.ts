@@ -1,7 +1,7 @@
 import Mustache = require('mustache')
 import mapAny = require('map-any')
-import getter from '../utils/pathGetter'
-import { Path, DataMapper } from '../types'
+import { Path, DataMapper, Options } from '../types'
+import { defsToDataMapper } from '../utils/definitionHelpers'
 
 interface Operands {
   template?: string
@@ -17,7 +17,10 @@ function parseAndCreateGenerator(templateStr: string) {
     mapAny((data: unknown) => Mustache.render(templateStr, data), data)
 }
 
-export default function template(operands: Operands | string): DataMapper {
+export default function template(
+  operands: Operands | string,
+  _options: Options = {}
+): DataMapper {
   const { template: templateStr, templatePath } = extractOperands(operands)
 
   if (typeof templateStr === 'string') {
@@ -26,7 +29,7 @@ export default function template(operands: Operands | string): DataMapper {
   } else if (typeof templatePath === 'string') {
     // The template will be provided in the data -- return a function that will
     // both create the generator and run it
-    const getFn = getter(templatePath)
+    const getFn = defsToDataMapper(templatePath)
     return (data) => {
       const templateStr = getFn(data)
       if (typeof templateStr === 'string') {

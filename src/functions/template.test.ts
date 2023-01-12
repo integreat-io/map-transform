@@ -1,4 +1,5 @@
 import test from 'ava'
+import { defsToDataMapper } from '../utils/definitionHelpers'
 
 import template from './template'
 
@@ -11,6 +12,8 @@ const state = {
   value: {},
 }
 
+const options = { defsToDataMapper }
+
 // Tests
 
 test('should apply template', (t) => {
@@ -21,7 +24,7 @@ test('should apply template', (t) => {
   }
   const expected = 'Bergen by night. By John F.'
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -39,8 +42,8 @@ test('should apply template several times', (t) => {
   const expected0 = 'Bergen by night. By John F.'
   const expected1 = 'Mona Lisa. By Leonardo d.'
 
-  const ret0 = template(operands)(data0, state)
-  const ret1 = template(operands)(data1, state)
+  const ret0 = template(operands, options)(data0, state)
+  const ret1 = template(operands, options)(data1, state)
 
   t.is(ret0, expected0)
   t.is(ret1, expected1)
@@ -55,7 +58,7 @@ test('should apply template from path', (t) => {
   }
   const expected = 'Bergen by night. By John F.'
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -68,7 +71,7 @@ test('should return undefined when no template at path', (t) => {
   }
   const expected = undefined
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -87,7 +90,7 @@ test('should apply template to array', (t) => {
   ]
   const expected = ['Bergen by night. By John F.', 'Water Lilies. By Monet']
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -99,7 +102,7 @@ test('should leave missing fields empty', (t) => {
   }
   const expected = 'Bergen by night. By '
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -112,7 +115,7 @@ test('should force values to string', (t) => {
   }
   const expected = 'Bergen by night. By [object Object]'
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -125,7 +128,7 @@ test('should support dot notation paths', (t) => {
   }
   const expected = 'Bergen by night. By John F.'
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -135,7 +138,7 @@ test('should support a single dot as path', (t) => {
   const data = 'Bergen by night'
   const expected = 'The title: Bergen by night'
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -152,7 +155,7 @@ test('should apply uri encoded template', (t) => {
   const expected =
     "/production?query=*%5B_type%3D%3D'table'%26%26key%3D%3D%24table%5D%5B0%5D.fields%7Bkey%2Cname%2Ctype%7D&%24table=%22orders%22"
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -165,7 +168,7 @@ test('should use template without placeholders', (t) => {
   }
   const expected = 'A string!'
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -178,7 +181,7 @@ test('should use string instead of operands as template', (t) => {
   }
   const expected = 'Bergen by night. By John F.'
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })
@@ -191,7 +194,7 @@ test('should return undefined when no template', (t) => {
   }
   const expected = undefined
 
-  const ret = template(operands)(data, state)
+  const ret = template(operands, options)(data, state)
 
   t.is(ret, expected)
 })

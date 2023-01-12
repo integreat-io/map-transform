@@ -5,7 +5,7 @@ import {
   StateMapper,
   Options,
 } from './types'
-import { operationFromDef } from './utils/definitionHelpers'
+import { operationFromDef, defsToDataMapper } from './utils/definitionHelpers'
 import { populateState, getStateValue } from './utils/stateHelpers'
 import functions from './functions'
 import iterate from './operations/iterate'
@@ -44,8 +44,6 @@ export {
   ApplyObject,
   AltObject,
 } from './types'
-export { default as pathGetter } from './utils/pathGetter'
-export { default as pathSetter } from './utils/pathSetter'
 
 const composeMapFunction = (
   mapFn: StateMapper,
@@ -63,6 +61,7 @@ const mergeOptions = (options: Options) => ({
     ...functions,
     ...(options.functions || {}),
   },
+  defsToDataMapper,
 })
 
 export function mapTransform(

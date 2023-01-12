@@ -278,7 +278,7 @@ test('should filter with not and compare helpers', (t) => {
 test('should filter with validate', (t) => {
   const def = [
     'content',
-    filter(validate('draft', { const: false })),
+    filter(validate({ path: 'draft', schema: { const: false } })),
     {
       $iterate: true,
       title: 'heading',

@@ -1,8 +1,8 @@
 import mapAny = require('map-any')
-import { Operands, Path, DataMapper } from '../types'
-import getter from '../utils/pathGetter'
+import { Operands, Path, DataMapper, Options } from '../types'
 import { unescapeValue } from '../utils/escape'
 import { getRootFromState } from '../utils/stateHelpers'
+import { defsToDataMapper } from '../utils/definitionHelpers'
 
 interface Comparer {
   (value: unknown, match: unknown): boolean
@@ -79,14 +79,17 @@ function createComparer(operator: string) {
   }
 }
 
-export default function compare({
-  path = '.',
-  operator = '=',
-  match,
-  matchPath,
-  not = false,
-}: CompareOperands): DataMapper {
-  const getValue = getter(path)
+export default function compare(
+  {
+    path = '.',
+    operator = '=',
+    match,
+    matchPath,
+    not = false,
+  }: CompareOperands,
+  _options: Options = {}
+): DataMapper {
+  const getValue = defsToDataMapper(path)
   const useRoot =
     typeof matchPath === 'string' &&
     matchPath[0] === '^' &&
@@ -97,7 +100,7 @@ export default function compare({
   const realMatchValue = mapAny(unescapeValue, match)
   const getMatch =
     typeof realMatchPath === 'string'
-      ? getter(realMatchPath)
+      ? defsToDataMapper(realMatchPath)
       : () => realMatchValue
   const comparer = createComparer(operator)
 

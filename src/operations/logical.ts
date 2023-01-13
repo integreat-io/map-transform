@@ -1,7 +1,7 @@
-import { MapDefinition, Operation } from '../types'
-import { getStateValue, setStateValue } from '../utils/stateHelpers'
-import { operationFromDef } from '../utils/definitionHelpers'
-import { identity } from '../utils/functional'
+import { MapDefinition, Operation } from '../types.js'
+import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
+import { operationFromDef } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
 
 type LogicFn = (a: boolean, b: boolean) => boolean
 

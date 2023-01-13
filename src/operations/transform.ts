@@ -1,6 +1,6 @@
-import { State, Operation, DataMapper } from '../types'
-import { getStateValue, setStateValue } from '../utils/stateHelpers'
-import { identity } from '../utils/functional'
+import { State, Operation, DataMapper } from '../types.js'
+import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
+import { identity } from '../utils/functional.js'
 
 const callTransformFn = (fn: DataMapper) => (state: State) =>
   setStateValue(state, fn(getStateValue(state), state))

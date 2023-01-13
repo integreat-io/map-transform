@@ -1,4 +1,4 @@
-import { DataMapper } from '../types'
+import { DataMapper } from '../types.js'
 
 interface Operands extends Record<string, unknown> {
   depth?: number

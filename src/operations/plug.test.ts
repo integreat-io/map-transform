@@ -1,7 +1,7 @@
 import test from 'ava'
-import { identity } from '../utils/functional'
+import { identity } from '../utils/functional.js'
 
-import plug from './plug'
+import plug from './plug.js'
 
 // Setup
 

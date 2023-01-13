@@ -1,6 +1,6 @@
-import { Options, Operation, State } from '../types'
-import { operationFromDef } from '../utils/definitionHelpers'
-import { identity } from '../utils/functional'
+import { Options, Operation, State } from '../types.js'
+import { operationFromDef } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
 
 const extractPipeline = (pipelineId: string, { pipelines }: Options) =>
   pipelineId && pipelines ? pipelines[pipelineId] : undefined // eslint-disable-line security/detect-object-injection

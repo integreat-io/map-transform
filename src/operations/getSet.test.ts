@@ -1,8 +1,8 @@
 import test from 'ava'
-import pipe from './pipe'
-import { identity } from '../utils/functional'
+import pipe from './pipe.js'
+import { identity } from '../utils/functional.js'
 
-import { get, set } from './getSet'
+import { get, set } from './getSet.js'
 
 // Setup
 

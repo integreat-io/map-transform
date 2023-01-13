@@ -1,7 +1,7 @@
 import test from 'ava'
-import { mapTransform, alt, fwd, rev } from '..'
-import value from '../operations/value'
-import { get } from '../operations/getSet'
+import { mapTransform, alt, fwd, rev } from '../index.js'
+import value from '../operations/value.js'
+import { get } from '../operations/getSet.js'
 
 // Tests
 

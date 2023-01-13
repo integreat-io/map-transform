@@ -1,8 +1,15 @@
-import Ajv from 'ajv'
-import { Path, DataMapper, Operands as BaseOperands, Options } from '../types'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import ajv from 'ajv'
+import {
+  Path,
+  DataMapper,
+  Operands as BaseOperands,
+  Options,
+} from '../types.js'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-const ajv = new Ajv()
+const Ajv = ajv.default
+
+const validator = new Ajv()
 
 interface Operands extends BaseOperands {
   path: Path
@@ -14,7 +21,7 @@ export default function validate(
   _options: Options = {}
 ): DataMapper {
   const getFn = defsToDataMapper(path)
-  const validate = ajv.compile(schema)
+  const validate = validator.compile(schema)
 
   return (data) => validate(getFn(data)) as boolean
 }

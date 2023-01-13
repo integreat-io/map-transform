@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { State } from '../types'
+import { State } from '../types.js'
 
 // Context
 

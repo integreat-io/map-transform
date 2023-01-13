@@ -1,5 +1,5 @@
-import { Operation, DataMapper } from '../types'
-import { getStateValue, setStateValue } from '../utils/stateHelpers'
+import { Operation, DataMapper } from '../types.js'
+import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 
 const filterValue = (value: unknown, filterFn: (data: unknown) => boolean) =>
   Array.isArray(value)

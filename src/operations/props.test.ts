@@ -1,10 +1,10 @@
 import test from 'ava'
-import value from './value'
-import { get, set } from './getSet'
-import transform from './transform'
-import { identity } from '../utils/functional'
+import value from './value.js'
+import { get, set } from './getSet.js'
+import transform from './transform.js'
+import { identity } from '../utils/functional.js'
 
-import props from './props'
+import props from './props.js'
 
 // Setup
 

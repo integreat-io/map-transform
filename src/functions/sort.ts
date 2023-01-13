@@ -1,6 +1,11 @@
-import { Path, DataMapper, Options, Operands as BaseOperands } from '../types'
-import { identity } from '../utils/functional'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import {
+  Path,
+  DataMapper,
+  Options,
+  Operands as BaseOperands,
+} from '../types.js'
+import { identity } from '../utils/functional.js'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 interface Operands extends BaseOperands {
   asc?: boolean

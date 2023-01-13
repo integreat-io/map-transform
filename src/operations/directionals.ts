@@ -1,6 +1,6 @@
-import { MapDefinition, Operation, Options } from '../types'
-import { operationFromDef } from '../utils/definitionHelpers'
-import xor from '../utils/xor'
+import { MapDefinition, Operation, Options } from '../types.js'
+import { operationFromDef } from '../utils/definitionHelpers.js'
+import xor from '../utils/xor.js'
 
 const applyInDirection = (def: MapDefinition, rev: boolean): Operation => {
   return (options: Options) => (next) => {

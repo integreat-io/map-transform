@@ -1,6 +1,6 @@
-import { Operation } from '../types'
-import { extractValue } from '../functions/value'
-import { setStateValue } from '../utils/stateHelpers'
+import { Operation } from '../types.js'
+import { extractValue } from '../functions/value.js'
+import { setStateValue } from '../utils/stateHelpers.js'
 
 export default function value(val: unknown): Operation {
   return () => (_next) => (state) =>

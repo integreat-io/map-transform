@@ -1,7 +1,7 @@
 import test from 'ava'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-import compare from './compare'
+import compare from './compare.js'
 
 // Setup
 

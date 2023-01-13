@@ -1,5 +1,5 @@
-import { Operation } from '../types'
-import { setStateValue, getTargetFromState } from '../utils/stateHelpers'
+import { Operation } from '../types.js'
+import { setStateValue, getTargetFromState } from '../utils/stateHelpers.js'
 
 export default function plug(): Operation {
   return () => (_next) => (state) =>

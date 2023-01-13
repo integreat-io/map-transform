@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DataMapper } from '../types'
-import { isObject } from '../utils/is'
+import { DataMapper } from '../types.js'
+import { isObject } from '../utils/is.js'
 
 export interface KeyValue {
   key: string | number

@@ -1,7 +1,7 @@
 import test from 'ava'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-import { join, split } from './joinSplit'
+import { join, split } from './joinSplit.js'
 
 // Setup
 

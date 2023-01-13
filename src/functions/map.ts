@@ -1,6 +1,11 @@
 import mapAny = require('map-any')
-import { escapeValue, unescapeValue } from '../utils/escape'
-import { Dictionary, DictionaryValue, Dictionaries, DataMapper } from '../types'
+import { escapeValue, unescapeValue } from '../utils/escape.js'
+import {
+  Dictionary,
+  DictionaryValue,
+  Dictionaries,
+  DataMapper,
+} from '../types.js'
 
 interface Operands {
   dictionary?: Dictionary | string

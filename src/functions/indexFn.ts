@@ -1,4 +1,4 @@
-import { DataMapper } from '../types'
+import { DataMapper } from '../types.js'
 
 export default function compare(): DataMapper {
   return (_data, state) => {

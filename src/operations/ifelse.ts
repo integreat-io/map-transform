@@ -1,6 +1,6 @@
-import { DataMapper, MapDefinition, Operation } from '../types'
-import { getStateValue, setStateValue } from '../utils/stateHelpers'
-import { operationFromDef } from '../utils/definitionHelpers'
+import { DataMapper, MapDefinition, Operation } from '../types.js'
+import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
+import { operationFromDef } from '../utils/definitionHelpers.js'
 
 function runCondition(conditionDef: DataMapper): Operation {
   return () => (next) => (state) => {

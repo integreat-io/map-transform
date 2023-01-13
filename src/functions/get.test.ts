@@ -1,7 +1,7 @@
 import test from 'ava'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-import get from './get'
+import get from './get.js'
 
 // Setup
 

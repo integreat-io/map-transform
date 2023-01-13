@@ -1,7 +1,7 @@
 import test from 'ava'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-import sort from './sort'
+import sort from './sort.js'
 
 // Setup
 

@@ -1,9 +1,9 @@
 import test from 'ava'
-import { set } from './getSet'
-import iterate from './iterate'
-import { identity } from '../utils/functional'
+import { set } from './getSet.js'
+import iterate from './iterate.js'
+import { identity } from '../utils/functional.js'
 
-import merge from './merge'
+import merge from './merge.js'
 
 // Setup
 

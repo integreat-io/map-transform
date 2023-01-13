@@ -1,9 +1,9 @@
-import iterate from './iterate'
-import modify from './modify'
-import pipe from './pipe'
-import { set } from './getSet'
-import { divide } from './directionals'
-import plug from './plug'
+import iterate from './iterate.js'
+import modify from './modify.js'
+import pipe from './pipe.js'
+import { set } from './getSet.js'
+import { divide } from './directionals.js'
+import plug from './plug.js'
 import {
   Operation,
   State,
@@ -11,21 +11,21 @@ import {
   Options,
   MapDefinition,
   StateMapper,
-} from '../types'
+} from '../types.js'
 import {
   getStateValue,
   setStateValue,
   setTargetOnState,
   setValueFromState,
   isNoneValueState,
-} from '../utils/stateHelpers'
+} from '../utils/stateHelpers.js'
 import {
   isMapObject,
   isMapDefinition,
   operationFromDef,
-} from '../utils/definitionHelpers'
-import { identity } from '../utils/functional'
-import { isObject } from '../utils/is'
+} from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
+import { isObject } from '../utils/is.js'
 
 function isRegularProp(
   entry: [string, unknown]

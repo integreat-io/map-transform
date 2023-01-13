@@ -1,10 +1,10 @@
 import test from 'ava'
-import { get, set } from './getSet'
-import pipe from './pipe'
-import { identity } from '../utils/functional'
-import { Operation } from '../types'
+import { get, set } from './getSet.js'
+import pipe from './pipe.js'
+import { identity } from '../utils/functional.js'
+import { Operation } from '../types.js'
 
-import { fwd, rev, divide } from './directionals'
+import { fwd, rev, divide } from './directionals.js'
 
 // Helpers
 

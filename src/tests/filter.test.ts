@@ -1,5 +1,5 @@
 import test from 'ava'
-import { isObject } from '../utils/is'
+import { isObject } from '../utils/is.js'
 import {
   mapTransform,
   set,
@@ -9,7 +9,7 @@ import {
   validate,
   not,
   functions as fns,
-} from '..'
+} from '../index.js'
 const { compare } = fns
 
 // Setup

@@ -1,14 +1,14 @@
-import { Operation, MapDefinition, State, StateMapper } from '../types'
+import { Operation, MapDefinition, State, StateMapper } from '../types.js'
 import {
   pushContext,
   getStateValue,
   setStateValue,
   getTargetFromState,
   setTargetOnState,
-} from '../utils/stateHelpers'
-import { operationFromDef } from '../utils/definitionHelpers'
-import { indexOfIfArray } from '../utils/array'
-import { identity } from '../utils/functional'
+} from '../utils/stateHelpers.js'
+import { operationFromDef } from '../utils/definitionHelpers.js'
+import { indexOfIfArray } from '../utils/array.js'
+import { identity } from '../utils/functional.js'
 
 export const iterateState =
   (fn: StateMapper) => (state: State, target: unknown) => {

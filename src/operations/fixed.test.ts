@@ -1,7 +1,7 @@
 import test from 'ava'
-import { identity } from '../utils/functional'
+import { identity } from '../utils/functional.js'
 
-import fixed from './fixed'
+import fixed from './fixed.js'
 
 // Setup
 

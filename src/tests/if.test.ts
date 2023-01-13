@@ -1,6 +1,6 @@
 import test from 'ava'
-import { isObject } from '../utils/is'
-import { mapTransform, set, ifelse } from '..'
+import { isObject } from '../utils/is.js'
+import { mapTransform, set, ifelse } from '../index.js'
 
 // Tests
 

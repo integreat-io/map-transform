@@ -1,7 +1,7 @@
 import Mustache = require('mustache')
 import mapAny = require('map-any')
-import { Path, DataMapper, Options } from '../types'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { Path, DataMapper, Options } from '../types.js'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 interface Operands {
   template?: string

@@ -1,5 +1,5 @@
-import { Operands, DataMapper, Options } from '../types'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { Operands, DataMapper, Options } from '../types.js'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 interface GetOperands extends Operands {
   path?: string

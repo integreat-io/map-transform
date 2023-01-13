@@ -1,10 +1,10 @@
 import mapAny = require('map-any')
-import pipe from './pipe'
-import { Operation, State, Path, SimpleDataMapper } from '../types'
-import { get } from './getSet'
-import { getStateValue, setStateValue } from '../utils/stateHelpers'
-import { dataMapperFromOperation } from '../utils/definitionHelpers'
-import { identity } from '../utils/functional'
+import pipe from './pipe.js'
+import { Operation, State, Path, SimpleDataMapper } from '../types.js'
+import { get } from './getSet.js'
+import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
+import { dataMapperFromOperation } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
 
 const matchPropInArray =
   (getProp: SimpleDataMapper) =>

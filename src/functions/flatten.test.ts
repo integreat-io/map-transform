@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import flatten from './flatten'
+import flatten from './flatten.js'
 
 // Setup
 

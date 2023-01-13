@@ -1,7 +1,7 @@
-import { Operation, MapDefinition } from '../types'
-import { setStateValue, getStateValue } from '../utils/stateHelpers'
-import { operationFromDef } from '../utils/definitionHelpers'
-import { identity } from '../utils/functional'
+import { Operation, MapDefinition } from '../types.js'
+import { setStateValue, getStateValue } from '../utils/stateHelpers.js'
+import { operationFromDef } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
 
 const merge = <T, U>(left: T[], right: U | U[]) =>
   Array.isArray(right) ? [...left, ...right] : [...left, right]

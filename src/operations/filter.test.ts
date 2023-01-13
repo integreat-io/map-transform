@@ -1,8 +1,8 @@
 import test from 'ava'
-import { State } from '../types'
-import { identity } from '../utils/functional'
+import { State } from '../types.js'
+import { identity } from '../utils/functional.js'
 
-import filter from './filter'
+import filter from './filter.js'
 
 // Helpers
 

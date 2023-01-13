@@ -1,8 +1,8 @@
 /* eslint-disable security/detect-object-injection */
-import { Operands as BaseOperands, DataMapper, Options } from '../types'
-import xor from '../utils/xor'
-import { ensureArray } from '../utils/array'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { Operands as BaseOperands, DataMapper, Options } from '../types.js'
+import xor from '../utils/xor.js'
+import { ensureArray } from '../utils/array.js'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 interface Operands extends BaseOperands {
   path?: string | string[]

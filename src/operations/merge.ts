@@ -1,11 +1,11 @@
 import deepmerge = require('deepmerge')
-import { Operation, State, MapDefinition } from '../types'
+import { Operation, State, MapDefinition } from '../types.js'
 import {
   getStateValue,
   setStateValue,
   isNoneValueState,
-} from '../utils/stateHelpers'
-import { operationFromDef } from '../utils/definitionHelpers'
+} from '../utils/stateHelpers.js'
+import { operationFromDef } from '../utils/definitionHelpers.js'
 
 const isNullOrUndefined = (value: unknown): value is null | undefined =>
   value === null || value === undefined

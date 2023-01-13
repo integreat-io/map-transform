@@ -1,8 +1,8 @@
 import test from 'ava'
-import merge from '../operations/merge'
-import iterate from '../operations/iterate'
+import merge from '../operations/merge.js'
+import iterate from '../operations/iterate.js'
 
-import { mapTransform, value, set } from '..'
+import { mapTransform, value, set } from '../index.js'
 
 test('should map specified array over transform object', (t) => {
   const def = [

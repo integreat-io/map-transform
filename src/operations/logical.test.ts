@@ -1,9 +1,9 @@
 import test from 'ava'
-import compare from '../functions/compare'
-import { identity } from '../utils/functional'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import compare from '../functions/compare.js'
+import { identity } from '../utils/functional.js'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-import { and, or } from './logical'
+import { and, or } from './logical.js'
 
 // Setup
 

@@ -10,7 +10,7 @@ import {
   root,
   set,
   value,
-} from '..'
+} from '../index.js'
 
 // Tests
 

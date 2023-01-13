@@ -1,8 +1,8 @@
 import test from 'ava'
 import sinon = require('sinon')
-import { identity } from '../utils/functional'
+import { identity } from '../utils/functional.js'
 
-import transform from './transform'
+import transform from './transform.js'
 
 // Setup
 

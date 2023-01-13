@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import not from './not'
+import not from './not.js'
 
 // Setup
 

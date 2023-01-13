@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { explode, implode } from './explode'
+import { explode, implode } from './explode.js'
 
 // Setup
 

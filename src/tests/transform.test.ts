@@ -1,8 +1,8 @@
 import test from 'ava'
-import { Operands } from '../types'
-import { isObject } from '../utils/is'
+import { Operands } from '../types.js'
+import { isObject } from '../utils/is.js'
 
-import { mapTransform, transform, rev } from '..'
+import { mapTransform, transform, rev } from '../index.js'
 
 // Setup
 

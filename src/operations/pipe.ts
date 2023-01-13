@@ -1,13 +1,13 @@
-import { divide, fwd } from './directionals'
-import iterate from './iterate'
-import transform from './transform'
-import flatten from '../functions/flatten'
-import { MapPipe, Operation } from '../types'
-import { operationsFromDef } from '../utils/definitionHelpers'
-import { identity } from '../utils/functional'
-import { compose as composeFn, pipe as pipeFn } from '../utils/functional'
-import xor from '../utils/xor'
-import { setValueFromState } from '../utils/stateHelpers'
+import { divide, fwd } from './directionals.js'
+import iterate from './iterate.js'
+import transform from './transform.js'
+import flatten from '../functions/flatten.js'
+import { MapPipe, Operation } from '../types.js'
+import { operationsFromDef } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
+import { compose as composeFn, pipe as pipeFn } from '../utils/functional.js'
+import xor from '../utils/xor.js'
+import { setValueFromState } from '../utils/stateHelpers.js'
 
 // Run through a pipeline def and split up any paths with open array brackets
 // in the middle. The path after the brackets will be iterated along with the

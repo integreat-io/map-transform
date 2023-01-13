@@ -1,6 +1,15 @@
 import test from 'ava'
 
-import { mapTransform, get, set, fwd, rev, lookup, value, transform } from '..'
+import {
+  mapTransform,
+  get,
+  set,
+  fwd,
+  rev,
+  lookup,
+  value,
+  transform,
+} from '../index.js'
 
 // Setup
 

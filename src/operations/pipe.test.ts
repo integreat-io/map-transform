@@ -1,11 +1,11 @@
 import test from 'ava'
-import { MapPipe } from '../types'
-import { get, set } from './getSet'
-import transform from './transform'
-import value from './value'
-import { identity } from '../utils/functional'
+import { MapPipe } from '../types.js'
+import { get, set } from './getSet.js'
+import transform from './transform.js'
+import value from './value.js'
+import { identity } from '../utils/functional.js'
 
-import pipe from './pipe'
+import pipe from './pipe.js'
 
 // Setup
 

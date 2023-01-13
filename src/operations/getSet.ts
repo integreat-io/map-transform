@@ -7,12 +7,12 @@ import {
   setTargetOnState,
   getLastContext,
   getRootFromState,
-} from '../utils/stateHelpers'
-import { isObject } from '../utils/is'
-import { ensureArray, indexOfIfArray } from '../utils/array'
-import { compose, identity } from '../utils/functional'
-import { Path, Operation, State, StateMapper } from '../types'
-import xor from '../utils/xor'
+} from '../utils/stateHelpers.js'
+import { isObject } from '../utils/is.js'
+import { ensureArray, indexOfIfArray } from '../utils/array.js'
+import { compose, identity } from '../utils/functional.js'
+import { Path, Operation, State, StateMapper } from '../types.js'
+import xor from '../utils/xor.js'
 
 const adjustIsSet = (isSet: boolean, { rev = false, flip = false }: State) =>
   xor(isSet, xor(rev, flip))

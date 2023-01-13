@@ -1,13 +1,13 @@
-import { Operation, MapDefinition } from '../types'
+import { Operation, MapDefinition } from '../types.js'
 import {
   setStateValue,
   getLastContext,
   isNoneValueState,
   setValueFromState,
   removeLastContext,
-} from '../utils/stateHelpers'
-import { operationFromDef } from '../utils/definitionHelpers'
-import { identity } from '../utils/functional'
+} from '../utils/stateHelpers.js'
+import { operationFromDef } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
 
 const runAlt = (isOneMode: boolean) =>
   function runAlt(operation: Operation, index: number): Operation {

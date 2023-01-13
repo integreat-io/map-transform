@@ -1,5 +1,5 @@
-import { Operands, Path, DataMapper, Options } from '../types'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { Operands, Path, DataMapper, Options } from '../types.js'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 interface CompareOperands extends Operands {
   path?: Path | Path[]

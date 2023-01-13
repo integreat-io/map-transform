@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import index from './indexFn'
+import index from './indexFn.js'
 
 // Setup
 

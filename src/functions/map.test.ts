@@ -1,7 +1,7 @@
 import test from 'ava'
-import { Dictionary } from '../types'
+import { Dictionary } from '../types.js'
 
-import map from './map'
+import map from './map.js'
 
 // Setup
 

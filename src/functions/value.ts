@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Operands, DataMapper } from '../types'
+import { Operands, DataMapper } from '../types.js'
 
 interface Options extends Operands {
   value?: unknown

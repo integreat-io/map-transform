@@ -1,9 +1,9 @@
 import test from 'ava'
-import { isObject } from '../utils/is'
-import { set } from './getSet'
-import { identity } from '../utils/functional'
+import { isObject } from '../utils/is.js'
+import { set } from './getSet.js'
+import { identity } from '../utils/functional.js'
 
-import ifelse from './ifelse'
+import ifelse from './ifelse.js'
 
 // Setup
 

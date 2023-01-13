@@ -4,30 +4,33 @@ import {
   State,
   StateMapper,
   Options,
-} from './types'
-import { operationFromDef, defsToDataMapper } from './utils/definitionHelpers'
-import { populateState, getStateValue } from './utils/stateHelpers'
-import functions from './functions'
-import iterate from './operations/iterate'
-import { identity } from './utils/functional'
+} from './types.js'
+import {
+  operationFromDef,
+  defsToDataMapper,
+} from './utils/definitionHelpers.js'
+import { populateState, getStateValue } from './utils/stateHelpers.js'
+import functions from './functions/index.js'
+import iterate from './operations/iterate.js'
+import { identity } from './utils/functional.js'
 
-export { get, set } from './operations/getSet'
-export { default as root } from './operations/root'
-export { default as alt } from './operations/alt'
-export { default as apply } from './operations/apply'
-export { default as value } from './operations/value'
-export { default as fixed } from './operations/fixed'
-export { default as concat } from './operations/concat'
-export { default as validate } from './functions/validate'
-export { default as not } from './functions/not'
-export { default as plug } from './operations/plug'
-export { default as lookup } from './operations/lookup'
-export { default as transform } from './operations/transform'
-export { default as filter } from './operations/filter'
-export { default as ifelse } from './operations/ifelse'
-export { fwd, rev, divide } from './operations/directionals'
-export { default as merge } from './operations/merge'
-export { default as modify } from './operations/modify'
+export { get, set } from './operations/getSet.js'
+export { default as root } from './operations/root.js'
+export { default as alt } from './operations/alt.js'
+export { default as apply } from './operations/apply.js'
+export { default as value } from './operations/value.js'
+export { default as fixed } from './operations/fixed.js'
+export { default as concat } from './operations/concat.js'
+export { default as validate } from './functions/validate.js'
+export { default as not } from './functions/not.js'
+export { default as plug } from './operations/plug.js'
+export { default as lookup } from './operations/lookup.js'
+export { default as transform } from './operations/transform.js'
+export { default as filter } from './operations/filter.js'
+export { default as ifelse } from './operations/ifelse.js'
+export { fwd, rev, divide } from './operations/directionals.js'
+export { default as merge } from './operations/merge.js'
+export { default as modify } from './operations/modify.js'
 export { iterate, functions }
 export {
   CustomFunction,
@@ -43,7 +46,7 @@ export {
   FilterObject,
   ApplyObject,
   AltObject,
-} from './types'
+} from './types.js'
 
 const composeMapFunction = (
   mapFn: StateMapper,

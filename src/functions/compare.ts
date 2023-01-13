@@ -1,8 +1,8 @@
 import mapAny = require('map-any')
-import { Operands, Path, DataMapper, Options } from '../types'
-import { unescapeValue } from '../utils/escape'
-import { getRootFromState } from '../utils/stateHelpers'
-import { defsToDataMapper } from '../utils/definitionHelpers'
+import { Operands, Path, DataMapper, Options } from '../types.js'
+import { unescapeValue } from '../utils/escape.js'
+import { getRootFromState } from '../utils/stateHelpers.js'
+import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 interface Comparer {
   (value: unknown, match: unknown): boolean

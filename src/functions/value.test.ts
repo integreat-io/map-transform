@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { value, fixed } from './value'
+import { value, fixed } from './value.js'
 
 // Setup
 

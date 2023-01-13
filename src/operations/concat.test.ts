@@ -1,8 +1,8 @@
 import test from 'ava'
-import value from './value'
-import { identity } from '../utils/functional'
+import value from './value.js'
+import { identity } from '../utils/functional.js'
 
-import concat from './concat'
+import concat from './concat.js'
 
 // Setup
 

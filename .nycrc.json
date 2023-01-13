@@ -1,4 +1,0 @@
-{
-  "extension": [".ts", ".js"],
-  "exclude": ["**/*.test.js", "**/*.test.ts", "**/*.d.ts"]
-}

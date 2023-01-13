@@ -1,9 +1,9 @@
 import test from 'ava'
-import alt from './alt'
-import transform from './transform'
-import { identity } from '../utils/functional'
+import alt from './alt.js'
+import transform from './transform.js'
+import { identity } from '../utils/functional.js'
 
-import iterate from './iterate'
+import iterate from './iterate.js'
 
 // Setup
 

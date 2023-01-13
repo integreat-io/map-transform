@@ -1,8 +1,8 @@
 import test from 'ava'
-import { set } from './getSet'
-import { identity } from '../utils/functional'
+import { set } from './getSet.js'
+import { identity } from '../utils/functional.js'
 
-import apply from './apply'
+import apply from './apply.js'
 
 // Setup
 

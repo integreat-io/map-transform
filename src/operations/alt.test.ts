@@ -1,11 +1,11 @@
 import test from 'ava'
-import { get } from './getSet'
-import iterate from './iterate'
-import pipe from './pipe'
-import value from './value'
-import { identity } from '../utils/functional'
+import { get } from './getSet.js'
+import iterate from './iterate.js'
+import pipe from './pipe.js'
+import value from './value.js'
+import { identity } from '../utils/functional.js'
 
-import alt from './alt'
+import alt from './alt.js'
 
 // Helpers
 

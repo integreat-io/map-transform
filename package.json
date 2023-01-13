@@ -21,7 +21,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "npm run lint && npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.js",
+    "test": "npm run lint && npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.cjs",
     "test:inspect": "node --inspect node_modules/ava/profile.js",
     "test:watch": "npm run dev",
     "dev": "ava --watch",

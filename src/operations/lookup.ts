@@ -1,10 +1,21 @@
 import mapAny = require('map-any')
 import pipe from './pipe.js'
-import { Operation, State, Path, SimpleDataMapper } from '../types.js'
+import {
+  Operation,
+  State,
+  Path,
+  SimpleDataMapper,
+  Operands as BaseOperands,
+} from '../types.js'
 import { get } from './getSet.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { dataMapperFromOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
+
+export interface Operands extends BaseOperands {
+  arrayPath: Path
+  propPath: Path
+}
 
 const matchPropInArray =
   (getProp: SimpleDataMapper) =>
@@ -24,7 +35,7 @@ const mapValue = (getArray: Operation, getProp: SimpleDataMapper) => {
   }
 }
 
-export default function lookup(arrayPath: Path, propPath: Path): Operation {
+export default function lookup({ arrayPath, propPath }: Operands): Operation {
   return () => (next) => {
     const getter = dataMapperFromOperation(pipe(get(propPath)))
     const mapValueFn = mapValue(pipe([arrayPath]), getter)

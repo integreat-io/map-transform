@@ -34,7 +34,7 @@ import alt from '../operations/alt.js'
 import { fwd, rev } from '../operations/directionals.js'
 import { and, or } from '../operations/logical.js'
 import concat from '../operations/concat.js'
-import lookup from '../operations/lookup.js'
+import lookup, { Operands as LookupOperands } from '../operations/lookup.js'
 import pipe from '../operations/pipe.js'
 import { unescapeValue } from './escape.js'
 
@@ -173,12 +173,12 @@ const createPipelineOperation = (
 }
 
 const createLookupOperation = (
-  operationFn: (arrayPath: Path, propPath: Path) => Operation,
+  operationFn: (operands: LookupOperands) => Operation,
   def: LookupObject
 ) => {
   const arrayPath = def.$lookup
   const propPath = def.path
-  return wrapFromDefinition(operationFn(arrayPath, propPath), def)
+  return wrapFromDefinition(operationFn({ arrayPath, propPath }), def)
 }
 
 const operationFromObject = (def: OperationObject | MapObject) => {

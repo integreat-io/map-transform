@@ -365,7 +365,10 @@ test('should skip transform object when $direction is fwdAlias', (t) => {
 test('should treat lookup as get in reverse', (t) => {
   const def = {
     title: 'content.heading',
-    authors: ['content.authors[]', lookup('^meta.users[]', 'id')],
+    authors: [
+      'content.authors[]',
+      lookup({ arrayPath: '^meta.users[]', propPath: 'id' }),
+    ],
   }
   const data = {
     title: 'The heading',

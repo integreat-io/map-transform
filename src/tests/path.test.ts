@@ -338,7 +338,11 @@ test('should set on array index when iterating to an array prop', (t) => {
 test('should map with lookup', (t) => {
   const def = {
     title: 'content.heading',
-    authors: ['content.authors[]', lookup('^^meta.users[]', 'id'), get('name')],
+    authors: [
+      'content.authors[]',
+      lookup({ arrayPath: '^^meta.users[]', propPath: 'id' }),
+      get('name'),
+    ],
   }
   const data = {
     content: { heading: 'The heading', authors: ['user1', 'user3'] },

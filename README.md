@@ -1039,7 +1039,7 @@ The solution is to plug it in the other direction.
 You could have accomplished the same with `value(undefined)`, but this will not
 work for `onlyMappedValues()`. `plug()` will do its trick in all cases.
 
-#### `lookup(arrayPath, propPath)` operation
+#### `lookup({ arrayPath, propPath })` operation
 
 `lookup()` will take the value in the pipeline and replace it with the first
 object in the `arrayPath` array with a value in `propPath` matching the value.
@@ -1051,7 +1051,10 @@ reverse.)
 Example:
 
 ```javascript
-const def18 = ['content.meta.authors[]', lookup('$users[]', 'id')]
+const def18 = [
+  'content.meta.authors[]',
+  lookup({ arrayPath: '$users[]', propPath: 'id' }),
+]
 const data = {
   content: { meta: { authors: ['user1', 'user3'] } },
   users: [

@@ -176,9 +176,11 @@ const createLookupOperation = (
   operationFn: (operands: LookupOperands) => Operation,
   def: LookupObject
 ) => {
-  const arrayPath = def.$lookup
-  const propPath = def.path
-  return wrapFromDefinition(operationFn({ arrayPath, propPath }), def)
+  const { $lookup: arrayPath, path: propPath, ...operands } = def
+  return wrapFromDefinition(
+    operationFn({ ...operands, arrayPath, propPath }),
+    def
+  )
 }
 
 const operationFromObject = (def: OperationObject | MapObject) => {

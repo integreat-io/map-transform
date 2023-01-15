@@ -1039,10 +1039,13 @@ The solution is to plug it in the other direction.
 You could have accomplished the same with `value(undefined)`, but this will not
 work for `onlyMappedValues()`. `plug()` will do its trick in all cases.
 
-#### `lookup({ arrayPath, propPath })` operation
+#### `lookup({ arrayPath, propPath, matchSeveral })` operation
 
 `lookup()` will take the value in the pipeline and replace it with the first
 object in the `arrayPath` array with a value in `propPath` matching the value.
+
+When `matchSeveral` is `true`, all matches – not only the first – will be
+returned. Default is `false`.
 
 In reverse, the `propPath` will simply be used as a get path. (In the future,
 MapTransform might support setting the items back on the `arrayPath` in

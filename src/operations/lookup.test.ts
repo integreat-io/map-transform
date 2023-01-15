@@ -8,7 +8,7 @@ import lookup from './lookup.js'
 const operands = { arrayPath: '^related.users[]', propPath: 'id' }
 const options = {}
 
-// Tests
+// Tests -- forward
 
 test('should lookup data', (t) => {
   const data = {
@@ -62,6 +62,63 @@ test('should lookup array of data', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should match only first of several matches', (t) => {
+  const data = {
+    content: { authors: ['user1', 'user3'] },
+    related: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+        { id: 'user3', name: 'User 3' },
+        { id: 'user3', name: 'Another 3' },
+        { id: 'user1', name: 'User 1 also' },
+      ],
+    },
+  }
+  const state = {
+    context: [data],
+    value: ['user1', 'user3'],
+  }
+  const expectedValue = [
+    { id: 'user1', name: 'User 1' },
+    { id: 'user3', name: 'User 3' },
+  ]
+
+  const ret = lookup(operands)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should match several matches when `matchSeveral` is true', (t) => {
+  const operandsMatchSeveral = { ...operands, matchSeveral: true }
+  const data = {
+    content: { authors: ['user1', 'user3'] },
+    related: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+        { id: 'user3', name: 'User 3' },
+        { id: 'user3', name: 'Another 3' },
+        { id: 'user1', name: 'User 1 also' },
+      ],
+    },
+  }
+  const state = {
+    context: [data],
+    value: ['user1', 'user3'],
+  }
+  const expectedValue = [
+    { id: 'user1', name: 'User 1' },
+    { id: 'user1', name: 'User 1 also' },
+    { id: 'user3', name: 'User 3' },
+    { id: 'user3', name: 'Another 3' },
+  ]
+
+  const ret = lookup(operandsMatchSeveral)(options)(identity)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should set value to undefined when missing array', (t) => {
   const data = {
     content: { author: 'user2' },
@@ -95,6 +152,8 @@ test('should set value to undefined when no match', (t) => {
 
   t.is(ret.value, undefined)
 })
+
+// Tests -- reverse
 
 test('should get lookup prop in reverse', (t) => {
   const data = { id: 'user2', name: 'User 2' }

@@ -15,16 +15,28 @@ import { identity } from '../utils/functional.js'
 export interface Operands extends BaseOperands {
   arrayPath: Path
   propPath: Path
+  matchSeveral?: boolean
 }
 
+const FLATTEN_DEPTH = 1
+
+const flattenIfArray = (data: unknown) =>
+  Array.isArray(data) ? data.flat(FLATTEN_DEPTH) : data
+
 const matchPropInArray =
-  (getProp: SimpleDataMapper) =>
+  (getProp: SimpleDataMapper, matchSeveral: boolean) =>
   (arr: unknown[]) =>
   (value: string | number | boolean | null) =>
-    arr.find((obj) => getProp(obj) === value)
+    matchSeveral
+      ? arr.filter((obj) => getProp(obj) === value)
+      : arr.find((obj) => getProp(obj) === value)
 
-const mapValue = (getArray: Operation, getProp: SimpleDataMapper) => {
-  const matchInArray = matchPropInArray(getProp)
+const mapValue = (
+  getArray: Operation,
+  getProp: SimpleDataMapper,
+  matchSeveral: boolean
+) => {
+  const matchInArray = matchPropInArray(getProp, matchSeveral)
   return (state: State) => {
     if (state.rev) {
       return getProp
@@ -35,17 +47,19 @@ const mapValue = (getArray: Operation, getProp: SimpleDataMapper) => {
   }
 }
 
-export default function lookup({ arrayPath, propPath }: Operands): Operation {
+export default function lookup({
+  arrayPath,
+  propPath,
+  matchSeveral = false,
+}: Operands): Operation {
   return () => (next) => {
     const getter = dataMapperFromOperation(pipe(get(propPath)))
-    const mapValueFn = mapValue(pipe([arrayPath]), getter)
+    const mapValueFn = mapValue(pipe([arrayPath]), getter, matchSeveral)
 
     return function doLookup(state) {
       const nextState = next(state)
-      return setStateValue(
-        nextState,
-        mapAny(mapValueFn(nextState), getStateValue(nextState))
-      )
+      const matches = mapAny(mapValueFn(nextState), getStateValue(nextState))
+      return setStateValue(nextState, flattenIfArray(matches))
     }
   }
 }

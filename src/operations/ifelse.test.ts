@@ -1,4 +1,5 @@
 import test from 'ava'
+import sinon from 'sinon'
 import { isObject } from '../utils/is.js'
 import { set } from './getSet.js'
 import { identity } from '../utils/functional.js'
@@ -169,4 +170,18 @@ test('should run falsePipeline with pipeline as condition', (t) => {
   )(state)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+test('should run next only once', (t) => {
+  const next = sinon.stub().returnsArg(0)
+  const conditionFn = (data: unknown) => isObject(data) && data.active
+  const data = { active: true }
+  const state = {
+    context: [],
+    value: data,
+  }
+
+  ifelse(conditionFn, truePipeline, falsePipeline)(options)(next)(state)
+
+  t.is(next.callCount, 1)
 })

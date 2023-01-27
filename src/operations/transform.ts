@@ -14,6 +14,7 @@ export default function transform(
     typeof revFn === 'function' ? callTransformFn(revFn) : fwdTransform
 
   return (_options) => (next) => (state) => {
-    return state.rev ? revTransform(next(state)) : fwdTransform(next(state))
+    const nextState = next(state)
+    return state.rev ? revTransform(nextState) : fwdTransform(nextState)
   }
 }

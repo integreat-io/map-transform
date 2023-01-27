@@ -87,7 +87,7 @@ export interface AltObject extends Operands {
 }
 
 export interface ValueObject extends Operands {
-  $value: string
+  $value: unknown
   $iterate?: boolean
   $direction?: string
 }

@@ -485,6 +485,90 @@ test('should map with root operation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should provide root in $if condition', (t) => {
+  const def = {
+    $modify: true,
+    response: {
+      $modify: 'response',
+      data: [
+        'response.data[]',
+        {
+          $if: '^^payload.onlyKnownEntries', // This should get false and skip filter
+          then: {
+            $filter: 'compare',
+            path: 'id',
+            operator: 'in',
+            match: ['ent1', 'ent4'],
+          },
+        },
+      ],
+    },
+  }
+  const data = {
+    type: 'GET',
+    payload: {
+      type: 'event',
+      onlyKnownEntries: false,
+    },
+    response: {
+      status: 'ok',
+      data: [
+        { id: 'ent1', $type: 'entry' },
+        { id: 'ent2', $type: 'entry' },
+        { id: 'ent3', $type: 'entry' },
+        { id: 'ent4', $type: 'entry' },
+      ],
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = data
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test.skip('should use root as $transform path', (t) => {
+  const def = {
+    $modify: true,
+    response: {
+      $modify: 'response',
+      data: [
+        'response.data[]',
+        {
+          $iterate: true,
+          $modify: true,
+          itemType: {
+            $transform: 'get',
+            path: '^^payload.type',
+          },
+        },
+      ],
+    },
+  }
+  const data = {
+    type: 'GET',
+    payload: {
+      type: 'event',
+    },
+    response: {
+      status: 'ok',
+      data: [
+        { id: 'ent1', $type: 'entry', itemType: 'event' },
+        { id: 'ent2', $type: 'entry', itemType: 'event' },
+        { id: 'ent3', $type: 'entry', itemType: 'event' },
+        { id: 'ent4', $type: 'entry', itemType: 'event' },
+      ],
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = data
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not map fields without pipeline', (t) => {
   const def = {
     title: null,

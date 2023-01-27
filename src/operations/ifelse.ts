@@ -1,6 +1,7 @@
 import { DataMapper, MapDefinition, Operation } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { operationFromDef } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
 
 function runCondition(conditionDef: DataMapper): Operation {
   return () => (next) => (state) => {
@@ -28,13 +29,14 @@ export default function (
   const trueFn = operationFromDef(trueDef)
 
   return (options) => (next) => {
-    const runCondition = conditionFn(options)(next)
-    const runTrue = trueFn(options)(next)
-    const runFalse = falseFn(options)(next)
+    const runCondition = conditionFn(options)(identity)
+    const runTrue = trueFn(options)(identity)
+    const runFalse = falseFn(options)(identity)
 
     return (state) => {
-      const bool = getStateValue(runCondition(state))
-      return bool ? runTrue(state) : runFalse(state)
+      const nextState = next(state)
+      const bool = getStateValue(runCondition(nextState))
+      return bool ? runTrue(nextState) : runFalse(nextState)
     }
   }
 }

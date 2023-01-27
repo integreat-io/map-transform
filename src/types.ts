@@ -44,7 +44,7 @@ export interface State {
 }
 
 export interface Options {
-  functions?: {
+  transformers?: {
     [key: string]: CustomFunction
   }
   pipelines?: {

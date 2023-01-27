@@ -13,8 +13,8 @@ Behind this boring name hides a powerful object transformer.
 Some highlighted features:
 
 - You pretty much define the transformation by creating the JavaScript object
-  you want as a result, setting paths and transformation functions, etc. where
-  they apply.
+  you want as a result, setting paths and transform functions (transformers)
+  etc. where they apply.
 - There's a concept of a transform pipeline, that your data is passed through,
   and you define pipelines anywhere you'd like on the target object.
 - By defining a mapping from one object to another, you have at the same time
@@ -104,7 +104,7 @@ const { mapTransform, transform } = require('map-transform')
 
 // ....
 
-// Write a transform function, that accepts a value and returns a value
+// Write a transformer, that accepts a value and returns a value
 const msToDate = (ms) => new Date(ms).toISOString()
 
 const def3 = [
@@ -124,7 +124,7 @@ const target3 = mapTransform(def3)(source)
 // }
 
 // You may also reverse this, as long as you write a reverse version of
-// `msToDate` and provide as a second argument to the `trasform()` function.
+// `msToDate` and provide as a second argument to the `transform()` function.
 ```
 
 ... and so on.
@@ -381,7 +381,7 @@ const def6 = [
 ```
 
 (Note that in this example, both `maxLength` and `onlyItemsWithSection` are
-custom functions for this case, but their implementations are not provided.)
+custom transformers for this case, but their implementations are not provided.)
 
 **A note on arrays:** In a transform pipeline, the default behavior is to treat
 an array as any other data. The array will be passed on to a `transform()`
@@ -394,22 +394,20 @@ also [the `iterate` operation](#iteratepipeline-operation) for more.
 #### `transform(transformFn, transformFnRev)` operation
 
 The simple beauty of the `transform()` operation, is that it will apply whatever
-function you provide it with to the data at that point in the pipeline. It's
-completely up to you to write the function that does the transformation.
+function (transformer) you provide it with to the data at that point in the
+pipeline. It's up to you to write the function that does the transformation.
 
-You may supply a second function (`transformFnRev`), that will be used when
-[reverse mapping](#reverse-mapping). If you only supplies one function, it will
-be used in both directions. You may supply `null` for either of these, to make
-it uni-directional, but it might be clearer to use `fwd()` or `rev()` operations
-for this.
+You may supply a second transformer (`transformFnRev`), that will be used when
+[reverse mapping](#reverse-mapping). If you only supplies one transformer, it
+will be used in both directions. You may supply `null` for either of these, to
+make it uni-directional, but it might be clearer to use `fwd()` or `rev()`
+operations for this.
 
-The functions you write for the transform operation should accept the source
+The transformers you write for the transform operation should accept the source
 data as its only argument, and return the result of the relevant transformation.
 The data may be an object, a string, a number, a boolean, or an array of these.
-It's really just up to you to write the appropriate function and use it at the
-right place in a transform pipeline.
 
-A simple transform function could, for instance, try to parse an integer from
+A simple transformer could, for instance, try to parse an integer from
 whatever you give it. This would be very useful in the pipeline for a property
 expecting numeric values, but MapTransform would not protest should you use it
 on an object. You would probably just not get the end result you expected.
@@ -438,7 +436,7 @@ mapTransform(def7)(data)
 This is also a good example of a transformation that only makes sense in one
 direction. This will still work in reverse, ending in almost the same object
 that was provided, but with a numeric `view` property. You may supply a
-reverse transform function called `ensureString`, if it makes sense in your
+reverse transformer called `ensureString`, if it makes sense in your
 particular case.
 
 The functions you provide for the transform operation are expected to be pure,
@@ -476,7 +474,7 @@ You may also define a transform operation as an object:
 import { mapTransform } from 'map-transform'
 
 const ensureInteger = (operands) => (data) => Number.parseInt(data, 10) || 0
-const functions = { ensureInteger }
+const transformers = { ensureInteger }
 const def7asObject = {
   count: ['statistics.views', { $transform: 'ensureInteger' }],
 }
@@ -488,14 +486,14 @@ const data = {
   },
 }
 
-mapTransform(def7asObject, { functions })(data)
+mapTransform(def7asObject, { transformers })(data)
 // --> {
 //   count: 18
 // }
 ```
 
-Note that the function itself is passed on the `functions` object. When
-you provide the custom function this way, it should be given as a function
+Note that the function itself is passed on the `transformer` object. When
+you provide the custom transformer this way, it should be given as a function
 accepting an object with operands / arguments, that returns the actual function
 used in the transform. Any properties given on the operation object, apart from
 `$transform`, will be passed in the `operands` object.
@@ -508,23 +506,24 @@ if an array is encountered. You may also set `$direction: 'fwd'` or
 #### `filter(conditionFn)` operation
 
 Just like the transform operation, the filter operation will apply whatever
-function you give it to the data at that point in the transform pipeline, but
-instead of transformed data, you return a boolean value indicating whether to
-keep the data or not. If you return `true` the data continues through the
-pipeline, if you return `false` it is removed.
+transformer function you give it to the data at that point in the transform
+pipeline, but instead of transformed data, you return a boolean value indicating
+whether to keep the data or not. If you return `true` the data continues through
+the pipeline, if you return `false` it is removed.
 
-When filtering an array, the function is applied to each data item in the array,
-like a normal filter function, and a new array with only the items that your
-function returns `true` for. For data that is not in an array, a `false` value
-from your function will simply mean that it is replaced with `undefined`.
+When filtering an array, the transformer is applied to each data item in the
+array, like a normal filter function, and a new array with only the items that
+your transformer returns `true` for. For data that is not in an array, a `false`
+value from your transformer will simply mean that it is replaced with
+`undefined`.
 
 The filter operation only accepts one argument, which is applied in both
 directions through the pipeline. You'll have to use `fwd()` or `rev()`
 operations to make it uni-directional.
 
-Functions passed to the filter operation, should also be pure, but could, when
-it is expected and absolutely necessary, rely on states outside the function.
-See the explanation of this under the transform operation above.
+Transformer unctions passed to the filter operation, should also be pure, but
+could, when it is expected and absolutely necessary, rely on states outside the
+function. See the explanation of this under the transform operation above.
 
 Example of a filter, where only data of active members are returned:
 
@@ -548,7 +547,7 @@ Defining a filter operation as an object:
 import { mapTransform } from 'map-transform'
 
 const onlyActives = (data) => data.active
-const functions = { onlyActives }
+const transformers = { onlyActives }
 const def9asObject = [
   'members'
   {
@@ -623,7 +622,7 @@ When iterating, the state's `context` will iterate as well, to support `alt`
 operations etc. that need to access the corresponding item in the context.
 
 In this example, each value in the array returned by `statistics[].views` will
-be transformed with the `ensureInteger` function, even if the function does not
+be transformed with the `ensureInteger` transformer, even if the function does not
 support arrays:
 
 ```javascript
@@ -758,8 +757,8 @@ not an `undefined` value. To provide the `alt` operation to every item in the
 array, use the `iterate` operation.
 
 ```javascript
-import { alt, transform, functions } from 'map-transform'
-const { value } = functions
+import { alt, transform, transformers } from 'map-transform'
+const { value } = transformers
 const currentDate = (data) => new Date()
 const formatDate = (data) => {
   /* implementation not included */
@@ -778,10 +777,10 @@ const def11 = {
 In the example above, we first try to set the `updatedAt` prop to the data found
 at `data.updateDate` in the source data. If that does not exist (i.e. we get
 `undefined`), the alt operation kicks in and try the path `data.createDate`. If
-we still have `undefined`, the second alt will call the customer function
+we still have `undefined`, the second alt will call the custom transformer
 `currentDate`, that simply returns the current date as a JS object. Finally,
 another transform operation pipes whatever data we get from all of this through
-the `formatDate` function.
+the `formatDate` transformer.
 
 When `alt` is run in reverse, the alternative pipelines are run in the oposite
 order, with the last being run first. The first pipeline is always run, though,
@@ -1121,9 +1120,9 @@ const def37 = [
 ]
 ```
 
-#### `compare({ path, operator, match, matchPath, not })` function
+#### `compare({ path, operator, match, matchPath, not })` transformer
 
-This is a helper function intended for use with the `filter()` operation. You
+This is a transformer intended for use with the `filter()` operation. You
 pass a dot notation `path` and a `match` value (string, number, boolean) to
 `compare()`, and it returns a function that you can pass to `filter()` for
 filtering away data that does not not have the value set at the provided path.
@@ -1146,8 +1145,8 @@ Set `not` to `true` to reverse the result of the comparison.
 Here's an example where only data where role is set to 'admin' will be kept:
 
 ```javascript
-import { filter, functions } from 'map-transform'
-const { compare } = functions
+import { filter, transformers } from 'map-transform'
+const { compare } = transformers
 
 const def19 = [
   {
@@ -1170,14 +1169,14 @@ const def19o = [
 ]
 ```
 
-When you define the `compare` function as a transform object in JSON and need to
-compare to `undefined`, use `**undefined**` instead.
+When you define the `compare` transformer as a transform object in JSON and need
+to compare to `undefined`, use `**undefined**` instead.
 
-#### `explode()` function
+#### `explode()` transformer
 
-Given an object, the `explode` helper function will return an array with one
-object for each property in the source object, with a `key` property for the
-property key, and a `value` property for the value.
+Given an object, the `explode` transformer will return an array with one object
+for each property in the source object, with a `key` property for the property
+key, and a `value` property for the value.
 
 When given an array, the `explode` helper will return on object for every item
 in the array, with a `key` property set to the index number in the source array
@@ -1191,8 +1190,8 @@ structure will be skipped.
 Example:
 
 ```javascript
-import { mapTransform, transform, functions } from 'map-transform'
-const { explode } = functions
+import { mapTransform, transform, transformers } from 'map-transform'
+const { explode } = transformers
 
 const data = {
   currencies: { NOK: 1, USD: 0.125, EUR: 0.1 },
@@ -1211,26 +1210,26 @@ Or as a transform object:
 const def32o = ['currencies', { $transform: 'explode' }]
 ```
 
-### `flatten({ depth })` function
+### `flatten({ depth })` transformer
 
 Will flatten an array the number of depths given by `depth`. Default depth is
 `1`.
 
-### `index()` function
+### `index()` transformer
 
 When iterating, this will return the index of the current item in the array.
 When used outside of an iteration, it always returns `0`.
 
-#### `implode()` function
+#### `implode()` transformer
 
 This is the exact opposite of the `explode` helper, imploding from a service and
 explode in reverse (to a service). See
-[the documentation for `explode()`](#explode-function), but remember that the
+[the documentation for `explode()`](#explode-transformer), but remember that the
 directions will be reversed for `implode()`.
 
-#### `map(dictionary)` function
+#### `map(dictionary)` transformer
 
-This helper function accepts a dictionary described as an array of tuples, where
+This transformer accepts a dictionary described as an array of tuples, where
 each tuple holds a from value and a to value. When a data value is given to the
 `map` helper, it is replaced with a value from the dictionary. For a forward
 transformation, the first value in the tuple will be matched with the given
@@ -1241,7 +1240,7 @@ The wildcard value `*` will match any value, and is applied if there is no other
 match in the dictionary. When the returned value is `*`, the original data value
 is returned instead.
 
-The `map` function only supports primitive values, so any object will be mapped to
+The `map` transformer only supports primitive values, so any object will be mapped to
 `undefined` or the value given by the wildcard in the dictionary. Arrays will be
 iterated to map each value in the array. To map to or from `undefined` with a
 dictionary defined in JSON, use the value `**undefined**`.
@@ -1249,8 +1248,8 @@ dictionary defined in JSON, use the value `**undefined**`.
 Example:
 
 ```
-import { transform, functions } from 'map-transform'
-const { map } = functions
+import { transform, transformers } from 'map-transform'
+const { map } = transformers
 
 const dictionary = [
   [200, 'ok'],
@@ -1286,9 +1285,9 @@ const def29 = {
 const mapper = mapTransform(def29, { dictionaries: { statusCodes: dictionary } })
 ```
 
-#### `sort({asc, path})` function
+#### `sort({asc, path})` transformer
 
-The `sort` helper function will sort the given array of items in ascending or
+The `sort` transformer will sort the given array of items in ascending or
 descending (depending on whether `asc` is `true` or `false`). Ascending is the
 default. When a `path` is given, the sort is performed on the value at that path
 on each object in the array. With no `path`, the values in the array are sorted
@@ -1297,8 +1296,8 @@ directly.
 Example:
 
 ```javascript
-import { mapTransform, transform, functions } from 'map-transform'
-const { sort } = functions
+import { mapTransform, transform, transformers } from 'map-transform'
+const { sort } = transformers
 
 const data = {
   items: [{ id: 'ent5' }, { id: 'ent1' }, { id: 'ent3' }],
@@ -1312,7 +1311,7 @@ const ret = mapTransform(def35)(data)
 // --> { caption: 'Bergen by night. By John F.' }
 ```
 
-The `sort` function is also available through a transform object:
+The `sort` transformer is also available through a transform object:
 
 ```javascript
 const def35o = {
@@ -1320,20 +1319,20 @@ const def35o = {
 }
 ```
 
-#### `template(template)` function
+#### `template(template)` transformer
 
-The `template` helper function takes a [handlebars] template and applies the
-given data to it. The placeholders in the template is dot notaion paths to
-fields in the given data. A simple dot (`.`) refers to the data itself, and may
-be useful when the pipeline data is a string.
+The `template` transformer takes a [handlebars] template and applies the given
+data to it. The placeholders in the template is dot notaion paths to fields in
+the given data. A simple dot (`.`) refers to the data itself, and may be useful
+when the pipeline data is a string.
 
 Values will be forced to strings before being inserted in the template.
 
 Example:
 
 ```javascript
-import { mapTransform, transform, functions } from 'map-transform'
-const { template } = functions
+import { mapTransform, transform, transformers } from 'map-transform'
+const { template } = transformers
 
 const data = {
   content: { description: 'Bergen by night', artist: 'John F.' },
@@ -1347,7 +1346,7 @@ const ret = mapTransform(def30)(data)
 // --> { caption: 'Bergen by night. By John F.' }
 ```
 
-The `template` function is also available through a transform object:
+The `template` transformer is also available through a transform object:
 
 ```javascript
 const def30o = {
@@ -1364,9 +1363,9 @@ using the transform object format, this is as simple as it sounds. With the
 function version, you supply an operand object to `template()` like this:
 `transform(template({ templatePath: 'options.captionTemplate' }))`.
 
-#### `validate(path, schema)` function
+#### `validate(path, schema)` transformer
 
-This is a helper function for validating the value at the path against a
+This is a transformer for validating the value at the path against a
 [JSON Schema](http://json-schema.org). We won't go into details of JSON Schema
 here, and the `validate()` helper simply retrieves the value at the path and
 validates it according to the provided schema.
@@ -1375,8 +1374,8 @@ Note that if you provide a schema that is always valid, it will be valid even
 when the data has no value at the given path.
 
 ```javascript
-import { filter, functions } from 'map-transform'
-const { validate } = functions
+import { filter, transformers } from 'map-transform'
+const { validate } = transformers
 
 const def20 = [
   'items',
@@ -1387,17 +1386,17 @@ const def20 = [
 ]
 ```
 
-#### `not(value)` function
+#### `not(value)` transformer
 
 `not()` will return `false` when value if truthy and `true` when value is falsy.
 This is useful for making the `filter()` operation do the opposite of what the
-filter function implies.
+filter transformer implies.
 
 Here we filter away all data where role is set to 'admin':
 
 ```javascript
-import { filter, functions } from 'map-transform'
-const { compare } = functions
+import { filter, transformers } from 'map-transform'
+const { compare } = transformers
 
 const def21 = [
   {

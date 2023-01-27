@@ -46,7 +46,7 @@ const appendEllipsis = (str: unknown) =>
 const getLength = () => (str: unknown) =>
   typeof str === 'string' ? str.length : -1
 
-const functions = {
+const transformers = {
   appendToTitle,
   getLength,
 }
@@ -75,7 +75,7 @@ test('should map simple object with one transform function', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map simple object with several transform functions', (t) => {
+test('should map simple object with several transforms', (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -196,7 +196,7 @@ test('should transform before mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform functions from left to right', (t) => {
+test('should apply transforms from left to right', (t) => {
   const def = [
     {
       titleLength: [
@@ -231,7 +231,7 @@ test('should apply transform from an operation object', (t) => {
     titleLength: 11,
   }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -252,7 +252,7 @@ test('should interate transform from an operation object', (t) => {
     titleLengths: [11, 16],
   }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -271,7 +271,7 @@ test('should apply transform from an operation object with arguments', (t) => {
     title: 'The heading - archived',
   }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -293,7 +293,7 @@ test('should skip unknown customer function', (t) => {
     titleLength: 11,
   }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -308,7 +308,7 @@ test('should use built in join function', (t) => {
   const data = { content: { heading: 'The heading', meta: { user: 'johnf' } } }
   const expected = { title: 'The heading - johnf' }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -320,7 +320,7 @@ test('should use built in get function', (t) => {
   const data = { content: { heading: 'The heading', meta: { user: 'johnf' } } }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -332,7 +332,7 @@ test('should use built in fixed function', (t) => {
   const data = { content: { heading: 'The heading' } }
   const expected = { title: "I'm always here" }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -347,7 +347,7 @@ test('should use built in fixed function with value function', (t) => {
   const data = { content: { heading: 'The heading' } }
   const expected = { title: "I'm from the function!" }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -359,7 +359,7 @@ test('should use built in fixed function in reverse', (t) => {
   const data = { title: 'The heading' }
   const expected = { content: "I'm always here" }
 
-  const ret = mapTransform(def, { functions }).rev(data)
+  const ret = mapTransform(def, { transformers }).rev(data)
 
   t.deepEqual(ret, expected)
 })
@@ -381,7 +381,7 @@ test('should use built in map function', (t) => {
   const data = { status: 404 }
   const expected = { result: 'notfound' }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -406,7 +406,7 @@ test('should use built in map function with named dictionary', (t) => {
   const data = { status: 404 }
   const expected = { result: 'notfound' }
 
-  const ret = mapTransform(def, { functions, dictionaries })(data)
+  const ret = mapTransform(def, { transformers, dictionaries })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -494,8 +494,8 @@ test('should only use transform going forward', (t) => {
   const expectedFwd = { title: "I'm always here" }
   const expectedRev = { content: undefined }
 
-  const retFwd = mapTransform(def, { functions })(data)
-  const retRev = mapTransform(def, { functions }).rev(data)
+  const retFwd = mapTransform(def, { transformers })(data)
+  const retRev = mapTransform(def, { transformers }).rev(data)
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -512,8 +512,8 @@ test('should only use transform going in reverse', (t) => {
   const expectedFwd = { title: undefined }
   const expectedRev = { content: "I'm always here" }
 
-  const retFwd = mapTransform(def, { functions })(data)
-  const retRev = mapTransform(def, { functions }).rev(data)
+  const retFwd = mapTransform(def, { transformers })(data)
+  const retRev = mapTransform(def, { transformers }).rev(data)
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -541,7 +541,7 @@ test('should apply transform function to array', (t) => {
     { title: 'The other - maryk' },
   ]
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -564,7 +564,7 @@ test('should provide index when iterating', (t) => {
     { title: 'The other', sequence: 1 },
   ]
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -598,7 +598,7 @@ test('should provide index deep down when iterating', (t) => {
     { title: 'The other', meta: { sectionId: 'sports-1' } },
   ]
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -634,7 +634,7 @@ test('should provide index through apply when iterating', (t) => {
   ]
 
   const ret = mapTransform(def, {
-    functions,
+    transformers,
     pipelines: { sectionId: sectionIdDef },
   })(data)
 
@@ -659,7 +659,7 @@ test('should provide index when iterating in reverse', (t) => {
     ],
   }
 
-  const ret = mapTransform(def, { functions }).rev(data)
+  const ret = mapTransform(def, { transformers }).rev(data)
 
   t.deepEqual(ret, expected)
 })
@@ -678,7 +678,7 @@ test('should do nothing when transform operation has unknown function', (t) => {
 
   const expected = [{ title: 'The heading' }, { title: 'The other' }]
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -694,7 +694,7 @@ test('should support $value shorthand', (t) => {
     title: 'Default title',
   }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -731,7 +731,7 @@ test('should do nothing when transform operation has invalid function id', (t) =
   const expected = [{ title: 'The heading' }, { title: 'The other' }]
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ret = mapTransform(def as any, { functions })(data)
+  const ret = mapTransform(def as any, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })

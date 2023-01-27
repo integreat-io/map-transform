@@ -111,7 +111,7 @@ const createOperation =
   (options) =>
   (next) => {
     const { [fnProp]: fnId, ...operands } = def
-    const fn = options.functions && options.functions[fnId as string]
+    const fn = options.transformers && options.transformers[fnId as string]
     return typeof fn === 'function'
       ? wrapFromDefinition(operationFn(fn(operands, options)), def)(options)(
           next

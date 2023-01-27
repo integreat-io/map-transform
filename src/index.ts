@@ -10,7 +10,7 @@ import {
   defsToDataMapper,
 } from './utils/definitionHelpers.js'
 import { populateState, getStateValue } from './utils/stateHelpers.js'
-import functions from './functions/index.js'
+import transformers from './transformers/index.js'
 import iterate from './operations/iterate.js'
 import { identity } from './utils/functional.js'
 
@@ -21,8 +21,8 @@ export { default as apply } from './operations/apply.js'
 export { default as value } from './operations/value.js'
 export { default as fixed } from './operations/fixed.js'
 export { default as concat } from './operations/concat.js'
-export { default as validate } from './functions/validate.js'
-export { default as not } from './functions/not.js'
+export { default as validate } from './transformers/validate.js'
+export { default as not } from './transformers/not.js'
 export { default as plug } from './operations/plug.js'
 export { default as lookup } from './operations/lookup.js'
 export { default as transform } from './operations/transform.js'
@@ -31,7 +31,7 @@ export { default as ifelse } from './operations/ifelse.js'
 export { fwd, rev, divide } from './operations/directionals.js'
 export { default as merge } from './operations/merge.js'
 export { default as modify } from './operations/modify.js'
-export { iterate, functions }
+export { iterate, transformers }
 export {
   CustomFunction,
   DataMapper,
@@ -60,9 +60,9 @@ const composeMapFunction = (
 
 const mergeOptions = (options: Options) => ({
   ...options,
-  functions: {
-    ...functions,
-    ...(options.functions || {}),
+  transformers: {
+    ...transformers,
+    ...(options.transformers || {}),
   },
   defsToDataMapper,
 })

@@ -30,7 +30,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should mutate shallow object with map functions', (t) => {
+test('should mutate shallow object with map transformer', (t) => {
   const def = {
     id: value('ent1'),
     title: 'headline',
@@ -786,7 +786,7 @@ test('should not mutate null value in array when included in noneValues', (t) =>
   t.deepEqual(ret, expected)
 })
 
-test('should set value to undefined when no map functions', (t) => {
+test('should set value to undefined when no map transformer', (t) => {
   const def = {}
   const state = {
     context: [{ data: { headline: 'The title' } }],

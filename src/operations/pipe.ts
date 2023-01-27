@@ -1,7 +1,7 @@
 import { divide, fwd } from './directionals.js'
 import iterate from './iterate.js'
 import transform from './transform.js'
-import flatten from '../functions/flatten.js'
+import flatten from '../transformers/flatten.js'
 import { MapPipe, Operation } from '../types.js'
 import { operationsFromDef } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'

@@ -8,9 +8,9 @@ import {
   rev,
   validate,
   not,
-  functions as fns,
+  transformers as coreTransformers,
 } from '../index.js'
-const { compare } = fns
+const { compare } = coreTransformers
 
 // Setup
 
@@ -20,7 +20,7 @@ const noHeadingTitle = () => (item: unknown) =>
 const noAlso = (item: unknown) =>
   isObject(item) && !/also/gi.test(item.title as string)
 
-const functions = {
+const transformers = {
   noHeadingTitle,
 }
 
@@ -308,7 +308,7 @@ test('should apply filter from operation object', (t) => {
   }
   const expected = undefined
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -340,7 +340,7 @@ test('should skip filter when unknown function', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def, { functions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -353,8 +353,8 @@ test('should only apply filter from operation object going forward', (t) => {
   const dataFwd = { content: { heading: 'The heading' } }
   const dataRev = { title: 'The heading' }
 
-  const retFwd = mapTransform(def, { functions })(dataFwd)
-  const retRev = mapTransform(def, { functions }).rev(dataRev)
+  const retFwd = mapTransform(def, { transformers })(dataFwd)
+  const retRev = mapTransform(def, { transformers }).rev(dataRev)
 
   t.is(retFwd, undefined)
   t.deepEqual(retRev, dataFwd)
@@ -368,8 +368,8 @@ test('should only apply filter from operation object going in reverse', (t) => {
   const dataFwd = { content: { heading: 'The heading' } }
   const dataRev = { title: 'The heading' }
 
-  const retFwd = mapTransform(def, { functions })(dataFwd)
-  const retRev = mapTransform(def, { functions }).rev(dataRev)
+  const retFwd = mapTransform(def, { transformers })(dataFwd)
+  const retRev = mapTransform(def, { transformers }).rev(dataRev)
 
   t.deepEqual(retFwd, dataRev)
   t.is(retRev, undefined)

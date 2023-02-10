@@ -1142,6 +1142,9 @@ in the array.
 
 Set `not` to `true` to reverse the result of the comparison.
 
+Note: `value` and `valuePath` may be used as aliases for `match` and `matchPath`
+for consistency with other transformers.
+
 Here's an example where only data where role is set to 'admin' will be kept:
 
 ```javascript

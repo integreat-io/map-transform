@@ -13,7 +13,7 @@ const state = {
 
 const options = {}
 
-// Test
+// Tests
 
 test('should return true when object has match value at path', (t) => {
   const match = 'admin'
@@ -347,6 +347,26 @@ test('should return true when comparison is false and `not` is set', (t) => {
     data,
     state
   )
+
+  t.true(ret)
+})
+
+test('should treat `value` as alias of `match`', (t) => {
+  const value = 'admin'
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: { role: 'admin' } }
+
+  const ret = compare({ path, operator: '=', value }, options)(data, state)
+
+  t.true(ret)
+})
+
+test('should treat `valuePath` as an alias of `matchPath`', (t) => {
+  const path = 'meta.role'
+  const valuePath = 'level'
+  const data = { name: 'John F.', meta: { role: 'admin' }, level: 'admin' }
+
+  const ret = compare({ path, operator: '=', valuePath }, options)(data, state)
 
   t.true(ret)
 })

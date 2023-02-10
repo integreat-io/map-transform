@@ -1,7 +1,6 @@
 import mapAny = require('map-any')
 import { TransformerProps, Path, DataMapper, Options } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
-import { getRootFromState } from '../utils/stateHelpers.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 interface Comparer {
@@ -17,6 +16,8 @@ interface CompareProps extends TransformerProps {
   operator?: string
   match?: unknown
   matchPath?: Path
+  value?: unknown // Alias of `match`
+  valuePath?: Path // Alias of `matchPath`
   not?: boolean
 }
 
@@ -80,27 +81,31 @@ function createComparer(operator: string) {
 }
 
 export default function compare(
-  { path = '.', operator = '=', match, matchPath, not = false }: CompareProps,
+  {
+    path = '.',
+    operator = '=',
+    match,
+    value,
+    matchPath,
+    valuePath,
+    not = false,
+  }: CompareProps,
   _options: Options = {}
 ): DataMapper {
+  match = match ?? value // Allow alias
+  matchPath = matchPath ?? valuePath // Allow alias
+
   const getValue = defsToDataMapper(path)
-  const useRoot =
-    typeof matchPath === 'string' &&
-    matchPath[0] === '^' &&
-    matchPath[1] !== '.'
-  const realMatchPath = useRoot
-    ? matchPath.slice(matchPath[1] === '^' ? 2 : 1)
-    : matchPath
   const realMatchValue = mapAny(unescapeValue, match)
   const getMatch =
-    typeof realMatchPath === 'string'
-      ? defsToDataMapper(realMatchPath)
+    typeof matchPath === 'string'
+      ? defsToDataMapper(matchPath)
       : () => realMatchValue
   const comparer = createComparer(operator)
 
   return (data, state) => {
     const value = getValue(data, state)
-    const match = getMatch(useRoot ? getRootFromState(state) : data, state)
+    const match = getMatch(data, state)
     const result = comparer(value, match)
     return not ? !result : result
   }

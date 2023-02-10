@@ -1285,6 +1285,40 @@ const def29 = {
 const mapper = mapTransform(def29, { dictionaries: { statusCodes: dictionary } })
 ```
 
+#### `merge({path})` transformer
+
+The `merge` transformer accepts a pipeline or an array of pipelines in `path`,
+and the objects or array of objects these pipline(s) return will be merge into
+on object. Merging happens from left to right, so the props of the last object
+will have priority. However, `undefined` values will never overwrite another
+value.
+
+```javascript
+import { mapTransform, transform, transformers } from 'map-transform'
+const { merge } = transformers
+
+const data = {
+  original: { id: 'ent1', title: 'Entry 1', text: null },
+  updated: { id: undefined, title: 'Better title' },
+  final: { text: 'And so this happend' },
+}
+
+const def38 = {
+  data: transform(merge({ path: ['original', 'updated', 'final'] })),
+}
+
+const ret = mapTransform(def38)(data)
+// --> { id: 'ent1', title: 'Better title', text: 'And so this happend' }
+```
+
+The `merge` transformer is available through a short-cut transform object:
+
+```javascript
+const def38 = {
+  data: { $merge: ['original', 'updated', 'final'] },
+}
+```
+
 #### `sort({asc, path})` transformer
 
 The `sort` transformer will sort the given array of items in ascending or
@@ -1308,7 +1342,7 @@ const def35 = {
 }
 
 const ret = mapTransform(def35)(data)
-// --> { caption: 'Bergen by night. By John F.' }
+// --> [{ id: 'ent1' }, { id: 'ent3' }, { id: 'ent5' }]
 ```
 
 The `sort` transformer is also available through a transform object:

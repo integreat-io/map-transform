@@ -11,6 +11,7 @@ import {
   IfObject,
   ApplyObject,
   AltObject,
+  MergeObject,
   ValueObject,
   AndObject,
   OrObject,
@@ -25,7 +26,6 @@ import { isObject } from './is.js'
 import { get } from '../operations/getSet.js'
 import props from '../operations/props.js'
 import iterate from '../operations/iterate.js'
-// import pipe from '../operations/pipe.js'
 import transform from '../operations/transform.js'
 import filter from '../operations/filter.js'
 import ifelse from '../operations/ifelse.js'
@@ -43,13 +43,17 @@ export const dataMapperFromOperation =
   (value: unknown, target?: unknown): unknown =>
     getStateValue(operation({})(identity)(populateState({ target })(value)))
 
-const transformDefFromValue = ({
-  $value: value,
-  ...def
-}: OperationObject | MapObject) => ({
-  ...def,
-  $transform: 'value',
-  value,
+const removeProp = (obj: Record<string, unknown>, prop: string) =>
+  Object.fromEntries(Object.entries(obj).filter(([key]) => key !== prop))
+
+const transformDefFromShortcut = (
+  def: OperationObject | MapObject,
+  transformer: string,
+  prop: string
+) => ({
+  ...removeProp(def, `$${transformer}`),
+  $transform: transformer,
+  [prop]: def[`$${transformer}`],
 })
 
 export const isOperationType = <T extends OperationObject>(
@@ -187,7 +191,11 @@ const operationFromObject = (def: OperationObject | MapObject) => {
   if (isOperationType<TransformObject>(def, '$transform')) {
     return createOperation(transform, '$transform', def)
   } else if (isOperationType<ValueObject>(def, '$value')) {
-    return createOperation(transform, '$transform', transformDefFromValue(def))
+    return createOperation(
+      transform,
+      '$transform',
+      transformDefFromShortcut(def, 'value', 'value')
+    )
   } else if (isOperationType<FilterObject>(def, '$filter')) {
     return createOperation(filter, '$filter', def)
   } else if (isOperationType<IfObject>(def, '$if')) {
@@ -204,6 +212,12 @@ const operationFromObject = (def: OperationObject | MapObject) => {
     return createPipelineOperation(concat, '$concat', def)
   } else if (isOperationType<LookupObject>(def, '$lookup')) {
     return createLookupOperation(lookup, def)
+  } else if (isOperationType<MergeObject>(def, '$merge')) {
+    return createOperation(
+      transform,
+      '$transform',
+      transformDefFromShortcut(def, 'merge', 'path')
+    )
   } else {
     return props(def)
   }

@@ -86,6 +86,12 @@ export interface AltObject extends Operands {
   undefined?: unknown[]
 }
 
+export interface MergeObject extends Operands {
+  $merge: unknown
+  $iterate?: boolean
+  $direction?: string
+}
+
 export interface ValueObject extends Operands {
   $value: unknown
   $iterate?: boolean
@@ -116,6 +122,7 @@ export type OperationObject =
   | ApplyObject
   | AltObject
   | ValueObject
+  | MergeObject
   | AndObject
   | OrObject
   | ConcatObject

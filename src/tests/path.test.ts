@@ -528,7 +528,7 @@ test('should provide root in $if condition', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should use root as $transform path', (t) => {
+test.failing('should use root as $transform path', (t) => {
   const def = {
     $modify: true,
     response: {

@@ -7,6 +7,7 @@ import index from './indexFn.js'
 import { join, split } from './joinSplit.js'
 import logical from './logical.js'
 import map from './map.js'
+import merge from './merge.js'
 import sort from './sort.js'
 import template from './template.js'
 
@@ -21,6 +22,7 @@ export default {
   join,
   logical,
   map,
+  merge,
   sort,
   split,
   template,

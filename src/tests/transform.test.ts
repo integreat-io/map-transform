@@ -716,6 +716,38 @@ test('should concat arrays with $concat', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should shallow merge object with $merge', (t) => {
+  const def = {
+    $merge: ['original', 'modified'],
+  }
+  const data = {
+    original: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Title 1',
+      text: 'And so this happened',
+      tags: ['news', 'politics'],
+    },
+    modified: {
+      id: 'ent1',
+      title: 'Better title',
+      text: undefined,
+      tags: ['sports'],
+    },
+  }
+  const expected = {
+    id: 'ent1',
+    $type: 'entry',
+    title: 'Better title',
+    text: 'And so this happened',
+    tags: ['sports'],
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should do nothing when transform operation has invalid function id', (t) => {
   const def = [
     'content',

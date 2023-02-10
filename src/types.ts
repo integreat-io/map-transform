@@ -15,16 +15,14 @@ export interface ValueFunction {
   (): any
 }
 
-export interface Operands {
-  [key: string]: any | ValueFunction
-}
+export type TransformerProps = Record<string, unknown>
 
 export interface DataMapper {
   (data: unknown, state: State): any
 }
 
-export interface CustomFunction<T = Operands> {
-  (operands: T, options: Options): DataMapper
+export interface CustomFunction<T = TransformerProps> {
+  (props: T, options: Options): DataMapper
 }
 
 export interface State {
@@ -52,60 +50,62 @@ export interface Options {
   revAlias?: string
 }
 
-export interface TransformObject extends Operands {
+export interface TransformObject extends TransformerProps {
   $transform: string
   $iterate?: boolean
   $direction?: string
 }
 
-export interface FilterObject extends Operands {
+export interface FilterObject extends TransformerProps {
   $filter: string
   $direction?: string
 }
 
-export interface IfObject extends Operands {
+export interface IfObject extends TransformerProps {
   $if: MapDefinition
   $direction?: string
+  then?: MapDefinition
+  else?: MapDefinition
 }
 
-export interface ApplyObject extends Operands {
+export interface ApplyObject extends TransformerProps {
   $apply: string
   $iterate?: boolean
   $direction?: string
 }
 
-export interface AltObject extends Operands {
+export interface AltObject extends TransformerProps {
   $alt: MapDefinition[]
   $iterate?: boolean
   $direction?: string
-  undefined?: unknown[]
+  $undefined?: unknown[]
 }
 
-export interface MergeObject extends Operands {
+export interface MergeObject extends TransformerProps {
   $merge: unknown
   $iterate?: boolean
   $direction?: string
 }
 
-export interface ValueObject extends Operands {
+export interface ValueObject extends TransformerProps {
   $value: unknown
   $iterate?: boolean
   $direction?: string
 }
 
-export interface AndObject extends Operands {
+export interface AndObject extends TransformerProps {
   $and: MapDefinition[]
 }
 
-export interface OrObject extends Operands {
+export interface OrObject extends TransformerProps {
   $or: MapDefinition[]
 }
 
-export interface ConcatObject extends Operands {
+export interface ConcatObject extends TransformerProps {
   $concat: MapDefinition[]
 }
 
-export interface LookupObject extends Operands {
+export interface LookupObject extends TransformerProps {
   $lookup: Path
   path: Path
 }

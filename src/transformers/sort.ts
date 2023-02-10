@@ -1,14 +1,8 @@
-import {
-  Path,
-  State,
-  DataMapper,
-  Options,
-  Operands as BaseOperands,
-} from '../types.js'
+import { Path, State, DataMapper, Options, TransformerProps } from '../types.js'
 import { identity } from '../utils/functional.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-interface Operands extends BaseOperands {
+interface Props extends TransformerProps {
   asc?: boolean
   path?: Path
 }
@@ -31,11 +25,11 @@ const compare = (direction: number, getFn: DataMapper, state: State) =>
   }
 
 export default function template(
-  operands: Operands,
+  props: Props,
   _options: Options = {}
 ): DataMapper {
-  const direction = operands?.asc === false ? -1 : 1
-  const getFn = operands?.path ? defsToDataMapper(operands.path) : identity
+  const direction = props?.asc === false ? -1 : 1
+  const getFn = props?.path ? defsToDataMapper(props.path) : identity
 
   return (data, state) => {
     return Array.isArray(data)

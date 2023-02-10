@@ -1,5 +1,5 @@
 import test from 'ava'
-import { Operands } from '../types.js'
+import { TransformerProps } from '../types.js'
 import { isObject } from '../utils/is.js'
 
 import { mapTransform, transform, rev } from '../index.js'
@@ -19,7 +19,7 @@ const removeAuthor = (item: Record<string, unknown>) =>
     : item.title
 
 const appendToTitle =
-  ({ text }: Operands) =>
+  ({ text }: TransformerProps) =>
   (item: unknown) =>
     isObject(item) ? { ...item, title: `${item.title}${text}` } : item
 

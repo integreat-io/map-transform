@@ -5,7 +5,7 @@ import lookup from './lookup.js'
 
 // Setup
 
-const operands = { arrayPath: '^related.users[]', propPath: 'id' }
+const props = { arrayPath: '^related.users[]', propPath: 'id' }
 const options = {}
 
 // Tests -- forward
@@ -29,7 +29,7 @@ test('should lookup data', (t) => {
     value: { id: 'user2', name: 'User 2' },
   }
 
-  const ret = lookup(operands)(options)(identity)(state)
+  const ret = lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -57,7 +57,7 @@ test('should lookup array of data', (t) => {
     ],
   }
 
-  const ret = lookup(operands)(options)(identity)(state)
+  const ret = lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -84,13 +84,13 @@ test('should match only first of several matches', (t) => {
     { id: 'user3', name: 'User 3' },
   ]
 
-  const ret = lookup(operands)(options)(identity)(state)
+  const ret = lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
 
 test('should match several matches when `matchSeveral` is true', (t) => {
-  const operandsMatchSeveral = { ...operands, matchSeveral: true }
+  const propsMatchSeveral = { ...props, matchSeveral: true }
   const data = {
     content: { authors: ['user1', 'user3'] },
     related: {
@@ -114,7 +114,7 @@ test('should match several matches when `matchSeveral` is true', (t) => {
     { id: 'user3', name: 'Another 3' },
   ]
 
-  const ret = lookup(operandsMatchSeveral)(options)(identity)(state)
+  const ret = lookup(propsMatchSeveral)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -128,7 +128,7 @@ test('should set value to undefined when missing array', (t) => {
     value: 'user2',
   }
 
-  const ret = lookup(operands)(options)(identity)(state)
+  const ret = lookup(props)(options)(identity)(state)
 
   t.is(ret.value, undefined)
 })
@@ -148,7 +148,7 @@ test('should set value to undefined when no match', (t) => {
     value: 'user3',
   }
 
-  const ret = lookup(operands)(options)(identity)(state)
+  const ret = lookup(props)(options)(identity)(state)
 
   t.is(ret.value, undefined)
 })
@@ -168,7 +168,7 @@ test('should get lookup prop in reverse', (t) => {
     rev: true,
   }
 
-  const ret = lookup(operands)(options)(identity)(state)
+  const ret = lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -189,7 +189,7 @@ test('should get lookup prop on array in reverse', (t) => {
     rev: true,
   }
 
-  const ret = lookup(operands)(options)(identity)(state)
+  const ret = lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

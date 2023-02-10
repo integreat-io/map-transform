@@ -5,9 +5,10 @@ import {
   DictionaryValue,
   Dictionaries,
   DataMapper,
+  TransformerProps,
 } from '../types.js'
 
-interface Operands {
+interface Props extends TransformerProps {
   dictionary?: Dictionary | string
 }
 
@@ -51,11 +52,11 @@ function extractDictionary(
 }
 
 export default function map(
-  operands: Operands,
+  props: Props,
   options?: { dictionaries?: Dictionaries }
 ): DataMapper {
   const dictionary = extractDictionary(
-    operands.dictionary,
+    props.dictionary,
     options && options.dictionaries
   )
   if (!dictionary) {

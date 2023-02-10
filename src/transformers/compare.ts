@@ -1,5 +1,5 @@
 import mapAny = require('map-any')
-import { Operands, Path, DataMapper, Options } from '../types.js'
+import { TransformerProps, Path, DataMapper, Options } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
 import { getRootFromState } from '../utils/stateHelpers.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
@@ -12,7 +12,7 @@ interface NumericComparer {
   (value: number, match: number): boolean
 }
 
-interface CompareOperands extends Operands {
+interface CompareProps extends TransformerProps {
   path?: Path
   operator?: string
   match?: unknown
@@ -80,13 +80,7 @@ function createComparer(operator: string) {
 }
 
 export default function compare(
-  {
-    path = '.',
-    operator = '=',
-    match,
-    matchPath,
-    not = false,
-  }: CompareOperands,
+  { path = '.', operator = '=', match, matchPath, not = false }: CompareProps,
   _options: Options = {}
 ): DataMapper {
   const getValue = defsToDataMapper(path)

@@ -1,7 +1,7 @@
-import { Operands, DataMapper } from '../types.js'
+import { TransformerProps, DataMapper } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
 
-interface Options extends Operands {
+interface Options extends TransformerProps {
   value?: unknown
 }
 
@@ -13,12 +13,12 @@ export const extractValue = (value: unknown): unknown => {
   return unescapeValue(typeof val === 'function' ? val() : val)
 }
 
-export function value(operands: unknown): DataMapper {
-  const value = extractValue(operands)
+export function value(props: unknown): DataMapper {
+  const value = extractValue(props)
   return (_data, state) => (state.onlyMapped ? undefined : value)
 }
 
-export function fixed(operands: unknown): DataMapper {
-  const value = extractValue(operands)
+export function fixed(props: unknown): DataMapper {
+  const value = extractValue(props)
   return (_data, _state) => value
 }

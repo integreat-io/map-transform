@@ -473,7 +473,7 @@ You may also define a transform operation as an object:
 ```javascript
 import { mapTransform } from 'map-transform'
 
-const ensureInteger = (operands) => (data) => Number.parseInt(data, 10) || 0
+const ensureInteger = (props) => (data) => Number.parseInt(data, 10) || 0
 const transformers = { ensureInteger }
 const def7asObject = {
   count: ['statistics.views', { $transform: 'ensureInteger' }],
@@ -494,9 +494,9 @@ mapTransform(def7asObject, { transformers })(data)
 
 Note that the function itself is passed on the `transformer` object. When
 you provide the custom transformer this way, it should be given as a function
-accepting an object with operands / arguments, that returns the actual function
-used in the transform. Any properties given on the operation object, apart from
-`$transform`, will be passed in the `operands` object.
+accepting an object with props, that returns the actual function used in the
+transform. Any properties given on the operation object, apart from
+`$transform`, will be passed in the `props` object.
 
 When you define the `transform` operation as an object, you may specify
 `$iterate: true` on the object to apply the transform to every item on an array,

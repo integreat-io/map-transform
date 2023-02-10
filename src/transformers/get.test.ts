@@ -82,7 +82,8 @@ test('should return undefined when data is not an array', (t) => {
   t.is(ret, undefined)
 })
 
-test('should accept path instead of operands object', (t) => {
+// TODO: Should we support this?
+test('should accept path instead of props object', (t) => {
   const path = 'meta.user'
   const expected = 'johnf'
 

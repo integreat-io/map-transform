@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-object-injection */
 import {
   Operation,
   DataMapper,
@@ -33,7 +34,7 @@ import alt from '../operations/alt.js'
 import { fwd, rev } from '../operations/directionals.js'
 import { and, or } from '../operations/logical.js'
 import concat from '../operations/concat.js'
-import lookup, { Operands as LookupOperands } from '../operations/lookup.js'
+import lookup, { Props as LookupProps } from '../operations/lookup.js'
 import pipe from '../operations/pipe.js'
 import { unescapeValue } from './escape.js'
 
@@ -58,7 +59,7 @@ const transformDefFromShortcut = (
 export const isOperationType = <T extends OperationObject>(
   def: MapObject | OperationObject,
   prop: string
-): def is T => def[prop] !== undefined // eslint-disable-line security/detect-object-injection
+): def is T => def[prop] !== undefined
 export const hasOperationProps = (
   def: MapObject | OperationObject
 ): def is OperationObject =>
@@ -113,12 +114,10 @@ const createOperation =
   ): Operation =>
   (options) =>
   (next) => {
-    const { [fnProp]: fnId, ...operands } = def
+    const { [fnProp]: fnId, ...props } = def
     const fn = options.transformers && options.transformers[fnId as string]
     return typeof fn === 'function'
-      ? wrapFromDefinition(operationFn(fn(operands, options)), def)(options)(
-          next
-        )
+      ? wrapFromDefinition(operationFn(fn(props, options)), def)(options)(next)
       : (state) => next(state)
   }
 
@@ -171,19 +170,16 @@ const createPipelineOperation = (
   fnProp: '$and' | '$or' | '$concat',
   def: AndObject | OrObject | ConcatObject
 ) => {
-  const pipelines = def[fnProp] // eslint-disable-line security/detect-object-injection
+  const pipelines = def[fnProp] as MapDefinition[] // TODO: Do more validation checks here?
   return operationFn(...pipelines)
 }
 
 const createLookupOperation = (
-  operationFn: (operands: LookupOperands) => Operation,
+  operationFn: (props: LookupProps) => Operation,
   def: LookupObject
 ) => {
-  const { $lookup: arrayPath, path: propPath, ...operands } = def
-  return wrapFromDefinition(
-    operationFn({ ...operands, arrayPath, propPath }),
-    def
-  )
+  const { $lookup: arrayPath, path: propPath, ...props } = def
+  return wrapFromDefinition(operationFn({ ...props, arrayPath, propPath }), def)
 }
 
 const operationFromObject = (def: OperationObject | MapObject) => {

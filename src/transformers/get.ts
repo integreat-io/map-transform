@@ -1,18 +1,18 @@
-import { Operands, DataMapper, Options } from '../types.js'
+import { TransformerProps, DataMapper, Options } from '../types.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-interface GetOperands extends Operands {
+interface GetProps extends TransformerProps {
   path?: string
 }
 
-const extractPath = (path: GetOperands | string) =>
+const extractPath = (path: GetProps | string) =>
   typeof path === 'string' ? path : path.path
 
 export default function get(
-  operands: GetOperands | string,
+  props: GetProps | string,
   _options: Options = {}
 ): DataMapper {
-  const path = extractPath(operands) || '.'
+  const path = extractPath(props) || '.'
   const getFn = defsToDataMapper(path)
 
   return getFn

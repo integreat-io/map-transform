@@ -1,14 +1,14 @@
 import { setTargetOnState } from '../utils/stateHelpers.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
-import { Operands, Path, DataMapper, Options } from '../types.js'
+import { TransformerProps, Path, DataMapper, Options } from '../types.js'
 
-interface CompareOperands extends Operands {
+interface CompareProps extends TransformerProps {
   path?: Path | Path[]
   operator?: string
 }
 
 export default function compare(
-  { path = '.', operator = 'AND' }: CompareOperands,
+  { path = '.', operator = 'AND' }: CompareProps,
   _options: Options = {}
 ): DataMapper {
   const pathArr = ([] as string[]).concat(path)

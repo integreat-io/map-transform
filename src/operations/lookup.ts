@@ -5,14 +5,14 @@ import {
   State,
   Path,
   DataMapper,
-  Operands as BaseOperands,
+  TransformerProps,
 } from '../types.js'
 import { get } from './getSet.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { dataMapperFromOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 
-export interface Operands extends BaseOperands {
+export interface Props extends TransformerProps {
   arrayPath: Path
   propPath: Path
   matchSeveral?: boolean
@@ -51,7 +51,7 @@ export default function lookup({
   arrayPath,
   propPath,
   matchSeveral = false,
-}: Operands): Operation {
+}: Props): Operation {
   return () => (next) => {
     const getter = dataMapperFromOperation(pipe(get(propPath)))
     const mapValueFn = mapValue(pipe([arrayPath]), getter, matchSeveral)

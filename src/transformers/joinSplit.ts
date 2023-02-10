@@ -1,17 +1,17 @@
 /* eslint-disable security/detect-object-injection */
-import { Operands as BaseOperands, DataMapper, Options } from '../types.js'
+import { TransformerProps, DataMapper, Options } from '../types.js'
 import xor from '../utils/xor.js'
 import { ensureArray } from '../utils/array.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
 import { setTargetOnState } from '../utils/stateHelpers.js'
 
-interface Operands extends BaseOperands {
+interface Props extends TransformerProps {
   path?: string | string[]
   sep?: string
 }
 
 function joinSplit(
-  { path, sep = ' ' }: Operands,
+  { path, sep = ' ' }: Props,
   split: boolean,
   _options: Options
 ): DataMapper {
@@ -47,10 +47,10 @@ function joinSplit(
   }
 }
 
-export function join(operands: Operands, options: Options = {}): DataMapper {
-  return joinSplit(operands, false, options)
+export function join(props: Props, options: Options = {}): DataMapper {
+  return joinSplit(props, false, options)
 }
 
-export function split(operands: Operands, options: Options = {}): DataMapper {
-  return joinSplit(operands, true, options)
+export function split(props: Props, options: Options = {}): DataMapper {
+  return joinSplit(props, true, options)
 }

@@ -1,9 +1,9 @@
 import { ensureArray } from '../utils/array.js'
-import { Operands, DataMapper, Options } from '../types.js'
+import { TransformerProps, DataMapper, Options } from '../types.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
 
-interface MergeOperands extends Operands {
+interface MergeProps extends TransformerProps {
   path?: string | string[]
 }
 
@@ -18,7 +18,7 @@ const undefinedFirst = (
 // Any values in the array (after flattening) that are not objects, will be
 // skipped.
 export default function merge(
-  { path }: MergeOperands,
+  { path }: MergeProps,
   _options: Options = {}
 ): DataMapper {
   const getFns = ensureArray(path).map(defsToDataMapper)

@@ -1,15 +1,15 @@
 import Mustache = require('mustache')
 import mapAny = require('map-any')
-import { Path, DataMapper, Options } from '../types.js'
+import { Path, DataMapper, Options, TransformerProps } from '../types.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
-interface Operands {
+interface Props extends TransformerProps {
   template?: string
   templatePath?: Path
 }
 
-const extractOperands = (operands: Operands | string) =>
-  typeof operands === 'string' ? { template: operands } : operands
+const extractProps = (props: Props | string) =>
+  typeof props === 'string' ? { template: props } : props
 
 function parseAndCreateGenerator(templateStr: string) {
   Mustache.parse(templateStr) // Mustache will keep the parsed template in a cache
@@ -18,10 +18,10 @@ function parseAndCreateGenerator(templateStr: string) {
 }
 
 export default function template(
-  operands: Operands | string,
+  props: Props | string,
   _options: Options = {}
 ): DataMapper {
-  const { template: templateStr, templatePath } = extractOperands(operands)
+  const { template: templateStr, templatePath } = extractProps(props)
 
   if (typeof templateStr === 'string') {
     // We already got a template -- preparse it and return a generator

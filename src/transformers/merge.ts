@@ -23,8 +23,8 @@ export default function merge(
 ): DataMapper {
   const getFns = ensureArray(path).map(defsToDataMapper)
 
-  return function mergePipelines(data, _state) {
-    const values = getFns.flatMap((fn) => fn(data)).filter(isObject)
+  return function mergePipelines(data, state) {
+    const values = getFns.flatMap((fn) => fn(data, state)).filter(isObject)
     return Object.fromEntries(
       values.flatMap(Object.entries).sort(undefinedFirst)
     )

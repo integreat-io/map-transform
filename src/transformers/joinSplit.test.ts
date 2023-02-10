@@ -1,5 +1,4 @@
 import test from 'ava'
-import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 import { join, split } from './joinSplit.js'
 
@@ -18,7 +17,7 @@ const stateRev = {
   value: {},
 }
 
-const options = { defsToDataMapper }
+const options = {}
 
 // Test -- join forward
 

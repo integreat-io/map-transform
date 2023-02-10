@@ -18,9 +18,8 @@ import {
   ConcatObject,
   LookupObject,
   Options,
-  SimpleDataMapper,
 } from '../types.js'
-import { getStateValue, populateState } from './stateHelpers.js'
+import { getStateValue, setStateValue } from './stateHelpers.js'
 import { identity } from './functional.js'
 import { isObject } from './is.js'
 import { get } from '../operations/getSet.js'
@@ -39,9 +38,9 @@ import pipe from '../operations/pipe.js'
 import { unescapeValue } from './escape.js'
 
 export const dataMapperFromOperation =
-  (operation: Operation): SimpleDataMapper =>
-  (value: unknown, target?: unknown): unknown =>
-    getStateValue(operation({})(identity)(populateState({ target })(value)))
+  (operation: Operation): DataMapper =>
+  (value, state) =>
+    getStateValue(operation({})(identity)(setStateValue(state, value)))
 
 const removeProp = (obj: Record<string, unknown>, prop: string) =>
   Object.fromEntries(Object.entries(obj).filter(([key]) => key !== prop))
@@ -241,5 +240,5 @@ export function operationFromDef(def?: MapDefinition): Operation {
   return Array.isArray(operations) ? pipe(operations) : operations
 }
 
-export const defsToDataMapper = (def: MapDefinition): SimpleDataMapper =>
+export const defsToDataMapper = (def: MapDefinition): DataMapper =>
   dataMapperFromOperation(operationFromDef(def))

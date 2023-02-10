@@ -1,5 +1,4 @@
 import test from 'ava'
-import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 import compare from './compare.js'
 
@@ -12,7 +11,7 @@ const state = {
   value: {},
 }
 
-const options = { defsToDataMapper }
+const options = {}
 
 // Test
 

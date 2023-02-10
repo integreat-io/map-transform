@@ -1,7 +1,6 @@
 import test from 'ava'
 import compare from '../transformers/compare.js'
 import { identity } from '../utils/functional.js'
-import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 import { and, or } from './logical.js'
 
@@ -9,7 +8,6 @@ import { and, or } from './logical.js'
 
 const options = {
   transformers: { compare },
-  defsToDataMapper,
 }
 
 // Tests -- and

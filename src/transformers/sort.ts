@@ -1,5 +1,6 @@
 import {
   Path,
+  State,
   DataMapper,
   Options,
   Operands as BaseOperands,
@@ -12,10 +13,10 @@ interface Operands extends BaseOperands {
   path?: Path
 }
 
-const compare = (direction: number, getFn: (data: unknown) => unknown) =>
+const compare = (direction: number, getFn: DataMapper, state: State) =>
   function compare(valueA: unknown, valueB: unknown) {
-    const a = getFn(valueA)
-    const b = getFn(valueB)
+    const a = getFn(valueA, state)
+    const b = getFn(valueB, state)
     if (typeof a === 'number' && typeof b === 'number') {
       return (a - b) * direction
     } else if (a instanceof Date && b instanceof Date) {
@@ -36,9 +37,9 @@ export default function template(
   const direction = operands?.asc === false ? -1 : 1
   const getFn = operands?.path ? defsToDataMapper(operands.path) : identity
 
-  return (data) => {
+  return (data, state) => {
     return Array.isArray(data)
-      ? data.slice().sort(compare(direction, getFn))
+      ? data.slice().sort(compare(direction, getFn, state))
       : data
   }
 }

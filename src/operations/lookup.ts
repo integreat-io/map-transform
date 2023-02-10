@@ -4,7 +4,7 @@ import {
   Operation,
   State,
   Path,
-  SimpleDataMapper,
+  DataMapper,
   Operands as BaseOperands,
 } from '../types.js'
 import { get } from './getSet.js'
@@ -24,25 +24,25 @@ const flattenIfArray = (data: unknown) =>
   Array.isArray(data) ? data.flat(FLATTEN_DEPTH) : data
 
 const matchPropInArray =
-  (getProp: SimpleDataMapper, matchSeveral: boolean) =>
-  (arr: unknown[]) =>
+  (getProp: DataMapper, matchSeveral: boolean) =>
+  (arr: unknown[], state: State) =>
   (value: string | number | boolean | null) =>
     matchSeveral
-      ? arr.filter((obj) => getProp(obj) === value)
-      : arr.find((obj) => getProp(obj) === value)
+      ? arr.filter((obj) => getProp(obj, state) === value)
+      : arr.find((obj) => getProp(obj, state) === value)
 
 const mapValue = (
   getArray: Operation,
-  getProp: SimpleDataMapper,
+  getProp: DataMapper,
   matchSeveral: boolean
 ) => {
   const matchInArray = matchPropInArray(getProp, matchSeveral)
   return (state: State) => {
     if (state.rev) {
-      return getProp
+      return (value: unknown) => getProp(value, { ...state, rev: false }) // Do a regular get, even though we're in rev
     } else {
       const { value: arr } = getArray({})(identity)(state)
-      return arr ? matchInArray(arr as unknown[]) : () => undefined
+      return arr ? matchInArray(arr as unknown[], state) : () => undefined
     }
   }
 }

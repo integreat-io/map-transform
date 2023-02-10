@@ -30,8 +30,8 @@ export default function template(
     // The template will be provided in the data -- return a function that will
     // both create the generator and run it
     const getFn = defsToDataMapper(templatePath)
-    return (data) => {
-      const templateStr = getFn(data)
+    return (data, state) => {
+      const templateStr = getFn(data, state)
       if (typeof templateStr === 'string') {
         return parseAndCreateGenerator(templateStr)(data)
       }

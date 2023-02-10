@@ -9,11 +9,11 @@ const extractPath = (path: GetOperands | string) =>
   typeof path === 'string' ? path : path.path
 
 export default function get(
-  options: GetOperands | string,
+  operands: GetOperands | string,
   _options: Options = {}
 ): DataMapper {
-  const path = extractPath(options) || '.'
+  const path = extractPath(operands) || '.'
   const getFn = defsToDataMapper(path)
 
-  return (data) => getFn(data)
+  return getFn
 }

@@ -105,8 +105,8 @@ export default function compare(
   const comparer = createComparer(operator)
 
   return (data, state) => {
-    const value = getValue(data)
-    const match = getMatch(useRoot ? getRootFromState(state) : data)
+    const value = getValue(data, state)
+    const match = getMatch(useRoot ? getRootFromState(state) : data, state)
     const result = comparer(value, match)
     return not ? !result : result
   }

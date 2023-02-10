@@ -1,5 +1,4 @@
 import test from 'ava'
-import { defsToDataMapper } from '../utils/definitionHelpers.js'
 
 import get from './get.js'
 
@@ -19,7 +18,7 @@ const state = {
   value: {},
 }
 
-const options = { defsToDataMapper }
+const options = {}
 
 // Test
 
@@ -32,7 +31,7 @@ test('should return value at given path', (t) => {
   t.is(ret, expected)
 })
 
-test('should use . when no path', (t) => {
+test('should return pipeline value when no path', (t) => {
   const data = 'johnf'
   const expected = 'johnf'
 
@@ -88,6 +87,22 @@ test('should accept path instead of operands object', (t) => {
   const expected = 'johnf'
 
   const ret = get(path, options)(data, state)
+
+  t.is(ret, expected)
+})
+
+test('should support root in path', (t) => {
+  const path = '^^meta.user'
+  const data = { id: 'ent1', $type: 'entry' }
+  const state = {
+    context: [{ data: [data], meta: { user: 'maryk' } }, [data]],
+    value: data,
+    rev: false,
+    onlyMapped: false,
+  }
+  const expected = 'maryk'
+
+  const ret = get({ path }, options)(data, state)
 
   t.is(ret, expected)
 })

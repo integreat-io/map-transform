@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Operands, DataMapper } from '../types.js'
+import { unescapeValue } from '../utils/escape.js'
 
 interface Options extends Operands {
   value?: unknown
@@ -8,9 +8,9 @@ interface Options extends Operands {
 const isOptions = (value: unknown): value is Options =>
   typeof value === 'object' && value !== null
 
-export const extractValue = (value: unknown): any => {
+export const extractValue = (value: unknown): unknown => {
   const val = isOptions(value) ? value.value : value
-  return typeof val === 'function' ? val() : val
+  return unescapeValue(typeof val === 'function' ? val() : val)
 }
 
 export function value(operands: unknown): DataMapper {

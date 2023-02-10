@@ -41,6 +41,21 @@ test('should set value from a function', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set value to undefined', (t) => {
+  const state = {
+    context: [],
+    value: { text: 'Something' },
+  }
+  const expected = {
+    context: [{ text: 'Something' }],
+    value: undefined,
+  }
+
+  const ret = value('**undefined**')(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not set value when onlyMapped', (t) => {
   const state = {
     context: [],

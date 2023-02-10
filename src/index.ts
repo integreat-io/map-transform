@@ -32,21 +32,21 @@ export { fwd, rev, divide } from './operations/directionals.js'
 export { default as merge } from './operations/merge.js'
 export { default as modify } from './operations/modify.js'
 export { iterate, transformers }
-// export {
-//   CustomFunction,
-//   DataMapper,
-//   MapDefinition,
-//   MapObject,
-//   MapPipe,
-//   MapTransform,
-//   Dictionary,
-//   Dictionaries,
-//   OperationObject,
-//   TransformObject,
-//   FilterObject,
-//   ApplyObject,
-//   AltObject,
-// } from './types.js'
+export {
+  CustomFunction,
+  DataMapper,
+  MapDefinition,
+  MapObject,
+  MapPipe,
+  MapTransform,
+  Dictionary,
+  Dictionaries,
+  OperationObject,
+  TransformObject,
+  FilterObject,
+  ApplyObject,
+  AltObject,
+} from './types.js'
 
 const composeMapFunction = (
   mapFn: StateMapper,

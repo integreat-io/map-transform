@@ -33,7 +33,7 @@ export { default as merge } from './operations/merge.js'
 export { default as modify } from './operations/modify.js'
 export { iterate, transformers }
 export {
-  CustomFunction,
+  Transformer,
   DataMapper,
   MapDefinition,
   MapObject,

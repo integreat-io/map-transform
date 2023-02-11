@@ -21,7 +21,7 @@ export interface DataMapper {
   (data: unknown, state: State): any
 }
 
-export interface CustomFunction<T = TransformerProps> {
+export interface Transformer<T = TransformerProps> {
   (props: T, options: Options): DataMapper
 }
 
@@ -39,7 +39,7 @@ export interface State {
 
 export interface Options {
   transformers?: {
-    [key: string]: CustomFunction
+    [key: string]: Transformer
   }
   pipelines?: {
     [key: string]: MapDefinition

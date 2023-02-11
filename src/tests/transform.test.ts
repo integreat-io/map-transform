@@ -276,7 +276,7 @@ test('should apply transform from an operation object with arguments', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip unknown customer function', (t) => {
+test('should skip unknown transformer', (t) => {
   const def = [
     {
       titleLength: [

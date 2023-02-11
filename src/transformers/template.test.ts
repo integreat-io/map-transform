@@ -115,6 +115,20 @@ test('should apply template from path in reverse', (t) => {
   t.is(ret, expected)
 })
 
+test('should apply template from path in flipped reverse', (t) => {
+  const props = { templatePath: 'captionTemplate' }
+  const data = {
+    description: 'Bergen by night',
+    artist: 'John F.',
+    captionTemplate: '{{description}}. By {{artist}}',
+  }
+  const expected = 'Bergen by night. By John F.'
+
+  const ret = template(props, options)(data, { ...stateRev, flip: true })
+
+  t.is(ret, expected)
+})
+
 test('should return undefined when no template at path', (t) => {
   const props = { templatePath: 'captionTemplate' }
   const data = {

@@ -74,4 +74,8 @@ export const populateState =
     onlyMapped,
   })
 
-export const goForward = (state: State) => ({ ...state, rev: false })
+export const goForward = (state: State) => ({
+  ...state,
+  rev: false,
+  flip: false,
+})

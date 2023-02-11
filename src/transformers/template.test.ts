@@ -11,6 +11,13 @@ const state = {
   value: {},
 }
 
+const stateRev = {
+  rev: true,
+  onlyMapped: false,
+  context: [],
+  value: {},
+}
+
 const options = {}
 
 // Tests
@@ -24,6 +31,19 @@ test('should apply template', (t) => {
   const expected = 'Bergen by night. By John F.'
 
   const ret = template(props, options)(data, state)
+
+  t.is(ret, expected)
+})
+
+test('should apply template in reverse', (t) => {
+  const props = { template: '{{description}}. By {{artist}}' }
+  const data = {
+    description: 'Bergen by night',
+    artist: 'John F.',
+  }
+  const expected = 'Bergen by night. By John F.'
+
+  const ret = template(props, options)(data, stateRev)
 
   t.is(ret, expected)
 })
@@ -57,6 +77,20 @@ test('should apply template from path', (t) => {
   const expected = 'Bergen by night. By John F.'
 
   const ret = template(props, options)(data, state)
+
+  t.is(ret, expected)
+})
+
+test('should apply template from path in reverse', (t) => {
+  const props = { templatePath: 'captionTemplate' }
+  const data = {
+    description: 'Bergen by night',
+    artist: 'John F.',
+    captionTemplate: '{{description}}. By {{artist}}',
+  }
+  const expected = 'Bergen by night. By John F.'
+
+  const ret = template(props, options)(data, stateRev)
 
   t.is(ret, expected)
 })

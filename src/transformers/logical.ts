@@ -1,4 +1,4 @@
-import { setTargetOnState } from '../utils/stateHelpers.js'
+import { setTargetOnState, goForward } from '../utils/stateHelpers.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
 import { TransformerProps, Path, DataMapper, Options } from '../types.js'
 
@@ -24,7 +24,7 @@ export default function compare(
       const value = Boolean(data)
       return setFns.reduce(
         (obj: unknown, setFn) =>
-          setFn(value, setTargetOnState({ ...state, rev: false }, obj)), // Do a regular set regardless of direction
+          setFn(value, setTargetOnState(goForward(state), obj)),
         undefined
       )
     } else {

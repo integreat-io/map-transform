@@ -2,6 +2,7 @@ import mapAny = require('map-any')
 import { TransformerProps, Path, DataMapper, Options } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { goForward } from '../utils/stateHelpers.js'
 
 interface Comparer {
   (value: unknown, match: unknown): boolean
@@ -104,8 +105,9 @@ export default function compare(
   const comparer = createComparer(operator)
 
   return (data, state) => {
-    const value = getValue(data, state)
-    const match = getMatch(data, state)
+    const fwdState = goForward(state)
+    const value = getValue(data, fwdState)
+    const match = getMatch(data, fwdState)
     const result = comparer(value, match)
     return not ? !result : result
   }

@@ -1,6 +1,7 @@
 import ajv from 'ajv'
 import { Path, DataMapper, TransformerProps, Options } from '../types.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { goForward } from '../utils/stateHelpers.js'
 
 const Ajv = ajv.default
 
@@ -18,5 +19,5 @@ export default function validate(
   const getFn = defsToDataMapper(path)
   const validate = validator.compile(schema)
 
-  return (data, state) => validate(getFn(data, state)) as boolean
+  return (data, state) => validate(getFn(data, goForward(state))) as boolean
 }

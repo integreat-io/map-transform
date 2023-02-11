@@ -57,6 +57,13 @@ export const setValueFromState = (
   context: shouldSetContext ? context : state.context,
 })
 
+export const isNoneValueState = (
+  state: State,
+  noneValues: unknown[] = [undefined]
+) => noneValues.includes(state.value)
+
+// State
+
 export const populateState =
   ({ rev = false, onlyMapped = false, target = undefined }: Partial<State>) =>
   (data: unknown): State => ({
@@ -67,7 +74,4 @@ export const populateState =
     onlyMapped,
   })
 
-export const isNoneValueState = (
-  state: State,
-  noneValues: unknown[] = [undefined]
-) => noneValues.includes(state.value)
+export const goForward = (state: State) => ({ ...state, rev: false })

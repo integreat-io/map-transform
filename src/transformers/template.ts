@@ -2,6 +2,7 @@ import Mustache = require('mustache')
 import mapAny = require('map-any')
 import { Path, DataMapper, Options, TransformerProps } from '../types.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { goForward } from '../utils/stateHelpers.js'
 
 interface Props extends TransformerProps {
   template?: string
@@ -31,7 +32,7 @@ export default function template(
     // both create the generator and run it
     const getFn = defsToDataMapper(templatePath)
     return (data, state) => {
-      const templateStr = getFn(data, state)
+      const templateStr = getFn(data, goForward(state))
       if (typeof templateStr === 'string') {
         return parseAndCreateGenerator(templateStr)(data)
       }

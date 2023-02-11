@@ -11,6 +11,13 @@ const state = {
   value: {},
 }
 
+const stateRev = {
+  rev: true,
+  onlyMapped: false,
+  context: [],
+  value: {},
+}
+
 const options = {}
 
 // Tests
@@ -21,6 +28,16 @@ test('should return true when object has match value at path', (t) => {
   const data = { name: 'John F.', meta: { role: 'admin' } }
 
   const ret = compare({ path, operator: '=', match }, options)(data, state)
+
+  t.true(ret)
+})
+
+test('should return true when object has match value at path in reverse', (t) => {
+  const match = 'admin'
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: { role: 'admin' } }
+
+  const ret = compare({ path, operator: '=', match }, options)(data, stateRev)
 
   t.true(ret)
 })
@@ -81,6 +98,19 @@ test('should use matchPath to get match value from data', (t) => {
   const data = { name: 'John F.', meta: { role: 'admin' }, level: 'admin' }
 
   const ret = compare({ path, operator: '=', matchPath }, options)(data, state)
+
+  t.true(ret)
+})
+
+test('should use matchPath to get match value from data in reverse', (t) => {
+  const path = 'meta.role'
+  const matchPath = 'level'
+  const data = { name: 'John F.', meta: { role: 'admin' }, level: 'admin' }
+
+  const ret = compare({ path, operator: '=', matchPath }, options)(
+    data,
+    stateRev
+  )
 
   t.true(ret)
 })

@@ -1,6 +1,7 @@
 import { Path, State, DataMapper, Options, TransformerProps } from '../types.js'
 import { identity } from '../utils/functional.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { goForward } from '../utils/stateHelpers.js'
 
 interface Props extends TransformerProps {
   asc?: boolean
@@ -33,7 +34,7 @@ export default function template(
 
   return (data, state) => {
     return Array.isArray(data)
-      ? data.slice().sort(compare(direction, getFn, state))
+      ? data.slice().sort(compare(direction, getFn, goForward(state)))
       : data
   }
 }

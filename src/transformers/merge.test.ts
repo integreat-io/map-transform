@@ -11,6 +11,13 @@ const state = {
   value: {},
 }
 
+const stateRev = {
+  rev: true,
+  onlyMapped: false,
+  context: [],
+  value: {},
+}
+
 // Tests
 
 test('should merge two objects', (t) => {
@@ -208,6 +215,38 @@ test('should skip non-objects', (t) => {
   }
 
   const ret = merge({ path })(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge in reverse', (t) => {
+  const path = ['original', 'modified']
+  const data = {
+    original: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Title 1',
+      subtitle: undefined,
+      text: 'And so this happened',
+      tags: ['news', 'politics'],
+    },
+    modified: {
+      id: 'ent1',
+      title: 'Better title',
+      text: undefined,
+      tags: ['sports'],
+    },
+  }
+  const expected = {
+    id: 'ent1',
+    $type: 'entry',
+    title: 'Better title',
+    subtitle: undefined,
+    text: 'And so this happened',
+    tags: ['sports'],
+  }
+
+  const ret = merge({ path })(data, stateRev)
 
   t.deepEqual(ret, expected)
 })

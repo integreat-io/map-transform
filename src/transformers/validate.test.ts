@@ -11,6 +11,13 @@ const state = {
   value: {},
 }
 
+const stateRev = {
+  rev: true,
+  onlyMapped: false,
+  context: [],
+  value: {},
+}
+
 const options = {}
 
 // Test
@@ -21,6 +28,16 @@ test('should return true when value at path validates', (t) => {
   const data = { item: { value: 'theValue' } }
 
   const ret = validate({ path, schema }, options)(data, state)
+
+  t.true(ret)
+})
+
+test('should return true when value at path validates in reverse', (t) => {
+  const schema = { type: 'string' }
+  const path = 'item.value'
+  const data = { item: { value: 'theValue' } }
+
+  const ret = validate({ path, schema }, options)(data, stateRev)
 
   t.true(ret)
 })

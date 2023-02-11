@@ -3,7 +3,7 @@ import { TransformerProps, DataMapper, Options } from '../types.js'
 import xor from '../utils/xor.js'
 import { ensureArray } from '../utils/array.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
-import { setTargetOnState } from '../utils/stateHelpers.js'
+import { setTargetOnState, goForward } from '../utils/stateHelpers.js'
 
 interface Props extends TransformerProps {
   path?: string | string[]
@@ -31,7 +31,7 @@ function joinSplit(
   const setFns = pathArr.map((path) => `>${path}`).map(defsToDataMapper)
 
   return (data, state) => {
-    const fwdState = { ...state, rev: false } // Do a regular get/set regardless of direction
+    const fwdState = goForward(state)
 
     if (xor(split, state.rev)) {
       const values = typeof data === 'string' ? data.split(sep) : []

@@ -144,3 +144,12 @@ test('should sort in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should sort with path in reverse', (t) => {
+  const data = [{ value: 5 }, { value: 3 }, { value: 15 }]
+  const expected = [{ value: 3 }, { value: 5 }, { value: 15 }]
+
+  const ret = sort({ asc: true, path: 'value' }, options)(data, stateRev)
+
+  t.deepEqual(ret, expected)
+})

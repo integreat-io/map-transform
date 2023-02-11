@@ -1,6 +1,7 @@
 import { ensureArray } from '../utils/array.js'
 import { TransformerProps, DataMapper, Options } from '../types.js'
 import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { goForward } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 
 interface MergeProps extends TransformerProps {
@@ -24,7 +25,9 @@ export default function merge(
   const getFns = ensureArray(path).map(defsToDataMapper)
 
   return function mergePipelines(data, state) {
-    const values = getFns.flatMap((fn) => fn(data, state)).filter(isObject)
+    const values = getFns
+      .flatMap((fn) => fn(data, goForward(state)))
+      .filter(isObject)
     return Object.fromEntries(
       values.flatMap(Object.entries).sort(undefinedFirst)
     )

@@ -81,6 +81,26 @@ test('should apply template from path', (t) => {
   t.is(ret, expected)
 })
 
+test('should apply template from root path', (t) => {
+  const props = { templatePath: '^^setup.captionTemplate' }
+  const data = {
+    description: 'Bergen by night',
+    artist: 'John F.',
+  }
+  const stateWithContext = {
+    ...state,
+    context: [
+      { data, setup: { captionTemplate: '{{description}}. By {{artist}}' } },
+    ],
+    value: data,
+  }
+  const expected = 'Bergen by night. By John F.'
+
+  const ret = template(props, options)(data, stateWithContext)
+
+  t.is(ret, expected)
+})
+
 test('should apply template from path in reverse', (t) => {
   const props = { templatePath: 'captionTemplate' }
   const data = {
@@ -230,5 +250,3 @@ test('should return undefined when no template', (t) => {
 
   t.is(ret, expected)
 })
-
-test.todo('should get with root template path')

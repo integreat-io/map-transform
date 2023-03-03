@@ -49,7 +49,7 @@
     "mustache": "^4.2.0"
   },
   "devDependencies": {
-    "@integreat/ts-dev-setup": "^4.0.0",
+    "@integreat/ts-dev-setup": "^4.0.1",
     "@types/deep-freeze": "^0.1.2",
     "@types/sinon": "^10.0.13",
     "deep-freeze": "0.0.1",

@@ -277,18 +277,49 @@ test('should apply default value from an operation object', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should apply default value from an operation object in reverse', (t) => {
+  const def = [
+    '[]',
+    {
+      $iterate: true,
+      title: [{ $alt: ['content.heading', { $value: 'Default heading' }] }],
+    },
+  ]
+  const data = [{}, { title: 'From data' }]
+  const expected = [
+    { content: { heading: 'Default heading' } },
+    { content: { heading: 'From data' } },
+  ]
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply default value from an operation object in flipped reverse', (t) => {
+  const def = [
+    '[]',
+    {
+      $flip: true,
+      $iterate: true,
+      title: [{ $alt: ['content.heading', { $value: 'Default heading' }] }],
+    },
+  ]
+  const data = [{ content: {} }, { content: { heading: 'From data' } }]
+  const expected = [{ title: 'Default heading' }, { title: 'From data' }]
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should apply default value to null from an operation object', (t) => {
   const def = [
     '[]',
     {
       $iterate: true,
       title: {
-        $alt: [
-          'content.heading',
-          {
-            $value: 'Default heading',
-          },
-        ],
+        $alt: ['content.heading', { $value: 'Default heading' }],
         $undefined: ['**undefined**', null],
       },
     },

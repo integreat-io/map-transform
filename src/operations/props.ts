@@ -18,6 +18,7 @@ import {
   setTargetOnState,
   setValueFromState,
   isNoneValueState,
+  stopIteration,
 } from '../utils/stateHelpers.js'
 import {
   isMapObject,
@@ -184,7 +185,9 @@ export default function props(def: MapObject): Operation {
       }
 
       const thisState = shouldIterate
-        ? iterate(() => () => run(shouldFlip))(options)(identity)(nextState)
+        ? iterate(() => () => run(shouldFlip))(options)(identity)(
+            stopIteration(nextState) // Don't pass on iteration to props
+          )
         : run(shouldFlip)(nextState)
 
       return setValueFromState(nextState, thisState)

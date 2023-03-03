@@ -335,6 +335,64 @@ test('should set on array index when iterating to an array prop', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map several layers of arrays with bracket notation in set path', (t) => {
+  const def = {
+    'data[]': [
+      'content.articles',
+      {
+        $iterate: true,
+        title: 'heading',
+        topics: 'keywords',
+        'author.id': 'user_id',
+      },
+    ],
+  }
+  const data = {
+    content: {
+      articles: [
+        {
+          heading: 'Heading 1',
+          keywords: [{ id: 'news' }, { id: 'latest' }],
+          ['user_id']: 'johnf',
+        },
+        {
+          heading: 'Heading 2',
+          keywords: [{ id: 'tech' }],
+          ['user_id']: 'maryk',
+        },
+        {
+          heading: 'Heading 3',
+          keywords: [],
+          ['user_id']: 'maryk',
+        },
+      ],
+    },
+  }
+  const expected = {
+    data: [
+      {
+        title: 'Heading 1',
+        topics: [{ id: 'news' }, { id: 'latest' }],
+        author: { id: 'johnf' },
+      },
+      {
+        title: 'Heading 2',
+        topics: [{ id: 'tech' }],
+        author: { id: 'maryk' },
+      },
+      {
+        title: 'Heading 3',
+        topics: [],
+        author: { id: 'maryk' },
+      },
+    ],
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with lookup', (t) => {
   const def = {
     title: 'content.heading',

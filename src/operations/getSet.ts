@@ -128,10 +128,11 @@ function getSet(isSet = false) {
           // Now it's our turn. Set the state value - and iterate it if necessary
           const setIt = (value: unknown, index?: number) =>
             getSetFn(value, true, indexOfIfArray(target, index))
+          const nextValue = getArrAwareStateValue(nextState)
           const thisValue =
             nextState.iterate && !isArr && !isIndexProp
-              ? mapAny(setIt, getStateValue(nextState))
-              : setIt(getArrAwareStateValue(nextState))
+              ? mapAny(setIt, nextValue)
+              : setIt(nextValue)
 
           // Return the value
           return setStateValue(state, thisValue)

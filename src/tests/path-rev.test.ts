@@ -200,6 +200,64 @@ test('should reverse map several layers of arrays', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map several layers of arrays with bracket notation in set path', (t) => {
+  const def = {
+    data: [
+      'content.articles[]',
+      {
+        $iterate: true,
+        title: 'heading',
+        topics: 'keywords',
+        'author.id': 'user_id',
+      },
+    ],
+  }
+  const data = {
+    data: [
+      {
+        title: 'Heading 1',
+        topics: [{ id: 'news' }, { id: 'latest' }],
+        author: { id: 'johnf' },
+      },
+      {
+        title: 'Heading 2',
+        topics: [{ id: 'tech' }],
+        author: { id: 'maryk' },
+      },
+      {
+        title: 'Heading 3',
+        topics: [],
+        author: { id: 'maryk' },
+      },
+    ],
+  }
+  const expected = {
+    content: {
+      articles: [
+        {
+          heading: 'Heading 1',
+          keywords: [{ id: 'news' }, { id: 'latest' }],
+          ['user_id']: 'johnf',
+        },
+        {
+          heading: 'Heading 2',
+          keywords: [{ id: 'tech' }],
+          ['user_id']: 'maryk',
+        },
+        {
+          heading: 'Heading 3',
+          keywords: [],
+          ['user_id']: 'maryk',
+        },
+      ],
+    },
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set several props in array in reverse', (t) => {
   const def = {
     'content.prop1': 'props[0].value',
@@ -386,7 +444,7 @@ test('should treat lookup as get in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map data as is when no mapping', (t) => {
+test('should return map data as is when no mapping', (t) => {
   const def = ['content']
   const data = {
     title: 'The heading',

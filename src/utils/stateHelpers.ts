@@ -31,6 +31,7 @@ export function setTargetOnState(state: State, target: unknown): State {
     target,
   }
 }
+
 // State value
 
 export const setStateValue = (
@@ -79,3 +80,5 @@ export const goForward = (state: State) => ({
   rev: false,
   flip: false,
 })
+
+export const stopIteration = (state: State) => ({ ...state, iterate: false })

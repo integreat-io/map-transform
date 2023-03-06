@@ -20,6 +20,9 @@
     "./definitionHelpers.js": {
       "import": "./dist/utils/definitionHelpers.js",
       "types": "./dist/utils/definitionHelpers.d.ts"
+    },
+    "./types.js": {
+      "types": "./dist/types.d.ts"
     }
   },
   "scripts": {

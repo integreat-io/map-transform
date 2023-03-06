@@ -5,10 +5,7 @@ import {
   StateMapper,
   Options,
 } from './types.js'
-import {
-  operationFromDef,
-  defsToDataMapper,
-} from './utils/definitionHelpers.js'
+import { operationFromDef } from './utils/definitionHelpers.js'
 import { populateState, getStateValue } from './utils/stateHelpers.js'
 import transformers from './transformers/index.js'
 import iterate from './operations/iterate.js'
@@ -64,7 +61,6 @@ const mergeOptions = (options: Options) => ({
     ...transformers,
     ...(options.transformers || {}),
   },
-  defsToDataMapper,
 })
 
 export function mapTransform(

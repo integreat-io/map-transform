@@ -16,10 +16,12 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./definitionHelpers.js": {
+      "import": "./dist/utils/definitionHelpers.js",
+      "types": "./dist/utils/definitionHelpers.d.ts"
     }
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
     "test": "npm run lint && npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.cjs",
     "test:inspect": "node --inspect node_modules/ava/profile.js",

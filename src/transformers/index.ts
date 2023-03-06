@@ -4,12 +4,10 @@ import { explode, implode } from './explode.js'
 import flatten from './flatten.js'
 import get from './get.js'
 import index from './indexFn.js'
-import { join, split } from './joinSplit.js'
 import logical from './logical.js'
 import map from './map.js'
 import merge from './merge.js'
 import sort from './sort.js'
-import template from './template.js'
 
 export default {
   compare,
@@ -19,12 +17,9 @@ export default {
   get,
   implode,
   index,
-  join,
   logical,
   map,
   merge,
   sort,
-  split,
-  template,
   value,
 }

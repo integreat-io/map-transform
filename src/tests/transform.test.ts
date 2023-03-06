@@ -46,8 +46,12 @@ const appendEllipsis = (str: unknown) =>
 const getLength = () => (str: unknown) =>
   typeof str === 'string' ? str.length : -1
 
+const generateTag = () => (value: unknown) =>
+  isObject(value) ? `${value.tag}-${value.sequence}` : undefined
+
 const transformers = {
   appendToTitle,
+  generateTag,
   getLength,
 }
 
@@ -298,21 +302,6 @@ test('should skip unknown transformer', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in join function', (t) => {
-  const def = {
-    title: [
-      'content',
-      { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' },
-    ],
-  }
-  const data = { content: { heading: 'The heading', meta: { user: 'johnf' } } }
-  const expected = { title: 'The heading - johnf' }
-
-  const ret = mapTransform(def, { transformers })(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should use built in get function', (t) => {
   const def = {
     title: ['content', { $transform: 'get', path: 'heading' }],
@@ -411,46 +400,6 @@ test('should use built in map function with named dictionary', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use built in template function', (t) => {
-  const def = {
-    caption: [
-      'content',
-      {
-        $transform: 'template',
-        template: '{{description}}. By {{artist}}',
-      },
-    ],
-  }
-  const data = {
-    content: { description: 'Bergen by night', artist: 'John F.' },
-  }
-  const expected = { caption: 'Bergen by night. By John F.' }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should use built in template function with template path', (t) => {
-  const def = {
-    caption: {
-      $transform: 'template',
-      templatePath: 'options.captionTemplate',
-    },
-  }
-  const data = {
-    content: { description: 'Bergen by night', artist: 'John F.' },
-    options: {
-      captionTemplate: '{{content.description}}. By {{content.artist}}',
-    },
-  }
-  const expected = { caption: 'Bergen by night. By John F.' }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should use built in explode function', (t) => {
   const def = {
     rate: [
@@ -519,33 +468,6 @@ test('should only use transform going in reverse', (t) => {
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should apply transform function to array', (t) => {
-  const def = [
-    'content',
-    {
-      $iterate: true,
-      title: [
-        { $transform: 'join', path: ['heading', 'meta.user'], sep: ' - ' },
-      ],
-    },
-  ]
-  const data = {
-    content: [
-      { heading: 'The heading', meta: { user: 'johnf' } },
-      { heading: 'The other', meta: { user: 'maryk' } },
-    ],
-  }
-
-  const expected = [
-    { title: 'The heading - johnf' },
-    { title: 'The other - maryk' },
-  ]
-
-  const ret = mapTransform(def, { transformers })(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should provide index when iterating', (t) => {
   const def = [
     'content',
@@ -581,7 +503,7 @@ test('should provide index deep down when iterating', (t) => {
             sequence: { $transform: 'index' },
             tag: 'tags[0]',
           },
-          { $transform: 'template', template: '{{tag}}-{{sequence}}' },
+          { $transform: 'generateTag' },
         ],
       },
     },
@@ -603,13 +525,34 @@ test('should provide index deep down when iterating', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should apply transform function to array with iteration', (t) => {
+  const def = [
+    'content',
+    {
+      tags: { $transform: 'generateTag', $iterate: true },
+    },
+  ]
+  const data = {
+    content: [
+      { tag: 'news', sequence: 1 },
+      { tag: 'sports', sequence: 2 },
+    ],
+  }
+
+  const expected = { tags: ['news-1', 'sports-2'] }
+
+  const ret = mapTransform(def, { transformers })(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should provide index through apply when iterating', (t) => {
   const sectionIdDef = [
     {
       sequence: { $transform: 'index' },
       tag: 'tags[0]',
     },
-    { $transform: 'template', template: '{{tag}}-{{sequence}}' },
+    { $transform: 'generateTag' },
   ]
   const def = [
     'content',

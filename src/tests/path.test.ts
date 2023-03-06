@@ -1,4 +1,5 @@
 import test from 'ava'
+import { isObject } from '../utils/is.js'
 import {
   mapTransform,
   alt,
@@ -897,6 +898,9 @@ test('should map with parent', (t) => {
 })
 
 test('should map with parent through several iterations', (t) => {
+  const generateId = () => (value: unknown) =>
+    isObject(value) ? `${value.invoiceNo}-${value.rowId}` : undefined
+  const options = { transformers: { generateId } }
   const def = {
     items: [
       'response.data.invoice.lines[]',
@@ -905,7 +909,7 @@ test('should map with parent through several iterations', (t) => {
         $modify: true,
         id: [
           { rowId: 'rowId', invoiceNo: '^.^.number' },
-          { $transform: 'template', template: '{{invoiceNo}}-{{rowId}}' },
+          { $transform: 'generateId' },
         ],
       },
       {
@@ -936,7 +940,7 @@ test('should map with parent through several iterations', (t) => {
     ],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })

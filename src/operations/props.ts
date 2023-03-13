@@ -19,6 +19,7 @@ import {
   setValueFromState,
   isNoneValueState,
   stopIteration,
+  setNoDefaults,
 } from '../utils/stateHelpers.js'
 import {
   isMapObject,
@@ -163,6 +164,7 @@ export default function props(def: MapObject): Operation {
   const shouldIterate = def.$iterate === true
   const shouldFlip = def.$flip === true
   const direction = def.$direction
+  const noDefaults = def.$noDefaults
 
   // Prepare one operation for each prop
   const operations = Object.entries(def)
@@ -186,9 +188,9 @@ export default function props(def: MapObject): Operation {
 
       const thisState = shouldIterate
         ? iterate(() => () => run(shouldFlip))(options)(identity)(
-            stopIteration(nextState) // Don't pass on iteration to props
+            stopIteration(setNoDefaults(nextState, noDefaults)) // Don't pass on iteration to props
           )
-        : run(shouldFlip)(nextState)
+        : run(shouldFlip)(setNoDefaults(nextState, noDefaults))
 
       return setValueFromState(nextState, thisState)
     }

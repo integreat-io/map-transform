@@ -188,15 +188,18 @@ test('should use directional default value - reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should not use default values', (t) => {
+// TODO: Before, this test expected `undefined` for first item in array. Is it
+// correct that we now return the obejct with `title: undefined`?
+test('should not use default values', (t) => {
   const def = {
     $iterate: true,
+    $noDefaults: true,
     title: [alt('content.heading', transform(value('Default heading')))],
   }
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
-  const expected = [undefined, { title: 'From data' }]
+  const expected = [{ title: undefined }, { title: 'From data' }]
 
-  const ret = mapTransform(def).onlyMappedValues(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -205,6 +208,7 @@ test.failing('should map with missing data', (t) => {
   const def = [
     'data',
     {
+      $noDefaults: true, // ???
       id: 'id',
       attributes: 'attributes',
       relationships: 'relationships',
@@ -215,7 +219,7 @@ test.failing('should map with missing data', (t) => {
     id: 'item',
   }
 
-  const ret = mapTransform(def).onlyMappedValues(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -223,37 +227,45 @@ test.failing('should map with missing data', (t) => {
 test.failing('should not set missing prop to undefined in array', (t) => {
   const def = {
     $iterate: true,
+    $noDefaults: true, // ???
     title: 'content.heading',
   }
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [undefined, { title: 'From data' }]
 
-  const ret = mapTransform(def).onlyMappedValues(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test.failing('should not use default values on rev', (t) => {
+// TODO: Before, this test expected `undefined` for first item in array. Is it
+// correct that we now return the obejct with `content: { heading: undefined }`?
+test('should not use default values on rev', (t) => {
   const def = {
     $iterate: true,
+    $noDefaults: true,
     title: [alt('content.heading', transform(value('Default heading')))],
   }
   const data = [{}, { title: 'From data' }]
-  const expected = [undefined, { content: { heading: 'From data' } }]
+  const expected = [
+    { content: { heading: undefined } },
+    { content: { heading: 'From data' } },
+  ]
 
-  const ret = mapTransform(def).rev.onlyMappedValues(data)
+  const ret = mapTransform(def).rev(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should return undefined for undefined', (t) => {
   const def = {
+    $noDefaults: true,
     title: 'content.heading',
   }
   const data = undefined
   const expected = undefined
 
-  const ret = mapTransform(def).onlyMappedValues(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

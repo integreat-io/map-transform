@@ -89,7 +89,7 @@ test('should mutate object with depth', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should support always put root in context', (t) => {
+test('should support root in value', (t) => {
   const def = {
     attributes: {
       title: 'content.heading',
@@ -445,6 +445,102 @@ test('should iterate sub pipeline on brackets notation paths', (t) => {
   const ret = props(def)(options)(identity)(stateWithArray)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+test('should not include values from value transformer when $noDefaults is true', (t) => {
+  const def = {
+    $noDefaults: true,
+    id: transform(value('ent1')),
+    title: 'headline',
+    text: transform(value('The text')),
+    source: '^^params.source',
+    age: 'unknown',
+  }
+  const expected = {
+    context: [{ data, params: { source: 'news1' } }, data],
+    value: {
+      id: undefined,
+      title: 'Entry 1',
+      text: undefined,
+      source: 'news1',
+      age: undefined,
+    },
+  }
+
+  const ret = props(def)(options)(identity)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not include values in iterations from value transformer when $noDefaults is true', (t) => {
+  const def = {
+    $iterate: true,
+    $noDefaults: true,
+    title: get('headline'),
+    author: transform(value('johnf')),
+  }
+  const expected = {
+    context: [{ data }],
+    value: [
+      { title: 'Entry 1', author: undefined },
+      { title: 'Entry 2', author: undefined },
+    ],
+  }
+
+  const ret = props(def)(options)(identity)(stateWithArray)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should include values from value transformer when $noDefaults is false', (t) => {
+  const def = {
+    $noDefaults: false,
+    id: transform(value('ent1')),
+    title: 'headline',
+    text: transform(value('The text')),
+    source: '^^params.source',
+    age: 'unknown',
+  }
+  const expected = {
+    context: [{ data, params: { source: 'news1' } }, data],
+    value: {
+      id: 'ent1',
+      title: 'Entry 1',
+      text: 'The text',
+      source: 'news1',
+      age: undefined,
+    },
+  }
+
+  const ret = props(def)(options)(identity)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not clear $noDefaults when not set', (t) => {
+  const stateWithNoDefaults = { ...stateWithObject, onlyMapped: true }
+  const def = {
+    id: transform(value('ent1')),
+    title: 'headline',
+    text: transform(value('The text')),
+    source: '^^params.source',
+    age: 'unknown',
+  }
+  const expected = {
+    onlyMapped: true,
+    context: [{ data, params: { source: 'news1' } }, data],
+    value: {
+      id: undefined,
+      title: 'Entry 1',
+      text: undefined,
+      source: 'news1',
+      age: undefined,
+    },
+  }
+
+  const ret = props(def)(options)(identity)(stateWithNoDefaults)
+
+  t.deepEqual(ret, expected)
 })
 
 test('should add array to context when iterating', (t) => {

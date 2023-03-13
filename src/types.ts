@@ -149,6 +149,7 @@ export interface MapObject {
   [key: string]: MapDefinition | undefined | boolean
   $iterate?: boolean
   $modify?: boolean | Path
+  $noDefaults?: boolean
   $flip?: boolean
   $transform?: undefined
   $filter?: undefined

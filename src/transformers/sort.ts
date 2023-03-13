@@ -25,10 +25,7 @@ const compare = (direction: number, getFn: DataMapper, state: State) =>
     }
   }
 
-export default function template(
-  props: Props,
-  _options: Options = {}
-): DataMapper {
+export default function sort(props: Props, _options: Options = {}): DataMapper {
   const direction = props?.asc === false ? -1 : 1
   const getFn = props?.path ? defsToDataMapper(props.path) : identity
 

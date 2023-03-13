@@ -7,7 +7,7 @@ interface CompareProps extends TransformerProps {
   operator?: string
 }
 
-export default function compare(
+export default function logical(
   { path = '.', operator = 'AND' }: CompareProps,
   _options: Options = {}
 ): DataMapper {

@@ -6,10 +6,11 @@ import { get, set } from './getSet.js'
 
 // Setup
 
-const stateFromValue = (value: unknown, rev = false) => ({
+const stateFromValue = (value: unknown, rev = false, noDefaults = false) => ({
   context: [],
   value,
   rev,
+  noDefaults,
 })
 
 const options = {}
@@ -788,6 +789,33 @@ test('should set with escaped brackets', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not set undefined when state.noDefaults is true', (t) => {
+  const path = 'name'
+  const value = undefined
+  const state = stateFromValue(value, false, true) // noDefaults = true
+  const expected = { ...state, context: [], value: undefined }
+
+  const fn = set(path)[0]
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not set undefined on a target when state.noDefaults is true', (t) => {
+  const path = 'name'
+  const value = undefined
+  const state = {
+    ...stateFromValue(value, false, true), // noDefaults = true
+    target: { id: 'johnf' },
+  }
+  const expected = { ...state, context: [], value: { id: 'johnf' } }
+
+  const fn = set(path)[0]
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return value when path is empty - for set', (t) => {
   const path = ''
   const value = { name: 'Bohm' }
@@ -961,5 +989,3 @@ test.todo('should not strip away star')
 //   value: 's3cr3t',
 // }
 // const expectedValue = { 's:header': { '*tu:api-key': 's3cr3t' } }
-
-test.todo('should not set undefined when state.noDefaults is true')

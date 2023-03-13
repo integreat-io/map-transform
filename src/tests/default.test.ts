@@ -188,8 +188,6 @@ test('should use directional default value - reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: Before, this test expected `undefined` for first item in array. Is it
-// correct that we now return the obejct with `title: undefined`?
 test('should not use default values', (t) => {
   const def = {
     $iterate: true,
@@ -197,18 +195,18 @@ test('should not use default values', (t) => {
     title: [alt('content.heading', transform(value('Default heading')))],
   }
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
-  const expected = [{ title: undefined }, { title: 'From data' }]
+  const expected = [undefined, { title: 'From data' }]
 
   const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test.failing('should map with missing data', (t) => {
+test('should not set missing data when $noDefaults is true', (t) => {
   const def = [
     'data',
     {
-      $noDefaults: true, // ???
+      $noDefaults: true,
       id: 'id',
       attributes: 'attributes',
       relationships: 'relationships',
@@ -224,10 +222,10 @@ test.failing('should map with missing data', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should not set missing prop to undefined in array', (t) => {
+test('should not set missing prop to undefined in array', (t) => {
   const def = {
     $iterate: true,
-    $noDefaults: true, // ???
+    $noDefaults: true,
     title: 'content.heading',
   }
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
@@ -238,8 +236,6 @@ test.failing('should not set missing prop to undefined in array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: Before, this test expected `undefined` for first item in array. Is it
-// correct that we now return the obejct with `content: { heading: undefined }`?
 test('should not use default values on rev', (t) => {
   const def = {
     $iterate: true,
@@ -247,10 +243,7 @@ test('should not use default values on rev', (t) => {
     title: [alt('content.heading', transform(value('Default heading')))],
   }
   const data = [{}, { title: 'From data' }]
-  const expected = [
-    { content: { heading: undefined } },
-    { content: { heading: 'From data' } },
-  ]
+  const expected = [undefined, { content: { heading: 'From data' } }]
 
   const ret = mapTransform(def).rev(data)
 

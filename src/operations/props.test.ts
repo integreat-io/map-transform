@@ -459,11 +459,8 @@ test('should not include values from value transformer when $noDefaults is true'
   const expected = {
     context: [{ data, params: { source: 'news1' } }, data],
     value: {
-      id: undefined,
       title: 'Entry 1',
-      text: undefined,
       source: 'news1',
-      age: undefined,
     },
   }
 
@@ -481,10 +478,7 @@ test('should not include values in iterations from value transformer when $noDef
   }
   const expected = {
     context: [{ data }],
-    value: [
-      { title: 'Entry 1', author: undefined },
-      { title: 'Entry 2', author: undefined },
-    ],
+    value: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
   }
 
   const ret = props(def)(options)(identity)(stateWithArray)
@@ -530,11 +524,8 @@ test('should not clear $noDefaults when not set', (t) => {
     noDefaults: true,
     context: [{ data, params: { source: 'news1' } }, data],
     value: {
-      id: undefined,
       title: 'Entry 1',
-      text: undefined,
       source: 'news1',
-      age: undefined,
     },
   }
 

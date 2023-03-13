@@ -3,6 +3,7 @@ import {
   getStateValue,
   setStateValue,
   getTargetFromState,
+  goForward,
 } from '../utils/stateHelpers.js'
 import { operationFromDef } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
@@ -14,11 +15,7 @@ export default function modify(def: MapDefinition): Operation {
   return (options) => (next) => (state) => {
     const nextState = next(state)
     const contextState = setStateValue(nextState, getTargetFromState(nextState))
-    const thisState = runFn(options)(identity)({
-      ...contextState,
-      rev: false,
-      flip: false,
-    })
+    const thisState = runFn(options)(identity)(goForward(contextState))
 
     const thisValue = getStateValue(thisState)
     const nextValue = getStateValue(nextState)

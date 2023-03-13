@@ -386,6 +386,35 @@ test('should shallow merge (modify) original object with transformed object in r
   t.deepEqual(ret, expected)
 })
 
+test('should allow $flip to affect transform objects through pipelines', (t) => {
+  const def = {
+    $flip: true,
+    article: {
+      title: 'name',
+      sections: ['meta.tags', { $iterate: true, id: 'name' }], // This inner transform object should also be flipped
+    },
+  }
+  const data = {
+    name: 'The real title',
+    meta: {
+      tags: [
+        { id: 1, name: 'news' },
+        { id: 32, name: 'sports' },
+      ],
+    },
+  }
+  const expected = {
+    article: {
+      title: 'The real title',
+      sections: [{ id: 'news' }, { id: 'sports' }],
+    },
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should skip transform object with $direction: fwd', (t) => {
   const def = {
     $direction: 'fwd',
@@ -438,6 +467,38 @@ test('should treat lookup as get in reverse', (t) => {
   }
   const expected = {
     content: { heading: 'The heading', authors: ['user1', 'user3'] },
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run lookup as normal in reverse when flipped', (t) => {
+  const def = {
+    $flip: true,
+    title: 'content.heading',
+    authors: [
+      'content.authors[]',
+      lookup({ arrayPath: '^^.meta.users[]', propPath: 'id' }),
+    ],
+  }
+  const data = {
+    content: { heading: 'The heading', authors: ['user1', 'user3'] },
+    meta: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+        { id: 'user3', name: 'User 3' },
+      ],
+    },
+  }
+  const expected = {
+    title: 'The heading',
+    authors: [
+      { id: 'user1', name: 'User 1' },
+      { id: 'user3', name: 'User 3' },
+    ],
   }
 
   const ret = mapTransform(def).rev(data)

@@ -19,7 +19,6 @@ import {
   setValueFromState,
   isNoneValueState,
   stopIteration,
-  setNoDefaults,
 } from '../utils/stateHelpers.js'
 import {
   isMapObject,
@@ -100,25 +99,25 @@ function removeSlash(prop: string) {
   return prop
 }
 
-function createSetPipeline(shouldFlip: boolean) {
-  return ([prop, pipeline]: [string, MapDefinition]): Operation => {
-    // Adjust sub map object
-    if (isMapObject(pipeline)) {
-      pipeline = {
-        ...pipeline,
-        $iterate: pipeline.$iterate || isArr(prop),
-        $flip: shouldFlip,
-      }
+function createSetPipeline([prop, pipeline]: [
+  string,
+  MapDefinition
+]): Operation {
+  // Adjust sub map object
+  if (isMapObject(pipeline)) {
+    pipeline = {
+      ...pipeline,
+      $iterate: pipeline.$iterate || isArr(prop),
     }
-
-    // Handle slashed props
-    const unslashedProp = removeSlash(prop)
-    const onlyRev = prop !== unslashedProp // If these are different, we have removed a slash. Run in rev only
-
-    // Prepare the operations and return as an operation
-    const operations = [operationFromDef(pipeline), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
-    return onlyRev ? divide(plug(), operations) : pipe(operations)
   }
+
+  // Handle slashed props
+  const unslashedProp = removeSlash(prop)
+  const onlyRev = prop !== unslashedProp // If these are different, we have removed a slash. Run in rev only
+
+  // Prepare the operations and return as an operation
+  const operations = [operationFromDef(pipeline), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
+  return onlyRev ? divide(plug(), operations) : pipe(operations)
 }
 
 function modifyWithGivenPath(
@@ -141,17 +140,22 @@ const runOperations =
     operations: Operation[],
     options: Options
   ) =>
-  (shouldFlip: boolean) =>
   (state: State) =>
     isNoneValueState(state, options.noneValues)
       ? state
       : modifyFn(
           operations.reduce(
             runOperationWithOriginalValue(state, options),
-            setTargetOnState({ ...state, flip: shouldFlip }, undefined)
+            setTargetOnState(state, undefined)
           ),
           state
         )
+
+const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
+  ...state,
+  noDefaults: noDefaults || state.noDefaults || false,
+  flip: flip || state.flip || false,
+})
 
 export default function props(def: MapObject): Operation {
   if (Object.keys(def).length === 0) {
@@ -159,23 +163,19 @@ export default function props(def: MapObject): Operation {
       setStateValue(next(state), undefined)
   }
 
-  // Prepare flags
+  // Prepare path
   const modifyPath = def.$modify === true ? '.' : def.$modify || undefined
-  const shouldIterate = def.$iterate === true
-  const shouldFlip = def.$flip === true
-  const direction = def.$direction
-  const noDefaults = def.$noDefaults
 
   // Prepare one operation for each prop
   const operations = Object.entries(def)
     .filter(isRegularProp)
-    .map(createSetPipeline(shouldFlip))
+    .map(createSetPipeline)
 
   // Return operation
   return (options) => (next) => {
     const modifyFn = modifyWithGivenPath(modifyPath, options, identity)
     const run = runOperations(modifyFn, operations, options)
-    const isWrongDirectionFn = isWrongDirection(direction, options)
+    const isWrongDirectionFn = isWrongDirection(def.$direction, options)
 
     return function doMutate(state) {
       const nextState = next(state)
@@ -186,11 +186,13 @@ export default function props(def: MapObject): Operation {
         return nextState
       }
 
-      const thisState = shouldIterate
-        ? iterate(() => () => run(shouldFlip))(options)(identity)(
-            stopIteration(setNoDefaults(nextState, noDefaults)) // Don't pass on iteration to props
-          )
-        : run(shouldFlip)(setNoDefaults(nextState, noDefaults))
+      const propsState = setStateProps(nextState, def.$noDefaults, def.$flip)
+      const thisState =
+        def.$iterate === true
+          ? iterate(() => () => run)(options)(identity)(
+              stopIteration(propsState) // Don't pass on iteration to props
+            )
+          : run(propsState)
 
       return setValueFromState(nextState, thisState)
     }

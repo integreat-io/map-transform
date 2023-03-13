@@ -214,3 +214,31 @@ test('should get lookup prop on array in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should lookup data in reverse when flipped', (t) => {
+  const data = {
+    content: { author: 'user2' },
+    related: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+      ],
+    },
+  }
+  const state = {
+    context: [data],
+    value: 'user2',
+    rev: true,
+    flip: true,
+  }
+  const expected = {
+    context: [data],
+    value: { id: 'user2', name: 'User 2' },
+    rev: true,
+    flip: true,
+  }
+
+  const ret = lookup(props)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})

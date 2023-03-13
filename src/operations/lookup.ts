@@ -12,6 +12,7 @@ import {
   operationFromDef,
 } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
+import xor from '../utils/xor.js'
 
 export interface Props extends TransformerProps {
   arrayPath: Path
@@ -39,7 +40,7 @@ const mapValue = (
 ) => {
   const matchInArray = matchPropInArray(getProp, matchSeveral)
   return (state: State) => {
-    if (state.rev) {
+    if (xor(state.rev, state.flip)) {
       return (value: unknown) => getProp(value, { ...state, rev: false }) // Do a regular get, even though we're in rev
     } else {
       const { value: arr } = getArray({})(identity)(state)

@@ -430,7 +430,7 @@ test('should map with lookup as transform object', (t) => {
     title: 'content.heading',
     authors: [
       'content.authors[]',
-      [{ $lookup: '^meta.users[]', path: 'id' }, 'name'],
+      [{ $lookup: '^^.meta.users[]', path: 'id' }, 'name'],
     ],
   }
   const data = {

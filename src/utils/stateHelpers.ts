@@ -82,8 +82,3 @@ export const goForward = (state: State) => ({
 })
 
 export const stopIteration = (state: State) => ({ ...state, iterate: false })
-
-export const setNoDefaults = (state: State, noDefaults?: boolean) => ({
-  ...state,
-  noDefaults: noDefaults ?? state.noDefaults,
-})

@@ -146,6 +146,26 @@ test('should not leak flipping between objects and skip the fwd dir', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should pass flipping on to layers in the pipeline when presented to the pipeline', (t) => {
+  const def = [{ items: 'users' }, { data: { name: 'items.name' } }]
+  const state = {
+    context: [],
+    value: { users: { name: 'John F.' } },
+    rev: true,
+    flip: true,
+  }
+  const expected = {
+    context: [],
+    value: { data: { name: 'John F.' } },
+    rev: true,
+    flip: true,
+  }
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set on target', (t) => {
   const def = ['>name', '>data.personal']
   const state = {

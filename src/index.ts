@@ -46,7 +46,7 @@ const mergeOptions = (options: Options) => ({
   },
 })
 
-export function mapTransform(
+export default function mapTransform(
   def: MapDefinition,
   options: Options = {}
 ): MapTransform {
@@ -57,5 +57,3 @@ export function mapTransform(
     rev: Object.assign(composeMapFunction(mapFn, { rev: true }), {}),
   })
 }
-
-export default mapTransform

@@ -1,5 +1,5 @@
 import test from 'ava'
-import { mapTransform, alt, fwd, rev, transform } from '../index.js'
+import mapTransform, { alt, fwd, rev, transform } from '../index.js'
 import { value } from '../transformers/value.js'
 import { get } from '../operations/getSet.js'
 

@@ -1,7 +1,6 @@
 import test from 'ava'
 
-import {
-  mapTransform,
+import mapTransform, {
   get,
   set,
   fwd,

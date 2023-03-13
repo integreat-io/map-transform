@@ -1,7 +1,6 @@
 import test from 'ava'
 import { isObject } from '../utils/is.js'
-import {
-  mapTransform,
+import mapTransform, {
   set,
   filter,
   fwd,

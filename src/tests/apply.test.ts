@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import { mapTransform, transform, apply, fwd, rev, filter } from '../index.js'
+import mapTransform, { transform, apply, fwd, rev, filter } from '../index.js'
 
 // Setup
 

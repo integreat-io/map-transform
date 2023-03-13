@@ -2,7 +2,8 @@ import test from 'ava'
 import { get } from './getSet.js'
 import iterate from './iterate.js'
 import pipe from './pipe.js'
-import value from './value.js'
+import transform from './transform.js'
+import { value } from '../transformers/value.js'
 import { identity } from '../utils/functional.js'
 
 import alt from './alt.js'
@@ -118,23 +119,6 @@ test('should treat path as an pipeline', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use value from value operation', (t) => {
-  const def1 = get('name')
-  const def2 = value('No user')
-  const state = {
-    context: [],
-    value: { id: 'johnf' },
-  }
-  const expected = {
-    context: [],
-    value: 'No user',
-  }
-
-  const ret = pipe(alt(def1, def2))(options)(identity)(state)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should support transform pipeline', (t) => {
   const def1 = get('name')
   const def2 = ['id']
@@ -166,7 +150,7 @@ test('should treat array as a value and not iterate', (t) => {
 test('should support set on first path in reverse, and set default value', (t) => {
   const def1 = get('name')
   const def2 = get('meta.id')
-  const def3 = value('No user')
+  const def3 = transform(value('No user'))
   const state = {
     context: [{ meta: { created: 1661193390742 } }],
     value: undefined,

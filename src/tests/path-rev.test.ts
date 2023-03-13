@@ -7,9 +7,10 @@ import {
   fwd,
   rev,
   lookup,
-  value,
   transform,
+  transformers,
 } from '../index.js'
+const { value } = transformers
 
 // Setup
 
@@ -42,7 +43,7 @@ test('should reverse map with dot only notation', (t) => {
     article: {
       '.': 'content',
       title: 'content.heading',
-      heading: value('Just in:'),
+      heading: transform(value('Just in:')),
     },
   }
   const data = {
@@ -551,7 +552,7 @@ test('should reverse map with flipped mutate object', (t) => {
         age: ['unknown'],
       },
       relationships: {
-        author: value('johnf'),
+        author: transform(value('johnf')),
       },
     },
   ]

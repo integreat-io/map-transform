@@ -1,7 +1,7 @@
 import test from 'ava'
-import value from './value.js'
 import { get, set } from './getSet.js'
 import transform from './transform.js'
+import { value } from '../transformers/value.js'
 import { identity } from '../utils/functional.js'
 
 import props from './props.js'
@@ -32,9 +32,9 @@ const options = {}
 
 test('should mutate shallow object with map transformer', (t) => {
   const def = {
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: 'headline',
-    text: value('The text'),
+    text: transform(value('The text')),
     source: '^^params.source',
     age: 'unknown',
   }
@@ -57,10 +57,10 @@ test('should mutate shallow object with map transformer', (t) => {
 test('should mutate object with depth', (t) => {
   const def = {
     item: {
-      id: value('ent1'),
+      id: transform(value('ent1')),
       attributes: {
         title: get('headline'),
-        text: value('The text'),
+        text: transform(value('The text')),
         age: get('unknown'),
       },
       relationships: {
@@ -143,10 +143,10 @@ test('should mutate object with map pipe', (t) => {
 test('should mutate object with props in the given order', (t) => {
   const def = {
     item: {
-      id: value('ent1'),
+      id: transform(value('ent1')),
       attributes: {
         title: get('headline'),
-        text: value('The text'),
+        text: transform(value('The text')),
         age: get('unknown'),
       },
       relationships: {
@@ -188,7 +188,7 @@ test('should skip slashed properties going forward', (t) => {
 
 test('should mutate with set in pipeline', (t) => {
   const def = {
-    id: value('ent1'),
+    id: transform(value('ent1')),
     meta: ['user', set('user')],
   }
   const expected = {
@@ -207,7 +207,7 @@ test('should mutate with set in pipeline', (t) => {
 test('should shallow merge original object and transformed object', (t) => {
   const def = {
     $modify: true,
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: get('headline'),
     headline: '^^params.source',
   }
@@ -257,7 +257,7 @@ test('should shallow merge in sub object and use $modify path', (t) => {
     content: {
       $modify: 'data',
       article: {
-        id: value('ent1'),
+        id: transform(value('ent1')),
         title: get('data.article.headline'),
         headline: '^^params.source',
       },
@@ -295,7 +295,7 @@ test('should modify on several levels', (t) => {
       $modify: 'meta',
       options: {
         $modify: 'meta.options',
-        'Content-Type': value('application/json'),
+        'Content-Type': transform(value('application/json')),
       },
     },
   }
@@ -582,7 +582,7 @@ test('should flip and mutate object', (t) => {
   const def = {
     $flip: true,
     entry: {
-      // id: value('ent1'), // TODO: How to use value in reverse?
+      // id: transform(value('ent1'), // TODO: How to use value in reverse?
       headline: ['item.attributes.title', transform(threeLetters)],
       unknown: 'item.attributes.age',
       user: 'item.relationships.author',
@@ -617,7 +617,7 @@ test('should flip and mutate object in reverse', (t) => {
   const def = {
     $flip: true,
     item: {
-      id: value('ent1'),
+      id: transform(value('ent1')),
       attributes: {
         title: ['headline', transform(threeLetters)],
         age: ['unknown'],
@@ -652,7 +652,7 @@ test('should flip and mutate object in reverse', (t) => {
 test('should map complex shape', (t) => {
   const def = {
     item: {
-      id: value('ent1'),
+      id: transform(value('ent1')),
       attributes: {
         title: ['headline', transform(threeLetters)],
         age: ['unknown'],
@@ -683,7 +683,7 @@ test('should map complex shape', (t) => {
 test('should skip unknown dollar props', (t) => {
   const def = {
     title: 'headline',
-    text: value('The text'),
+    text: transform(value('The text')),
     $unknown: 'user',
   }
   const expected = {
@@ -702,7 +702,7 @@ test('should skip unknown dollar props', (t) => {
 test('should skip props without a pipeline', (t) => {
   const def = {
     title: 'headline',
-    text: value('The text'),
+    text: transform(value('The text')),
     nothing: undefined,
   }
   const expected = {
@@ -720,7 +720,7 @@ test('should skip props without a pipeline', (t) => {
 
 test('should not mutate undefined value', (t) => {
   const def = {
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: get('headline'),
   }
   const state = {
@@ -737,7 +737,7 @@ test('should not mutate undefined value', (t) => {
 test('should not mutate null value when included in noneValues', (t) => {
   const optionsWithNullAsNone = { ...options, noneValues: [undefined, null] }
   const def = {
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: get('headline'),
   }
   const state = {
@@ -754,7 +754,7 @@ test('should not mutate null value when included in noneValues', (t) => {
 test('should not mutate undefined value in array', (t) => {
   const def = {
     $iterate: true,
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: get('headline'),
   }
   const state = {
@@ -772,7 +772,7 @@ test('should not mutate null value in array when included in noneValues', (t) =>
   const optionsWithNullAsNone = { ...options, noneValues: [undefined, null] }
   const def = {
     $iterate: true,
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: get('headline'),
   }
   const state = {
@@ -828,10 +828,10 @@ test('should reverse map', (t) => {
 
 test('should skip values with no set in reverse', (t) => {
   const def = {
-    id: value('ent1'), // This value has no place to go
+    id: transform(value('ent1')), // This value has no place to go
     content: {
       title: 'headline',
-      sections: value('news'), // This value has no place to go
+      sections: transform(value('news')), // This value has no place to go
     },
   }
   const state = {
@@ -852,10 +852,10 @@ test('should skip values with no set in reverse', (t) => {
 
 test('should set value in reverse', (t) => {
   const def = {
-    id: ['key', value('ent1')], // A value with both get and set
+    id: ['key', transform(value('ent1'))], // A value with both get and set
     content: {
       title: 'headline',
-      sections: ['tags[]', value('news')], // A value with both get and set
+      sections: ['tags[]', transform(value('news'))], // A value with both get and set
     },
   }
   const state = {
@@ -1072,7 +1072,7 @@ test('should skip root path in reverse', (t) => {
 test('should skip transform object with $direction: rev going forward', (t) => {
   const def = {
     $direction: 'rev',
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: get('headline'),
   }
   const expected = stateWithObject
@@ -1131,7 +1131,7 @@ test('should skip transform object with $direction: fwd in reverse', (t) => {
 test('should transform object with $direction: fwd going forward', (t) => {
   const def = {
     $direction: 'fwd',
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: get('headline'),
   }
   const expected = {
@@ -1175,7 +1175,7 @@ test('should use reverse alias', (t) => {
   const optionsWithAlias = { ...options, revAlias: 'to' }
   const def = {
     $direction: 'to',
-    id: value('ent1'),
+    id: transform(value('ent1')),
     title: get('headline'),
   }
   const expected = stateWithObject

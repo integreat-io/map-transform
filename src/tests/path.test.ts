@@ -10,8 +10,10 @@ import {
   rev,
   root,
   set,
-  value,
+  transform,
+  transformers,
 } from '../index.js'
+const { value } = transformers
 
 // Tests
 
@@ -456,7 +458,7 @@ test('should set all props from source object and override some', (t) => {
     article: {
       '.': 'content',
       title: 'content.heading',
-      heading: value('Just in:'),
+      heading: transform(value('Just in:')),
     },
   }
   const data = {

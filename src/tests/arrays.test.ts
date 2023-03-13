@@ -2,7 +2,8 @@ import test from 'ava'
 import merge from '../operations/merge.js'
 import iterate from '../operations/iterate.js'
 
-import { mapTransform, value, set } from '../index.js'
+import { mapTransform, set, transform, transformers } from '../index.js'
+const { value } = transformers
 
 test('should map specified array over transform object', (t) => {
   const def = [
@@ -317,9 +318,9 @@ test('should map with array index in middle of path', (t) => {
 
 test('should set several props in array', (t) => {
   const def = {
-    'props[0].key': value('prop1'),
+    'props[0].key': transform(value('prop1')),
     'props[0].value': 'content.prop1',
-    'props[1].key': value('prop2'),
+    'props[1].key': transform(value('prop2')),
     'props[1].value': 'content.prop2',
   }
   const data = {
@@ -342,9 +343,9 @@ test('should set several props in array', (t) => {
 
 test('should set several props in array with depth', (t) => {
   const def = {
-    'items[0].props[0].key': value('prop1'),
+    'items[0].props[0].key': transform(value('prop1')),
     'items[0].props[0].value': 'content.prop1',
-    'items[0].props[1].key': value('prop2'),
+    'items[0].props[1].key': transform(value('prop2')),
     'items[0].props[1].value': 'content.prop2',
   }
   const data = {

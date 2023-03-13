@@ -1,5 +1,6 @@
 import test from 'ava'
-import value from './value.js'
+import transform from './transform.js'
+import { value } from '../transformers/value.js'
 import { identity } from '../utils/functional.js'
 
 import concat from './concat.js'
@@ -44,7 +45,9 @@ test('should merge strings from several pipelines into array', (t) => {
   }
   const expectedValue = ['bergen', '-', 'johnf']
 
-  const ret = concat('group', value('-'), 'user')(options)(identity)(state)
+  const ret = concat('group', transform(value('-')), 'user')(options)(identity)(
+    state
+  )
 
   t.deepEqual(ret.value, expectedValue)
 })

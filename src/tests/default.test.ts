@@ -1,6 +1,6 @@
 import test from 'ava'
-import { mapTransform, alt, fwd, rev } from '../index.js'
-import value from '../operations/value.js'
+import { mapTransform, alt, fwd, rev, transform } from '../index.js'
+import { value } from '../transformers/value.js'
 import { get } from '../operations/getSet.js'
 
 // Tests
@@ -8,7 +8,7 @@ import { get } from '../operations/getSet.js'
 test('should use default value', (t) => {
   const def = {
     $iterate: true,
-    title: [alt('content.heading', value('Default heading'))],
+    title: [alt('content.heading', transform(value('Default heading')))],
   }
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
@@ -22,7 +22,7 @@ test('should use default value for null', (t) => {
   const optionsWithNullAsNoValue = { noneValues: [undefined, null] }
   const def = {
     $iterate: true,
-    title: [alt('content.heading', value('Default heading'))],
+    title: [alt('content.heading', transform(value('Default heading')))],
   }
   const data = [
     { content: { heading: null } },
@@ -51,7 +51,7 @@ test('should use default value in array', (t) => {
 test('should use default value in reverse', (t) => {
   const def = {
     $iterate: true,
-    title: alt('content.heading', rev(value('Default heading'))),
+    title: alt('content.heading', rev(transform(value('Default heading')))),
   }
   const data = [{}, { title: 'From data' }]
   const expected = [
@@ -68,10 +68,7 @@ test('should run function as default value', (t) => {
   const def = {
     $iterate: true,
     title: [
-      alt(
-        'content.heading',
-        value(() => 'Default from function')
-      ),
+      alt('content.heading', transform(value(() => 'Default from function'))),
     ],
   }
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
@@ -156,8 +153,8 @@ test('should use directional default value - forward', (t) => {
     title: [
       alt(
         'content.heading',
-        fwd(value('Default heading')),
-        rev(value('Wrong way'))
+        fwd(transform(value('Default heading'))),
+        rev(transform(value('Wrong way')))
       ),
     ],
   }
@@ -175,8 +172,8 @@ test('should use directional default value - reverse', (t) => {
     title: [
       alt(
         'content.heading',
-        fwd(value('Wrong way')),
-        rev(value('Default heading'))
+        fwd(transform(value('Wrong way'))),
+        rev(transform(value('Default heading')))
       ),
     ],
   }
@@ -194,7 +191,7 @@ test('should use directional default value - reverse', (t) => {
 test.failing('should not use default values', (t) => {
   const def = {
     $iterate: true,
-    title: [alt('content.heading', value('Default heading'))],
+    title: [alt('content.heading', transform(value('Default heading')))],
   }
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [undefined, { title: 'From data' }]
@@ -239,7 +236,7 @@ test.failing('should not set missing prop to undefined in array', (t) => {
 test.failing('should not use default values on rev', (t) => {
   const def = {
     $iterate: true,
-    title: [alt('content.heading', value('Default heading'))],
+    title: [alt('content.heading', transform(value('Default heading')))],
   }
   const data = [{}, { title: 'From data' }]
   const expected = [undefined, { content: { heading: 'From data' } }]

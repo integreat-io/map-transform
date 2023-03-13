@@ -2,7 +2,7 @@ import test from 'ava'
 import { MapPipe } from '../types.js'
 import { get, set } from './getSet.js'
 import transform from './transform.js'
-import value from './value.js'
+import { value } from '../transformers/value.js'
 import { identity } from '../utils/functional.js'
 
 import pipe from './pipe.js'
@@ -295,7 +295,7 @@ test('should modify on several levels and with several objects', (t) => {
         $modify: 'meta',
         options: {
           $modify: 'meta.options',
-          'Content-Type': value('application/json'),
+          'Content-Type': transform(value('application/json')),
         },
       },
     },

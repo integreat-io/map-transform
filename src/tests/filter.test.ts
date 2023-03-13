@@ -374,3 +374,29 @@ test('should only apply filter from operation object going in reverse', (t) => {
   t.deepEqual(retFwd, dataRev)
   t.is(retRev, undefined)
 })
+
+test('should filter after a lookup', (t) => {
+  const def = [
+    'ids',
+    { $lookup: '^^.content', path: 'id' },
+    {
+      $iterate: true,
+      title: 'heading',
+    },
+    filter(noHeadingTitle()),
+  ]
+  const data = {
+    ids: ['ent1', 'ent2'],
+    content: [
+      { id: 'ent1', heading: 'The heading' },
+      { id: 'ent2', heading: 'Just this' },
+      { id: 'ent3', heading: 'Another heading' },
+      { id: 'ent3', heading: 'And not this' },
+    ],
+  }
+  const expected = [{ title: 'Just this' }]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})

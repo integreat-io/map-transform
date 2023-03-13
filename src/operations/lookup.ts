@@ -1,5 +1,4 @@
 import mapAny = require('map-any')
-import pipe from './pipe.js'
 import {
   Operation,
   State,
@@ -7,9 +6,11 @@ import {
   DataMapper,
   TransformerProps,
 } from '../types.js'
-import { get } from './getSet.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
-import { dataMapperFromOperation } from '../utils/definitionHelpers.js'
+import {
+  defsToDataMapper,
+  operationFromDef,
+} from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 
 export interface Props extends TransformerProps {
@@ -53,8 +54,12 @@ export default function lookup({
   matchSeveral = false,
 }: Props): Operation {
   return () => (next) => {
-    const getter = dataMapperFromOperation(pipe(get(propPath)))
-    const mapValueFn = mapValue(pipe([arrayPath]), getter, matchSeveral)
+    const getter = defsToDataMapper(propPath)
+    const mapValueFn = mapValue(
+      operationFromDef(arrayPath),
+      getter,
+      matchSeveral
+    )
 
     return function doLookup(state) {
       const nextState = next(state)

@@ -119,7 +119,28 @@ test('should match several matches when `matchSeveral` is true', (t) => {
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should set value to undefined when missing array', (t) => {
+test('should force the value at array path to an array', (t) => {
+  const data = {
+    content: { author: 'user2' },
+    related: {
+      users: { id: 'user2', name: 'User 2' },
+    },
+  }
+  const state = {
+    context: [data],
+    value: 'user2',
+  }
+  const expected = {
+    context: [data],
+    value: { id: 'user2', name: 'User 2' },
+  }
+
+  const ret = lookup(props)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value to undefined when array path yields undefined', (t) => {
   const data = {
     content: { author: 'user2' },
   }

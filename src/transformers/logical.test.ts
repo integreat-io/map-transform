@@ -6,13 +6,13 @@ import logical from './logical.js'
 
 const state = {
   rev: false,
-  onlyMapped: false,
+  noDefaults: false,
   context: [],
   value: {},
 }
 const stateRev = {
   rev: true,
-  onlyMapped: false,
+  noDefaults: false,
   context: [],
   value: {},
 }

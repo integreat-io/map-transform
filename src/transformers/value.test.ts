@@ -6,7 +6,7 @@ import { value, fixed } from './value.js'
 
 const state = {
   rev: false,
-  onlyMapped: false,
+  noDefaults: false,
   context: [],
   value: {},
 }
@@ -46,11 +46,11 @@ test('should return value when not undefined', (t) => {
   t.is(ret, 'The default')
 })
 
-test('should not return default value when onlyMapped is true', (t) => {
+test('should not return default value when noDefaults is true', (t) => {
   const data = undefined
-  const contextonlyMapped = { ...state, onlyMapped: true }
+  const stateWithNoDefaults = { ...state, noDefaults: true }
 
-  const ret = value({ value: 'The default' })(data, contextonlyMapped)
+  const ret = value({ value: 'The default' })(data, stateWithNoDefaults)
 
   t.is(ret, undefined)
 })
@@ -90,11 +90,11 @@ test('should return fixed value from function', (t) => {
   t.is(ret, 'Value from function')
 })
 
-test('should return fixed value also when onlyMapped is true', (t) => {
+test('should return fixed value also when noDefaults is true', (t) => {
   const data = undefined
-  const contextonlyMapped = { ...state, onlyMapped: true }
+  const stateWithNoDefaults = { ...state, noDefaults: true }
 
-  const ret = fixed({ value: 'The default' })(data, contextonlyMapped)
+  const ret = fixed({ value: 'The default' })(data, stateWithNoDefaults)
 
   t.is(ret, 'The default')
 })

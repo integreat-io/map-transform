@@ -962,4 +962,4 @@ test.todo('should not strip away star')
 // }
 // const expectedValue = { 's:header': { '*tu:api-key': 's3cr3t' } }
 
-test.todo('should not set undefined when onlyMapped is true')
+test.todo('should not set undefined when state.noDefaults is true')

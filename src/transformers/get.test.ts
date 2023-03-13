@@ -13,7 +13,7 @@ const arrayData = ['first', 'second', 'third']
 
 const state = {
   rev: false,
-  onlyMapped: false,
+  noDefaults: false,
   context: [],
   value: {},
 }
@@ -99,7 +99,7 @@ test('should support root in path', (t) => {
     context: [{ data: [data], meta: { user: 'maryk' } }, [data]],
     value: data,
     rev: false,
-    onlyMapped: false,
+    noDefaults: false,
   }
   const expected = 'maryk'
 

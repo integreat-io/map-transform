@@ -54,13 +54,7 @@ export function mapTransform(
   const mapFn = operationFromDef(def)(completeOptions)(identity)
 
   return Object.assign(composeMapFunction(mapFn, {}), {
-    onlyMappedValues: composeMapFunction(mapFn, { onlyMapped: true }),
-    rev: Object.assign(composeMapFunction(mapFn, { rev: true }), {
-      onlyMappedValues: composeMapFunction(mapFn, {
-        rev: true,
-        onlyMapped: true,
-      }),
-    }),
+    rev: Object.assign(composeMapFunction(mapFn, { rev: true }), {}),
   })
 }
 

@@ -7,7 +7,7 @@ import index from './indexFn.js'
 const data = { id: 'ent1', $type: 'entry' }
 
 const state = {
-  onlyMapped: false,
+  noDefaults: false,
   context: [],
   value: {},
   rev: false,

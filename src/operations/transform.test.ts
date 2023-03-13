@@ -115,7 +115,7 @@ test('should pass state to transform function', (t) => {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
     rev: false,
-    onlyMapped: true,
+    noDefaults: true,
   }
   const expected = state
 
@@ -130,7 +130,7 @@ test('should pass state to rev transform function', (t) => {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
     rev: true,
-    onlyMapped: false,
+    noDefaults: false,
   }
   const expected = state
 

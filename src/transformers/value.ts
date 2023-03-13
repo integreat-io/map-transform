@@ -15,7 +15,7 @@ export const extractValue = (value: unknown): unknown => {
 
 export function value(props: unknown): DataMapper {
   const value = extractValue(props)
-  return (_data, state) => (state.onlyMapped ? undefined : value)
+  return (_data, state) => (state.noDefaults ? undefined : value)
 }
 
 export function fixed(props: unknown): DataMapper {

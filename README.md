@@ -722,7 +722,8 @@ const def10 = {
 }
 ```
 
-The operation will not set anything when mapping with `.onlyMappedValues()`.
+The operation will not set anything when mapping when `state.noDefaults` is
+`true`.
 
 If you want to define the `value` operation as an operation object, use
 `$transform` or the short form `$value`:
@@ -742,7 +743,7 @@ of any data that is already present at that point. The data may be an object,
 a string, a number, a boolean, or an array of any of those.
 
 This is exactly the same as `value()`, except that the value set with `fixed()`
-will be included when mapping with `.onlyMappedValues()` as well.
+will be included even when `state.noDefaults` is `true`.
 
 #### `alt(pipeline)` operation
 
@@ -1036,7 +1037,7 @@ the data you give it, which is usually not what you want in these cases.
 The solution is to plug it in the other direction.
 
 You could have accomplished the same with `value(undefined)`, but this will not
-work for `onlyMappedValues()`. `plug()` will do its trick in all cases.
+work when `state.noDefaults` is `true`. `plug()` will do its trick in all cases.
 
 #### `lookup({ arrayPath, propPath, matchSeveral })` operation
 
@@ -1577,43 +1578,40 @@ probably be resolved in the future. For now, make sure to always have a path
 at the beginning of all pipelines if you plan to reverse transform – and the
 same goes for flipped transform objects if you want to forward transform.
 
-### Mapping without fallbacks
+### Mapping without defaults
 
-MapTransform will try its best to map the data it gets to the state you want,
-and will always set all properties, even though the mapping you defined result
-in `undefined`. You may include `alt()` operations to provide default or
-fallback values for these cases.
+MapTransform will try its best to map the data to the state you want, and will
+always set all properties, even though the mapping you defined result in
+`undefined`. You may include `alt()` operations to provide default or fallback
+values for these cases.
 
-But sometimes, you want just the data that is actually present in the source
-data, without defaults or properties set to `undefined`. MapTransform's
-`onlyMappedValues()` method gives you this.
-
-Note that `value()` operations will also be skipped when mapping with
-`onlyMappedValues()`, to honor the request for only the values that comes from
-the data source. To override this behavior, use the `fixed()` operation instead,
-which will set a value also in this case.
+But sometimes, you only want the data that is actually present in the source
+data, without defaults or properties set to `undefined`. You may accomplish this
+by setting `state.noDefaults` to true, usually by setting the `$noDefaults` flag
+on a transform object. This will keep values from the `value` transformer from
+being used in the mutation, but note that values from the `fixed` transformer
+will still be included. This is by design.
 
 ```javascript
-import { mapTransform, alt, value } from 'map-transform'
+import { mapTransform, alt, transform, transformers } from 'map-transform'
+const { value } = transformers
 
 const def24 = {
+  $noDefaults: true,
   id: 'customerNo',
-  name: alt('fullname', value('Anonymous')),
+  name: alt('fullname', transform(value('Anonymous'))),
 }
 
 const mapper = mapTransform(def24)
 
 mapper({ customerNo: 'cust4' })
-// --> { id: 'cust4', name: 'Anonymous' }
-
-mapper.onlyMappedValues({ customerNo: 'cust4' })
 // --> { id: 'cust4' }
 
-mapper.onlyMappedValues({ customerNo: 'cust5', fullname: 'Alex Troy' })
+mapper({ customerNo: 'cust5', fullname: 'Alex Troy' })
 // --> { id: 'cust5', name: 'Alex Troy' }
 
 // The method is also available for reverse mapping
-mapper.rev.onlyMappedValues({ id: 'cust4' })
+mapper.rev({ id: 'cust4' })
 // -> { customerNo: 'cust4' }
 ```
 

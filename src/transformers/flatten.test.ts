@@ -6,7 +6,7 @@ import flatten from './flatten.js'
 
 const state = {
   rev: false,
-  onlyMapped: false,
+  noDefaults: false,
   context: [],
   value: {},
 }

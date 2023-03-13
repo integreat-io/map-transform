@@ -66,13 +66,13 @@ export const isNoneValueState = (
 // State
 
 export const populateState =
-  ({ rev = false, onlyMapped = false, target = undefined }: Partial<State>) =>
+  ({ rev = false, noDefaults = false, target = undefined }: Partial<State>) =>
   (data: unknown): State => ({
     context: [],
     value: data,
     target,
     rev,
-    onlyMapped,
+    noDefaults,
   })
 
 export const goForward = (state: State) => ({
@@ -85,5 +85,5 @@ export const stopIteration = (state: State) => ({ ...state, iterate: false })
 
 export const setNoDefaults = (state: State, noDefaults?: boolean) => ({
   ...state,
-  onlyMapped: noDefaults ?? state.onlyMapped,
+  noDefaults: noDefaults ?? state.noDefaults,
 })

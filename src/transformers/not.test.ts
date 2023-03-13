@@ -7,7 +7,7 @@ import not from './not.js'
 const returnIt = (value: unknown) => !!value
 const state = {
   rev: false,
-  onlyMapped: false,
+  noDefaults: false,
   context: [],
   value: {},
 }

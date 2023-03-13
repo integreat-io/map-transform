@@ -24,16 +24,16 @@ test('should set value to undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set value to undefined when onlyMapped', (t) => {
+test('should set value to undefined when noDefaults', (t) => {
   const state = {
     context: [],
     value: { data: { name: 'John F.' } },
-    onlyMapped: true,
+    noDefaults: true,
   }
   const expected = {
     context: [],
     value: undefined,
-    onlyMapped: true,
+    noDefaults: true,
   }
 
   const ret = plug()(options)(identity)(state)

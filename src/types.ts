@@ -31,7 +31,7 @@ export interface State {
   target?: unknown
   rev?: boolean
   flip?: boolean
-  onlyMapped?: boolean
+  noDefaults?: boolean
   arr?: boolean
   iterate?: boolean
   index?: number
@@ -170,11 +170,7 @@ export type MapDefinition =
   | Path
   | null
 
-export interface MapTransformWithOnlyMappedValues {
+export interface MapTransform {
   (data: unknown): any
-  onlyMappedValues: (data: unknown) => any
-}
-
-export interface MapTransform extends MapTransformWithOnlyMappedValues {
-  rev: MapTransformWithOnlyMappedValues
+  rev: (data: unknown) => any
 }

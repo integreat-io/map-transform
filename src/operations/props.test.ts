@@ -518,7 +518,7 @@ test('should include values from value transformer when $noDefaults is false', (
 })
 
 test('should not clear $noDefaults when not set', (t) => {
-  const stateWithNoDefaults = { ...stateWithObject, onlyMapped: true }
+  const stateWithNoDefaults = { ...stateWithObject, noDefaults: true }
   const def = {
     id: transform(value('ent1')),
     title: 'headline',
@@ -527,7 +527,7 @@ test('should not clear $noDefaults when not set', (t) => {
     age: 'unknown',
   }
   const expected = {
-    onlyMapped: true,
+    noDefaults: true,
     context: [{ data, params: { source: 'news1' } }, data],
     value: {
       id: undefined,

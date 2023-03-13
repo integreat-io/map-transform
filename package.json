@@ -27,7 +27,6 @@
   },
   "scripts": {
     "test": "npm run lint && npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.cjs",
-    "test:inspect": "node --inspect node_modules/ava/profile.js",
     "test:watch": "npm run dev",
     "dev": "ava --watch",
     "build": "tsc",
@@ -56,6 +55,6 @@
     "@types/deep-freeze": "^0.1.2",
     "@types/sinon": "^10.0.13",
     "deep-freeze": "0.0.1",
-    "sinon": "^15.0.1"
+    "sinon": "^15.0.2"
   }
 }

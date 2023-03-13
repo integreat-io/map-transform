@@ -505,3 +505,12 @@ test('should map with parent in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should do nothing when no pipeline', (t) => {
+  const def = undefined
+  const expected = state
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})

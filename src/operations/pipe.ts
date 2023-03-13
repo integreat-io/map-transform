@@ -36,9 +36,9 @@ function splitArrayPaths(defs: MapPipe) {
   return pipeline
 }
 
-export default function pipe(defs: MapPipe): Operation {
+export default function pipe(defs?: MapPipe): Operation {
   return (options) => {
-    if (defs.length === 0) {
+    if (!Array.isArray(defs) || defs.length === 0) {
       return identity
     }
 

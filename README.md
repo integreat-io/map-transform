@@ -1886,6 +1886,38 @@ versions, and should not be used in custom transformers:
 - `target`: The target object at the current point. When setting on a path, the
   setting will happen on this target.
 
+### Defining transformations with JSON
+
+The definition format of MapTransform is well suited for JSON, which may be
+useful when storing the definitions in a database or transferring it over http
+or whatever the need would be.
+
+Most of the operations has operation object equivalents, allowing the operations
+to be expressed as JSON-friendly objects. With a set of commonly shared
+transformers passed to `mapTransform()` on the `options` object, storing and
+sharing definitions over JSON is quite trivial. This is how we use MapTransform
+in [Integreat](https://github.com/integreat-io/integreat#readme), which it was
+initially written for.
+
+There's probably only one real challenge in turning a transformation defition
+into JSON: `undefined`. JSON have no way of specifying `undefined` other than
+omiting properties that would have had `undefined` as a value. So when we e.g.
+needs to specify that a value should be mapped to `undefined`, or we would like
+to specifically set a value to `undefined` with `{ $value: undefined }`, JSON
+has in itself no real solution.
+
+The "hack" we have chosen for MapTransform is to use the value
+`'**undefined**'`, as we think it's unlikely that anyone will use that value for
+any other reason. (We should probably make it configurable, just in case.) The
+operations and transformers where it is important to specify `undefined` also
+supports this keyword, and you'll find it in the documentation where it's
+relevant.
+
+Another value that is often used in transformations and is not natively
+supported in JSON, is the Date object. A convention is to specify dates in the
+ISO8601 format ("2023-03-07T07:03:17Z") or as a UNIX timestamp, and use
+a transformer to turn it into an actual Date object.
+
 ## Running the tests
 
 The tests can be run with `npm test`.

@@ -1918,6 +1918,23 @@ supported in JSON, is the Date object. A convention is to specify dates in the
 ISO8601 format ("2023-03-07T07:03:17Z") or as a UNIX timestamp, and use
 a transformer to turn it into an actual Date object.
 
+### TypeScript
+
+MapTransform is written completely in TypeScript, even though all the examples
+in this documentation are in JavaScript for simplicity and readability.
+
+All relevent types are exposed at `map-transform/types`, and may be imported
+into your project like so:
+
+```javascript
+import type { Transformer } from 'map-transform/types'
+```
+
+The most usefull types will probably be `Transformer` and `MapDefinition`.
+
+Data given to and returned from MapTransform is typed as `unknown`, as we can't
+know what it will be, and to signal that it should be typed by the user.
+
 ## Running the tests
 
 The tests can be run with `npm test`.

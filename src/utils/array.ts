@@ -1,4 +1,4 @@
-export const ensureArray = (value: unknown) =>
+export const ensureArray = <T = unknown>(value: T | T[]): T[] =>
   Array.isArray(value)
     ? value
     : value === undefined || value === null

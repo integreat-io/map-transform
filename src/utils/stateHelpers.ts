@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { State } from '../types.js'
 
 // Context
@@ -46,7 +45,7 @@ export const setStateValue = (
       }
     : { ...state, value }
 
-export const getStateValue = (state: State): any => state.value
+export const getStateValue = (state: State): unknown => state.value
 
 export const setValueFromState = (
   state: State,

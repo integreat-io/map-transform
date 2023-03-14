@@ -10,7 +10,7 @@ import {
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
-import { compose, identity } from '../utils/functional.js'
+import { identity } from '../utils/functional.js'
 import { Path, Operation, State, StateMapper } from '../types.js'
 import xor from '../utils/xor.js'
 
@@ -105,7 +105,7 @@ function getSet(isSet = false) {
     const [basePath, isArr, isIndexProp] = preparePath(path)
     const isIndex = typeof basePath === 'number'
     const getArrAwareStateValue = isArr
-      ? compose(ensureArray, getStateValue)
+      ? (state: State) => ensureArray(getStateValue(state))
       : getStateValue
     const getSetFn = isIndex ? getSetIndex(basePath) : getSetProp(basePath)
 

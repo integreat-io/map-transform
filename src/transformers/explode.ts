@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DataMapper } from '../types.js'
 import { isObject } from '../utils/is.js'
 
@@ -39,7 +38,7 @@ function doImplode(data: unknown) {
   }
 }
 
-function doExplode(data: unknown): any[] | undefined {
+function doExplode(data: unknown): unknown[] | undefined {
   if (isObject(data)) {
     return Object.entries(data)
       .filter(([, value]) => value !== undefined)

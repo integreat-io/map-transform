@@ -6,9 +6,7 @@ import {
   isNoneValueState,
 } from '../utils/stateHelpers.js'
 import { operationFromDef } from '../utils/definitionHelpers.js'
-
-const isNullOrUndefined = (value: unknown): value is null | undefined =>
-  value === null || value === undefined
+import { isObject } from '../utils/is.js'
 
 export function mergeExisting<T, U>(
   target: T[],
@@ -30,14 +28,14 @@ export function mergeExisting<T, U>(
 function mergeStates(state: State, thisState: State) {
   const target = getStateValue(state)
   const source = getStateValue(thisState)
-  return setStateValue(
-    state,
-    isNullOrUndefined(source)
-      ? target
-      : isNullOrUndefined(target)
-      ? source
-      : deepmerge(target, source, { arrayMerge: mergeExisting })
-  )
+
+  const value = !isObject(source)
+    ? target
+    : !isObject(target)
+    ? source
+    : deepmerge(target, source, { arrayMerge: mergeExisting })
+
+  return setStateValue(state, value)
 }
 
 export default function merge(...defs: MapDefinition[]): Operation {

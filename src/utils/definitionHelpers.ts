@@ -236,5 +236,5 @@ export function operationFromDef(def?: MapDefinition): Operation {
   return Array.isArray(operations) ? pipe(operations) : operations
 }
 
-export const defsToDataMapper = (def: MapDefinition): DataMapper =>
+export const defsToDataMapper = (def?: MapDefinition): DataMapper =>
   dataMapperFromOperation(operationFromDef(def))

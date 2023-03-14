@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export type Path = string
 
 export type DictionaryValue = string | number | boolean | null | undefined
@@ -12,13 +10,13 @@ export interface Dictionaries {
 }
 
 export interface ValueFunction {
-  (): any
+  (): unknown
 }
 
 export type TransformerProps = Record<string, unknown>
 
 export interface DataMapper {
-  (data: unknown, state: State): any
+  (data: unknown, state: State): unknown
 }
 
 export interface Transformer<T = TransformerProps> {
@@ -171,6 +169,6 @@ export type MapDefinition =
   | null
 
 export interface MapTransform {
-  (data: unknown): any
-  rev: (data: unknown) => any
+  (data: unknown): unknown
+  rev: (data: unknown) => unknown
 }

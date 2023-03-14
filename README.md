@@ -314,6 +314,101 @@ been in a transform pipeline (which the dot notation path really is, and – com
 to think of it – the transform object itself too). This is explained in detail
 below.
 
+#### Dot notation paths
+
+A central building block of MapTransform is the path, which at the most basic
+will be the key of an object prop to fetch, and you may fetch deeper values by
+putting property keys together seperated by a dot (`.`).
+
+For example, given the data below:
+
+```javascript
+const data = {
+  id: '12345',
+  content: {
+    title: 'The title',
+  },
+  tags: [{ id: 'news' }, { id: 'sports' }],
+}
+```
+
+... the path `id` will get `'12345'`, and 'content.title' will get
+`'The title'`.
+
+Paths that does not match a property in the data, will return `undefined`.
+MapTransform will never return an error when paths don't match the data, not
+even if the lower levels are missing (counter to the usual behavior of
+JavaScript and other programming languages). So when getting `unknown.path` from
+the data above, you will simply get `undefined`.
+
+Setting with a dot notation path works just as expected: If you set `'The text'`
+at the path `content.text`, you will get the following object:
+`{ content: { text: 'The text' } }`. Inside a MapTransform transformation, you
+would usually set on several paths that would combine to a bigger object
+structure.
+
+#### Paths and arrays
+
+When a path points to an array, the entire array will be returned. Paths may
+also point to props on objects within arrays, and MapTransform will resolve this
+be mapping over the items in the array to its best effort. Getting `tags.id`
+from the data above will return the array `['news', 'sports']`, as these are the
+`id` props from the object in the array found at `tags`.
+
+You may also explicitly state that you expect an array. Even though you don't
+have to in the example above, you could have used the path `tags[].id` to make
+it clearer what you expect, but `tags.id[]` would have also given the same
+result. The main big reason to explicitly include the brackets, is to make sure
+that you always get an array, even if the data has no array. The path
+`content[].title` would return `['The title']` as if `content` was an array.
+
+It may not always be straight forward how MapTransform should set on a path with
+array notation, but it will again do it's best. When there is no other
+indications as to where the array belongs, MapTransform will set it where the
+array notation is. So `content[].title` will return the object
+`{ content: [{ title: 'The title' }] }`, while `content.title[]` would return
+`{ content: { title: ['The title'] } }`, This will most likely work as you
+expect, as long as you use the brackets notation to guide MapTransform.
+
+> Editors note: We should give more complicated examples as well.
+
+Finally, you may include index numbers between the brackets, to only get a
+specified item. `tags[0].id` would get `'news'` from the data above. The index
+version of the brackets notation won't return an array (as expected).
+
+When setting with an index bracket notation, you'll get an array where the
+brackets are, with one item at the index you've specified.
+
+#### Parent and root paths
+
+A subtle aspect of using paths to get values in
+[transform pipelines](#transform-pipeline), is that you are not only returning
+the value, you are moving further down in the data structure. When you apply the
+path `content` to the data above inside a transform pipeline, the object
+`{ title: 'The title' }` will be returned and will in essense be the only data
+that the next operation in the pipeline will know.
+
+You don't have to understand this for simple cases, but in more advanced
+transformations you may find yourself further down in the data, wanting values
+further up. This is where parent and root paths come in handy.
+
+In the example with the `content` path, you may access the `id` with the path
+`^.id`. The carret (`'^'`) means going one step up, and you can think of it in
+much the same way as `../` in file paths on any computer. You may go up several
+levels with e.g. `^.^.^.prop` (not applicable to our example).
+
+In an iteration you need to remember that the array counts as one level, so if
+iterating the `tags[]` array from our example, you would have to use the path
+`^.^.id` to get to the id. You could also use `^.[0]` to get the first item in
+the array you're iterating.
+
+The root notation follows the same logic, but will always go to the base level,
+regardless of how many levels down you have moved. Roots are specified with
+double carrets, so the path `^^.id` will get the id from our data from anywhere
+in the data structure, be it in `content` or when iterating through `tags[]`.
+
+Setting on parent and root paths are currently not supported.
+
 #### A note on undefined and null
 
 MapTransform will treat `undefined` as "no value", and so `undefined` will not

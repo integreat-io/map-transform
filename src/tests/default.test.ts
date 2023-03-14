@@ -18,6 +18,16 @@ test('should use default value', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should use default value on root', (t) => {
+  const def = alt(transform(value('No value')))
+  const data = undefined
+  const expected = 'No value'
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use default value for null', (t) => {
   const optionsWithNullAsNoValue = { nonvalues: [undefined, null] }
   const def = {

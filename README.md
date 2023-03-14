@@ -326,19 +326,22 @@ below.
 
 #### A note on undefined and null
 
-MapTransform will treat `undefined` as "no value", and so `undefined` will not
-be transformed. If an `undefined` value meets a transform object or a transform
-pipeline, it will always produce `undefined`.
+MapTransform will treat `undefined` as "no value" in several ways:
+
+- When using the `alt` operator, alternative pipelines are run as long as we get
+  `undefined` (or there are no more alternative pipelines)
+- When `state.noDefaults` is `true`, `undefined` values will not be set
+- When forcing an array with brackets notation on a path, `undefined` will
+  return an empty array (not `[undefined]`)
 
 This is not the case for `null`, though. MapTransform treats `null` as a value,
-an intended nothing, and will apply a transform object to it, even though it
-will most likely produce nothing but default values. To change this behavior,
-set `nonvalues: [undefined, null]` on the `options` object passed to
-MapTransform. This will essentially make MapTransform treat `null` the same way
-as `undefined`.
+an intended nothing. To change this behavior, set `nonvalues: [undefined, null]`
+on the `options` object passed to MapTransform. This will essentially make
+MapTransform treat `null` the same way as `undefined`.
 
-The example above sets `undefined` and `null` as non-values, but you could in
-principle set any primitive values here.
+You could in principle include any primitive value in `nonvalues` and it will be
+treated as `undefined`, e.g. an empty string or the number `0`, to mention a few
+possible use cases.
 
 #### Directional transform objects
 

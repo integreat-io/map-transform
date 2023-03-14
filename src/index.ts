@@ -37,9 +37,6 @@ export default function mapTransform(
   const stateMapper = operationFromDef(def)(completeOptions)(identity)
 
   return function transform(data, initialState) {
-    if (data === undefined) {
-      return undefined
-    }
     return getStateValue(stateMapper(populateState(data, initialState || {})))
   }
 }

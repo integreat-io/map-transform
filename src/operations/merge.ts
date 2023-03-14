@@ -1,5 +1,5 @@
 import deepmerge = require('deepmerge')
-import { Operation, State, MapDefinition } from '../types.js'
+import { Operation, State, TransformDefinition } from '../types.js'
 import {
   getStateValue,
   setStateValue,
@@ -38,7 +38,7 @@ function mergeStates(state: State, thisState: State) {
   return setStateValue(state, value)
 }
 
-export default function merge(...defs: MapDefinition[]): Operation {
+export default function merge(...defs: TransformDefinition[]): Operation {
   return (options) => (next) => {
     if (defs.length === 0) {
       return (state) => setStateValue(next(state), undefined)

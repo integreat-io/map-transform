@@ -1930,7 +1930,9 @@ into your project like so:
 import type { Transformer } from 'map-transform/types'
 ```
 
-The most usefull types will probably be `Transformer` and `MapDefinition`.
+The most usefull types will probably be `Transformer`, that you should use when
+writing your own transformer, and `TransformDefinition`, that types the full
+definition format of MapTransform.
 
 Data given to and returned from MapTransform is typed as `unknown`, as we can't
 know what it will be, and to signal that it should be typed by the user.

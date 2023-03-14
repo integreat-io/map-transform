@@ -1,4 +1,4 @@
-import { Operation, MapDefinition } from '../types.js'
+import { Operation, TransformDefinition } from '../types.js'
 import { setStateValue, getStateValue } from '../utils/stateHelpers.js'
 import { operationFromDef } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
@@ -6,7 +6,7 @@ import { identity } from '../utils/functional.js'
 const merge = <T, U>(left: T[], right: U | U[]) =>
   Array.isArray(right) ? [...left, ...right] : [...left, right]
 
-export default function concat(...defs: MapDefinition[]): Operation {
+export default function concat(...defs: TransformDefinition[]): Operation {
   return (options) => (next) => {
     const fns = defs.map((def) => operationFromDef(def)(options)(identity))
 

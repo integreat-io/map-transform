@@ -7,9 +7,9 @@ import plug from './plug.js'
 import {
   Operation,
   State,
-  MapObject,
+  TransformObject,
   Options,
-  MapDefinition,
+  TransformDefinition,
   StateMapper,
 } from '../types.js'
 import {
@@ -21,8 +21,8 @@ import {
   stopIteration,
 } from '../utils/stateHelpers.js'
 import {
-  isMapObject,
-  isMapDefinition,
+  isTransformObject,
+  isTransformDefinition,
   operationFromDef,
 } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
@@ -30,9 +30,9 @@ import { isObject } from '../utils/is.js'
 
 function isRegularProp(
   entry: [string, unknown]
-): entry is [string, MapDefinition] {
+): entry is [string, TransformDefinition] {
   const [prop, pipeline] = entry
-  return prop[0] !== '$' && isMapDefinition(pipeline)
+  return prop[0] !== '$' && isTransformDefinition(pipeline)
 }
 
 function isWrongDirection(direction: unknown, options: Options) {
@@ -101,10 +101,10 @@ function removeSlash(prop: string) {
 
 function createSetPipeline([prop, pipeline]: [
   string,
-  MapDefinition
+  TransformDefinition
 ]): Operation {
   // Adjust sub map object
-  if (isMapObject(pipeline)) {
+  if (isTransformObject(pipeline)) {
     pipeline = {
       ...pipeline,
       $iterate: pipeline.$iterate || isArr(prop),
@@ -157,7 +157,7 @@ const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
   flip: flip || state.flip || false,
 })
 
-export default function props(def: MapObject): Operation {
+export default function props(def: TransformObject): Operation {
   if (Object.keys(def).length === 0) {
     return (_options) => (next) => (state) =>
       setStateValue(next(state), undefined)

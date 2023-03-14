@@ -1,5 +1,5 @@
 import test from 'ava'
-import { MapPipe } from '../types.js'
+import { Pipeline } from '../types.js'
 import { get, set } from './getSet.js'
 import transform from './transform.js'
 import { value } from '../transformers/value.js'
@@ -285,7 +285,7 @@ test('should treat target correctly in reverse', (t) => {
 })
 
 test('should handle empty pipeline', (t) => {
-  const def: MapPipe = []
+  const def: Pipeline = []
   const expected = state
 
   const ret = pipe(def)(options)(identity)(state)
@@ -294,7 +294,7 @@ test('should handle empty pipeline', (t) => {
 })
 
 test('should handle empty pipeline in reverse', (t) => {
-  const def: MapPipe = []
+  const def: Pipeline = []
   const stateRev = { ...state, rev: true }
   const expected = stateRev
 

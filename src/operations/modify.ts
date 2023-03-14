@@ -1,4 +1,4 @@
-import { Operation, MapDefinition } from '../types.js'
+import { Operation, TransformDefinition } from '../types.js'
 import {
   getStateValue,
   setStateValue,
@@ -9,7 +9,7 @@ import { operationFromDef } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
 import { identity } from '../utils/functional.js'
 
-export default function modify(def: MapDefinition): Operation {
+export default function modify(def: TransformDefinition): Operation {
   const runFn = operationFromDef(def)
 
   return (options) => (next) => (state) => {

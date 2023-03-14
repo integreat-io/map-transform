@@ -1,4 +1,4 @@
-import { DataMapper, MapDefinition, Operation } from '../types.js'
+import { DataMapper, TransformDefinition, Operation } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { operationFromDef } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
@@ -14,9 +14,9 @@ function runCondition(conditionDef: DataMapper): Operation {
 }
 
 export default function (
-  conditionDef: DataMapper | MapDefinition,
-  trueDef?: MapDefinition,
-  falseDef?: MapDefinition
+  conditionDef: DataMapper | TransformDefinition,
+  trueDef?: TransformDefinition,
+  falseDef?: TransformDefinition
 ): Operation {
   const falseFn = operationFromDef(falseDef)
   if (!conditionDef) {

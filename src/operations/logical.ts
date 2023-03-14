@@ -1,4 +1,4 @@
-import { MapDefinition, Operation } from '../types.js'
+import { TransformDefinition, Operation } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { operationFromDef } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
@@ -6,7 +6,7 @@ import { identity } from '../utils/functional.js'
 type LogicFn = (a: boolean, b: boolean) => boolean
 
 const prepareLogical = (logicFn: LogicFn) =>
-  function logical(...pipelines: MapDefinition[]): Operation {
+  function logical(...pipelines: TransformDefinition[]): Operation {
     const fns = pipelines.map((pipeline) => operationFromDef(pipeline))
 
     return (options) => (next) =>

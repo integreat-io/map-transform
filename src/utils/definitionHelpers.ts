@@ -2,22 +2,22 @@
 import {
   Operation,
   DataMapper,
-  MapDefinition,
-  MapObject,
-  Path,
-  MapPipe,
-  OperationObject,
+  TransformDefinition,
   TransformObject,
-  FilterObject,
-  IfObject,
-  ApplyObject,
-  AltObject,
-  MergeObject,
-  ValueObject,
-  AndObject,
-  OrObject,
-  ConcatObject,
-  LookupObject,
+  Path,
+  Pipeline,
+  OperationObject,
+  TransformOperation,
+  FilterOperation,
+  IfOperation,
+  ApplyOperation,
+  AltOperation,
+  MergeOperation,
+  ValueOperation,
+  AndOperation,
+  OrOperation,
+  ConcatOperation,
+  LookupOperation,
   Options,
 } from '../types.js'
 import { getStateValue, setStateValue } from './stateHelpers.js'
@@ -47,7 +47,7 @@ const removeProp = (obj: Record<string, unknown>, prop: string) =>
   Object.fromEntries(Object.entries(obj).filter(([key]) => key !== prop))
 
 const transformDefFromShortcut = (
-  def: OperationObject | MapObject,
+  def: OperationObject | TransformObject,
   transformer: string,
   prop: string
 ) => ({
@@ -57,31 +57,33 @@ const transformDefFromShortcut = (
 })
 
 export const isOperationType = <T extends OperationObject>(
-  def: MapObject | OperationObject,
+  def: TransformObject | OperationObject,
   prop: string
 ): def is T => def[prop] !== undefined
 export const hasOperationProps = (
-  def: MapObject | OperationObject
+  def: TransformObject | OperationObject
 ): def is OperationObject =>
-  isOperationType<TransformObject>(def, '$transform') ||
-  isOperationType<FilterObject>(def, '$filter') ||
-  isOperationType<IfObject>(def, '$if') ||
-  isOperationType<ApplyObject>(def, '$apply') ||
-  isOperationType<AltObject>(def, '$alt') ||
-  isOperationType<ValueObject>(def, '$value') ||
-  isOperationType<AndObject>(def, '$and') ||
-  isOperationType<OrObject>(def, '$or') ||
-  isOperationType<ConcatObject>(def, '$concat') ||
-  isOperationType<LookupObject>(def, '$lookup')
+  isOperationType<TransformOperation>(def, '$transform') ||
+  isOperationType<FilterOperation>(def, '$filter') ||
+  isOperationType<IfOperation>(def, '$if') ||
+  isOperationType<ApplyOperation>(def, '$apply') ||
+  isOperationType<AltOperation>(def, '$alt') ||
+  isOperationType<ValueOperation>(def, '$value') ||
+  isOperationType<AndOperation>(def, '$and') ||
+  isOperationType<OrOperation>(def, '$or') ||
+  isOperationType<ConcatOperation>(def, '$concat') ||
+  isOperationType<LookupOperation>(def, '$lookup')
 
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
-export const isMapObject = (def: unknown): def is MapObject =>
-  isObject(def) && !hasOperationProps(def as MapObject | OperationObject)
-export const isMapPipe = (def: unknown): def is MapPipe => Array.isArray(def)
+export const isTransformObject = (def: unknown): def is TransformObject =>
+  isObject(def) && !hasOperationProps(def as TransformObject | OperationObject)
+export const isPipeline = (def: unknown): def is Pipeline => Array.isArray(def)
 export const isOperation = (def: unknown): def is Operation =>
   typeof def === 'function'
-export const isMapDefinition = (def: unknown): def is MapDefinition =>
-  isPath(def) || isObject(def) || isMapPipe(def) || isOperation(def)
+export const isTransformDefinition = (
+  def: unknown
+): def is TransformDefinition =>
+  isPath(def) || isObject(def) || isPipeline(def) || isOperation(def)
 
 const iterateIf = (fn: Operation | Operation[], should: boolean) =>
   should ? iterate(fn) : fn
@@ -128,8 +130,8 @@ const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
 
 const createAltOperation =
   (
-    operationFn: (...defs: MapDefinition[]) => Operation[],
-    def: AltObject
+    operationFn: (...defs: TransformDefinition[]) => Operation[],
+    def: AltOperation
   ): Operation | Operation[] =>
   (options) =>
   (next) => {
@@ -143,7 +145,7 @@ const createAltOperation =
   }
 
 const createIfOperation =
-  (def: IfObject): Operation =>
+  (def: IfOperation): Operation =>
   (options) =>
   (next) => {
     const {
@@ -159,55 +161,55 @@ const createIfOperation =
 
 const createApplyOperation = (
   operationFn: (pipelineId: string) => Operation,
-  def: ApplyObject
+  def: ApplyOperation
 ) => {
   const pipelineId = def.$apply
   return wrapFromDefinition(operationFn(pipelineId), def)
 }
 
 const createPipelineOperation = (
-  operationFn: (...fn: MapDefinition[]) => Operation,
+  operationFn: (...fn: TransformDefinition[]) => Operation,
   fnProp: '$and' | '$or' | '$concat',
-  def: AndObject | OrObject | ConcatObject
+  def: AndOperation | OrOperation | ConcatOperation
 ) => {
-  const pipelines = def[fnProp] as MapDefinition[] // TODO: Do more validation checks here?
+  const pipelines = def[fnProp] as TransformDefinition[] // TODO: Do more validation checks here?
   return operationFn(...pipelines)
 }
 
 const createLookupOperation = (
   operationFn: (props: LookupProps) => Operation,
-  def: LookupObject
+  def: LookupOperation
 ) => {
   const { $lookup: arrayPath, path: propPath, ...props } = def
   return wrapFromDefinition(operationFn({ ...props, arrayPath, propPath }), def)
 }
 
-const operationFromObject = (def: OperationObject | MapObject) => {
-  if (isOperationType<TransformObject>(def, '$transform')) {
+const operationFromObject = (def: OperationObject | TransformObject) => {
+  if (isOperationType<TransformOperation>(def, '$transform')) {
     return createOperation(transform, '$transform', def)
-  } else if (isOperationType<ValueObject>(def, '$value')) {
+  } else if (isOperationType<ValueOperation>(def, '$value')) {
     return createOperation(
       transform,
       '$transform',
       transformDefFromShortcut(def, 'value', 'value')
     )
-  } else if (isOperationType<FilterObject>(def, '$filter')) {
+  } else if (isOperationType<FilterOperation>(def, '$filter')) {
     return createOperation(filter, '$filter', def)
-  } else if (isOperationType<IfObject>(def, '$if')) {
+  } else if (isOperationType<IfOperation>(def, '$if')) {
     return createIfOperation(def)
-  } else if (isOperationType<ApplyObject>(def, '$apply')) {
+  } else if (isOperationType<ApplyOperation>(def, '$apply')) {
     return createApplyOperation(apply, def)
-  } else if (isOperationType<AltObject>(def, '$alt')) {
+  } else if (isOperationType<AltOperation>(def, '$alt')) {
     return createAltOperation(alt, def)
-  } else if (isOperationType<AndObject>(def, '$and')) {
+  } else if (isOperationType<AndOperation>(def, '$and')) {
     return createPipelineOperation(and, '$and', def)
-  } else if (isOperationType<OrObject>(def, '$or')) {
+  } else if (isOperationType<OrOperation>(def, '$or')) {
     return createPipelineOperation(or, '$or', def)
-  } else if (isOperationType<ConcatObject>(def, '$concat')) {
+  } else if (isOperationType<ConcatOperation>(def, '$concat')) {
     return createPipelineOperation(concat, '$concat', def)
-  } else if (isOperationType<LookupObject>(def, '$lookup')) {
+  } else if (isOperationType<LookupOperation>(def, '$lookup')) {
     return createLookupOperation(lookup, def)
-  } else if (isOperationType<MergeObject>(def, '$merge')) {
+  } else if (isOperationType<MergeOperation>(def, '$merge')) {
     return createOperation(
       transform,
       '$transform',
@@ -219,7 +221,7 @@ const operationFromObject = (def: OperationObject | MapObject) => {
 }
 
 export const operationsFromDef = (
-  def?: MapDefinition
+  def?: TransformDefinition
 ): Operation[] | Operation =>
   Array.isArray(def)
     ? def.flatMap(operationsFromDef)
@@ -231,10 +233,10 @@ export const operationsFromDef = (
     ? def
     : (_options: Options) => identity
 
-export function operationFromDef(def?: MapDefinition): Operation {
+export function operationFromDef(def?: TransformDefinition): Operation {
   const operations = Array.isArray(def) ? def : operationsFromDef(def)
   return Array.isArray(operations) ? pipe(operations) : operations
 }
 
-export const defsToDataMapper = (def?: MapDefinition): DataMapper =>
+export const defsToDataMapper = (def?: TransformDefinition): DataMapper =>
   dataMapperFromOperation(operationFromDef(def))

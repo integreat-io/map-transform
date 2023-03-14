@@ -2,7 +2,7 @@ import { divide, fwd } from './directionals.js'
 import iterate from './iterate.js'
 import transform from './transform.js'
 import flatten from '../transformers/flatten.js'
-import { MapPipe, Operation } from '../types.js'
+import { Pipeline, Operation } from '../types.js'
 import { operationsFromDef } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 import { compose as composeFn, pipe as pipeFn } from '../utils/functional.js'
@@ -13,8 +13,8 @@ import { setValueFromState } from '../utils/stateHelpers.js'
 // in the middle. The path after the brackets will be iterated along with the
 // rest of the pipeline, and then flattened – in the forward direction. Nothing
 // will happen in reverse.
-function splitArrayPaths(defs: MapPipe) {
-  const pipeline: MapPipe = []
+function splitArrayPaths(defs: Pipeline) {
+  const pipeline: Pipeline = []
 
   for (const [index, step] of defs.entries()) {
     if (typeof step === 'string' && step.includes('[].')) {
@@ -36,7 +36,7 @@ function splitArrayPaths(defs: MapPipe) {
   return pipeline
 }
 
-export default function pipe(defs?: MapPipe): Operation {
+export default function pipe(defs?: Pipeline): Operation {
   return (options) => {
     if (!Array.isArray(defs) || defs.length === 0) {
       return identity

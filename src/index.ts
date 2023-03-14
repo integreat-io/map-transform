@@ -1,6 +1,6 @@
 import {
-  MapDefinition,
-  MapTransform,
+  TransformDefinition,
+  DataMapperWithRev,
   State,
   StateMapper,
   Options,
@@ -47,9 +47,9 @@ const mergeOptions = (options: Options) => ({
 })
 
 export default function mapTransform(
-  def: MapDefinition,
+  def: TransformDefinition,
   options: Options = {}
-): MapTransform {
+): DataMapperWithRev {
   const completeOptions = mergeOptions(options)
   const mapFn = operationFromDef(def)(completeOptions)(identity)
 

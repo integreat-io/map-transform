@@ -1,4 +1,4 @@
-import { Operation, MapDefinition } from '../types.js'
+import { Operation, TransformDefinition } from '../types.js'
 import {
   setStateValue,
   getLastContext,
@@ -38,7 +38,7 @@ const runAlt = (isOneMode: boolean) =>
     }
   }
 
-export default function alt(...defs: MapDefinition[]): Operation[] {
+export default function alt(...defs: TransformDefinition[]): Operation[] {
   // Prepare all alt operations
   const altOperations = defs.map((def) => operationFromDef(def))
   const isOneMode = altOperations.length === 1

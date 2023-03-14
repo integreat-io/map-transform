@@ -1,4 +1,4 @@
-import { Operation, MapDefinition, State, StateMapper } from '../types.js'
+import { Operation, TransformDefinition, State, StateMapper } from '../types.js'
 import {
   pushContext,
   getStateValue,
@@ -37,7 +37,7 @@ export const iterateState =
     }
   }
 
-export default function iterate(def: MapDefinition): Operation {
+export default function iterate(def: TransformDefinition): Operation {
   if (!def || (typeof def === 'object' && Object.keys(def).length === 0)) {
     return (_options) => (next) => (state) =>
       setStateValue(next(state), undefined)

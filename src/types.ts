@@ -1,4 +1,4 @@
-export type Path = string
+// Dictionary types
 
 export type DictionaryValue = string | number | boolean | null | undefined
 
@@ -9,19 +9,7 @@ export interface Dictionaries {
   [key: string]: Dictionary
 }
 
-export interface ValueFunction {
-  (): unknown
-}
-
-export type TransformerProps = Record<string, unknown>
-
-export interface DataMapper {
-  (data: unknown, state: State): unknown
-}
-
-export interface Transformer<T = TransformerProps> {
-  (props: T, options: Options): DataMapper
-}
+// State type
 
 export interface State {
   context: unknown[]
@@ -35,12 +23,14 @@ export interface State {
   index?: number
 }
 
+// MapTransform options type
+
 export interface Options {
   transformers?: {
     [key: string]: Transformer
   }
   pipelines?: {
-    [key: string]: MapDefinition
+    [key: string]: TransformDefinition
   }
   dictionaries?: Dictionaries
   nonvalues?: unknown[]
@@ -48,78 +38,18 @@ export interface Options {
   revAlias?: string
 }
 
-export interface TransformObject extends TransformerProps {
-  $transform: string
-  $iterate?: boolean
-  $direction?: string
+// Data mapper types
+
+export interface DataMapper {
+  (data: unknown, state: State): unknown
 }
 
-export interface FilterObject extends TransformerProps {
-  $filter: string
-  $direction?: string
+export interface DataMapperWithRev {
+  (data: unknown): unknown
+  rev: (data: unknown) => unknown
 }
 
-export interface IfObject extends TransformerProps {
-  $if: MapDefinition
-  $direction?: string
-  then?: MapDefinition
-  else?: MapDefinition
-}
-
-export interface ApplyObject extends TransformerProps {
-  $apply: string
-  $iterate?: boolean
-  $direction?: string
-}
-
-export interface AltObject extends TransformerProps {
-  $alt: MapDefinition[]
-  $iterate?: boolean
-  $direction?: string
-  $undefined?: unknown[]
-}
-
-export interface MergeObject extends TransformerProps {
-  $merge: unknown
-  $iterate?: boolean
-  $direction?: string
-}
-
-export interface ValueObject extends TransformerProps {
-  $value: unknown
-  $iterate?: boolean
-  $direction?: string
-}
-
-export interface AndObject extends TransformerProps {
-  $and: MapDefinition[]
-}
-
-export interface OrObject extends TransformerProps {
-  $or: MapDefinition[]
-}
-
-export interface ConcatObject extends TransformerProps {
-  $concat: MapDefinition[]
-}
-
-export interface LookupObject extends TransformerProps {
-  $lookup: Path
-  path: Path
-}
-
-export type OperationObject =
-  | TransformObject
-  | FilterObject
-  | IfObject
-  | ApplyObject
-  | AltObject
-  | ValueObject
-  | MergeObject
-  | AndObject
-  | OrObject
-  | ConcatObject
-  | LookupObject
+// Operation types
 
 export interface StateMapper {
   (state: State): State
@@ -129,46 +59,123 @@ export interface Operation {
   (options: Options): (next: StateMapper) => StateMapper
 }
 
-export interface MapFunction {
-  (options: Options): (state: State) => State
+// Transformer types
+
+export type TransformerProps = Record<string, unknown>
+
+export interface Transformer<T extends TransformerProps = TransformerProps> {
+  (props: T, options: Options): DataMapper
 }
 
-export type MapPipeSimple = (MapObject | Operation | OperationObject | Path)[]
+// Transform definition types
 
-export type MapPipe = (
-  | MapObject
+export type Path = string
+
+export interface TransformOperation extends TransformerProps {
+  $transform: string
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface FilterOperation extends TransformerProps {
+  $filter: string
+  $direction?: string
+}
+
+export interface IfOperation extends TransformerProps {
+  $if: TransformDefinition
+  $direction?: string
+  then?: TransformDefinition
+  else?: TransformDefinition
+}
+
+export interface ApplyOperation extends TransformerProps {
+  $apply: string
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface AltOperation extends TransformerProps {
+  $alt: TransformDefinition[]
+  $iterate?: boolean
+  $direction?: string
+  $undefined?: unknown[]
+}
+
+export interface MergeOperation extends TransformerProps {
+  $merge: unknown
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface ValueOperation extends TransformerProps {
+  $value: unknown
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface AndOperation extends TransformerProps {
+  $and: TransformDefinition[]
+}
+
+export interface OrOperation extends TransformerProps {
+  $or: TransformDefinition[]
+}
+
+export interface ConcatOperation extends TransformerProps {
+  $concat: TransformDefinition[]
+}
+
+export interface LookupOperation extends TransformerProps {
+  $lookup: Path
+  path: Path
+}
+
+export type OperationObject =
+  | TransformOperation
+  | FilterOperation
+  | IfOperation
+  | ApplyOperation
+  | AltOperation
+  | ValueOperation
+  | MergeOperation
+  | AndOperation
+  | OrOperation
+  | ConcatOperation
+  | LookupOperation
+
+export type Pipeline = (
+  | TransformObject
   | Operation
   | OperationObject
   | Path
-  | MapPipeSimple
+  | Pipeline
 )[]
 
-export interface MapObject {
-  [key: string]: MapDefinition | undefined | boolean
+export interface TransformObject {
+  [key: string]: TransformDefinition | undefined | boolean
   $iterate?: boolean
   $modify?: boolean | Path
   $noDefaults?: boolean
   $flip?: boolean
+  // The following props are included to make sure they don't appear on the TransformObject
   $transform?: undefined
   $filter?: undefined
   $if?: undefined
   $apply?: undefined
-  $valud?: undefined
+  $value?: undefined
   $alt?: undefined
   $and?: undefined
   $or?: undefined
   $concat?: undefined
+  $lookup?: undefined
+  $merge?: undefined
 }
 
-export type MapDefinition =
-  | MapObject
+export type TransformDefinition =
+  | TransformObject
   | Operation
   | OperationObject
-  | MapPipe
+  | Pipeline
   | Path
   | null
-
-export interface MapTransform {
-  (data: unknown): unknown
-  rev: (data: unknown) => unknown
-}

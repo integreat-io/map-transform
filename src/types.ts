@@ -47,9 +47,8 @@ export interface DataMapper {
   (data: unknown, state: State): unknown
 }
 
-export interface DataMapperWithRev {
+export interface DataMapperEntry {
   (data: unknown, state?: InitialState): unknown
-  rev: (data: unknown, state?: InitialState) => unknown
 }
 
 // Operation types

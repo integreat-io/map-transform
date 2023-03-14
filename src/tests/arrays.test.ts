@@ -46,7 +46,7 @@ test('should map specified array over transform object in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })

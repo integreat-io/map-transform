@@ -59,7 +59,7 @@ test('should use default value in reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -129,7 +129,7 @@ test('should not set on alternative path in reverse', (t) => {
     { content: { heading: 'Entry 2' } },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -183,7 +183,7 @@ test('should use directional default value - reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -245,7 +245,7 @@ test('should not use default values on rev', (t) => {
   const data = [{}, { title: 'From data' }]
   const expected = [undefined, { content: { heading: 'From data' } }]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -307,7 +307,7 @@ test('should apply default value from an operation object in reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -324,7 +324,7 @@ test('should apply default value from an operation object in flipped reverse', (
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -385,7 +385,7 @@ test.failing(
     const expectedRev = undefined
 
     const retFwd = mapTransform(def)(dataFwd)
-    const retRev = mapTransform(def).rev(dataRev)
+    const retRev = mapTransform(def)(dataRev, { rev: true })
 
     t.deepEqual(retFwd, expectedFwd)
     t.deepEqual(retRev, expectedRev)
@@ -413,7 +413,7 @@ test.failing(
     const expectedRev = { content: { heading: 'Default heading' } }
 
     const retFwd = mapTransform(def)(dataFwd)
-    const retRev = mapTransform(def).rev(dataRev)
+    const retRev = mapTransform(def)(dataRev, { rev: true })
 
     t.deepEqual(retFwd, expectedFwd)
     t.deepEqual(retRev, expectedRev)

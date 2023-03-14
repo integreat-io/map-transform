@@ -121,7 +121,7 @@ test('should reverse map simple object with rev transform', (t) => {
     meta: { writer: { username: 'johnf', name: 'Johnf.' } },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -143,7 +143,7 @@ test('should reverse map simple object with dedicated rev transform', (t) => {
     meta: { writer: { username: 'johnf' } },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -348,7 +348,7 @@ test('should use built in fixed function in reverse', (t) => {
   const data = { title: 'The heading' }
   const expected = { content: "I'm always here" }
 
-  const ret = mapTransform(def, { transformers }).rev(data)
+  const ret = mapTransform(def, { transformers })(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -444,7 +444,7 @@ test('should only use transform going forward', (t) => {
   const expectedRev = { content: undefined }
 
   const retFwd = mapTransform(def, { transformers })(data)
-  const retRev = mapTransform(def, { transformers }).rev(data)
+  const retRev = mapTransform(def, { transformers })(data, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -462,7 +462,7 @@ test('should only use transform going in reverse', (t) => {
   const expectedRev = { content: "I'm always here" }
 
   const retFwd = mapTransform(def, { transformers })(data)
-  const retRev = mapTransform(def, { transformers }).rev(data)
+  const retRev = mapTransform(def, { transformers })(data, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -602,7 +602,7 @@ test('should provide index when iterating in reverse', (t) => {
     ],
   }
 
-  const ret = mapTransform(def, { transformers }).rev(data)
+  const ret = mapTransform(def, { transformers })(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })

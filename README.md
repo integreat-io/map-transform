@@ -43,6 +43,10 @@ npm install map-transform
 - The `alt` operation now accepts any type of pipeline, but not a helper
   function, and all alternative pipelines must be given as arguments to `alt()`
 - The root path prefix is changed from `$` to `^^`
+- The `.rev()` method on `mapTransform()` has been removed, and instead you pass
+  in `{ rev: true }` as the second argument to the regular method
+- The named export `mapTransform` has been removed, and is provided as the
+  default export instead
 
 ## Usage
 
@@ -86,7 +90,7 @@ const target = mapper(source)
 // }
 
 // And run it in reverse to get to what you started with:
-const source2 = mapper.rev(target)
+const source2 = mapper(target, { rev: true })
 // -> {
   data: [
     {
@@ -1260,7 +1264,7 @@ const mappedData = mapper(data)
 //   { id: 'user3', name: 'User 3' }
 // ]
 
-mapper.rev(mappedData)
+mapper(mappedData, { rev: true })
 // --> { content: { meta: { authors: ['user1', 'user3'] } } }
 ```
 
@@ -1717,7 +1721,7 @@ const data = [
   { id: 'cust3' },
 ]
 
-const dataAfterRev = mapTransform(def22).rev(data)
+const dataAfterRev = mapTransform(def22)(data, { rev: true })
 // --> {
 // data: {
 //   customers: [
@@ -1753,7 +1757,7 @@ const def23 = [
 
 const data = [{ id: 'cust1', name: 'Fred Johnsen' }]
 
-const dataAfterRev = mapTransform(def23).rev(data)
+const dataAfterRev = mapTransform(def23)(data, { rev: true })
 // --> {
 // data: {
 //   customers: [
@@ -1837,7 +1841,7 @@ values for these cases.
 But sometimes, you only want the data that is actually present in the source
 data, without defaults or properties set to `undefined`. You may accomplish this
 by setting `state.noDefaults` to true, either by setting in on the initial state
-given to `mapTransform()` or by setting the `$noDefaults` flag on a transform
+given to `mapTransform()()` or by setting the `$noDefaults` flag on a transform
 object (will set `noDefaults` on the state for everything happening within that
 transform object).
 
@@ -1874,11 +1878,11 @@ mapper24({ customerNo: 'cust5', fullname: 'Alex Troy' })
 // --> { id: 'cust5', name: 'Alex Troy' }
 
 // This also applies in reverse mapping
-mapper17.rev({ id: 'cust4' })
+mapper17({ id: 'cust4' }, { rev: true })
 // -> { customerNo: 'cust4', name: 'Anonymous' }
-mapper17.rev({ id: 'cust4' }, { noDefaults: true })
+mapper17({ id: 'cust4' }, { rev: true, noDefaults: true })
 // -> { customerNo: 'cust4' }
-mapper24.rev({ id: 'cust4' })
+mapper24({ id: 'cust4' }, { rev: true })
 // -> { customerNo: 'cust4' }
 ```
 
@@ -1918,6 +1922,10 @@ versions, and should not be used in custom transformers:
   to the current point. This is used to support parent and root notations.
 - `target`: The target object at the current point. When setting on a path, the
   setting will happen on this target.
+
+Note that you may provide the `mapTransform()()` function with an initial state
+object as its second argument. Only `rev`, `noDefaults`, and `target` will be
+passed on from the state object you provide.
 
 ### Defining transformations with JSON
 

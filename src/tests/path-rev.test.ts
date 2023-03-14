@@ -32,7 +32,7 @@ test('should reverse map simple object', (t) => {
     meta: { writer: { username: 'johnf' } },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -54,7 +54,7 @@ test('should reverse map with target', (t) => {
     meta: { writer: { username: 'johnf' } },
   }
 
-  const ret = mapTransform(def).rev(data, { target })
+  const ret = mapTransform(def)(data, { target, rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -82,7 +82,7 @@ test('should reverse map with dot only notation', (t) => {
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -108,7 +108,7 @@ test('should reverse map array of objects', (t) => {
     },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -135,7 +135,7 @@ test('should reverse map with object array path', (t) => {
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -170,7 +170,7 @@ test('should reverse map several layers', (t) => {
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -217,7 +217,7 @@ test('should reverse map several layers of arrays', (t) => {
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -275,7 +275,7 @@ test('should reverse map several layers of arrays with bracket notation in set p
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -295,7 +295,7 @@ test('should set several props in array in reverse', (t) => {
     props: [{ value: 'Value 1' }, { value: 'Value 2' }],
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -311,7 +311,7 @@ test('should reverse map with null value', (t) => {
     content: { heading: null },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -335,7 +335,7 @@ test('should use slashed properties in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -354,7 +354,7 @@ test('should reverse map with root array path', (t) => {
     { content: { heading: 'Heading 2' } },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -375,7 +375,7 @@ test('should shallow merge (modify) original object with transformed object in r
     text: 'This is high quality content for sure',
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -402,7 +402,7 @@ test('should shallow merge (modify) original object with transformed object in r
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -431,7 +431,7 @@ test('should allow $flip to affect transform objects through pipelines', (t) => 
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -450,7 +450,7 @@ test('should treat get/set transformers and get/set paths the same even when fli
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -467,7 +467,7 @@ test('should skip transform object with $direction: fwd', (t) => {
   }
   const expected = data
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -485,7 +485,7 @@ test('should skip transform object when $direction is fwdAlias', (t) => {
   }
   const expected = data
 
-  const ret = mapTransform(def, options).rev(data)
+  const ret = mapTransform(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -509,7 +509,7 @@ test('should treat lookup as get in reverse', (t) => {
     content: { heading: 'The heading', authors: ['user1', 'user3'] },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -541,7 +541,7 @@ test('should run lookup as normal in reverse when flipped', (t) => {
     ],
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -559,7 +559,7 @@ test('should return map data as is when no mapping', (t) => {
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -580,7 +580,7 @@ test('should reverse map with nested mapping', (t) => {
     { content: { heading: 'Heading 2' } },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -608,7 +608,7 @@ test('should reverse map with directional paths', (t) => {
     },
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -632,7 +632,7 @@ test('should reverse map with root path', (t) => {
     section: 'news',
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -682,7 +682,7 @@ test('should reverse map with flipped mutate object', (t) => {
     ],
   }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expectedValue)
 })
@@ -695,7 +695,7 @@ test('should return data when no mapping def and reverse mapping', (t) => {
   ]
   const expected = data
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -708,7 +708,7 @@ test('should return undefined when mapping def is empty', (t) => {
   ]
   const expected = undefined
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -718,7 +718,7 @@ test('should map undefined to undefined', (t) => {
   const data = undefined
   const expected = undefined
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })

@@ -108,7 +108,7 @@ test('should apply pipeline by id in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def, options).rev(data)
+  const ret = mapTransform(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -247,7 +247,7 @@ test('should apply pipeline from array path in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def, options).rev(data)
+  const ret = mapTransform(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -284,7 +284,7 @@ test('should apply pipeline as operation object going forward only', (t) => {
   }
 
   const retFwd = mapTransform(def, options)(dataFwd)
-  const retRev = mapTransform(def, options).rev(dataRev)
+  const retRev = mapTransform(def, options)(dataRev, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -304,7 +304,7 @@ test('should apply pipeline as operation object going in reverse only', (t) => {
   }
 
   const retFwd = mapTransform(def, options)(dataFwd)
-  const retRev = mapTransform(def, options).rev(dataRev)
+  const retRev = mapTransform(def, options)(dataRev, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -325,7 +325,7 @@ test('should use forward alias', (t) => {
   }
 
   const retFwd = mapTransform(def, optionsWithAlias)(dataFwd)
-  const retRev = mapTransform(def, optionsWithAlias).rev(dataRev)
+  const retRev = mapTransform(def, optionsWithAlias)(dataRev, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -346,7 +346,7 @@ test('should use reverse alias', (t) => {
   }
 
   const retFwd = mapTransform(def, optionsWithAlias)(dataFwd)
-  const retRev = mapTransform(def, optionsWithAlias).rev(dataRev)
+  const retRev = mapTransform(def, optionsWithAlias)(dataRev, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)

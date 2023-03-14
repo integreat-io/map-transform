@@ -121,7 +121,7 @@ test('should filter items from parent mapping for reverse mapping', (t) => {
   }
   const expected = [{ content: { heading: 'Just this' } }]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -143,7 +143,7 @@ test('should filter on reverse mapping', (t) => {
   ]
   const expected = [{ content: { heading: 'Just this' } }]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -194,7 +194,7 @@ test('should use directional filters - going reverse', (t) => {
     { content: { heading: 'Also this' } },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -230,7 +230,7 @@ test('should filter with filter before mapping on reverse mapping', (t) => {
   }
   const expected = { content: undefined }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -353,7 +353,7 @@ test('should only apply filter from operation object going forward', (t) => {
   const dataRev = { title: 'The heading' }
 
   const retFwd = mapTransform(def, { transformers })(dataFwd)
-  const retRev = mapTransform(def, { transformers }).rev(dataRev)
+  const retRev = mapTransform(def, { transformers })(dataRev, { rev: true })
 
   t.is(retFwd, undefined)
   t.deepEqual(retRev, dataFwd)
@@ -368,7 +368,7 @@ test('should only apply filter from operation object going in reverse', (t) => {
   const dataRev = { title: 'The heading' }
 
   const retFwd = mapTransform(def, { transformers })(dataFwd)
-  const retRev = mapTransform(def, { transformers }).rev(dataRev)
+  const retRev = mapTransform(def, { transformers })(dataRev, { rev: true })
 
   t.deepEqual(retFwd, dataRev)
   t.is(retRev, undefined)

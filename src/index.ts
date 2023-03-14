@@ -1,10 +1,4 @@
-import {
-  TransformDefinition,
-  DataMapperWithRev,
-  InitialState,
-  StateMapper,
-  Options,
-} from './types.js'
+import { TransformDefinition, DataMapperEntry, Options } from './types.js'
 import { operationFromDef } from './utils/definitionHelpers.js'
 import { populateState, getStateValue } from './utils/stateHelpers.js'
 import transformers from './transformers/index.js'
@@ -28,13 +22,6 @@ export { default as merge } from './operations/merge.js'
 export { default as modify } from './operations/modify.js'
 export { iterate, transformers }
 
-const prepareDataMapper =
-  (stateMapper: StateMapper, rev: boolean) =>
-  (data: unknown, state?: InitialState) =>
-    data === undefined
-      ? undefined
-      : getStateValue(stateMapper(populateState(data, { ...state, rev })))
-
 const mergeOptions = (options: Options) => ({
   ...options,
   transformers: {
@@ -46,11 +33,14 @@ const mergeOptions = (options: Options) => ({
 export default function mapTransform(
   def: TransformDefinition,
   options: Options = {}
-): DataMapperWithRev {
+): DataMapperEntry {
   const completeOptions = mergeOptions(options)
   const stateMapper = operationFromDef(def)(completeOptions)(identity)
 
-  return Object.assign(prepareDataMapper(stateMapper, false), {
-    rev: Object.assign(prepareDataMapper(stateMapper, true), {}),
-  })
+  return function transform(data, initialState) {
+    if (data === undefined) {
+      return undefined
+    }
+    return getStateValue(stateMapper(populateState(data, initialState || {})))
+  }
 }

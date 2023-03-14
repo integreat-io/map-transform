@@ -141,7 +141,7 @@ const runOperations =
     options: Options
   ) =>
   (state: State) =>
-    isNoneValueState(state, options.noneValues)
+    isNoneValueState(state, options.nonvalues)
       ? state
       : modifyFn(
           operations.reduce(
@@ -180,7 +180,7 @@ export default function props(def: MapObject): Operation {
     return function doMutate(state) {
       const nextState = next(state)
       if (
-        isNoneValueState(state, options.noneValues) ||
+        isNoneValueState(state, options.nonvalues) ||
         isWrongDirectionFn(state.rev)
       ) {
         return nextState

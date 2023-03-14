@@ -49,7 +49,7 @@ export default function merge(...defs: MapDefinition[]): Operation {
 
     return function (state) {
       const nextState = next(state)
-      return isNoneValueState(nextState, options.noneValues)
+      return isNoneValueState(nextState, options.nonvalues)
         ? setStateValue(nextState, undefined)
         : pipelines.map((pipeline) => pipeline(nextState)).reduce(mergeStates)
     }

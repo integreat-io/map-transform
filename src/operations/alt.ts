@@ -13,22 +13,22 @@ const runAlt = (isOneMode: boolean) =>
   function runAlt(operation: Operation, index: number): Operation {
     return (options) => (next) => (state) => {
       const nextState = next(state)
-      const { noneValues } = options
+      const { nonvalues } = options
       const isFirst = !isOneMode && index === 0
 
       if (isFirst) {
         const thisState = operation(options)(identity)(nextState)
-        return isNoneValueState(thisState, noneValues)
+        return isNoneValueState(thisState, nonvalues)
           ? { ...thisState, context: [...nextState.context, nextState.value] }
           : thisState
       } else {
-        if (isNoneValueState(nextState, noneValues)) {
+        if (isNoneValueState(nextState, nonvalues)) {
           const thisState = operation(options)(identity)(
             removeLastContext(
               setStateValue(nextState, getLastContext(nextState))
             )
           )
-          return isNoneValueState(thisState, noneValues)
+          return isNoneValueState(thisState, nonvalues)
             ? setValueFromState(nextState, thisState)
             : thisState
         } else {

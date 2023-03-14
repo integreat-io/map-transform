@@ -60,8 +60,8 @@ export const setValueFromState = (
 
 export const isNoneValueState = (
   state: State,
-  noneValues: unknown[] = [undefined]
-) => noneValues.includes(state.value)
+  nonvalues: unknown[] = [undefined]
+) => nonvalues.includes(state.value)
 
 // State
 

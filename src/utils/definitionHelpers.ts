@@ -121,9 +121,9 @@ const createOperation =
       : (state) => next(state)
   }
 
-const setNoneValuesOnOptions = (options: Options, noneValues?: unknown[]) =>
-  Array.isArray(noneValues)
-    ? { ...options, noneValues: noneValues.map(unescapeValue) }
+const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
+  Array.isArray(nonvalues)
+    ? { ...options, nonvalues: nonvalues.map(unescapeValue) }
     : options
 
 const createAltOperation =
@@ -133,12 +133,12 @@ const createAltOperation =
   ): Operation | Operation[] =>
   (options) =>
   (next) => {
-    const { $alt: defs, $undefined: noneValues } = def
+    const { $alt: defs, $undefined: nonvalues } = def
     return Array.isArray(defs)
       ? wrapFromDefinition(
           operationFn(...defs),
           def
-        )(setNoneValuesOnOptions(options, noneValues))(next)
+        )(setNoneValuesOnOptions(options, nonvalues))(next)
       : (state) => next(state)
   }
 

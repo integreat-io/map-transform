@@ -19,7 +19,7 @@ test('should use default value', (t) => {
 })
 
 test('should use default value for null', (t) => {
-  const optionsWithNullAsNoValue = { noneValues: [undefined, null] }
+  const optionsWithNullAsNoValue = { nonvalues: [undefined, null] }
   const def = {
     $iterate: true,
     title: [alt('content.heading', transform(value('Default heading')))],

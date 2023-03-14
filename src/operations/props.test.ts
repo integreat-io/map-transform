@@ -821,8 +821,8 @@ test('should not mutate undefined value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not mutate null value when included in noneValues', (t) => {
-  const optionsWithNullAsNone = { ...options, noneValues: [undefined, null] }
+test('should not mutate null value when included in nonvalues', (t) => {
+  const optionsWithNullAsNone = { ...options, nonvalues: [undefined, null] }
   const def = {
     id: transform(value('ent1')),
     title: get('headline'),
@@ -855,8 +855,8 @@ test('should not mutate undefined value in array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not mutate null value in array when included in noneValues', (t) => {
-  const optionsWithNullAsNone = { ...options, noneValues: [undefined, null] }
+test('should not mutate null value in array when included in nonvalues', (t) => {
+  const optionsWithNullAsNone = { ...options, nonvalues: [undefined, null] }
   const def = {
     $iterate: true,
     id: transform(value('ent1')),

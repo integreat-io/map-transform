@@ -506,11 +506,11 @@ test('should map undefined to undefined', (t) => {
   t.is(ret, undefined)
 })
 
-test('should treat noneValues as undefined', (t) => {
+test('should treat nonvalues as undefined', (t) => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
   const data = { items: null }
 
-  const ret = mapTransform(def, { noneValues: [undefined, null] })(data)
+  const ret = mapTransform(def, { nonvalues: [undefined, null] })(data)
 
   t.is(ret, null)
 })

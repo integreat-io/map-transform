@@ -167,8 +167,8 @@ test('should support set on first path in reverse, and set default value', (t) =
   t.deepEqual(ret, expected)
 })
 
-test('should support noneValues from options', (t) => {
-  const optionsWithNullAsNoValue = { ...options, noneValues: [undefined, null] }
+test('should support nonvalues from options', (t) => {
+  const optionsWithNullAsNoValue = { ...options, nonvalues: [undefined, null] }
   const def1 = get('name')
   const def2 = get('id')
   const state = {
@@ -230,8 +230,8 @@ test('should not run if value is not undefined when only one pipeline', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should run if value is null when included in noneValues only one pipeline', (t) => {
-  const optionsWithNullAsNoValue = { ...options, noneValues: [undefined, null] }
+test('should run if value is null when included in nonvalues only one pipeline', (t) => {
+  const optionsWithNullAsNoValue = { ...options, nonvalues: [undefined, null] }
   const def = get('id')
   const state = {
     context: [{ id: 'johnf' }],

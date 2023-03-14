@@ -45,7 +45,7 @@ export interface Options {
     [key: string]: MapDefinition
   }
   dictionaries?: Dictionaries
-  noneValues?: unknown[]
+  nonvalues?: unknown[]
   fwdAlias?: string
   revAlias?: string
 }

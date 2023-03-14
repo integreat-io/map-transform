@@ -151,8 +151,8 @@ test('should not mutate undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined for null when included in noneValues', (t) => {
-  const optionsWithNullAsNone = { ...options, noneValues: [undefined, null] }
+test('should return undefined for null when included in nonvalues', (t) => {
+  const optionsWithNullAsNone = { ...options, nonvalues: [undefined, null] }
   const pipeline = { data: '.' }
   const value = null
   const state = {

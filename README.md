@@ -365,7 +365,7 @@ data, if not all properties are transformed to the target data). This is what
 you do in a [reverse mapping](#reverse-mapping).
 
 One way to put it, is that the pipeline describes the difference between the two
-possible states of the data, and allows you to go back and forth between them.
+possible shapes of the data, and allows you to go back and forth between them.
 Or you can just view it as transformation steps applied in the order they are
 defined – or back again.
 
@@ -475,7 +475,8 @@ The functions you provide for the transform operation are expected to be pure,
 i.e. they should not have any side effects. This means they should
 
 1. not alter the data their are given, and
-2. not rely on anything besides the function arguments (the data and the state)
+2. not rely on anything besides the function arguments (the data and
+   [the state](#the-state-object))
 
 Principle 1 is an absolute requirement, and principle 2 should only be violated
 when it's what you would expect for the particular case. As an example of the
@@ -572,8 +573,8 @@ directions through the pipeline. You'll have to use `fwd()` or `rev()`
 operations to make it uni-directional.
 
 Transformers passed to the filter operation should also be pure, but
-could, when it is expected and absolutely necessary, rely on states outside the
-function. See the comment in the transform operation section above.
+could, when it is expected and absolutely necessary, rely on anything outside
+the function. See the comment in the transform operation section above.
 
 Example of a filter, where only data of active members are returned:
 
@@ -671,9 +672,6 @@ If you want to map over the items of an array, the `iterate` operation is your
 friend. When you wrap another operation, a pipeline, or a mapping object in an
 `iterate` operation, it will be applied to each item, instead of to the array
 as a whole.
-
-(When iterating, the state's `context` will iterate as well, to support `alt`
-operations etc. that need to access the corresponding item in the context.)
 
 In this example, each value in the array returned by `statistics[].views` will
 be transformed with the `ensureInteger` transformer, even though the transformer
@@ -829,9 +827,9 @@ don't think too much about it. See
 how `get` works in reverse.
 
 `alt` will behave a bit differently when you give only one pipeline: The
-pipeline will be run if the state has an `undefined` value, but skipped
-otherwise. This is different from the multi-pipeline behavor, where the first is
-always run and the rest is only run if the previous returns `undefined`.
+pipeline will be run if the curent value is `undefined`, but skipped otherwise.
+This is different from the multi-pipeline behavor, where the first is always run
+and the rest is only run if the previous returns `undefined`.
 
 You may also define an alt operation as an object:
 
@@ -1582,8 +1580,8 @@ operations, etc.
 You should also keep in mind that, depending on your defined pipeline, the
 mapping may result in data loss, as only the data that is mapped to the target
 object is kept. This may be obvious, but it's an important fact to remember if
-you plan to map back and forth between two states – all values must be mapped to
-be able to map back to the original data.
+you plan to map back and forth between two data "shapes" – all values must be
+mapped to be able to map back to the original data.
 
 Let's see an example of reverse mapping:
 
@@ -1716,7 +1714,7 @@ same goes for flipped transform objects if you want to forward transform.
 
 ### Mapping without defaults
 
-MapTransform will try its best to map the data to the state you want, and will
+MapTransform will try its best to map the data to the shape you want, and will
 always set all properties, even though the mapping you defined result in
 `undefined`. You may include `alt()` operations to provide default or fallback
 values for these cases.
@@ -1751,7 +1749,44 @@ mapper.rev({ id: 'cust4' })
 // -> { customerNo: 'cust4' }
 ```
 
-### Running the tests
+### The state object
+
+MapTransform uses a state object internally to pass on data, context, target,
+etc. between pipelines and operations. You may, however, encounter this state
+object when you write your own transformers, as it is passed to the transformer
+function as the second argument (the current pipeline value is the first).
+
+Most of the props on the state object should be regarded as MapTransform
+internal and subject to change without notice, but a few is good to know and
+might also be necessary to make your transformer work the way you want:
+
+- `rev`: When this is `true`, we are in reverse mode, so if your transformer
+  should work differently depending on direction, you should check this prop.
+- `flip`: When `true`, we are being called from a transform object in
+  [flip mode](#flipping-a-transform-object), meaning that the transform object
+  is defined from the perspective of the reverse mode and flipped before it's
+  used in a transformation. This should not affect most transformers, as we will
+  treat the direction the same regardless of how the transformer object is
+  defined, but there might still be cases where you want to xor `rev` and `flip``
+  to get direction.
+- `noDefaults`: This is `true` when we have asked MapTransform in some way to
+  [not include default values](#mapping-without-defaults). This may or may not
+  concern your transformer.
+- `iterate`: When `true`, we are currently iterating.
+- `index`: When iterating, this will be the index of the current item in an
+  array. When not iterating, `index` will be `0` or `undefined`.
+
+The following props should not be trusted to stay stable across MapTransform
+versions, and should not be used in custom transformers:
+
+- `value`: This is the value of the pipeline, and will be the same as passed to
+  the transformer in the first argument.
+- `context`: An array with the "history" of the transformation from the root up
+  to the current point. This is used to support parent and root notations.
+- `target`: The target object at the current point. When setting on a path, the
+  setting will happen on this target.
+
+## Running the tests
 
 The tests can be run with `npm test`.
 

@@ -1619,29 +1619,6 @@ const def35b = {
 
 > Editors note: What happens if the value is not an array?
 
-#### `validate(path, schema)` transformer
-
-This is a transformer for validating the value at the path against a
-[JSON Schema](http://json-schema.org). We won't go into details of JSON Schema
-here, and `validate` simply retrieves the value at the path and validates it
-according to the provided schema.
-
-Note that if you provide a schema that is always valid, it will be valid even
-when the data has no value at the given path.
-
-```javascript
-import { filter, transformers } from 'map-transform'
-const { validate } = transformers
-
-const def20 = [
-  'items',
-  filter(validate('draft', { const: false })),
-  {
-    title: 'heading',
-  },
-]
-```
-
 #### `value(data)` transformer
 
 The data given to the `value` transformer, will be inserted in the pipeline in

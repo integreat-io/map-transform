@@ -5,7 +5,6 @@ import mapTransform, {
   filter,
   fwd,
   rev,
-  validate,
   not,
   transformers as coreTransformers,
 } from '../index.js'
@@ -268,27 +267,6 @@ test('should filter with not and compare helpers', (t) => {
     title: 'The heading',
     meta: { section: 'fashion' },
   }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should filter with validate', (t) => {
-  const def = [
-    'content',
-    filter(validate({ path: 'draft', schema: { const: false } })),
-    {
-      $iterate: true,
-      title: 'heading',
-    },
-  ]
-  const data = [
-    { content: { heading: 'The heading', draft: true } },
-    { content: { heading: 'Just this', draft: false } },
-    { content: { heading: 'Another heading' } },
-  ]
-  const expected = [{ title: 'Just this' }]
 
   const ret = mapTransform(def)(data)
 

@@ -414,6 +414,25 @@ test('should allow $flip to affect transform objects through pipelines', (t) => 
   t.deepEqual(ret, expected)
 })
 
+test('should treat get/set transformers and get/set paths the same even when flipped', (t) => {
+  const def = {
+    $flip: true,
+    article: [get('name'), set('title')],
+  }
+  const data = {
+    name: 'The real title',
+  }
+  const expected = {
+    article: {
+      title: 'The real title',
+    },
+  }
+
+  const ret = mapTransform(def).rev(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should skip transform object with $direction: fwd', (t) => {
   const def = {
     $direction: 'fwd',

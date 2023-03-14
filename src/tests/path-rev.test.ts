@@ -37,6 +37,28 @@ test('should reverse map simple object', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should reverse map with target', (t) => {
+  const def = {
+    title: 'content.heading',
+    author: 'meta.writer.username',
+  }
+  const data = {
+    title: 'The heading',
+    author: 'johnf',
+  }
+  const target = {
+    content: { id: 'ent1', heading: 'Default heading' },
+  }
+  const expected = {
+    content: { id: 'ent1', heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } },
+  }
+
+  const ret = mapTransform(def).rev(data, { target })
+
+  t.deepEqual(ret, expected)
+})
+
 test('should reverse map with dot only notation', (t) => {
   const def = {
     article: {

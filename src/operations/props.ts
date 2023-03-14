@@ -146,7 +146,7 @@ const runOperations =
       : modifyFn(
           operations.reduce(
             runOperationWithOriginalValue(state, options),
-            setTargetOnState(state, undefined)
+            state // Note: We used to clear the target here with `setTargetOnState(state, undefined)`, but it seems to be unnecessary and unwanted ...
           ),
           state
         )

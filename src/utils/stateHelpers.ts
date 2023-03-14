@@ -1,4 +1,4 @@
-import { State } from '../types.js'
+import { State, InitialState } from '../types.js'
 
 // Context
 
@@ -64,15 +64,16 @@ export const isNoneValueState = (
 
 // State
 
-export const populateState =
-  ({ rev = false, noDefaults = false, target = undefined }: Partial<State>) =>
-  (data: unknown): State => ({
-    context: [],
-    value: data,
-    target,
-    rev,
-    noDefaults,
-  })
+export const populateState = (
+  data: unknown,
+  { rev = false, noDefaults = false, target = undefined }: InitialState
+): State => ({
+  context: [],
+  value: data,
+  target,
+  rev,
+  noDefaults,
+})
 
 export const goForward = (state: State) => ({
   ...state,

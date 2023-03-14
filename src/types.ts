@@ -11,13 +11,16 @@ export interface Dictionaries {
 
 // State type
 
-export interface State {
-  context: unknown[]
-  value: unknown
+export interface InitialState {
   target?: unknown
   rev?: boolean
-  flip?: boolean
   noDefaults?: boolean
+}
+
+export interface State extends InitialState {
+  context: unknown[]
+  value: unknown
+  flip?: boolean
   arr?: boolean
   iterate?: boolean
   index?: number
@@ -45,8 +48,8 @@ export interface DataMapper {
 }
 
 export interface DataMapperWithRev {
-  (data: unknown): unknown
-  rev: (data: unknown) => unknown
+  (data: unknown, state?: InitialState): unknown
+  rev: (data: unknown, state?: InitialState) => unknown
 }
 
 // Operation types

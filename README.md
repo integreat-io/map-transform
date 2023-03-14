@@ -22,6 +22,30 @@ Some highlighted features:
   define how to transform the other way – from the target to the original
   (with some gotchas).
 
+## Getting started
+
+### Prerequisits
+
+Requires node v14.
+
+### Installing
+
+Install from npm:
+
+```
+npm install map-transform
+```
+
+## Breaking changes in v0.4
+
+- Map objects won't be mapped over an array by default. You have to specify
+  `$iterate: true`
+- The `alt` operation now accepts any type of pipeline, but not a helper
+  function, and all alternative pipelines must be given as arguments to `alt()`
+- The root path prefix is changed from `$` to `^^`
+
+## Usage
+
 Let's look at a simple example:
 
 ```javascript
@@ -92,7 +116,7 @@ const def2 = [
   },
 ]
 
-const target2 = mapTransform(def2)(source)
+mapTransform(def2)(source)
 // --> {
 //   title: 'An interesting piece',
 //   author: 'fredj',
@@ -119,7 +143,7 @@ const def3 = [
   },
 ]
 
-const target3 = mapTransform(def3)(source)
+mapTransform(def3)(source)
 // --> {
 //   title: 'An interesting piece',
 //   author: 'fredj',
@@ -132,29 +156,20 @@ const target3 = mapTransform(def3)(source)
 
 ... and so on.
 
-## Getting started
+You may also provide MapTransform with a target that the transformation will be
+applied to. Continuing from the previous example:
 
-### Prerequisits
+```javascript
+const target = { id: '12345', title: 'Default title' }
 
-Requires node v14.
-
-### Installing
-
-Install from npm:
-
+mapTransform(def3)(source, { target })
+// --> {
+//   id: '12345',
+//   title: 'An interesting piece',
+//   author: 'fredj',
+//   date: '2018-08-08T17:48:10.952Z'
+// }
 ```
-npm install map-transform --save
-```
-
-## Breaking changes in v0.4
-
-- Map objects won't be mapped over an array by default. You have to specify
-  `$iterate: true`
-- The `alt` operation now accepts any type of pipeline, but not a helper
-  function, and all alternative pipelines must be given as arguments to `alt()`
-- The root path prefix is changed from `$` to `^^`
-
-## Usage
 
 ### The transform object
 
@@ -1821,31 +1836,49 @@ values for these cases.
 
 But sometimes, you only want the data that is actually present in the source
 data, without defaults or properties set to `undefined`. You may accomplish this
-by setting `state.noDefaults` to true, usually by setting the `$noDefaults` flag
-on a transform object. This will keep values from the `value` transformer from
-being used in the mutation, but note that values from the `fixed` transformer
-will still be included. This is by design.
+by setting `state.noDefaults` to true, either by setting in on the initial state
+given to `mapTransform()` or by setting the `$noDefaults` flag on a transform
+object (will set `noDefaults` on the state for everything happening within that
+transform object).
+
+This will keep values from the `value` transformer from being used in the
+mutation, but note that values from the `fixed` transformer will still be
+included. This is by design.
 
 ```javascript
 import mapTransform, { alt, transform, transformers } from 'map-transform'
 const { value } = transformers
 
-const def24 = {
-  $noDefaults: true,
+const def17 = {
   id: 'customerNo',
   name: alt('fullname', transform(value('Anonymous'))),
 }
 
-const mapper = mapTransform(def24)
+const def24 = {
+  $noDefaults: true, // This is the only difference from `def17`
+  id: 'customerNo',
+  name: alt('fullname', transform(value('Anonymous'))),
+}
 
-mapper({ customerNo: 'cust4' })
+const mapper17 = mapTransform(def17)
+const mapper24 = mapTransform(def24)
+
+mapper17({ customerNo: 'cust4' })
+// --> { id: 'cust4', name: 'Anonymous' }
+mapper17({ customerNo: 'cust4' }, { noDefaults: true }) // We may set this flag on the initial state
 // --> { id: 'cust4' }
 
-mapper({ customerNo: 'cust5', fullname: 'Alex Troy' })
+mapper24({ customerNo: 'cust4' })
+// --> { id: 'cust4' }
+mapper24({ customerNo: 'cust5', fullname: 'Alex Troy' })
 // --> { id: 'cust5', name: 'Alex Troy' }
 
-// The method is also available for reverse mapping
-mapper.rev({ id: 'cust4' })
+// This also applies in reverse mapping
+mapper17.rev({ id: 'cust4' })
+// -> { customerNo: 'cust4', name: 'Anonymous' }
+mapper17.rev({ id: 'cust4' }, { noDefaults: true })
+// -> { customerNo: 'cust4' }
+mapper24.rev({ id: 'cust4' })
 // -> { customerNo: 'cust4' }
 ```
 

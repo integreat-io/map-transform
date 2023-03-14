@@ -1,7 +1,7 @@
 import {
   TransformDefinition,
   DataMapperWithRev,
-  State,
+  InitialState,
   StateMapper,
   Options,
 } from './types.js'
@@ -28,15 +28,12 @@ export { default as merge } from './operations/merge.js'
 export { default as modify } from './operations/modify.js'
 export { iterate, transformers }
 
-const composeMapFunction = (
-  mapFn: StateMapper,
-  initialState: Partial<State>
-) => {
-  const createState = populateState(initialState)
-
-  return (data: unknown) =>
-    data === undefined ? undefined : getStateValue(mapFn(createState(data)))
-}
+const prepareDataMapper =
+  (stateMapper: StateMapper, rev: boolean) =>
+  (data: unknown, state?: InitialState) =>
+    data === undefined
+      ? undefined
+      : getStateValue(stateMapper(populateState(data, { ...state, rev })))
 
 const mergeOptions = (options: Options) => ({
   ...options,
@@ -51,9 +48,9 @@ export default function mapTransform(
   options: Options = {}
 ): DataMapperWithRev {
   const completeOptions = mergeOptions(options)
-  const mapFn = operationFromDef(def)(completeOptions)(identity)
+  const stateMapper = operationFromDef(def)(completeOptions)(identity)
 
-  return Object.assign(composeMapFunction(mapFn, {}), {
-    rev: Object.assign(composeMapFunction(mapFn, { rev: true }), {}),
+  return Object.assign(prepareDataMapper(stateMapper, false), {
+    rev: Object.assign(prepareDataMapper(stateMapper, true), {}),
   })
 }

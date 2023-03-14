@@ -37,6 +37,22 @@ test('should map with object path', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with target', (t) => {
+  const def = [
+    'content.article',
+    {
+      title: 'content.heading',
+    },
+  ]
+  const data = { content: { article: { content: { heading: 'Heading 1' } } } }
+  const target = { id: 'ent1', title: 'Default title' }
+  const expected = { id: 'ent1', title: 'Heading 1' }
+
+  const ret = mapTransform(def)(data, { target })
+
+  t.deepEqual(ret, expected)
+})
+
 test('should get object from alt path', (t) => {
   const def = [
     alt('Content.Article', fwd('content.article')),

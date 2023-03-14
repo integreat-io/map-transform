@@ -250,6 +250,20 @@ test('should not use default values on rev', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not use default values when noDefault is provided on initial state', (t) => {
+  const noDefaults = true
+  const def = {
+    $iterate: true,
+    title: [alt('content.heading', transform(value('Default heading')))],
+  }
+  const data = [{ content: {} }, { content: { heading: 'From data' } }]
+  const expected = [undefined, { title: 'From data' }]
+
+  const ret = mapTransform(def)(data, { noDefaults })
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return undefined for undefined', (t) => {
   const def = {
     $noDefaults: true,

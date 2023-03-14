@@ -22,15 +22,6 @@ Some highlighted features:
   define how to transform the other way – from the target to the original
   (with some gotchas).
 
-> Editors note: We should think through how we use the word "pipeline", as it is
-> sometimes ment to refer to an array of operations that a value may be passed
-> through, other times any operation that could have been a part of such a
-> pipeline (the thinking is that it's a pipeline with one step), and we also
-> use the word to visualize value being in the pipeline while it is being
-> transformed, and we refer to "the value in the pipeline". All of these are
-> related and makes sense when you really think through it, but it may not
-> always be clear when you just read a few paragraphs here and there.
-
 Let's look at a simple example:
 
 ```javascript
@@ -172,10 +163,10 @@ Think of the transform object as a description of the object structure you want.
 #### Keys on the transform object
 
 In essence, the keys on the transform object will be the keys on the target
-object. You may, however, specify keys with dot notation, which will be split
-out to child objects on the target. You can also specify the child objects
-directly on the transform object, so in most cases this is just a matter of
-taste or practicality.
+object. You may, however, specify keys with [dot notation](#dot-notation-paths),
+which will be made into a structure of child objects and potentially arrays on
+the target. You can also specify the child objects directly on the transform
+object, so in most cases this is just a matter of taste or practicality.
 
 ```javascript
 const def1 = {
@@ -258,9 +249,9 @@ As you have already seen, you may set a **transform object** as the value, which
 will result in child objects on the target, but at some point, you'll probably
 want to define how to get data from the source object.
 
-The simplest form is a **dot notation path**, that describes what prop to pick
-from the source object for this particular target key. It will retrieve whatever
-is at this path on the source object.
+The simplest form is a dot[ notation path](#dot-notation-paths), that describes
+what prop to pick from the source object for this particular target key. It will
+retrieve whatever is at this path on the source object.
 
 ```javascript
 const def4 = {
@@ -309,12 +300,118 @@ const def5 = {
 ```
 
 Finally, a transform object value may be set to a
-[**transform pipeline**](#transform-pipeline), or a function that could have
+[**transform pipeline**](#transform-pipelines), or a function that could have
 been in a transform pipeline (which the dot notation path really is, and – come
 to think of it – the transform object itself too). This is explained in detail
 below.
 
-#### Dot notation paths
+#### A note on undefined and null
+
+MapTransform will treat `undefined` as "no value", and so `undefined` will not
+be transformed. If an `undefined` value meets a transform object or a transform
+pipeline, it will always produce `undefined`.
+
+This is not the case for `null`, though. MapTransform treats `null` as a value,
+an intended nothing, and will apply a transform object to it, even though it
+will most likely produce nothing but default values. To change this behavior,
+set `nonvalues: [undefined, null]` on the `options` object passed to
+MapTransform. This will essentially make MapTransform treat `null` the same way
+as `undefined`.
+
+The example above sets `undefined` and `null` as non-values, but you could in
+principle set any primitive values here.
+
+#### Directional transform objects
+
+A transform object is by default applied both in forward and reverse
+transformations. You may alter this by setting the `$direction` prop on a transform
+object, with `fwd`, `rev`, or `both` (the default) as possible values.
+
+When running a forward transformation, transform objects marked with
+`$direction: 'rev'` will be skipped. The same goes for `$direction: 'fwd'` in
+reverse. This will cause the value in the pipeline to be passed on unchanged.
+
+You may specify aliases for `fwd` and `rev` in the `mapTransform` options:
+
+```javascript
+const options = { fwdAlias: 'from', revAlias: 'to' }
+const mapper = mapTransform(def, options)
+```
+
+In this case, `from` and `to` may be used to specify forward and reverse
+direction respectively. `fwd` and `rev` will still work in addition to the
+aliases.
+
+### Transform pipelines
+
+The idea of the transform pipeline, is that you describe a set of
+transformation steps that will be applied to the data given to it, so that the
+data will come out on the other "end" of the pipeline in another format. The
+result from each step is passed on to the next.
+
+You may also run data through the pipeline in the oposite direction – in reverse
+mode. The data that came out of the pipeline in forward mode, could be passed
+back and get out in the original format again (although with a potential loss of
+data, if not all properties are transformed to the target data). This is what
+you do in a [reverse mapping](#reverse-mapping).
+
+One way to put it, is that the pipeline describes the difference between the two
+possible shapes of the data, and allows you to go back and forth between them.
+Or you can just view it as transformation steps applied in the order they are
+defined – or back again.
+
+You define a pipeline as an array where each item is a step and may be a
+[dot notation path](#dot-notation-paths), a
+[transform object](#the-transform-object), or an [operation](#operations) of
+some kind.
+
+If the pipeline holds only one step, you may skip the array as a handy shortcut.
+This is way we sometimes use the phrase "pipeline" to include anything that
+could go into a pipeline as well, as e.g. a path is essentially a pipeline with
+only one step.
+
+Here's an example pipeline that will retrieve an array of objects from the path
+`data.items[]`, map each object to an object with the props `id`, `title`, and
+`sections` (`title` is shortened to max 20 chars and `sections` will be an array
+of ids pulled from an array of section objects), and finally filter away all
+items with no values in the `sections` prop.
+
+```javascript
+import { transform, filter } from 'map-transform'
+
+const def6 = [
+  'data.items[]',
+  {
+    $iterate: true,
+    id: 'articleNo',
+    title: ['headline', transform(maxLength(20))],
+    sections: 'meta.sections[].id',
+  },
+  filter(onlyItemsWithSection),
+]
+```
+
+(Note that in this example, both `maxLength` and `onlyItemsWithSection` are
+custom transformers for this case, but their implementations are not provided.)
+
+**A note on arrays:** In a transform pipeline, the default behavior is to treat
+an array as any other data. The array will be passed on to a `transform()`
+operation, the entire array will be set on a path, etc. This also means that a
+mapping object will be applied to the entire array if nothing else is specified.
+In the example above, we have set `$iterate: true` on the mapping object, to
+signal that we want the mapping to be applied to the items of any array. See
+also [the `iterate` operation](#iteratepipeline-operation) for more.
+
+> Editors note: We should think through how we use the word "pipeline", as it is
+> sometimes ment to refer to an array of operations that a value may be
+> transformed through, other times any operation that could have been a part of
+> such a pipeline (the thinking is that it's a pipeline with one step), and we
+> also use the word to visualize a value going through a pipeline while it is
+> being transformed, and we refer to "the value in the pipeline". All of these
+> are related and makes sense when you look at the bigger picutre, but it may
+> not be clear when you just read a few paragraphs here and there.
+
+### Dot notation paths
 
 A central building block of MapTransform is the path, which at the most basic
 will be the key of an object prop to fetch, and you may fetch deeper values by
@@ -382,7 +479,7 @@ brackets are, with one item at the index you've specified.
 #### Parent and root paths
 
 A subtle aspect of using paths to get values in
-[transform pipelines](#transform-pipeline), is that you are not only returning
+[transform pipelines](#transform-pipelines), is that you are not only returning
 the value, you are moving further down in the data structure. When you apply the
 path `content` to the data above inside a transform pipeline, the object
 `{ title: 'The title' }` will be returned and will in essense be the only data
@@ -408,98 +505,6 @@ double carrets, so the path `^^.id` will get the id from our data from anywhere
 in the data structure, be it in `content` or when iterating through `tags[]`.
 
 Setting on parent and root paths are currently not supported.
-
-#### A note on undefined and null
-
-MapTransform will treat `undefined` as "no value", and so `undefined` will not
-be transformed. If an `undefined` value meets a transform object or a transform
-pipeline, it will always produce `undefined`.
-
-This is not the case for `null`, though. MapTransform treats `null` as a value,
-an intended nothing, and will apply a transform object to it, even though it
-will most likely produce nothing but default values. To change this behavior,
-set `nonvalues: [undefined, null]` on the `options` object passed to
-MapTransform. This will essentially make MapTransform treat `null` the same way
-as `undefined`.
-
-The example above sets `undefined` and `null` as non-values, but you could in
-principle set any primitive values here.
-
-#### Directional transform objects
-
-A transform object is by default applied both in forward and reverse
-transformations. You may alter this by setting the `$direction` prop on a transform
-object, with `fwd`, `rev`, or `both` (the default) as possible values.
-
-When running a forward transformation, transform objects marked with
-`$direction: 'rev'` will be skipped. The same goes for `$direction: 'fwd'` in
-reverse. This will cause the value in the pipeline to be passed on unchanged.
-
-You may specify aliases for `fwd` and `rev` in the `mapTransform` options:
-
-```javascript
-const options = { fwdAlias: 'from', revAlias: 'to' }
-const mapper = mapTransform(def, options)
-```
-
-In this case, `from` and `to` may be used to specify forward and reverse
-direction respectively. `fwd` and `rev` will still work in addition to the
-aliases.
-
-### Transform pipeline
-
-The idea of the transform pipeline, is that you describe a set of
-transformation steps that will be applied to the data given to it, so that the
-data will come out on the other "end" of the pipeline in another format. The
-result from each step is passed on to the next.
-
-You may also run data through the pipeline in the oposite direction – in reverse
-mode. The data that came out of the pipeline in forward mode, could be passed
-back and get out in the original format again (although with a potential loss of
-data, if not all properties are transformed to the target data). This is what
-you do in a [reverse mapping](#reverse-mapping).
-
-One way to put it, is that the pipeline describes the difference between the two
-possible shapes of the data, and allows you to go back and forth between them.
-Or you can just view it as transformation steps applied in the order they are
-defined – or back again.
-
-You define a pipeline as an array where each item is a step and may be a dot
-notation path, a transform object, or a transform operation of some kind (see
-below). If the pipeline holds only one of these, you may skip the array as a
-handy shortcut.
-
-Here's an example pipeline that will retrieve an array of objects from the path
-`data.items[]`, map each object to an object with the props `id`, `title`, and
-`sections` (`title` is shortened to max 20 chars and `sections` will be an array
-of ids pulled from an array of section objects), and finally filter away all
-items with no values in the `sections` prop.
-
-```javascript
-import { transform, filter } from 'map-transform'
-
-const def6 = [
-  'data.items[]',
-  {
-    $iterate: true,
-    id: 'articleNo',
-    title: ['headline', transform(maxLength(20))],
-    sections: 'meta.sections[].id',
-  },
-  filter(onlyItemsWithSection),
-]
-```
-
-(Note that in this example, both `maxLength` and `onlyItemsWithSection` are
-custom transformers for this case, but their implementations are not provided.)
-
-**A note on arrays:** In a transform pipeline, the default behavior is to treat
-an array as any other data. The array will be passed on to a `transform()`
-operation, the entire array will be set on a path, etc. This also means that a
-mapping object will be applied to the entire array if nothing else is specified.
-In the example above, we have set `$iterate: true` on the mapping object, to
-signal that we want the mapping to be applied to the items of any array. See
-also [the `iterate` operation](#iteratepipeline-operation) for more.
 
 ### Operations
 

@@ -5,25 +5,36 @@ Map and transform objects with mapping definitions.
 [![npm Version](https://img.shields.io/npm/v/map-transform.svg)](https://www.npmjs.com/package/map-transform)
 [![Build Status](https://travis-ci.org/integreat-io/map-transform.svg?branch=master)](https://travis-ci.org/integreat-io/map-transform)
 [![Coverage Status](https://coveralls.io/repos/github/integreat-io/map-transform/badge.svg?branch=master)](https://coveralls.io/github/integreat-io/map-transform?branch=master)
-[![Dependencies Status](https://tidelift.com/badges/github/integreat-io/map-transform?style=flat)](https://tidelift.com/subscriber/github/integreat-io/repositories/map-transform)
 [![Maintainability](https://api.codeclimate.com/v1/badges/fbb6638a32ee5c5f60b7/maintainability)](https://codeclimate.com/github/integreat-io/map-transform/maintainability)
 
-Behind this boring name hides a powerful object transformer.
+Behind this rather boring name hides a powerful JavaScript object transformer.
 
 Some highlighted features:
 
-- You pretty much define the transformation by creating the JavaScript object
-  you want as a result, setting paths and transform functions (transformers)
-  etc. where they apply.
-- There's a concept of a transform pipeline, that your data is passed through,
-  and you define pipelines anywhere you'd like on the target object.
-- By defining a mapping from one object to another, you have at the same time
-  defined a mapping back to the original format (with some gotchas).
+- You define how your data should be transformed by creating the JavaScript
+  object you want as a result, setting paths and transform functions
+  (transformers) etc. where they apply.
+- Your data pass through transform pipelines, which may include several steps of
+  paths and transformers. You define pipelines anywhere you'd like, both for
+  transforming objects or array of values, or for object props and primite
+  values.
+- By defining how to transform data from one object to another, you implicitly
+  define how to transform the other way – from the target to the original
+  (with some gotchas).
+
+> Editors note: We should think through how we use the word "pipeline", as it is
+> sometimes ment to refer to an array of operations that a value may be passed
+> through, other times any operation that could have been a part of such a
+> pipeline (the thinking is that it's a pipeline with one step), and we also
+> use the word to visualize value being in the pipeline while it is being
+> transformed, and we refer to "the value in the pipeline". All of these are
+> related and makes sense when you really think through it, but it may not
+> always be clear when you just read a few paragraphs here and there.
 
 Let's look at a simple example:
 
 ```javascript
-const { mapTransform } = require('map-transform')
+import mapTransform from 'map-transform'
 
 // You have this object
 const source = {
@@ -47,7 +58,8 @@ const def = {
   date: 'data[0].content.meta.date'
 }
 
-// You feed it to mapTransform and get a map function
+// You feed it to mapTransform and get a function that will transform data
+// according to your defintion
 const mapper = mapTransform(def)
 
 // Now, run the source object through the mapper and get what you want
@@ -97,10 +109,10 @@ const target2 = mapTransform(def2)(source)
 // }
 ```
 
-Maybe you want the actual date instead of the microseconds since the seventies:
+And if you want the actual date instead of the microseconds since the seventies:
 
 ```javascript
-const { mapTransform, transform } = require('map-transform')
+import mapTransform, { transform } from 'map-transform'
 
 // ....
 
@@ -133,7 +145,7 @@ const target3 = mapTransform(def3)(source)
 
 ### Prerequisits
 
-Requires node v8.6.
+Requires node v14.
 
 ### Installing
 
@@ -160,22 +172,22 @@ Think of the transform object as a description of the object structure you want.
 #### Keys on the transform object
 
 In essence, the keys on the transform object will be the keys on the target
-object. You may, however, specify a key with dot notation, which will be split
+object. You may, however, specify keys with dot notation, which will be split
 out to child objects on the target. You can also specify the child objects
 directly on the transform object, so in most cases this is just a matter of
-taste.
+taste or practicality.
 
 ```javascript
 const def1 = {
-  'data.entry.title': 'heading',
-}
-
-const def2 = {
   data: {
     entry: {
       title: 'heading',
     },
   },
+}
+
+const def2 = {
+  'data.entry.title': 'heading',
 }
 
 // def1 and def2 are identical, and will result in an object like this:
@@ -190,7 +202,7 @@ const def2 = {
 
 When you transform an array of data with a mapping object, you'll have to set
 `$iterate: true` to have each item in the data array be transformed with the
-mapping object. If you don't the entire array will be passed to the mapping
+mapping object. If you don't, the entire array will be passed to the mapping
 object.
 
 ```javascript
@@ -206,8 +218,9 @@ const def3 = {
 // ]
 ```
 
-**Note:** Iterating used to be the default behavior, but it has been changed due
-to the contradiction with how the mapping object behaves everywhere else.
+**Note:** Iterating used to be the default behavior on top level objects prior
+to v0.4, but it now needs to be explisitly stated, to be consistent with how the
+transform object behaves everywhere else.
 
 A key will set whatever is returned by the pipeline (see
 [next section](#values-on-the-transform-object)), whether it is a string, a
@@ -242,10 +255,10 @@ The values on the transform objects define how to retrieve and transform data
 from the source object, before it is set on the target object.
 
 As you have already seen, you may set a **transform object** as the value, which
-will result in child objects on the target, but at some point, you'll have to
-define how to get data from the source object.
+will result in child objects on the target, but at some point, you'll probably
+want to define how to get data from the source object.
 
-The simplest form is a **dot notation path**, that describes what prop(s) to pick
+The simplest form is a **dot notation path**, that describes what prop to pick
 from the source object for this particular target key. It will retrieve whatever
 is at this path on the source object.
 
@@ -271,17 +284,17 @@ const source1 = {
 ```
 
 The target object will only include values from the source object that is
-"mentioned" by the mapping object.
+"picked up" by the paths on the mapping object. Other values are discarded.
 
 The paths for the source data may also include brackets to indicate arrays in
 the data. It is usually not necessary, as MapTransform will map any array it
 finds, but it may be good to indicate what you expect from the source data, and
 it may be important if you plan to reverse transform the mapping object.
 
-To pass on the value on the pipeline, use an empty path `''` or a dot `'.'`.
+To pass on the value in the pipeline, without going down a path, use a dot
+`'.'`.
 
-Another feature of the bracket notation, is that you may pick a single item from
-an array by indicating the array index in the brackets.
+You may pick a single item from an array by indicating an index within brackets:
 
 ```javascript
 const def5 = {
@@ -296,37 +309,36 @@ const def5 = {
 ```
 
 Finally, a transform object value may be set to a
-[**transform pipeline**](#transform-pipeline), or one function that could go in
-the transform pipeline (which the dot notation path really is, and – come to
-think of it – the transform object itself too). This is explained in detail
+[**transform pipeline**](#transform-pipeline), or a function that could have
+been in a transform pipeline (which the dot notation path really is, and – come
+to think of it – the transform object itself too). This is explained in detail
 below.
 
 #### A note on undefined and null
 
-MapTransform will treat `undefined` as a value that is not set, and so a
-transform object will not be applied to it. So if an `undefined` value meets
-a transform object, it will produce `undefined`, regardless of the shape of the
-transform object.
+MapTransform will treat `undefined` as "no value", and so `undefined` will not
+be transformed. If an `undefined` value meets a transform object or a transform
+pipeline, it will always produce `undefined`.
 
 This is not the case for `null`, though. MapTransform treats `null` as a value,
 an intended nothing, and will apply a transform object to it, even though it
 will most likely produce nothing but default values. To change this behavior,
-set `noneValues: [undefined, null]` on the `options` object passed to
+set `nonvalues: [undefined, null]` on the `options` object passed to
 MapTransform. This will essentially make MapTransform treat `null` the same way
-as `undefined` when it meets to the transform object.
+as `undefined`.
 
-The example above sets `undefined` and `null` as none-values, but you could in
+The example above sets `undefined` and `null` as non-values, but you could in
 principle set any primitive values here.
 
 #### Directional transform objects
 
-A transform object is by default applied on forward transformations and in
-reverse. You may alter this by setting the `$direction` prop on a transform
+A transform object is by default applied both in forward and reverse
+transformations. You may alter this by setting the `$direction` prop on a transform
 object, with `fwd`, `rev`, or `both` (the default) as possible values.
 
 When running a forward transformation, transform objects marked with
 `$direction: 'rev'` will be skipped. The same goes for `$direction: 'fwd'` in
-reverse.
+reverse. This will cause the value in the pipeline to be passed on unchanged.
 
 You may specify aliases for `fwd` and `rev` in the `mapTransform` options:
 
@@ -342,22 +354,25 @@ aliases.
 ### Transform pipeline
 
 The idea of the transform pipeline, is that you describe a set of
-transformations that will be applied to the data given to it, so that the
-data will come out on the other "end" of the pipeline in another format. You may
-also insert data on the other end of the pipeline, and get it out in the
-original format again (although with a potential loss of data, if not all
-properties are transformed). This is what you do in a
-[reverse mapping](#reverse-mapping).
+transformation steps that will be applied to the data given to it, so that the
+data will come out on the other "end" of the pipeline in another format. The
+result from each step is passed on to the next.
+
+You may also run data through the pipeline in the oposite direction – in reverse
+mode. The data that came out of the pipeline in forward mode, could be passed
+back and get out in the original format again (although with a potential loss of
+data, if not all properties are transformed to the target data). This is what
+you do in a [reverse mapping](#reverse-mapping).
 
 One way to put it, is that the pipeline describes the difference between the two
 possible states of the data, and allows you to go back and forth between them.
-Or you can just view it as operations applied in the order they are defined – or
-back again.
+Or you can just view it as transformation steps applied in the order they are
+defined – or back again.
 
-You define a pipeline as an array that may hold dot notation paths, transform
-objects and transform operations of different kinds (see below). If the pipeline
-holds only one of these, you may actually skip the array. This is a handy
-shortcut in some cases.
+You define a pipeline as an array where each item is a step and may be a dot
+notation path, a transform object, or a transform operation of some kind (see
+below). If the pipeline holds only one of these, you may skip the array as a
+handy shortcut.
 
 Here's an example pipeline that will retrieve an array of objects from the path
 `data.items[]`, map each object to an object with the props `id`, `title`, and
@@ -391,11 +406,16 @@ In the example above, we have set `$iterate: true` on the mapping object, to
 signal that we want the mapping to be applied to the items of any array. See
 also [the `iterate` operation](#iteratepipeline-operation) for more.
 
+### Operations
+
+Operations may be used as steps in a transform pipeline.
+
 #### `transform(transformFn, transformFnRev)` operation
 
 The simple beauty of the `transform()` operation, is that it will apply whatever
 function (transformer) you provide it with to the data at that point in the
-pipeline. It's up to you to write the function that does the transformation.
+pipeline. It's up to you to write the function that does the transformation – or
+use one of [the transformers that comes with MapTransform](#transformers).
 
 You may supply a second transformer (`transformFnRev`), that will be used when
 [reverse mapping](#reverse-mapping). If you only supplies one transformer, it
@@ -404,16 +424,27 @@ make it uni-directional, but it might be clearer to use `fwd()` or `rev()`
 operations for this.
 
 The transformers you write for the transform operation should accept the source
-data as its only argument, and return the result of the relevant transformation.
-The data may be an object, a string, a number, a boolean, or an array of these.
+data as its first argument, and return the result of the relevant
+transformation. The data may be any JavaScript primite value, object, or an
+array of these. Your transformer should handle getting something unexpected, in
+which case it should usually return the value untouched or `undefined` –
+depending on what seems most natural in the case of your transformer.
+
+The second argument of a transformer not used in all transformers, and will be a
+[state object](#the-state-object), that give access to the context your
+transformer is operating in. Most of the properties of the state object is
+regarded as MapTransform internal, but you will probably use the `rev` prop at
+some point, which indicates whether we are transforming forward or in reverse.
 
 A simple transformer could, for instance, try to parse an integer from
 whatever you give it. This would be very useful in the pipeline for a property
-expecting numeric values, but MapTransform would not protest should you use it
-on an object. You would probably just not get the end result you expected.
+expecting numeric values, but keep in mind that MapTransform won't stop it from
+being used on an object. In the implementation below you would not always get
+the result you expected, so remember to handle unexpected values in your real
+transformers.
 
 ```javascript
-import { mapTransform, transform } from 'map-transform'
+import mapTransform, { transform } from 'map-transform'
 
 const ensureInteger = (data) => Number.parseInt(data, 10) || 0
 const def7 = {
@@ -437,16 +468,17 @@ This is also a good example of a transformation that only makes sense in one
 direction. This will still work in reverse, ending in almost the same object
 that was provided, but with a numeric `view` property. You may supply a
 reverse transformer called `ensureString`, if it makes sense in your
-particular case.
+particular case, or provide one transformer that parses to an integer going
+forward and stringifies in reverse.
 
 The functions you provide for the transform operation are expected to be pure,
 i.e. they should not have any side effects. This means they should
 
 1. not alter the data their are given, and
-2. not rely on any state outside the function
+2. not rely on anything besides the function arguments (the data and the state)
 
 Principle 1 is an absolute requirement, and principle 2 should only be violated
-when it is what you would expect for the particular case. As an example of the
+when it's what you would expect for the particular case. As an example of the
 latter, say you write the function `toAge`, that would return the number of
 years since a given year or date. You would have to use the current date to be
 able to do this, even though it would be a violation of principle 2.
@@ -460,21 +492,33 @@ Example transformation pipeline with a `yearsSince` function:
 
 ```javascript
 const def8 = {
-  age: ['birthyear', yearsSince(new Date())],
+  age: ['birthyear', transform(yearsSince(new Date()))],
 }
 ```
+
+This might not be what you want, however, as you'll get the date at the time you
+pass the definition to MapTransform, and some time may pass before the data is
+transformed.
 
 **Note:** When the `transform` operation is applied to an array, it will not
 iterate the array. Mapping over each item needs to be handled in the transform
 itself, or wrap the `transform` operation in an `iterate` operation.
 
-You may also define a transform operation as an object:
+So far we have used the `transform` function in our examples, but you also have
+the option to define a transform operation as an object (an operation object):
 
 ```javascript
-import { mapTransform } from 'map-transform'
+import mapTransform from 'map-transform'
 
+// This is our transformer
 const ensureInteger = (props) => (data) => Number.parseInt(data, 10) || 0
-const transformers = { ensureInteger }
+
+// We provide our transformers to mapTransform in an options object
+const options = { transformers: { ensureInteger } }
+
+// Then we may use an object in the pipeline and reference our transformer on a
+// `$transform` prop. MapTransform will replace this with the transform
+// operation and give it our transformer
 const def7asObject = {
   count: ['statistics.views', { $transform: 'ensureInteger' }],
 }
@@ -486,30 +530,36 @@ const data = {
   },
 }
 
-mapTransform(def7asObject, { transformers })(data)
+mapTransform(def7asObject, options)(data)
 // --> {
 //   count: 18
 // }
 ```
 
-Note that the function itself is passed on the `transformer` object. When
-you provide the custom transformer this way, it should be given as a function
-accepting an object with props, that returns the actual function used in the
-transform. Any properties given on the operation object, apart from
+When you provide a custom transformer this way, it should be given as a function
+accepting an object with props, that returns the actual function used as the
+transformer. Any properties given on the operation object, apart from
 `$transform`, will be passed in the `props` object.
 
 When you define the `transform` operation as an object, you may specify
 `$iterate: true` on the object to apply the transform to every item on an array,
-if an array is encountered. You may also set `$direction: 'fwd'` or
+in case an array is encountered. You may also set `$direction: 'fwd'` or
 `$direction: 'rev'` to have it transform in one direction only.
+
+This way of defining transform operations is useful to seperate the transform
+defintions and the transformers, and it also results in defintions that may be
+stored as JSON (but see [the note on JSON](#a-note-on-json)).
 
 #### `filter(conditionFn)` operation
 
-Just like the transform operation, the filter operation will apply whatever
-transformer function you give it to the data at that point in the transform
-pipeline, but instead of transformed data, you return a boolean value indicating
-whether to keep the data or not. If you return `true` the data continues through
-the pipeline, if you return `false` it is removed.
+Just like the `transform` operation, the `filter` operation will apply whatever
+transformer function you give it, to the data at that point in the transform
+pipeline. But instead of transformed data, the `filter` operation expects a
+boolean value indicating whether to keep the data or not. If you return `true`
+the data continues through the pipeline, if you return `false` it is removed.
+If the result is not a boolean, JavaScript rules will be used to force it to a
+boolean, meaning that `undefined`, `null`, `0`, and empty string `""` will be
+treated as `false`.
 
 When filtering an array, the transformer is applied to each data item in the
 array, like a normal filter function, and a new array with only the items that
@@ -521,14 +571,14 @@ The filter operation only accepts one argument, which is applied in both
 directions through the pipeline. You'll have to use `fwd()` or `rev()`
 operations to make it uni-directional.
 
-Transformer unctions passed to the filter operation, should also be pure, but
+Transformers passed to the filter operation should also be pure, but
 could, when it is expected and absolutely necessary, rely on states outside the
-function. See the explanation of this under the transform operation above.
+function. See the comment in the transform operation section above.
 
 Example of a filter, where only data of active members are returned:
 
 ```javascript
-import { mapTransform, filter } from 'map-transform'
+import mapTransform, { filter } from 'map-transform'
 
 const onlyActives = (data) => data.active
 const def9 = [
@@ -541,13 +591,13 @@ const def9 = [
 ]
 ```
 
-Defining a filter operation as an object:
+Defining a filter operation as an operation object:
 
 ```javascript
-import { mapTransform } from 'map-transform'
+import mapTransform from 'map-transform'
 
 const onlyActives = (data) => data.active
-const transformers = { onlyActives }
+const options = { transformers: { onlyActives } }
 const def9asObject = [
   'members'
   {
@@ -561,22 +611,25 @@ const def9asObject = [
 You may also set `$direction: 'fwd'` or `$direction: 'rev'` on the object, to
 have it filter in one direction only.
 
-See the `transform()` operation for more on how defining as an object works.
+See
+[the `transform()` operation](#transformtransformfn-transformfnrev-operation)
+for more on how defining as an object works.
 
 #### `ifelse(conditionFn, truePipeline, falsePipeline)` operation
 
 The `ifelse()` operation will run the `truePipeline` if the `conditionFn`
-results in something truthy, JavaScript tstyle, otherwise it will run the
+results in something truthy, JavaScript style, otherwise it will run the
 `falsePipeline`. See [the `filter()` operation](#filterconditionFn-operation)
 for more on the requirements for the `conditionFn`.
 
 Both `truePipeline` and `falsePipeline` are optional, in case you only need to
-apply a pipeline in one of the cases.
+apply a pipeline in one of the cases. When no pipeline is provided, the value is
+simply passed on untouched.
 
 Example:
 
 ```javascript
-import { mapTransform, ifelse } from 'map-transform'
+import mapTransform, { ifelse } from 'map-transform'
 
 const onlyActives = (data) => data.active
 const def31 = [
@@ -592,7 +645,7 @@ const def31 = [
 Defining an if operation as an object:
 
 ```javascript
-import { mapTransform } from 'map-transform'
+import mapTransform from 'map-transform'
 
 const def31b = [
   'members'
@@ -614,50 +667,77 @@ treated as a `conditionFn`, like in `def31`, not as a state mapper.
 
 #### `iterate(pipeline)` operation
 
-If you want something to be mapped over the items of an array, the `iterate`
-operation is your friend. When you wrap another operation, a pipeline, or a
-mapping object in an `iterate` operation, it will be applied to each item.
+If you want to map over the items of an array, the `iterate` operation is your
+friend. When you wrap another operation, a pipeline, or a mapping object in an
+`iterate` operation, it will be applied to each item, instead of to the array
+as a whole.
 
-When iterating, the state's `context` will iterate as well, to support `alt`
-operations etc. that need to access the corresponding item in the context.
+(When iterating, the state's `context` will iterate as well, to support `alt`
+operations etc. that need to access the corresponding item in the context.)
 
 In this example, each value in the array returned by `statistics[].views` will
-be transformed with the `ensureInteger` transformer, even if the function does not
-support arrays:
+be transformed with the `ensureInteger` transformer, even though the transformer
+itself does not support arrays:
 
 ```javascript
-import { mapTransform, iterate } from 'map-transform'
+import mapTransform, { iterate } from 'map-transform'
 
-const ensureInteger = data => Number.parseInt(data, 10) || 0
-const def26 = [
-  counts: ['statistics[].views', iterate(transform(ensureInteger))]
+const ensureInteger = (data) => Number.parseInt(data, 10) || 0
+const def26 = {
+  counts: ['statistics[].views', iterate(transform(ensureInteger))],
+}
+```
+
+For transform objects, you have the option to set `$iterate: true` instead of
+using the `iterate` operation:
+
+```javascript
+const def26c = [
+  'statistics[].views',
+  {
+    $iterate: true,
+    counts: { $transform: 'ensureInteger' },
+  },
 ]
 ```
 
-The `iterate` operation may also be used to wrap mapping objects in a transform
-pipeline, however, setting `$iterate: true` on the object may be more
-convenient.
+> Editors note: Here we should also document how a path ending in brackets will
+> affect iteration.
 
 #### `apply(pipelineId)` operation
 
-The apply operation allows pipelines to be reused. Several pipelines may be
-provided on the `pipelines` object on the `options` provided to
-`mapTransform()`, and the keys of the `pipelines` object serves as ids.
-When an id is passed to the apply operation as `pipelinedId`, the pipeline will
-be applied in the place of the apply operation and executed as if it was part of
-the pipeline definition in the first place.
+The `apply` operation let you define named pipelines that you may apply in other
+pipelines. This allows for cleaner definitions, clarity through good naming
+practices, and reuse.
 
-When no pipeline is provided, e.g. because the id is unknown, no pipeline will
-be applied and the data will pass through untouched.
+You provide an object with the pipeline names/ids as keys on the
+`options.pipelines` given to `mapTransform()`. When an id is passed to the
+`apply` operation as `pipelinedId`, the pipeline will be applied in the place of
+the apply operation and executed as if it was part of the pipeline definition in
+the first place.
+
+Note that "pipeline" is used as a wide concept here, including what is described
+as transform pipelines in this documentation, and also anything that could be
+part of a pipeline, like dot notation paths, transform objects, operations, etc.
+We think of these building blocks as pipelines with one step, even when they are
+used without an array.
+
+When the pipeline id is unknown, data will pass through untouched. This may be a
+bit unexpected sometimes, and lead to results where it's not clear that the
+problem is e.g. a typo in the pipeline id. We may change this in the future and
+instead respond with an error when you try to apply an unknown pipeline, so you
+shouldn't rely on this behavior.
 
 ```javascript
-import { mapTransform, apply, transform } from 'map-transform'
+import mapTransform, { apply, transform } from 'map-transform'
 
 const ensureInteger = (data) => Number.parseInt(data, 10) || 0
-const pipelines = {
-  castEntry: {
-    title: ['title', transform(String)],
-    count: ['count', transform(ensureInteger)],
+const options = {
+  pipelines: {
+    cast_entry: {
+      title: ['title', transform(String)],
+      count: ['count', transform(ensureInteger)],
+    },
   },
 }
 const def25 = [
@@ -665,7 +745,7 @@ const def25 = [
     title: 'heading',
     count: 'statistics.views',
   },
-  apply('castEntry'),
+  apply('cast_entry'),
 ]
 
 const data = {
@@ -675,7 +755,7 @@ const data = {
   },
 }
 
-mapTransform(def7)(data)
+mapTransform(def7, options)(data)
 // --> {
 //   title: 'Entry 1',
 //   count: 18
@@ -685,73 +765,30 @@ mapTransform(def7)(data)
 You may also define the apply operation as an operation object:
 
 ```javascript
-const def25 = [
+const def25b = [
   {
     title: 'heading',
     count: 'statistics.views',
   },
-  { $apply: 'castEntry' },
+  { $apply: 'cast_entry' },
 ]
 ```
 
-When you define the `apply` operation as an object, you may specify
-`$iterate: true` on the object to apply the pipeline to every item on an array,
-if an array is encountered. You may also set `$direction: 'fwd'` or
-`$direction: 'rev'` to have it apply in one direction only.
+When you define the `apply` operation as an operation object like we do in
+`def25b`, you may set `$iterate: true` on the operation object to apply the
+pipeline to every item in an array, even when the pipeline itself has not
+specified any iteration.
 
-#### `value(data)` operation
+You may also set `$direction: 'fwd'` or `$direction: 'rev'` to have it apply in
+one direction only.
 
-The data given to the value operation, will be inserted in the pipeline in place
-of any data that is already present at that point. The data may be an object,
-a string, a number, a boolean, or an array of any of those.
+#### `alt(pipeline, pipeline, ...)` operation
 
-This could be useful for:
-
-- Setting a fixed value on a property in the target data
-- Providing a default value to the alt operation
-
-Example of both:
-
-```javascript
-import { value, alt } from 'map-transform'
-
-const def10 = {
-  id: 'data.customerNo',
-  type: value('customer'),
-  name: alt('data.name', value('Anonymous')),
-}
-```
-
-The operation will not set anything when mapping when `state.noDefaults` is
-`true`.
-
-If you want to define the `value` operation as an operation object, use
-`$transform` or the short form `$value`:
-
-```javascript
-const def10asObject = {
-  id: 'data.customerNo',
-  type: { $transform: 'value', value: 'customer' },
-  name: { $alt: ['data.name', { $value: 'Anonymous' }] },
-}
-```
-
-#### `fixed(data)` operation
-
-The data given to the fixed operation, will be inserted in the pipeline in place
-of any data that is already present at that point. The data may be an object,
-a string, a number, a boolean, or an array of any of those.
-
-This is exactly the same as `value()`, except that the value set with `fixed()`
-will be included even when `state.noDefaults` is `true`.
-
-#### `alt(pipeline)` operation
-
-The alt operation will apply the pipelines in turn until it gets a value,
-meaning that if the first pipeline returns `undefined`, it will try the next and
-so on. This is how you provide default values in MapTransform. The pipeline may
-be as simple as a `value()` operation, a dot notation path into the source data,
-or a full pipeline of several operations.
+The `alt` operation will apply the given pipelines in turn until it gets a
+value, meaning that if the first pipeline returns `undefined`, it will try the
+next and so on. This is how you provide default values in MapTransform. The
+pipeline may be as simple as a `transform(value())` operation, a dot notation
+path into the source data, or a full pipeline with several operations.
 
 Note that when the return value is an array, it is treated as a value, as it is
 not an `undefined` value. To provide the `alt` operation to every item in the
@@ -767,7 +804,7 @@ const formatDate = (data) => {
 
 const def11 = {
   id: 'data.id',
-  name: alt('data.name', value('Anonymous')),
+  name: alt('data.name', transform(value('Anonymous'))),
   updatedAt: [
     alt('data.updateDate', 'data.createDate', transform(currentDate)),
     transform(formatDate),
@@ -777,21 +814,24 @@ const def11 = {
 
 In the example above, we first try to set the `updatedAt` prop to the data found
 at `data.updateDate` in the source data. If that does not exist (i.e. we get
-`undefined`), the alt operation kicks in and try the path `data.createDate`. If
-we still have `undefined`, the second alt will call the custom transformer
-`currentDate`, that simply returns the current date as a JS object. Finally,
-another transform operation pipes whatever data we get from all of this through
-the `formatDate` transformer.
+`undefined`), the alt operation tries the path `data.createDate`. If we still
+get `undefined`, the custom transformer `currentDate` will be called, simply
+returning the current date as a JS object. Finally, another transform operation
+pipes whatever data we get from all of this through the `formatDate`
+transformer.
 
 When `alt` is run in reverse, the alternative pipelines are run in the oposite
 order, with the last being run first. The first pipeline is always run, though,
 as it is common practice to let the first be a `get` that acts like a `set` in
-reverse.
+reverse. This may be confusing, but will usually just be naturally when you
+don't think too much about it. See
+[the `get()` and `set()` operations](#getpath-and-setpath-operation) for more on
+how `get` works in reverse.
 
-With only one pipeline, `alt` will behave a bit differently. A single pipeline
-will be run if the state has an `undefined` value, but skipped otherwise. This
-is different from the multi-pipeline behavor, where the first is always run and
-the rest is only run if the previous returns `undefined`.
+`alt` will behave a bit differently when you give only one pipeline: The
+pipeline will be run if the state has an `undefined` value, but skipped
+otherwise. This is different from the multi-pipeline behavor, where the first is
+always run and the rest is only run if the previous returns `undefined`.
 
 You may also define an alt operation as an object:
 
@@ -800,16 +840,19 @@ const def11asObject = {
   id: 'data.id',
   name: { $alt: ['data.name', { $value: 'Anonymous' }] },
   updatedAt: [
-    { $alt: ['data.updateDate', 'data.createDate', 'currentDate'] },
+    { $alt: ['data.updateDate', 'data.createDate', transform('currentDate')] },
     { $transform: 'formatDate' },
   ],
 }
 ```
 
 When you define the `alt` operation as an object, you may specify
-`$iterate: true` on the object to provide a default value to every `undefined`
-item on an array, if an array is encountered. You may also set
-`$direction: 'fwd'` or `$direction: 'rev'` to limit it to one direction only.
+`$iterate: true` on the object to run its pipelines on every item in the array,
+or – with only one pipeline – provide default values to every `undefined`
+item.
+
+You may also set `$direction: 'fwd'` or `$direction: 'rev'` to limit it to one
+direction only.
 
 #### `concat(pipeline, pipeline, ...)` operation
 
@@ -827,11 +870,15 @@ value (i.e. return `undefined`) will be filtered away.
 }
 ```
 
+> Editors note: We need more examples here.
+
 #### `merge(pipeline, pipeline, ...)` operation
 
 `merge()` will run all given pipelines and deep merge their results. Conflicts
 are resolved by prioritizing results from the rightmost of the conflicting
 pipelines.
+
+> Editors note: We need examples here.
 
 #### `modify(pipeline)` operation
 
@@ -858,7 +905,7 @@ const response = {
 }
 ```
 
-...will result in:
+... will result in:
 
 ```javascript
 const response = {
@@ -868,7 +915,8 @@ const response = {
 ```
 
 Had we ran this without the `modify()` operation, the returned object would only
-have the `data` prop.
+have the `data` prop, as no props from the source data will be set in the target
+data, unless they are "picked up" by dot notation paths.
 
 This is equivalent to setting the `$modify` property to `true` on the object
 mutation object:
@@ -891,15 +939,21 @@ const def34c = {
 }
 ```
 
+Note that setting a path like this, is only available when the `modify`
+operation is defined as an operation object.
+
 #### `fwd(pipeline)` and `rev(pipeline)` operation
 
 All operations in MapTransform will apply in both directions, although some of
-them will behave a bit different dependending on the direction. If you want an
-operation to only apply to one direction, you need to wrap it in a `fwd()` or
+them may behave a bit different dependending on the direction. If you want an
+operation to only apply in one direction, you need to wrap it in a `fwd()` or
 `rev()` operation. The `fwd()` operation will only apply its pipeline when we're
 going forward, i.e. mapping in the normal direction, and its pipeline will be
 skipped when we're mapping in reverse. The `rev()` operation will only apply its
 pipeline when we're mapping in reverse.
+
+The value in the pipeline will be untouched when we are encountering an
+operation that is not intended for the direction we are currently going in.
 
 ```javascript
 import { fwd, rev, transform } from 'map-transform'
@@ -918,26 +972,33 @@ back to the zero-based index.
 Note that the `order` pipeline in the example above could also have been written
 as `['index', transform(increment, decrement)]`, as the transform operation
 supports seperate forward and reverse functions, when it is given two functions.
-In this case you may choose what you think is clearer, but in other cases, the
-`fwd()` and `rev()` operations are your only friends.
+You may have a similar syntax with
+[the `divide` operation](#dividefwdPipeline-revPipeline-operation), and its
+usually just a matter of what you think is clearer.
+
+When defining operations as operation objects, you may accomplish the same by
+setting the `$direction` prop to `fwd` or `rev`. This is also mentioned in the
+description of the operations this makes sense for. You should also take a look
+at the description of
+[how to set aliases for the directions](#directional-transform-objects).
 
 #### `divide(fwdPipeline, revPipeline)` operation
 
 `divide()` is `fwd()` and `rev()` operations combined, where the first argument
 is a pipeline to use when going forward and the second when going in reverse.
 
-See `fwd()` and `rev()` for more details.
+See [`fwd()` and `rev()`](#fwdpipeline-and-revpipeline-operation) for more details.
 
 #### `get(path)` and `set(path)` operation
 
 Both the `get()` and `set()` operations accepts a dot notation path to act on.
-The get operation will pull the data at the path in the source data, and insert
-it in the pipeline, while the set operation will take what's in the pipeline
-and set it on the given path at a new object.
+The get operation will pull the data at the path from the data currently in the
+pipeline, and replace the value in the pipeline with it. The set operation will
+take what ever's in the pipeline and set it on the given path at a new object.
 
 One reason they come as a pair, is that they will switch roles for reverse
-mapping. Their names might make this a bit confusing, but in reverse, the get
-operation will set and the set operation will get.
+mapping. Their names might make this a bit confusing, but in reverse, the `get`
+operation will set and the `set` operation will get.
 
 ```javascript
 import { get, set } from 'map-transform'
@@ -945,44 +1006,53 @@ import { get, set } from 'map-transform'
 const def13 = [get('data.items[].content'), set('content[]')]
 ```
 
-In the example above, the get operation will return an array of whatever is in
+In the example above, the `get` operation will return an array of whatever is in
 the `content` prop at each item in the `data.items[]` array. The set operation
 will then create a new object with the array from the pipeline on the `content`
 prop. Reverse map this end result, and you'll get what you started with, as the
-get and set operations switch roles.
+`get` and `set` operations switch roles.
 
-You may notice that the example above could have been written with a transform
-object, and you're absolutely right. The transform object is actually an
-alternative to using get and set operations, and will be converted to get and
-set operations behind the curtains.
+Using the `get` operation is equivalent to just providing the dot notation path
+as a string. There is also an similar shortcut to the `set` operation, where you
+provide the dot notation path with a `>` prefix. For compatability, you may also
+use a `<` prefix for `get`, but there is usually no need to do that.
 
-This example results in the exact same pipeline as the example above:
+This is exactly the same as `def13`:
 
 ```javascript
-const def14 = {
+const def13b = ['data.items[].content', '>content[]']
+```
+
+You may notice that the examples above could have been written with a transform
+object, and you're absolutely right. The transform object is actually an
+alternative to using `get` and `set` operations, and will be converted to
+operations behind the curtains.
+
+This example results in the exact same pipeline as the examples above:
+
+```javascript
+const def13c = {
   'content[]': 'data.items[].content',
 }
 ```
 
 It's simply a matter of taste and of what's easiest in each case. We believe
 that the transform object is best in cases where you describe a target object
-with several properties, while get and set operations is best suited to define
-root paths for objects or arrays.
-
-The get operation also has a shortcut in transform pipelines: Simply provide the
-path as a string, and will be treated as `get(path)`.
+with several properties, while `get` and `set` operations is best suited to
+define root paths for objects or arrays.
 
 #### `root(pipeline)` operation
 
-When you pass a pipeline to the root operation, the pipeline will be apply to
-the data that was original passed to the pipeline. Note that the result of a
-root pipeline will still be applied at the point you are in the parent pipeline,
-so this is not a way to alter data out of the pipeline.
+When you pass a pipeline to the root operation, the pipeline will be applied to
+the data that was original passed to the pipeline – before any operations where
+applied to it. The result of a root pipeline will still be inserted in the
+pipeline at the point of the `root` operation, so this is not a way to alter
+data out of the pipeline.
 
 Let's look at an example:
 
 ```javascript
-import { mapTransform, root } from 'map-transform'
+import mapTransform, { root } from 'map-transform'
 
 const def15 = [
   'articles[]',
@@ -1010,23 +1080,23 @@ As you see, every item in the `articles[]` array, will be mapped with the
 items without the root operation.
 
 There's also a shortcut notation for root, by prefixing a dot notation path with
-`^`. This only works when the path is used for getting a value, and it will be
-plugged when used as set (i.e., it will return no value). This may be used in
-`get()` and `set()` operations, and in transformation objects.
+`^^.`. This only works when the path is used for getting a value, and it will be
+plugged when used as set (i.e., it will return no value). This shortcut may be
+used wherever a path may be used.
 
-In the following example, `def16` and `def17` is exactly the same:
+The following examples, `def16` and `def16b`, are equal:
 
 ```javascript
-const def16 = get('^meta.section')
-const def17 = divide(root('meta.section'), plug())
+const def16 = get('^^.meta.section')
+const def16b = divide(root('meta.section'), plug())
 ```
 
 #### `plug()` operation
 
-All the `plug()` operation does is set clear the value in the pipeline - it
-plugs it. The value will be set to `undefined` regardless of what has happened
-before that point. Any `alt()` operations etc. coming after the plug will still
-have an effect.
+The `plug()` operation simply clears the value in the pipeline - it plugs it.
+The value will be set to `undefined` regardless of what has happened before that
+point. Any `alt()` operations etc. coming after the plug will still have an
+effect.
 
 This main use case for this is to clear the value going one way. E.g. if you
 need a value when you map in reverse, but don't want it going forward, plug it
@@ -1036,27 +1106,31 @@ what a uni-directional pipeline will be in the other direction), will return
 the data you give it, which is usually not what you want in these cases.
 The solution is to plug it in the other direction.
 
-You could have accomplished the same with `value(undefined)`, but this will not
-work when `state.noDefaults` is `true`. `plug()` will do its trick in all cases.
+You could have accomplished the same with `transform(value(undefined))`, but
+this will not work when `state.noDefaults` is `true`. `plug()` will do its trick
+in all cases.
 
 #### `lookup({ arrayPath, propPath, matchSeveral })` operation
 
-`lookup()` will take the value in the pipeline and replace it with the first
-object in the `arrayPath` array with a value in `propPath` matching the value.
+`lookup` will take the value in the pipeline and replace it with the first
+object in the `arrayPath` array that has a value in `propPath` matching it.
 
 When `matchSeveral` is `true`, all matches – not only the first – will be
 returned. Default is `false`.
 
-In reverse, the `propPath` will simply be used as a get path. (In the future,
-MapTransform might support setting the items back on the `arrayPath` in
-reverse.)
+In reverse, the `propPath` will simply be used as a get path, getting the prop
+of the objects out of the objects, so to speak. (In the future, MapTransform
+_might_ support setting the items back on the `arrayPath` in reverse.) The
+exception to this rule, is that `lookup` will behave as if in forward mode, when
+it's called in a transform object in
+[flipped mode](#flipping-a-transform-object).
 
 Example:
 
 ```javascript
 const def18 = [
   'content.meta.authors[]',
-  lookup({ arrayPath: '$users[]', propPath: 'id' }),
+  lookup({ arrayPath: '^^.users[]', propPath: 'id' }),
 ]
 const data = {
   content: { meta: { authors: ['user1', 'user3'] } },
@@ -1077,11 +1151,13 @@ mapper.rev(mappedData)
 // --> { content: { meta: { authors: ['user1', 'user3'] } } }
 ```
 
-You may also define this as a transform object:
+You may also define this as an operation object:
 
 ```javascript
-const def18o = ['content.meta.authors[]', { $lookup: '$users[]', path: 'id' }]
+const def18b = ['content.meta.authors[]', { $lookup: '$users[]', path: 'id' }]
 ```
+
+The path on `$lookup` refers to `arrayPath` and `path` refers to `propPath`.
 
 #### `and(pipeline, pipeline, ...)` operation
 
@@ -1089,7 +1165,8 @@ Will run all provided pipelines, force their return values to boolean, according
 to JavaScript rules, and return `true` if they are all `true`, otherwise
 `false`.
 
-Typically used together with [`ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
+Typically used together with
+[the `ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
 to support AND logic:
 
 ```javascript
@@ -1102,13 +1179,16 @@ const def36 = [
 ]
 ```
 
+> Editors note: We should have an example of how to use it as a function too.
+
 #### `or(pipeline, pipeline, ...)` operation
 
 Will run all provided pipelines, force their return values to boolean, according
-to JavaScript rules, and return `true` if any of the are `true`, otherwise
+to JavaScript rules, and return `true` if any of them are `true`, otherwise
 `false`.
 
-Typically used together with [`ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
+Typically used together with
+[`ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
 to support OR logic:
 
 ```javascript
@@ -1121,22 +1201,32 @@ const def37 = [
 ]
 ```
 
+> Editors note: We should have an example of how to use it as a function too.
+
+### Transformers
+
+The following transformers may be applied to the value in a pipeline with the
+[`transform` operation](#transformtransformfn-transformfnrev-operation), or used
+with the [`filter` operation](#filterconditionFn-operation) to filter away
+values in the pipeline.
+
 #### `compare({ path, operator, match, matchPath, not })` transformer
 
-This is a transformer intended for use with the `filter()` operation. You
-pass a dot notation `path` and a `match` value (string, number, boolean) to
-`compare()`, and it returns a function that you can pass to `filter()` for
-filtering away data that does not not have the value set at the provided path.
+This is a transformer intended for use with the `filter` operation. You
+pass a dot notation `path` and a `match` value (string, number, boolean, `null`
+or `undefined`) to `compare()`, and it returns a function that you can pass to
+`filter()` for filtering away data that does not not have the value set at the
+provided path.
 
 As an alternative to `match`, you may specify a `matchPath`, which is a dot
 notation path, in which case the match value will be fetched from the provided
 data.
 
-The default is to compare the values resulting from `path` and `match` or
-`matchPath` with equality, but other operations may be set on the `operator`
-property. Alternatives: `'='`, `'!='`, `'>'`, `'>='`, `'<'`, or `'<='`, `in`, or
-`exists`. `in` requires equality to at least one of the elements in an array,
-and `exists` requires any value besides `undefined`.
+The default is to check wheter the values resulting from `path` and `match` or
+`matchPath` are the same (equality), but other operations may be set on the
+`operator` property. Alternatives: `'='`, `'!='`, `'>'`, `'>='`, `'<'`, or
+`'<='`, `in`, or `exists`. `in` requires equality to at least one of the
+elements in an array, and `exists` requires any value besides `undefined`.
 
 If the `path` points to an array, the value is expected to be one of the values
 in the array.
@@ -1146,7 +1236,7 @@ Set `not` to `true` to reverse the result of the comparison.
 Note: `value` and `valuePath` may be used as aliases for `match` and `matchPath`
 for consistency with other transformers.
 
-Here's an example where only data where role is set to 'admin' will be kept:
+Here's an example where only data where `role` is set to 'admin' will be kept:
 
 ```javascript
 import { filter, transformers } from 'map-transform'
@@ -1154,8 +1244,8 @@ const { compare } = transformers
 
 const def19 = [
   {
-    name: 'name',
-    role: 'editor',
+    name: 'username',
+    role: 'group',
   },
   filter(compare({ path: 'role', operator: '=', match: 'admin' })),
 ]
@@ -1164,10 +1254,10 @@ const def19 = [
 You may also define this with a transform object:
 
 ```javascript
-const def19o = [
+const def19b = [
   {
-    name: 'name',
-    role: 'editor',
+    name: 'username',
+    role: 'group',
   },
   { $filter: 'compare', path: 'role', operator: '=', match: 'admin' },
 ]
@@ -1182,9 +1272,9 @@ Given an object, the `explode` transformer will return an array with one object
 for each property in the source object, with a `key` property for the property
 key, and a `value` property for the value.
 
-When given an array, the `explode` helper will return on object for every item
-in the array, with a `key` property set to the index number in the source array
-and a `value` property to the item value.
+When given an array, the `explode` transformer will return on object for every
+item in the array, with a `key` property set to the index number in the source
+array and a `value` property to the item value.
 
 When transforming in reverse, `explode` will try to compile an object or an
 array from an array of key/value objects. If all `key` props are numbers, an
@@ -1194,7 +1284,7 @@ structure will be skipped.
 Example:
 
 ```javascript
-import { mapTransform, transform, transformers } from 'map-transform'
+import mapTransform, { transform, transformers } from 'map-transform'
 const { explode } = transformers
 
 const data = {
@@ -1211,100 +1301,120 @@ mapTransform(def32)(data)
 Or as a transform object:
 
 ```javascript
-const def32o = ['currencies', { $transform: 'explode' }]
+const def32b = ['currencies', { $transform: 'explode' }]
 ```
 
-### `flatten({ depth })` transformer
+#### `fixed(data)` transformer
+
+The data given to the fixed transformer, will be inserted in the pipeline in
+place of any data that is already present at that point. The data may be an
+object, a string, a number, a boolean, `null`, or `undefined – or an array of
+any of these.
+
+This is almost the same behavior as
+[the `value` transformer](#valuedata-transformer), which is more commonly used,
+except that the value set with `fixed` will be included even when
+`state.noDefaults` is `true`. Use `value` for default values, and `fixed` for
+values that should be set no matter what.
+
+#### `flatten({ depth })` transformer
 
 Will flatten an array the number of depths given by `depth`. Default depth is
 `1`.
 
-### `index()` transformer
+> Editors note: We need an example.
+
+#### `index()` transformer
 
 When iterating, this will return the index of the current item in the array.
 When used outside of an iteration, it always returns `0`.
 
+> Editors note: We need an example.
+
 #### `implode()` transformer
 
-This is the exact opposite of the `explode` helper, imploding from a service and
-explode in reverse (to a service). See
-[the documentation for `explode()`](#explode-transformer), but remember that the
-directions will be reversed for `implode()`.
+This is the exact opposite of the `explode` helper, imploding going forward and
+exploding in reverse. See
+[the documentation for `explode()`](#explode-transformer) for how this works.
 
 #### `map(dictionary)` transformer
 
 This transformer accepts a dictionary described as an array of tuples, where
-each tuple holds a from value and a to value. When a data value is given to the
-`map` helper, it is replaced with a value from the dictionary. For a forward
-transformation, the first value in the tuple will be matched with the given
-data value, and the second value will be returned. In reverse transformation,
-the second value is matched and the first is returned.
+each tuple holds a _from_ value and a _to_ value. When a value is given to the
+`map` transformer, it is replaced with a value from the dictionary. When going
+forward, the first value in the tuple will be matched with the given data value,
+and the second value will be returned. In reverse, the second value is matched
+and the first is returned.
+
+When there are more than one matches, the first one is applied.
 
 The wildcard value `*` will match any value, and is applied if there is no other
 match in the dictionary. When the returned value is `*`, the original data value
-is returned instead.
+is used instead. This is useful when you only want to map a few values, and keep
+everything else. Add a `['*', '*']` tupple at the end, and it will match
+anything that is not already matched, and return it untouched.
 
-The `map` transformer only supports primitive values, so any object will be mapped to
-`undefined` or the value given by the wildcard in the dictionary. Arrays will be
-iterated to map each value in the array. To map to or from `undefined` with a
-dictionary defined in JSON, use the value `**undefined**`.
+The `map` transformer only supports primitive values, so when trying to map an
+object, you will get the value given by the wildcard in the dictionary, or
+`undefined`. Arrays will be iterated to map each value in the array.
+
+To map to or from `undefined` with a dictionary defined in JSON, use the value
+`**undefined**`.
 
 Example:
 
-```
+```javascript
 import { transform, transformers } from 'map-transform'
 const { map } = transformers
 
 const dictionary = [
   [200, 'ok'],
   [404, 'notfound'],
-  ['*', 'error']
+  ['*', 'error'],
 ]
 
 const def28 = {
-  status: ['result', transform(map({ dictionary }))]
+  status: ['result', transform(map({ dictionary }))],
 }
 ```
 
 When using `map` in an operation object, you may provide a dictionary array
-or a named dictionary on the `dictionary` property. An example of with a named
-dictionary:
+or a named dictionary on the `dictionary` property. Here's an example with a
+named dictionary:
 
-```
-import { mapTransform } from 'map-transform'
+```javascript
+import mapTransform from 'map-transform'
 
 const dictionary = [
   [200, 'ok'],
   [404, 'notfound'],
-  ['*', 'error']
+  ['*', 'error'],
 ]
+const options = { dictionaries: { statusCodes: dictionary } }
 
-const def29 = {
-  status: [
-    'result',
-    { $transform: 'map', dictionary: 'statusCodes' }
-  ]
+const def28b = {
+  status: ['result', { $transform: 'map', dictionary: 'statusCodes' }],
 }
 
-const mapper = mapTransform(def29, { dictionaries: { statusCodes: dictionary } })
+const mapper = mapTransform(def28b, options)
 ```
 
 #### `merge({path})` transformer
 
 The `merge` transformer accepts a pipeline or an array of pipelines in `path`,
 and the objects or array of objects these pipline(s) return will be merge into
-on object. Merging happens from left to right, so the props of the last object
+one object. Merging happens from left to right, so the props of the last object
 will have priority. However, `undefined` values will never overwrite another
 value.
 
 ```javascript
-import { mapTransform, transform, transformers } from 'map-transform'
+import mapTransform, { transform, transformers } from 'map-transform'
 const { merge } = transformers
 
 const data = {
   original: { id: 'ent1', title: 'Entry 1', text: null },
   updated: { id: undefined, title: 'Better title' },
-  final: { text: 'And so this happend' },
+  final: { text: 'Here we are now' },
 }
 
 const def38 = {
@@ -1312,29 +1422,62 @@ const def38 = {
 }
 
 const ret = mapTransform(def38)(data)
-// --> { id: 'ent1', title: 'Better title', text: 'And so this happend' }
+// --> { id: 'ent1', title: 'Better title', text: 'Here we are now' }
 ```
 
-The `merge` transformer is available through a short-cut transform object:
+The `merge` transformer is available through a short-cut operation object:
 
 ```javascript
-const def38 = {
+const def38b = {
   data: { $merge: ['original', 'updated', 'final'] },
 }
 ```
 
+#### `not(value)` transformer
+
+`not()` will return `false` when the value in the pipeline is truthy, and `true`
+when value is falsy. This is useful for making the `filter()` operation do the
+opposite of what the filter transformer implies.
+
+Here we filter _away_ all data where role is set to 'admin':
+
+```javascript
+import { filter, transformers } from 'map-transform'
+const { compare } = transformers
+
+const def21 = [
+  {
+    name: 'username',
+    role: 'group',
+  },
+  filter(not(compare({ path: 'role', match: 'admin' }))),
+]
+```
+
+When using operation objects, you don't have an equivalent yet, but with the
+`compare` transformer, you could do it like this:
+
+```javascript
+const def21b = [
+  {
+    name: 'username',
+    role: 'group',
+  },
+  { $filter: 'compare', path: 'role', not: true, match: 'admin' },
+]
+```
+
 #### `sort({asc, path})` transformer
 
-The `sort` transformer will sort the given array of items in ascending or
-descending (depending on whether `asc` is `true` or `false`). Ascending is the
-default. When a `path` is given, the sort is performed on the value at that path
-on each object in the array. With no `path`, the values in the array are sorted
-directly.
+The `sort` transformer will sort the array at the given `path`, in the direction
+given by `asc`. The default direction is ascending (`asc` is `true` by default).
+
+When no `path` is given, the sort is performed on the array in pipeline.
 
 Example:
 
 ```javascript
-import { mapTransform, transform, transformers } from 'map-transform'
+import mapTransform, { transform, transformers } from 'map-transform'
 const { sort } = transformers
 
 const data = {
@@ -1349,64 +1492,22 @@ const ret = mapTransform(def35)(data)
 // --> [{ id: 'ent1' }, { id: 'ent3' }, { id: 'ent5' }]
 ```
 
-The `sort` transformer is also available through a transform object:
+The `sort` transformer is also available as an operation object:
 
 ```javascript
-const def35o = {
+const def35b = {
   data: ['items', { $transform: 'sort', asc: true, path: 'id' }],
 }
 ```
 
-#### `template(template)` transformer
-
-The `template` transformer takes a [handlebars] template and applies the given
-data to it. The placeholders in the template is dot notaion paths to fields in
-the given data. A simple dot (`.`) refers to the data itself, and may be useful
-when the pipeline data is a string.
-
-Values will be forced to strings before being inserted in the template.
-
-Example:
-
-```javascript
-import { mapTransform, transform, transformers } from 'map-transform'
-const { template } = transformers
-
-const data = {
-  content: { description: 'Bergen by night', artist: 'John F.' },
-}
-
-const def30 = {
-  caption: ['content', transform(template('{{description}}. By {{artist}}'))],
-}
-
-const ret = mapTransform(def30)(data)
-// --> { caption: 'Bergen by night. By John F.' }
-```
-
-The `template` transformer is also available through a transform object:
-
-```javascript
-const def30o = {
-  caption: [
-    'content',
-    { $transform: 'template', template: '{{description}}. By {{artist}}' },
-  ],
-}
-```
-
-If you the template is available as part of the data, you may use `templatePath`
-instead of `template`, and set it to the path of the template in the data. When
-using the transform object format, this is as simple as it sounds. With the
-function version, you supply an operand object to `template()` like this:
-`transform(template({ templatePath: 'options.captionTemplate' }))`.
+> Editors note: What happens if the value is not an array?
 
 #### `validate(path, schema)` transformer
 
 This is a transformer for validating the value at the path against a
 [JSON Schema](http://json-schema.org). We won't go into details of JSON Schema
-here, and the `validate()` helper simply retrieves the value at the path and
-validates it according to the provided schema.
+here, and `validate` simply retrieves the value at the path and validates it
+according to the provided schema.
 
 Note that if you provide a schema that is always valid, it will be valid even
 when the data has no value at the given path.
@@ -1424,34 +1525,59 @@ const def20 = [
 ]
 ```
 
-#### `not(value)` transformer
+#### `value(data)` transformer
 
-`not()` will return `false` when value if truthy and `true` when value is falsy.
-This is useful for making the `filter()` operation do the opposite of what the
-filter transformer implies.
+The data given to the `value` transformer, will be inserted in the pipeline in
+place of any data that is already present at that point. The data may be an
+object, a string, a number, a boolean, `null`, or `undefined` – or an array of
+any of these.
 
-Here we filter away all data where role is set to 'admin':
+This could be useful for:
+
+- Setting a value on a property, that is not found in the source data
+- Providing a default value to
+  [the `alt` operation](#altpipeline-pipeline--operation)
+
+Example of both:
 
 ```javascript
-import { filter, transformers } from 'map-transform'
-const { compare } = transformers
+import { alt, transform, transformers } from 'map-transform'
+const { value } = transformers
 
-const def21 = [
-  {
-    name: 'name',
-    role: 'role',
-  },
-  filter(not(compare('role', 'admin'))),
-]
+const def10 = {
+  id: 'data.customerNo',
+  type: transform(value('customer')),
+  name: alt('data.name', transform(value('Anonymous'))),
+}
 ```
+
+Important: The `value` transformer will not set anything when mapping when
+`state.noDefaults` is `true`. Use
+[the `fixed` transformer](#fixeddata-transformer) if this is not your wanted
+behavior.
+
+As the `value` transformer is very common, it has it's own short-hand operation
+object notation, that can be used insted of the `transformer` operation object.
+In the following example, you'll see both:
+
+```javascript
+const def10b = {
+  id: 'data.customerNo',
+  type: { $transform: 'value', value: 'customer' },
+  name: { $alt: ['data.name', { $value: 'Anonymous' }] },
+}
+```
+
+I.e., `{ $value: 'Anonymous' }` is the same as
+`{ $transform: 'value', value: 'Anonymous' }`.
 
 ### Reverse mapping
 
 When you define a transform pipeline for MapTransform, you also define the
 reverse transformation, i.e. you can run data in both direction through the
 pipeline. This comes "for free" for simple mappings, but might require some
-extra work for more complex mappings with transform operations, alt operations,
-etc.
+extra work for more complex mappings with `transform` operations, `alt`
+operations, etc.
 
 You should also keep in mind that, depending on your defined pipeline, the
 mapping may result in data loss, as only the data that is mapped to the target
@@ -1462,23 +1588,23 @@ be able to map back to the original data.
 Let's see an example of reverse mapping:
 
 ```javascript
-import { mapTransform, alt, value } from 'map-transform'
+import mapTransform, { alt, value } from 'map-transform'
 
 const def22 = [
   'data.customers[]',
   {
     id: 'customerNo',
-    name: [alt('fullname', value('Anonymous'))],
+    name: [alt('fullname', transform(value('Anonymous')))],
   },
 ]
 
-const dataInTargetState = [
+const data = [
   { id: 'cust1', name: 'Fred Johnsen' },
-  // { id: 'cust2', name: 'Lucy Knight' },
+  { id: 'cust2', name: 'Lucy Knight' },
   { id: 'cust3' },
 ]
 
-const dataInSourceState = mapTransform(def22).rev(dataInTargetState)
+const dataAfterRev = mapTransform(def22).rev(data)
 // --> {
 // data: {
 //   customers: [
@@ -1490,16 +1616,16 @@ const dataInSourceState = mapTransform(def22).rev(dataInTargetState)
 // }
 ```
 
-Transform objects allow the same property on the source data to be mapped to
-several properties on the target object, but to this in reverse, you have to use
-a special syntax, as object properties need to be unique. By suffixing a key
-with a slash and a number, you tell MapTransform to use it in reverse, but
-skipping it going forward.
+Transform objects allow one value in the source data to be used for several
+properties on the target object, but to do this in reverse, you have to use a
+special syntax where you suffix the keys with a slash and a number. The reason
+for this, is that you would otherwise get several equal keys, which is not
+supported in neighter JavaScript nor JSON.
 
 For example:
 
 ```javascript
-import { mapTransform, transform } from 'map-transform'
+import mapTransform, { transform } from 'map-transform'
 
 const username = (name) => name.replace(/\s+/, '.').toLowerCase()
 
@@ -1512,9 +1638,9 @@ const def23 = [
   },
 ]
 
-const dataInTargetState = [{ id: 'cust1', name: 'Fred Johnsen' }]
+const data = [{ id: 'cust1', name: 'Fred Johnsen' }]
 
-const dataInSourceState = mapTransform(def23).rev(dataInTargetState)
+const dataAfterRev = mapTransform(def23).rev(data)
 // --> {
 // data: {
 //   customers: [
@@ -1524,26 +1650,36 @@ const dataInSourceState = mapTransform(def23).rev(dataInTargetState)
 // }
 ```
 
+When seeing MapTransform encounters paths with such suffixes going forward, it
+will simply skip them. The convention is to have the first occurence without a
+slash suffix, and let this be the one to use in forward mode.
+
+#### Flipping a transform object
+
 In some cases, the reverse transform is more complex than the forward transform.
 For that reason, there is a `$flip` property that may be set to `true` on a
 transform object, to indicate that it is defined from the reverse perspective
-and should be flipped before running transformations.
+and should be flipped before transforming data with it.
 
 A flipped transformation object will – in forward transformations – get with the
 properties on the object and set with the paths in the value. The order of paths
-and operations in a pipeline will also be reversed. Note that this will not
-affect any operations that behaves differently depending on direction, and they
-will run as if they were used on a non-flipped transformation object.
+and operations in a pipeline will also be reversed.
 
-Also note that flipping will not affect the `get` and `set` operations, only
-path strings set directly as properties on the object or as part of the value
-(the pipeline). This might change in the future, so you should not use `get` and
-`set` directly on a flipped transformation object.
+Important: Flipping a transform object will not affect any operations that
+behaves differently depending on direction, and they will run as if they were
+used in a non-flipped transformation object. The only exceptions from this, are
+[the `get` and `set` operations](#getpath-and-setpath-operation) and
+[the `lookup` operation](#lookup-arrayPath-propPath-matchSeveral--operation),
+which will all behave as if we were in forward mode, when we're really in
+reverse in a flipped transform object.
+
+Also note that flipping will affect the `get` and `set` operations in the same
+way as paths on a transform object.
 
 This flipped defintion:
 
 ```javascript
-const def33flipped = {
+const def33 = {
   $flip: true,
   id: 'key',
   attributes: {
@@ -1551,7 +1687,7 @@ const def33flipped = {
     age: ['unknown'],
   },
   relationships: {
-    author: value('johnf'),
+    author: transform(value('johnf')),
   },
 }
 ```
@@ -1559,18 +1695,18 @@ const def33flipped = {
 ... is identical to:
 
 ```javascript
-const def33 = {
+const def33b = {
   key: 'id',
   headline: ['attributes.title', transform(threeLetters)],
   unknown: ['attributes.age']
   },
-  'none/1': ['relationships.author': value('johnf')]
+  'none/1': ['relationships.author': transform(value('johnf'))]
 }
 ```
 
 The flipped definition is (in this case) easier to read.
 
-Note also the `'none/1'` property in `def33`, that will stop this property from
+Note also the `'none/1'` property in `def33b`, that will stop this property from
 being set when going forward. This is not necessary on the flipped definition,
 but also results in a definition that will not work as expected going forward.
 This is a weakness in how MapTransform treats pipelines right now, and will
@@ -1593,7 +1729,7 @@ being used in the mutation, but note that values from the `fixed` transformer
 will still be included. This is by design.
 
 ```javascript
-import { mapTransform, alt, transform, transformers } from 'map-transform'
+import mapTransform, { alt, transform, transformers } from 'map-transform'
 const { value } = transformers
 
 const def24 = {

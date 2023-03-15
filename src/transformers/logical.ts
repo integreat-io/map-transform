@@ -1,23 +1,29 @@
 import { setTargetOnState, goForward } from '../utils/stateHelpers.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
-import { TransformerProps, Path, DataMapper, Options } from '../types.js'
+import { Transformer, TransformerProps, Path } from '../types.js'
+import { ensureArray } from '../utils/array.js'
+
+export type Operator = 'AND' | 'OR'
 
 interface CompareProps extends TransformerProps {
   path?: Path | Path[]
-  operator?: string
+  operator?: Operator
 }
 
-export default function logical(
+const getLogicalFn = (operator: Operator) =>
+  operator === 'OR'
+    ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)
+    : (a: unknown, b: unknown) => Boolean(a) && Boolean(b)
+
+const transformer: Transformer = function logical(
   { path = '.', operator = 'AND' }: CompareProps,
-  options?: Options
-): DataMapper {
-  const pathArr = ([] as string[]).concat(path)
+  options
+) {
+  const pathArr = ensureArray(path)
   const getFns = pathArr.map((path) => defToDataMapper(path, options))
   const setFns = pathArr.map((path) => defToDataMapper(`>${path}`, options))
-  const logicalOp =
-    operator === 'OR'
-      ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)
-      : (a: unknown, b: unknown) => Boolean(a) && Boolean(b)
+
+  const logicalOp = getLogicalFn(operator)
 
   return (data, state) => {
     if (state.rev) {
@@ -29,8 +35,9 @@ export default function logical(
       )
     } else {
       const values = getFns.map((fn) => fn(data, state))
-      const ret = values.reduce(logicalOp)
-      return ret
+      return values.reduce(logicalOp)
     }
   }
 }
+
+export default transformer

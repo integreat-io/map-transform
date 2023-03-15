@@ -125,8 +125,8 @@ test('should support $and filter - not matching', (t) => {
     {
       $if: {
         $and: [
-          { $filter: 'compare', path: 'section', match: 'news' },
-          { $filter: 'compare', path: 'archived', match: true },
+          { $transform: 'compare', path: 'section', match: 'news' },
+          { $transform: 'compare', path: 'archived', match: true },
         ],
       },
       then: { title: 'heading' },

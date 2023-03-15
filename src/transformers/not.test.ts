@@ -14,7 +14,16 @@ const state = {
 
 // Tests
 
-test('should return true for false and vice versa', (t) => {
-  t.true(not(returnIt)(false, state))
-  t.false(not(returnIt)(true, state))
+test('should return true for false', (t) => {
+  const data = false
+
+  const ret = not(returnIt)(data, state)
+  t.true(ret)
+})
+
+test('should return false for true', (t) => {
+  const data = true
+
+  const ret = not(returnIt)(data, state)
+  t.false(ret)
 })

@@ -5,10 +5,9 @@ import mapTransform, {
   filter,
   fwd,
   rev,
-  not,
   transformers as coreTransformers,
 } from '../index.js'
-const { compare } = coreTransformers
+const { compare, not } = coreTransformers
 
 // Setup
 

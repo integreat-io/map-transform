@@ -1285,50 +1285,6 @@ const def18b = ['content.meta.authors[]', { $lookup: '$users[]', path: 'id' }]
 
 The path on `$lookup` refers to `arrayPath` and `path` refers to `propPath`.
 
-#### `and(pipeline, pipeline, ...)` operation
-
-Will run all provided pipelines, force their return values to boolean, according
-to JavaScript rules, and return `true` if they are all `true`, otherwise
-`false`.
-
-Typically used together with
-[the `ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
-to support AND logic:
-
-```javascript
-const def36 = [
-  {
-    $if: { $and: ['active', 'authorized'] },
-    then: 'content',
-    else: { $value: undefined },
-  },
-]
-```
-
-> Editors note: We should have an example of how to use it as a function too.
-
-#### `or(pipeline, pipeline, ...)` operation
-
-Will run all provided pipelines, force their return values to boolean, according
-to JavaScript rules, and return `true` if any of them are `true`, otherwise
-`false`.
-
-Typically used together with
-[`ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
-to support OR logic:
-
-```javascript
-const def37 = [
-  {
-    $if: { $or: ['active', 'draft'] },
-    then: 'content',
-    else: { $value: undefined },
-  },
-]
-```
-
-> Editors note: We should have an example of how to use it as a function too.
-
 ### Transformers
 
 The following transformers may be applied to the value in a pipeline with the
@@ -1462,6 +1418,41 @@ When used outside of an iteration, it always returns `0`.
 This is the exact opposite of the `explode` helper, imploding going forward and
 exploding in reverse. See
 [the documentation for `explode()`](#explode-transformer) for how this works.
+
+#### `logical({ path, operator })` transformer
+
+Will run all provided pipelines, force their return values to boolean, according
+to JavaScript rules, and apply the logic specified by `operator`; either `AND`
+or `OR`. If no `operator` is specified, `AND` is the default.
+
+This transformer is typically used as a short-hand operation object, together
+with
+[the `ifelse` operation](#ifelseconditionFn-truePipeline-falsePipeline-operation),
+to support AND logic:
+
+```javascript
+const def36 = [
+  {
+    $if: { $and: ['active', 'authorized'] },
+    then: 'content',
+    else: { $value: undefined },
+  },
+]
+```
+
+... or OR logic:
+
+```javascript
+const def37 = [
+  {
+    $if: { $or: ['active', 'draft'] },
+    then: 'content',
+    else: { $value: undefined },
+  },
+]
+```
+
+> Editors note: We should have an example of how to use it as a function too.
 
 #### `map(dictionary)` transformer
 

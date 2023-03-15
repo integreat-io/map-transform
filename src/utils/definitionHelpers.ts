@@ -120,6 +120,12 @@ const createOperation =
       : (state) => next(state)
   }
 
+const createTransformOperation = (def: TransformOperation): Operation =>
+  createOperation(transform, '$transform', def)
+
+const createFilterOperation = (def: FilterOperation): Operation =>
+  createOperation(filter, '$filter', def)
+
 const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
   Array.isArray(nonvalues)
     ? { ...options, nonvalues: nonvalues.map(unescapeValue) }
@@ -183,15 +189,13 @@ function createLookupOperation(
 
 function operationFromObject(def: OperationObject | TransformObject) {
   if (isOperationType<TransformOperation>(def, '$transform')) {
-    return createOperation(transform, '$transform', def)
+    return createTransformOperation(def)
   } else if (isOperationType<ValueOperation>(def, '$value')) {
-    return createOperation(
-      transform,
-      '$transform',
+    return createTransformOperation(
       transformDefFromShortcut(def, 'value', 'value')
     )
   } else if (isOperationType<FilterOperation>(def, '$filter')) {
-    return createOperation(filter, '$filter', def)
+    return createFilterOperation(def)
   } else if (isOperationType<IfOperation>(def, '$if')) {
     return createIfOperation(def)
   } else if (isOperationType<ApplyOperation>(def, '$apply')) {
@@ -199,17 +203,13 @@ function operationFromObject(def: OperationObject | TransformObject) {
   } else if (isOperationType<AltOperation>(def, '$alt')) {
     return createAltOperation(alt, def)
   } else if (isOperationType<AndOperation>(def, '$and')) {
-    return createOperation(
-      transform,
-      '$transform',
+    return createTransformOperation(
       transformDefFromShortcut(def, 'and', 'path', 'logical', {
         operator: 'AND',
       })
     )
   } else if (isOperationType<OrOperation>(def, '$or')) {
-    return createOperation(
-      transform,
-      '$transform',
+    return createTransformOperation(
       transformDefFromShortcut(def, 'or', 'path', 'logical', { operator: 'OR' })
     )
   } else if (isOperationType<ConcatOperation>(def, '$concat')) {
@@ -217,9 +217,7 @@ function operationFromObject(def: OperationObject | TransformObject) {
   } else if (isOperationType<LookupOperation>(def, '$lookup')) {
     return createLookupOperation(lookup, def)
   } else if (isOperationType<MergeOperation>(def, '$merge')) {
-    return createOperation(
-      transform,
-      '$transform',
+    return createTransformOperation(
       transformDefFromShortcut(def, 'merge', 'path')
     )
   } else {

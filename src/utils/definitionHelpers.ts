@@ -19,6 +19,7 @@ import type {
   ConcatOperation,
   LookupOperation,
   Options,
+  DataMapperWithOptions,
 } from '../types.js'
 import { getStateValue, setStateValue } from './stateHelpers.js'
 import { identity } from './functional.js'
@@ -107,7 +108,7 @@ function wrapFromDefinition(
 
 const createOperation =
   <U extends OperationObject>(
-    operationFn: (fn: DataMapper) => Operation,
+    operationFn: (fn: DataMapperWithOptions) => Operation,
     fnProp: string,
     def: U
   ): Operation =>
@@ -116,7 +117,7 @@ const createOperation =
     const { [fnProp]: fnId, ...props } = def
     const fn = options.transformers && options.transformers[fnId as string]
     return typeof fn === 'function'
-      ? wrapFromDefinition(operationFn(fn(props, options)), def)(options)(next)
+      ? wrapFromDefinition(operationFn(fn(props)), def)(options)(next)
       : (state) => next(state)
   }
 

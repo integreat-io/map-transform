@@ -13,7 +13,7 @@ const { value } = transformers
 
 // Setup
 
-const threeLetters = (value: unknown) =>
+const threeLetters = () => (value: unknown) =>
   typeof value === 'string' ? value.slice(0, 3) : value
 
 // Tests

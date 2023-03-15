@@ -6,10 +6,10 @@ import filter from './filter.js'
 
 // Helpers
 
-const beginsWithA = (str: unknown) =>
+const beginsWithA = () => (str: unknown) =>
   typeof str === 'string' ? str.startsWith('A') : false
 
-const isParam = (str: unknown, state: State) =>
+const isParam = () => (str: unknown, state: State) =>
   str === (state.target as Record<string, unknown>).allowedUser
 
 const options = {}

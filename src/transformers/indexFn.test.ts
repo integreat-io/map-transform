@@ -13,6 +13,8 @@ const state = {
   rev: false,
 }
 
+const options = {}
+
 // Test
 
 test('should return index from state', (t) => {
@@ -21,13 +23,13 @@ test('should return index from state', (t) => {
     index: 5,
   }
 
-  const ret = index()(data, stateWithIndex)
+  const ret = index({})(options)(data, stateWithIndex)
 
   t.is(ret, 5)
 })
 
 test('should return 0 when state has no index', (t) => {
-  const ret = index()(data, state)
+  const ret = index({})(options)(data, state)
 
   t.is(ret, 0)
 })

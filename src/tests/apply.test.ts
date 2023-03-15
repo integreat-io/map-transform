@@ -5,16 +5,16 @@ import mapTransform, { transform, apply, fwd, rev, filter } from '../index.js'
 // Setup
 
 const castEntry = [
-  fwd(filter(() => true)),
-  rev(transform((data) => data)),
+  fwd(filter(() => () => true)),
+  rev(transform(() => (data) => data)),
   {
     $iterate: true,
     id: 'id',
-    title: ['title', transform(String)],
-    viewCount: ['viewCount', transform(Number)],
+    title: ['title', transform(() => String)],
+    viewCount: ['viewCount', transform(() => Number)],
   },
-  fwd(transform((data) => data)),
-  rev(filter(() => true)),
+  fwd(transform(() => (data) => data)),
+  rev(filter(() => () => true)),
 ]
 
 const getItems = 'data.entries'

@@ -1,4 +1,4 @@
-import { DataMapper } from '../types.js'
+import { Transformer } from '../types.js'
 import { isObject } from '../utils/is.js'
 
 export interface KeyValue {
@@ -53,10 +53,12 @@ function doExplode(data: unknown): unknown[] | undefined {
   }
 }
 
-export function explode(): DataMapper {
-  return (data, state) => (state.rev ? doImplode(data) : doExplode(data))
+const explode: Transformer = function explode() {
+  return () => (data, state) => state.rev ? doImplode(data) : doExplode(data)
 }
 
-export function implode(): DataMapper {
-  return (data, state) => (state.rev ? doExplode(data) : doImplode(data))
+const implode: Transformer = function implode() {
+  return () => (data, state) => state.rev ? doExplode(data) : doImplode(data)
 }
+
+export { explode, implode }

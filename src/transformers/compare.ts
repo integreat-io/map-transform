@@ -1,5 +1,5 @@
 import mapAny = require('map-any')
-import { TransformerProps, Path, DataMapper, Options } from '../types.js'
+import { TransformerProps, Path, Transformer } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
@@ -12,7 +12,7 @@ interface NumericComparer {
   (value: number, match: number): boolean
 }
 
-interface CompareProps extends TransformerProps {
+export interface Props extends TransformerProps {
   path?: Path
   operator?: string
   match?: unknown
@@ -81,34 +81,35 @@ function createComparer(operator: string) {
   }
 }
 
-export default function compare(
-  {
-    path = '.',
-    operator = '=',
-    match,
-    value,
-    matchPath,
-    valuePath,
-    not = false,
-  }: CompareProps,
-  options?: Options
-): DataMapper {
+const transformer: Transformer<Props> = function compare({
+  path = '.',
+  operator = '=',
+  match,
+  value,
+  matchPath,
+  valuePath,
+  not = false,
+}) {
   match = match ?? value // Allow alias
   matchPath = matchPath ?? valuePath // Allow alias
 
-  const getValue = defToDataMapper(path, options)
-  const realMatchValue = mapAny(unescapeValue, match)
-  const getMatch =
-    typeof matchPath === 'string'
-      ? defToDataMapper(matchPath, options)
-      : () => realMatchValue
-  const comparer = createComparer(operator)
+  return (options) => {
+    const getValue = defToDataMapper(path, options)
+    const realMatchValue = mapAny(unescapeValue, match)
+    const getMatch =
+      typeof matchPath === 'string'
+        ? defToDataMapper(matchPath, options)
+        : () => realMatchValue
+    const comparer = createComparer(operator)
 
-  return (data, state) => {
-    const fwdState = goForward(state)
-    const value = getValue(data, fwdState)
-    const match = getMatch(data, fwdState)
-    const result = comparer(value, match)
-    return not ? !result : result
+    return (data, state) => {
+      const fwdState = goForward(state)
+      const value = getValue(data, fwdState)
+      const match = getMatch(data, fwdState)
+      const result = comparer(value, match)
+      return not ? !result : result
+    }
   }
 }
+
+export default transformer

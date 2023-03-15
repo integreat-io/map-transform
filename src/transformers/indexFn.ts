@@ -1,7 +1,9 @@
-import { DataMapper } from '../types.js'
+import { Transformer } from '../types.js'
 
-export default function index(): DataMapper {
-  return (_data, state) => {
+const transformer: Transformer = function index() {
+  return () => (_data, state) => {
     return state.index || 0
   }
 }
+
+export default transformer

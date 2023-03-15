@@ -16,7 +16,7 @@ const state = {
 
 const options = {}
 
-const json = (data: unknown) => JSON.stringify(data)
+const json = () => (data: unknown) => JSON.stringify(data)
 
 // Tests
 

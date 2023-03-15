@@ -11,10 +11,10 @@ const { compare, not } = coreTransformers
 
 // Setup
 
-const noHeadingTitle = () => (item: unknown) =>
+const noHeadingTitle = () => () => (item: unknown) =>
   isObject(item) && !/heading/gi.test(item.title as string)
 
-const noAlso = (item: unknown) =>
+const noAlso = () => (item: unknown) =>
   isObject(item) && !/also/gi.test(item.title as string)
 
 const transformers = {

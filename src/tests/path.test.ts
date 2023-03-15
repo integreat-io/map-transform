@@ -915,7 +915,7 @@ test('should map with parent', (t) => {
 })
 
 test('should map with parent through several iterations', (t) => {
-  const generateId = () => (value: unknown) =>
+  const generateId = () => () => (value: unknown) =>
     isObject(value) ? `${value.invoiceNo}-${value.rowId}` : undefined
   const options = { transformers: { generateId } }
   const def = {

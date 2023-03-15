@@ -18,6 +18,8 @@ const stateRev = {
   value: {},
 }
 
+const options = {}
+
 // Tests
 
 test('should merge two objects', (t) => {
@@ -47,7 +49,7 @@ test('should merge two objects', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -83,7 +85,7 @@ test('should merge three objects', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -109,7 +111,7 @@ test('should return one object', (t) => {
     tags: ['news', 'politics'],
   }
 
-  const ret = merge({ path })(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -147,7 +149,7 @@ test('should merge array of objects', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -185,7 +187,7 @@ test('should merge object and array of objects', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -214,7 +216,7 @@ test('should skip non-objects', (t) => {
     tags: ['news', 'politics'],
   }
 
-  const ret = merge({ path })(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
@@ -246,7 +248,7 @@ test('should merge in reverse', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(data, stateRev)
+  const ret = merge({ path })(options)(data, stateRev)
 
   t.deepEqual(ret, expected)
 })

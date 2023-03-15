@@ -5,7 +5,7 @@ import { ensureArray } from '../utils/array.js'
 
 export type Operator = 'AND' | 'OR'
 
-interface CompareProps extends TransformerProps {
+export interface Props extends TransformerProps {
   path?: Path | Path[]
   operator?: Operator
 }
@@ -15,27 +15,29 @@ const getLogicalFn = (operator: Operator) =>
     ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)
     : (a: unknown, b: unknown) => Boolean(a) && Boolean(b)
 
-const transformer: Transformer = function logical(
-  { path = '.', operator = 'AND' }: CompareProps,
-  options
-) {
-  const pathArr = ensureArray(path)
-  const getFns = pathArr.map((path) => defToDataMapper(path, options))
-  const setFns = pathArr.map((path) => defToDataMapper(`>${path}`, options))
+const transformer: Transformer<Props> = function logical({
+  path = '.',
+  operator = 'AND',
+}) {
+  return (options) => {
+    const pathArr = ensureArray(path)
+    const getFns = pathArr.map((path) => defToDataMapper(path, options))
+    const setFns = pathArr.map((path) => defToDataMapper(`>${path}`, options))
 
-  const logicalOp = getLogicalFn(operator)
+    const logicalOp = getLogicalFn(operator)
 
-  return (data, state) => {
-    if (state.rev) {
-      const value = Boolean(data)
-      return setFns.reduce(
-        (obj: unknown, setFn) =>
-          setFn(value, setTargetOnState(goForward(state), obj)),
-        undefined
-      )
-    } else {
-      const values = getFns.map((fn) => fn(data, state))
-      return values.reduce(logicalOp)
+    return (data, state) => {
+      if (state.rev) {
+        const value = Boolean(data)
+        return setFns.reduce(
+          (obj: unknown, setFn) =>
+            setFn(value, setTargetOnState(goForward(state), obj)),
+          undefined
+        )
+      } else {
+        const values = getFns.map((fn) => fn(data, state))
+        return values.reduce(logicalOp)
+      }
     }
   }
 }

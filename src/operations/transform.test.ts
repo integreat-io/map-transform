@@ -6,11 +6,11 @@ import transform from './transform.js'
 
 // Setup
 
-const upper = (str: unknown) =>
+const upper = () => (str: unknown) =>
   typeof str === 'string' ? str.toUpperCase() : str
-const lower = (str: unknown) =>
+const lower = () => (str: unknown) =>
   typeof str === 'string' ? str.toLowerCase() : str
-const length = (arr: unknown) => (Array.isArray(arr) ? arr.length : 0)
+const length = () => (arr: unknown) => Array.isArray(arr) ? arr.length : 0
 
 const options = {}
 
@@ -119,7 +119,7 @@ test('should pass state to transform function', (t) => {
   }
   const expected = state
 
-  transform(fn)(options)(identity)(state)
+  transform(() => fn)(options)(identity)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })
@@ -134,7 +134,7 @@ test('should pass state to rev transform function', (t) => {
   }
   const expected = state
 
-  transform(upper, fn)(options)(identity)(state)
+  transform(upper, () => fn)(options)(identity)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })

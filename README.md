@@ -135,8 +135,8 @@ import mapTransform, { transform } from 'map-transform'
 
 // ....
 
-// Write a transformer, that accepts a value and returns a value
-const msToDate = (ms) => new Date(ms).toISOString()
+// Write a transformer that accepts a value and returns a value
+const msToDate = () => (ms) => new Date(ms).toISOString()
 
 const def3 = [
   'data[0].content',
@@ -551,18 +551,23 @@ will be used in both directions. You may supply `null` for either of these, to
 make it uni-directional, but it might be clearer to use `fwd()` or `rev()`
 operations for this.
 
-The transformers you write for the transform operation should accept the source
-data as its first argument, and return the result of the relevant
-transformation. The data may be any JavaScript primite value, object, or an
-array of these. Your transformer should handle getting something unexpected, in
-which case it should usually return the value untouched or `undefined` –
-depending on what seems most natural in the case of your transformer.
+The transformers you write for the transform operation are a function that
+returns a function, where the first function is given an `options` object from
+MapTransform, and the second should accept the source data as its first
+argument, and return the result of the relevant transformation. The data may be
+any JavaScript primite value, object, or an array of these. Your transformer
+should handle getting something unexpected, in which case it should usually
+return the value untouched or `undefined` – depending on what seems most natural
+in the case of your transformer.
 
-The second argument of a transformer not used in all transformers, and will be a
+The second argument of the second function will be a
 [state object](#the-state-object), that give access to the context your
 transformer is operating in. Most of the properties of the state object is
 regarded as MapTransform internal, but you will probably use the `rev` prop at
 some point, which indicates whether we are transforming forward or in reverse.
+
+> Editors note: We should have a seperate description of transformer function,
+> where we go into more details.
 
 A simple transformer could, for instance, try to parse an integer from
 whatever you give it. This would be very useful in the pipeline for a property
@@ -574,7 +579,7 @@ transformers.
 ```javascript
 import mapTransform, { transform } from 'map-transform'
 
-const ensureInteger = (data) => Number.parseInt(data, 10) || 0
+const ensureInteger = () => (data) => Number.parseInt(data, 10) || 0
 const def7 = {
   count: ['statistics.views', transform(ensureInteger)],
 }
@@ -640,7 +645,7 @@ the option to define a transform operation as an object (an operation object):
 import mapTransform from 'map-transform'
 
 // This is our transformer
-const ensureInteger = (props) => (data) => Number.parseInt(data, 10) || 0
+const ensureInteger = (props) => () => (data) => Number.parseInt(data, 10) || 0
 
 // We provide our transformers to mapTransform in an options object
 const options = { transformers: { ensureInteger } }
@@ -667,8 +672,9 @@ mapTransform(def7asObject, options)(data)
 
 When you provide a custom transformer this way, it should be given as a function
 accepting an object with props, that returns the actual function used as the
-transformer. Any properties given on the operation object, apart from
-`$transform`, will be passed in the `props` object.
+transformer (which again returns a function mapping the data). Any properties
+given on the operation object, apart from `$transform`, will be passed in the
+`props` object.
 
 When you define the `transform` operation as an object, you may specify
 `$iterate: true` on the object to apply the transform to every item on an array,
@@ -709,7 +715,7 @@ Example of a filter, where only data of active members are returned:
 ```javascript
 import mapTransform, { filter } from 'map-transform'
 
-const onlyActives = (data) => data.active
+const onlyActives = () => (data) => data.active
 const def9 = [
   'members'
   {
@@ -726,7 +732,7 @@ Defining a filter operation as an operation object:
 import mapTransform from 'map-transform'
 
 const onlyActives = (data) => data.active
-const options = { transformers: { onlyActives } }
+const options = { transformers: { onlyActives: () => onlyActives } }
 const def9asObject = [
   'members'
   {
@@ -760,7 +766,7 @@ Example:
 ```javascript
 import mapTransform, { ifelse } from 'map-transform'
 
-const onlyActives = (data) => data.active
+const onlyActives = () => (data) => data.active
 const def31 = [
   'members'
   {
@@ -808,7 +814,7 @@ itself does not support arrays:
 ```javascript
 import mapTransform, { iterate } from 'map-transform'
 
-const ensureInteger = (data) => Number.parseInt(data, 10) || 0
+const ensureInteger = () => (data) => Number.parseInt(data, 10) || 0
 const def26 = {
   counts: ['statistics[].views', iterate(transform(ensureInteger))],
 }
@@ -857,11 +863,12 @@ shouldn't rely on this behavior.
 ```javascript
 import mapTransform, { apply, transform } from 'map-transform'
 
-const ensureInteger = (data) => Number.parseInt(data, 10) || 0
+const ensureInteger = () => (data) => Number.parseInt(data, 10) || 0
+const ensureString = () => (data) => String(data)
 const options = {
   pipelines: {
     cast_entry: {
-      title: ['title', transform(String)],
+      title: ['title', transform(ensureString)],
       count: ['count', transform(ensureInteger)],
     },
   },
@@ -923,8 +930,8 @@ array, use the `iterate` operation.
 ```javascript
 import { alt, transform, transformers } from 'map-transform'
 const { value } = transformers
-const currentDate = (data) => new Date()
-const formatDate = (data) => {
+const currentDate = () => (data) => new Date()
+const formatDate = () => (data) => {
   /* implementation not included */
 }
 
@@ -1083,8 +1090,8 @@ operation that is not intended for the direction we are currently going in.
 
 ```javascript
 import { fwd, rev, transform } from 'map-transform'
-const increment = (data) => data + 1
-const decrement = (data) => data - 1
+const increment = () => (data) => data + 1
+const decrement = () => (data) => data - 1
 
 const def12 = {
   order: ['index', fwd(transform(increment)), rev(transform(decrement))],

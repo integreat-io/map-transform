@@ -1,9 +1,11 @@
-import { DataMapper, TransformerProps } from '../types.js'
+import { Transformer, TransformerProps } from '../types.js'
 
-interface Props extends TransformerProps {
+export interface Props extends TransformerProps {
   depth?: number
 }
 
-export default function flatten({ depth = 1 }: Props): DataMapper {
-  return (data, _state) => (Array.isArray(data) ? data.flat(depth) : data)
+const transformer: Transformer<Props> = function flatten({ depth = 1 }) {
+  return () => (data) => Array.isArray(data) ? data.flat(depth) : data
 }
+
+export default transformer

@@ -1,10 +1,10 @@
 import { ensureArray } from '../utils/array.js'
-import { TransformerProps, DataMapper, Options } from '../types.js'
+import { TransformerProps, Transformer } from '../types.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 
-interface MergeProps extends TransformerProps {
+export interface Props extends TransformerProps {
   path?: string | string[]
 }
 
@@ -18,18 +18,21 @@ const undefinedFirst = (
 // arrays of objects) or one path that points to an array of objects.
 // Any values in the array (after flattening) that are not objects, will be
 // skipped.
-export default function merge(
-  { path }: MergeProps,
-  options?: Options
-): DataMapper {
-  const getFns = ensureArray(path).map((path) => defToDataMapper(path, options))
-
-  return function mergePipelines(data, state) {
-    const values = getFns
-      .flatMap((fn) => fn(data, goForward(state)))
-      .filter(isObject)
-    return Object.fromEntries(
-      values.flatMap(Object.entries).sort(undefinedFirst)
+const transformer: Transformer<Props> = function merge({ path }) {
+  return (options) => {
+    const getFns = ensureArray(path).map((path) =>
+      defToDataMapper(path, options)
     )
+
+    return function mergePipelines(data, state) {
+      const values = getFns
+        .flatMap((fn) => fn(data, goForward(state)))
+        .filter(isObject)
+      return Object.fromEntries(
+        values.flatMap(Object.entries).sort(undefinedFirst)
+      )
+    }
   }
 }
+
+export default transformer

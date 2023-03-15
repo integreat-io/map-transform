@@ -51,6 +51,10 @@ export interface DataMapperEntry {
   (data: unknown, state?: InitialState): unknown
 }
 
+export interface DataMapperWithOptions {
+  (options: Options): DataMapper
+}
+
 // Operation types
 
 export interface StateMapper {
@@ -65,8 +69,8 @@ export interface Operation {
 
 export type TransformerProps = Record<string, unknown>
 
-export interface Transformer<T extends TransformerProps = TransformerProps> {
-  (props: T, options: Options): DataMapper
+export interface Transformer<T = TransformerProps> {
+  (props: T): DataMapperWithOptions
 }
 
 // Transform definition types

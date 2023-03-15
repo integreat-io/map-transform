@@ -4,11 +4,11 @@ import {
   Dictionary,
   DictionaryValue,
   Dictionaries,
-  DataMapper,
   TransformerProps,
+  Transformer,
 } from '../types.js'
 
-interface Props extends TransformerProps {
+export interface Props extends TransformerProps {
   dictionary?: Dictionary | string
 }
 
@@ -51,20 +51,21 @@ function extractDictionary(
   }
 }
 
-export default function map(
-  props: Props,
-  options?: { dictionaries?: Dictionaries }
-): DataMapper {
-  const dictionary = extractDictionary(
-    props.dictionary,
-    options && options.dictionaries
-  )
-  if (!dictionary) {
-    return () => undefined
-  }
-  return (data, state) => {
-    const { rev = false } = state
-    const match = translate(escapeValue(data), dictionary, rev)
-    return match === '*' ? data : unescapeValue(match)
+const transformer: Transformer<Props> = function map(props) {
+  return (options) => {
+    const dictionary = extractDictionary(
+      props.dictionary,
+      options && options.dictionaries
+    )
+    if (!dictionary) {
+      return () => undefined
+    }
+    return (data, state) => {
+      const { rev = false } = state
+      const match = translate(escapeValue(data), dictionary, rev)
+      return match === '*' ? data : unescapeValue(match)
+    }
   }
 }
+
+export default transformer

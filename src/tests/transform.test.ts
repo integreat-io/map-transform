@@ -20,16 +20,17 @@ const removeAuthor = (item: Record<string, unknown>) =>
 
 const appendToTitle =
   ({ text }: TransformerProps) =>
+  () =>
   (item: unknown) =>
     isObject(item) ? { ...item, title: `${item.title}${text}` } : item
 
-const appendAuthorToTitle = (item: unknown) =>
+const appendAuthorToTitle = () => (item: unknown) =>
   isObject(item) ? { ...item, title: createTitle(item) } : item
 
-const removeAuthorFromTitle = (item: unknown) =>
+const removeAuthorFromTitle = () => (item: unknown) =>
   isObject(item) ? { ...item, title: removeAuthor(item) } : item
 
-const setActive = (item: unknown) =>
+const setActive = () => (item: unknown) =>
   isObject(item) ? { ...item, active: true } : item
 
 const prepareAuthorName = ({ author }: Record<string, unknown>) =>
@@ -37,16 +38,16 @@ const prepareAuthorName = ({ author }: Record<string, unknown>) =>
     ? `${author[0].toUpperCase()}${author.slice(1)}.`
     : ''
 
-const setAuthorName = (item: unknown) =>
+const setAuthorName = () => (item: unknown) =>
   isObject(item) ? { ...item, authorName: prepareAuthorName(item) } : item
 
-const appendEllipsis = (str: unknown) =>
+const appendEllipsis = () => (str: unknown) =>
   typeof str === 'string' ? str + ' ...' : str
 
-const getLength = () => (str: unknown) =>
+const getLength = () => () => (str: unknown) =>
   typeof str === 'string' ? str.length : -1
 
-const generateTag = () => (value: unknown) =>
+const generateTag = () => () => (value: unknown) =>
   isObject(value) ? `${value.tag}-${value.sequence}` : undefined
 
 const transformers = {

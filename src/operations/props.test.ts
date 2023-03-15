@@ -23,7 +23,7 @@ const stateWithArray = {
   value: data,
 }
 
-const threeLetters = (value: unknown) =>
+const threeLetters = () => (value: unknown) =>
   typeof value === 'string' ? value.slice(0, 3) : value
 
 const options = {}

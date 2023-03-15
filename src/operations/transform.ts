@@ -1,20 +1,28 @@
-import { State, Operation, DataMapper } from '../types.js'
+import { State, Options, Operation, DataMapperWithOptions } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { identity } from '../utils/functional.js'
 
-const callTransformFn = (fn: DataMapper) => (state: State) =>
-  setStateValue(state, fn(getStateValue(state), state))
+function callTransformFn(fn: DataMapperWithOptions, options: Options) {
+  const fnWithOptions = fn(options)
+  return (state: State) =>
+    setStateValue(state, fnWithOptions(getStateValue(state), state))
+}
 
 export default function transform(
-  fn: DataMapper,
-  revFn?: DataMapper
+  fn: DataMapperWithOptions,
+  revFn?: DataMapperWithOptions
 ): Operation {
-  const fwdTransform = typeof fn === 'function' ? callTransformFn(fn) : identity
-  const revTransform =
-    typeof revFn === 'function' ? callTransformFn(revFn) : fwdTransform
+  return (options) => {
+    const fwdTransform =
+      typeof fn === 'function' ? callTransformFn(fn, options) : identity
+    const revTransform =
+      typeof revFn === 'function'
+        ? callTransformFn(revFn, options)
+        : fwdTransform
 
-  return (_options) => (next) => (state) => {
-    const nextState = next(state)
-    return state.rev ? revTransform(nextState) : fwdTransform(nextState)
+    return (next) => (state) => {
+      const nextState = next(state)
+      return state.rev ? revTransform(nextState) : fwdTransform(nextState)
+    }
   }
 }

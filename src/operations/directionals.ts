@@ -1,5 +1,5 @@
 import { TransformDefinition, Operation, Options } from '../types.js'
-import { operationFromDef } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import xor from '../utils/xor.js'
 
 const applyInDirection = (
@@ -7,7 +7,7 @@ const applyInDirection = (
   rev: boolean
 ): Operation => {
   return (options: Options) => (next) => {
-    const fn = operationFromDef(def)(options)(next)
+    const fn = defToOperation(def)(options)(next)
     return (state) => (xor(rev, !state.rev) ? fn(state) : next(state))
   }
 }
@@ -25,8 +25,8 @@ export function divide(
   revDef: TransformDefinition
 ): Operation {
   return (options) => (next) => {
-    const fwdFn = operationFromDef(fwdDef)(options)(next)
-    const revFn = operationFromDef(revDef)(options)(next)
+    const fwdFn = defToOperation(fwdDef)(options)(next)
+    const revFn = defToOperation(revDef)(options)(next)
     return (state) => (state.rev ? revFn(state) : fwdFn(state))
   }
 }

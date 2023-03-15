@@ -23,7 +23,7 @@ import {
 import {
   isTransformObject,
   isTransformDefinition,
-  operationFromDef,
+  defToOperation,
 } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 import { isObject } from '../utils/is.js'
@@ -116,7 +116,7 @@ function createSetPipeline([prop, pipeline]: [
   const onlyRev = prop !== unslashedProp // If these are different, we have removed a slash. Run in rev only
 
   // Prepare the operations and return as an operation
-  const operations = [operationFromDef(pipeline), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
+  const operations = [defToOperation(pipeline), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
   return onlyRev ? divide(plug(), operations) : pipe(operations)
 }
 

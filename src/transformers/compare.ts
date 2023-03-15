@@ -1,7 +1,7 @@
 import mapAny = require('map-any')
 import { TransformerProps, Path, DataMapper, Options } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
-import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
 
 interface Comparer {
@@ -91,16 +91,16 @@ export default function compare(
     valuePath,
     not = false,
   }: CompareProps,
-  _options: Options = {}
+  options?: Options
 ): DataMapper {
   match = match ?? value // Allow alias
   matchPath = matchPath ?? valuePath // Allow alias
 
-  const getValue = defsToDataMapper(path)
+  const getValue = defToDataMapper(path, options)
   const realMatchValue = mapAny(unescapeValue, match)
   const getMatch =
     typeof matchPath === 'string'
-      ? defsToDataMapper(matchPath)
+      ? defToDataMapper(matchPath, options)
       : () => realMatchValue
   const comparer = createComparer(operator)
 

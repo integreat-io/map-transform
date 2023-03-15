@@ -3,7 +3,7 @@ import iterate from './iterate.js'
 import transform from './transform.js'
 import flatten from '../transformers/flatten.js'
 import { Pipeline, Operation } from '../types.js'
-import { operationsFromDef } from '../utils/definitionHelpers.js'
+import { defToOperations } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 import { compose as composeFn, pipe as pipeFn } from '../utils/functional.js'
 import xor from '../utils/xor.js'
@@ -44,7 +44,7 @@ export default function pipe(defs?: Pipeline): Operation {
 
     const fns = splitArrayPaths(defs)
       .flat()
-      .flatMap((def) => operationsFromDef(def))
+      .flatMap((def) => defToOperations(def))
       .map((fn) => fn(options))
 
     return (next) => {

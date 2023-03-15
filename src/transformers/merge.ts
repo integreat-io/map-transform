@@ -1,6 +1,6 @@
 import { ensureArray } from '../utils/array.js'
 import { TransformerProps, DataMapper, Options } from '../types.js'
-import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 
@@ -20,9 +20,9 @@ const undefinedFirst = (
 // skipped.
 export default function merge(
   { path }: MergeProps,
-  _options: Options = {}
+  options?: Options
 ): DataMapper {
-  const getFns = ensureArray(path).map(defsToDataMapper)
+  const getFns = ensureArray(path).map((path) => defToDataMapper(path, options))
 
   return function mergePipelines(data, state) {
     const values = getFns

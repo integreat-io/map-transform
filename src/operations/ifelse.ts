@@ -1,6 +1,6 @@
 import { DataMapper, TransformDefinition, Operation } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
-import { operationFromDef } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 
 function runCondition(conditionDef: DataMapper): Operation {
@@ -18,15 +18,15 @@ export default function (
   trueDef?: TransformDefinition,
   falseDef?: TransformDefinition
 ): Operation {
-  const falseFn = operationFromDef(falseDef)
+  const falseFn = defToOperation(falseDef)
   if (!conditionDef) {
     return falseFn
   }
   const conditionFn: Operation =
     typeof conditionDef === 'function'
       ? runCondition(conditionDef as DataMapper) // We know to expect a datamapper here
-      : operationFromDef(conditionDef)
-  const trueFn = operationFromDef(trueDef)
+      : defToOperation(conditionDef)
+  const trueFn = defToOperation(trueDef)
 
   return (options) => (next) => {
     const runCondition = conditionFn(options)(identity)

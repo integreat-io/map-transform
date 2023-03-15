@@ -1,6 +1,6 @@
 import { Operation, TransformDefinition } from '../types.js'
 import { setStateValue, getStateValue } from '../utils/stateHelpers.js'
-import { operationFromDef } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 
 const merge = <T, U>(left: T[], right: U | U[]) =>
@@ -8,7 +8,7 @@ const merge = <T, U>(left: T[], right: U | U[]) =>
 
 export default function concat(...defs: TransformDefinition[]): Operation {
   return (options) => (next) => {
-    const fns = defs.map((def) => operationFromDef(def)(options)(identity))
+    const fns = defs.map((def) => defToOperation(def)(options)(identity))
 
     return function doConcat(state) {
       const nextState = next(state)

@@ -1,5 +1,5 @@
 import { Options, Operation, State } from '../types.js'
-import { operationFromDef } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 
 const extractPipeline = (pipelineId: string, { pipelines }: Options) =>
@@ -11,7 +11,7 @@ export default function apply(pipelineId: string): Operation {
   return (options) => (next) => {
     const pipeline = extractPipeline(pipelineId, options)
     const fn = pipeline
-      ? operationFromDef(pipeline)(options)(identity)
+      ? defToOperation(pipeline)(options)(identity)
       : undefined
     return (state) => {
       const nextState = next(state)

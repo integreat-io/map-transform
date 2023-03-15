@@ -1,5 +1,5 @@
 import { TransformDefinition, DataMapperEntry, Options } from './types.js'
-import { operationFromDef } from './utils/definitionHelpers.js'
+import { defToOperation } from './utils/definitionHelpers.js'
 import { populateState, getStateValue } from './utils/stateHelpers.js'
 import transformers from './transformers/index.js'
 import iterate from './operations/iterate.js'
@@ -34,7 +34,7 @@ export default function mapTransform(
   options: Options = {}
 ): DataMapperEntry {
   const completeOptions = mergeOptions(options)
-  const stateMapper = operationFromDef(def)(completeOptions)(identity)
+  const stateMapper = defToOperation(def)(completeOptions)(identity)
 
   return function transform(data, initialState) {
     return getStateValue(stateMapper(populateState(data, initialState || {})))

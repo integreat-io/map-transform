@@ -7,10 +7,7 @@ import {
   TransformerProps,
 } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
-import {
-  defsToDataMapper,
-  operationFromDef,
-} from '../utils/definitionHelpers.js'
+import { defToDataMapper, defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 import xor from '../utils/xor.js'
 
@@ -54,13 +51,9 @@ export default function lookup({
   propPath,
   matchSeveral = false,
 }: Props): Operation {
-  return () => (next) => {
-    const getter = defsToDataMapper(propPath)
-    const mapValueFn = mapValue(
-      operationFromDef(arrayPath),
-      getter,
-      matchSeveral
-    )
+  return (options) => (next) => {
+    const getter = defToDataMapper(propPath, options)
+    const mapValueFn = mapValue(defToOperation(arrayPath), getter, matchSeveral)
 
     return function doLookup(state) {
       const nextState = next(state)

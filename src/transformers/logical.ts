@@ -1,5 +1,5 @@
 import { setTargetOnState, goForward } from '../utils/stateHelpers.js'
-import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { TransformerProps, Path, DataMapper, Options } from '../types.js'
 
 interface CompareProps extends TransformerProps {
@@ -9,11 +9,11 @@ interface CompareProps extends TransformerProps {
 
 export default function logical(
   { path = '.', operator = 'AND' }: CompareProps,
-  _options: Options = {}
+  options?: Options
 ): DataMapper {
   const pathArr = ([] as string[]).concat(path)
-  const getFns = pathArr.map(defsToDataMapper)
-  const setFns = pathArr.map((path) => `>${path}`).map(defsToDataMapper)
+  const getFns = pathArr.map((path) => defToDataMapper(path, options))
+  const setFns = pathArr.map((path) => defToDataMapper(`>${path}`, options))
   const logicalOp =
     operator === 'OR'
       ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)
@@ -29,7 +29,8 @@ export default function logical(
       )
     } else {
       const values = getFns.map((fn) => fn(data, state))
-      return values.reduce(logicalOp)
+      const ret = values.reduce(logicalOp)
+      return ret
     }
   }
 }

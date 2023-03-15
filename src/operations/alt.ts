@@ -6,7 +6,7 @@ import {
   setValueFromState,
   removeLastContext,
 } from '../utils/stateHelpers.js'
-import { operationFromDef } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 
 const runAlt = (isOneMode: boolean) =>
@@ -40,7 +40,7 @@ const runAlt = (isOneMode: boolean) =>
 
 export default function alt(...defs: TransformDefinition[]): Operation[] {
   // Prepare all alt operations
-  const altOperations = defs.map((def) => operationFromDef(def))
+  const altOperations = defs.map((def) => defToOperation(def))
   const isOneMode = altOperations.length === 1
 
   // All alt operations are returned as individual operations, but the first one

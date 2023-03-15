@@ -5,12 +5,12 @@ import {
   getTargetFromState,
   goForward,
 } from '../utils/stateHelpers.js'
-import { operationFromDef } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
 import { identity } from '../utils/functional.js'
 
 export default function modify(def: TransformDefinition): Operation {
-  const runFn = operationFromDef(def)
+  const runFn = defToOperation(def)
 
   return (options) => (next) => (state) => {
     const nextState = next(state)

@@ -5,7 +5,7 @@ import {
   setStateValue,
   isNoneValueState,
 } from '../utils/stateHelpers.js'
-import { operationFromDef } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
 
 export function mergeExisting<T, U>(
@@ -43,7 +43,7 @@ export default function merge(...defs: TransformDefinition[]): Operation {
     if (defs.length === 0) {
       return (state) => setStateValue(next(state), undefined)
     }
-    const pipelines = defs.map((def) => operationFromDef(def)(options)(next))
+    const pipelines = defs.map((def) => defToOperation(def)(options)(next))
 
     return function (state) {
       const nextState = next(state)

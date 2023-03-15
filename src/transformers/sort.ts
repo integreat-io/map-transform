@@ -1,6 +1,6 @@
 import { Path, State, DataMapper, Options, TransformerProps } from '../types.js'
 import { identity } from '../utils/functional.js'
-import { defsToDataMapper } from '../utils/definitionHelpers.js'
+import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
 
 interface Props extends TransformerProps {
@@ -25,9 +25,9 @@ const compare = (direction: number, getFn: DataMapper, state: State) =>
     }
   }
 
-export default function sort(props: Props, _options: Options = {}): DataMapper {
+export default function sort(props: Props, options?: Options): DataMapper {
   const direction = props?.asc === false ? -1 : 1
-  const getFn = props?.path ? defsToDataMapper(props.path) : identity
+  const getFn = props?.path ? defToDataMapper(props.path, options) : identity
 
   return (data, state) => {
     return Array.isArray(data)

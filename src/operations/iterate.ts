@@ -6,7 +6,7 @@ import {
   getTargetFromState,
   setTargetOnState,
 } from '../utils/stateHelpers.js'
-import { operationFromDef } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import { indexOfIfArray } from '../utils/array.js'
 import { identity } from '../utils/functional.js'
 
@@ -42,7 +42,7 @@ export default function iterate(def: TransformDefinition): Operation {
     return (_options) => (next) => (state) =>
       setStateValue(next(state), undefined)
   }
-  const fn = operationFromDef(def)
+  const fn = defToOperation(def)
 
   return (options) => {
     const runIteration = iterateState(fn(options)(identity))

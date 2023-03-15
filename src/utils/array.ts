@@ -1,9 +1,10 @@
-export const ensureArray = <T = unknown>(value: T | T[]): T[] =>
-  Array.isArray(value)
-    ? value
-    : value === undefined || value === null
-    ? []
-    : [value]
+import { isNoneValue } from '../utils/stateHelpers.js'
+
+export const ensureArray = <T = unknown>(
+  value: T | T[],
+  nonvalues?: unknown[]
+): T[] =>
+  Array.isArray(value) ? value : isNoneValue(value, nonvalues) ? [] : [value]
 
 export const cloneAsArray = (value: unknown) => ensureArray(value).slice()
 

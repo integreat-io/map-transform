@@ -265,6 +265,56 @@ test('should return empty array for missing array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should return array with null by default', (t) => {
+  const path = 'articles[]'
+  const value = { articles: null }
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    context: [{ articles: null }],
+    value: [null],
+  }
+
+  const fn = get(path)[0]
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return empty array when value is null and null is a nonvalue', (t) => {
+  const options = { nonvalues: [null, undefined] }
+  const path = 'articles[]'
+  const value = { articles: null }
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    context: [{ articles: null }],
+    value: [],
+  }
+
+  const fn = get(path)[0]
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not return empty array when noDefaults is true', (t) => {
+  const path = 'articles[]'
+  const value = {}
+  const state = stateFromValue(value, undefined, true)
+  const expected = {
+    ...state,
+    noDefaults: true,
+    context: [{}],
+    value: undefined,
+  }
+
+  const fn = get(path)[0]
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- get path with parent
 
 test('should get path with parent', (t) => {
@@ -792,6 +842,31 @@ test('should set with escaped brackets', (t) => {
 test('should not set undefined when state.noDefaults is true', (t) => {
   const path = 'name'
   const value = undefined
+  const state = stateFromValue(value, false, true) // noDefaults = true
+  const expected = { ...state, context: [], value: undefined }
+
+  const fn = set(path)[0]
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not set nonvalue when state.noDefaults is true and bracket notation', (t) => {
+  const path = 'name[]'
+  const value = undefined
+  const state = stateFromValue(value, false, true) // noDefaults = true
+  const expected = { ...state, context: [], value: undefined }
+
+  const fn = set(path)[0]
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not set null when state.noDefaults is true and null is in nonvalues', (t) => {
+  const options = { nonvalues: [null, undefined] }
+  const path = 'name'
+  const value = null
   const state = stateFromValue(value, false, true) // noDefaults = true
   const expected = { ...state, context: [], value: undefined }
 

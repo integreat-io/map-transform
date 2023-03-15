@@ -713,15 +713,12 @@ test('should return undefined when mapping def is empty', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing(
-  'should map undefined to undefined when noDefaults is true',
-  (t) => {
-    const def = ['items[]', { attributes: { title: 'content.heading' } }]
-    const data = undefined
-    const expected = undefined
+test('should map undefined to undefined when noDefaults is true', (t) => {
+  const def = ['items[]', { attributes: { title: 'content.heading' } }]
+  const data = undefined
+  const expected = undefined
 
-    const ret = mapTransform(def)(data, { rev: true, noDefaults: true })
+  const ret = mapTransform(def)(data, { rev: true, noDefaults: true })
 
-    t.deepEqual(ret, expected)
-  }
-)
+  t.deepEqual(ret, expected)
+})

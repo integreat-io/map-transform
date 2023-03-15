@@ -7,6 +7,7 @@ import {
   setTargetOnState,
   getLastContext,
   getRootFromState,
+  isNoneValue,
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
@@ -104,14 +105,10 @@ function getSet(isSet = false) {
 
     const [basePath, isArr, isIndexProp] = preparePath(path)
     const isIndex = typeof basePath === 'number'
-    const getArrAwareStateValue = isArr
-      ? (state: State) => ensureArray(getStateValue(state))
-      : getStateValue
     const getSetFn = isIndex ? getSetIndex(basePath) : getSetProp(basePath)
 
-    return (_options) =>
-      (next) =>
-      (state: State): State => {
+    return (options) => (next) =>
+      function doGetSet(state: State): State {
         if (adjustIsSet(isSet, state)) {
           // We're setting, so we'll go backwards first. Start by preparing target for the next set
           const target = getTargetFromState(state)
@@ -125,19 +122,22 @@ function getSet(isSet = false) {
             )
           )
 
-          // Now it's our turn. Set the state value - and iterate it if necessary
+          // Now it's our turn. Set the state value - and iterate if necessary
           const setIt = (value: unknown, index?: number) =>
             getSetFn(value, true, indexOfIfArray(target, index))
-          const nextValue = getArrAwareStateValue(nextState)
 
-          if (state.noDefaults && nextValue === undefined) {
+          const nextValue = getStateValue(nextState)
+          if (state.noDefaults && isNoneValue(nextValue, options.nonvalues)) {
             return setStateValue(state, target)
           }
+          const value = isArr
+            ? ensureArray(nextValue, options.nonvalues)
+            : nextValue
 
           const thisValue =
             nextState.iterate && !isArr && !isIndexProp
-              ? mapAny(setIt, nextValue)
-              : setIt(nextValue)
+              ? mapAny(setIt, value)
+              : setIt(value)
 
           // Return the value
           return setStateValue(state, thisValue)
@@ -146,9 +146,16 @@ function getSet(isSet = false) {
           const nextState = next(state)
           const thisValue = getSetFn(getStateValue(nextState), false)
 
+          const value =
+            state.noDefaults && isNoneValue(thisValue, options.nonvalues)
+              ? undefined
+              : isArr
+              ? ensureArray(thisValue, options.nonvalues)
+              : thisValue
+
           return setStateValue(
             nextState,
-            isArr ? ensureArray(thisValue) : thisValue,
+            value,
             true // Push to context
           )
         }

@@ -474,12 +474,18 @@ be mapping over the items in the array to its best effort. Getting `tags.id`
 from the data above will return the array `['news', 'sports']`, as these are the
 `id` props from the object in the array found at `tags`.
 
-You may also explicitly state that you expect an array. Even though you don't
-have to in the example above, you could have used the path `tags[].id` to make
-it clearer what you expect, but `tags.id[]` would have also given the same
-result. The main big reason to explicitly include the brackets, is to make sure
-that you always get an array, even if the data has no array. The path
-`content[].title` would return `['The title']` as if `content` was an array.
+You may also explicitly state that you expect an array. You didn't really have
+to in the example above, but you could have used the path `tags[].id` to make it
+clearer what you expect. `tags.id[]` would have also given the same result. The
+main big reason to explicitly include the brackets, is to make sure that you
+always get an array, even if the data has no array. The path `content[].title`
+would return `['The title']` as if `content` was an array.
+
+When a path with bracket notation meets `undefined` or any other
+[nonvalue](#a-note-on-undefined-and-null), an empty array will be returned,
+as you have stated that you expect an array. The only exception from this is
+when [`state.noDefaults` is `true`](#mapping-without-defaults), in which case
+you'll get `undefined`.
 
 It may not always be straight forward how MapTransform should set on a path with
 array notation, but it will again do it's best. When there is no other

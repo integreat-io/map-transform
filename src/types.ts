@@ -128,6 +128,10 @@ export interface OrOperation extends TransformerProps {
   $or: TransformDefinition[]
 }
 
+export interface NotOperation extends TransformerProps {
+  $not: TransformDefinition
+}
+
 export interface ConcatOperation extends TransformerProps {
   $concat: TransformDefinition[]
 }
@@ -147,6 +151,7 @@ export type OperationObject =
   | MergeOperation
   | AndOperation
   | OrOperation
+  | NotOperation
   | ConcatOperation
   | LookupOperation
 

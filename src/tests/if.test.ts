@@ -29,11 +29,11 @@ test('should map with ifelse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should run `then` pipeline when filter returns true', (t) => {
+test('should run `then` pipeline when transform returns true', (t) => {
   const def = [
     'content',
     {
-      $if: { $filter: 'compare', path: 'section', match: 'news' },
+      $if: { $transform: 'compare', path: 'section', match: 'news' },
       then: { title: 'heading' },
       else: { title: 'title' },
     },
@@ -48,11 +48,11 @@ test('should run `then` pipeline when filter returns true', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should run `else` pipeline when filter returns false', (t) => {
+test('should run `else` pipeline when transform returns false', (t) => {
   const def = [
     'content',
     {
-      $if: { $filter: 'compare', path: 'section', match: 'news' },
+      $if: { $transform: 'compare', path: 'section', match: 'news' },
       then: { title: 'heading' },
       else: { title: 'title' },
     },
@@ -73,7 +73,7 @@ test('should run $if deeper in the structure', (t) => {
     {
       'articles[]': {
         title: {
-          $if: { $filter: 'compare', path: 'section', match: 'news' },
+          $if: { $transform: 'compare', path: 'section', match: 'news' },
           then: 'heading',
           else: 'title',
         },
@@ -90,14 +90,14 @@ test('should run $if deeper in the structure', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should support $and filter - matching', (t) => {
+test('should support $and - matching', (t) => {
   const def = [
     'content',
     {
       $if: {
         $and: [
-          { $filter: 'compare', path: 'section', match: 'news' },
-          { $filter: 'compare', path: 'archived', match: false },
+          { $transform: 'compare', path: 'section', match: 'news' },
+          { $transform: 'compare', path: 'archived', match: false },
         ],
       },
       then: { title: 'heading' },
@@ -119,7 +119,7 @@ test('should support $and filter - matching', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should support $and filter - not matching', (t) => {
+test('should support $and - not matching', (t) => {
   const def = [
     'content',
     {
@@ -148,14 +148,14 @@ test('should support $and filter - not matching', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should support $or filter - matching', (t) => {
+test('should support $or - matching', (t) => {
   const def = [
     'content',
     {
       $if: {
         $or: [
-          { $filter: 'compare', path: 'section', match: 'news' },
-          { $filter: 'compare', path: 'archived', match: true },
+          { $transform: 'compare', path: 'section', match: 'news' },
+          { $transform: 'compare', path: 'archived', match: true },
         ],
       },
       then: { title: 'heading' },
@@ -177,14 +177,14 @@ test('should support $or filter - matching', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should support $or filter - not matching', (t) => {
+test('should support $or - not matching', (t) => {
   const def = [
     'content',
     {
       $if: {
         $or: [
-          { $filter: 'compare', path: 'section', match: 'news' },
-          { $filter: 'compare', path: 'archived', match: true },
+          { $transform: 'compare', path: 'section', match: 'news' },
+          { $transform: 'compare', path: 'archived', match: true },
         ],
       },
       then: { title: 'heading' },
@@ -200,6 +200,32 @@ test('should support $or filter - not matching', (t) => {
     },
   }
   const expected = { title: 'The title' }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support $not', (t) => {
+  const def = [
+    'content',
+    {
+      $if: {
+        $not: { $transform: 'compare', path: 'section', match: 'news' },
+      },
+      then: { title: 'heading' },
+      else: { title: 'title' },
+    },
+  ]
+  const data = {
+    content: {
+      heading: 'The heading',
+      title: 'The title',
+      section: 'sports',
+      archived: false,
+    },
+  }
+  const expected = { title: 'The heading' }
 
   const ret = mapTransform(def)(data)
 

@@ -16,6 +16,7 @@ import type {
   ValueOperation,
   AndOperation,
   OrOperation,
+  NotOperation,
   ConcatOperation,
   LookupOperation,
   Options,
@@ -212,6 +213,10 @@ function operationFromObject(def: OperationObject | TransformObject) {
   } else if (isOperationType<OrOperation>(def, '$or')) {
     return createTransformOperation(
       transformDefFromShortcut(def, 'or', 'path', 'logical', { operator: 'OR' })
+    )
+  } else if (isOperationType<NotOperation>(def, '$not')) {
+    return createTransformOperation(
+      transformDefFromShortcut(def, 'not', 'path')
     )
   } else if (isOperationType<ConcatOperation>(def, '$concat')) {
     return createPipelineOperation(concat, '$concat', def)

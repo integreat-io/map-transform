@@ -854,11 +854,10 @@ part of a pipeline, like dot notation paths, transform objects, operations, etc.
 We think of these building blocks as pipelines with one step, even when they are
 used without an array.
 
-When the pipeline id is unknown, data will pass through untouched. This may be a
-bit unexpected sometimes, and lead to results where it's not clear that the
-problem is e.g. a typo in the pipeline id. We may change this in the future and
-instead respond with an error when you try to apply an unknown pipeline, so you
-shouldn't rely on this behavior.
+When a pipeline id is unknown or missing, `mapTransform()` will throw. This
+happens in the first function call, i.e. on setup. If you first call
+`mapTransform()` with the defintion to get a mapper function, you'll get the
+error right away, you don't have to attempt to map data to discover the error.
 
 ```javascript
 import mapTransform, { apply, transform } from 'map-transform'

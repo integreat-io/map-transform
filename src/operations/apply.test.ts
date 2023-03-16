@@ -118,28 +118,6 @@ test('should not pass on flip - in rev', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return value untouched when pipeline is unknown', (t) => {
-  const state = {
-    context: [],
-    value: { title: 'Entry 1' },
-  }
-
-  const ret = apply('unknown')(options)(identity)(state)
-
-  t.deepEqual(ret.value, { title: 'Entry 1' })
-})
-
-test('should return value when no pipielines are supplied', (t) => {
-  const state = {
-    context: [],
-    value: { title: 'Entry 1' },
-  }
-
-  const ret = apply('extractTitle')({})(identity)(state)
-
-  t.deepEqual(ret.value, { title: 'Entry 1' })
-})
-
 test('should run pipeline on undefined', (t) => {
   const state = {
     context: [],
@@ -153,4 +131,30 @@ test('should run pipeline on undefined', (t) => {
   const ret = apply('setTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
+})
+
+test('should throw when given an unknown pipeline id', (t) => {
+  const state = {
+    context: [],
+    value: { title: 'Entry 1' },
+  }
+
+  const error = t.throws(() => apply('unknown')(options)(identity)(state))
+
+  t.true(error instanceof Error)
+  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+})
+
+test('should throw when not given a pipeline id', (t) => {
+  const state = {
+    context: [],
+    value: { title: 'Entry 1' },
+  }
+
+  const error = t.throws(
+    () => apply(undefined as any)(options)(identity)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
+  )
+
+  t.true(error instanceof Error)
+  t.is(error?.message, 'Failed to apply pipeline. No id provided')
 })

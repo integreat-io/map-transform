@@ -10,6 +10,14 @@ const removeFlip = ({ flip, ...state }: State) => state
 export default function apply(pipelineId: string): Operation {
   return (options) => (next) => {
     const pipeline = extractPipeline(pipelineId, options)
+
+    if (!pipeline) {
+      const message = pipelineId
+        ? `Failed to apply pipeline '${pipelineId}'. Unknown pipeline`
+        : 'Failed to apply pipeline. No id provided'
+      throw new Error(message)
+    }
+
     const fn = pipeline
       ? defToOperation(pipeline)(options)(identity)
       : undefined

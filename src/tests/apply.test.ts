@@ -113,26 +113,6 @@ test('should apply pipeline by id in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not touch value when no pipelines are supplied', (t) => {
-  const options = {} // No pipelines
-  const def = [
-    {
-      title: 'content.heading',
-      viewCount: 'meta.hits',
-    },
-    apply('cast_entry'),
-  ]
-  const data = {
-    content: { heading: 'The heading' },
-    meta: { hits: '45' },
-  }
-  const expected = { title: 'The heading', viewCount: '45' }
-
-  const ret = mapTransform(def, options)(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should apply pipeline as operation object', (t) => {
   const def = [
     {
@@ -252,24 +232,6 @@ test('should apply pipeline from array path in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return value on unknown pipeline in operation object', (t) => {
-  const def = [
-    {
-      title: 'content.heading',
-      viewCount: 'meta.hits',
-    },
-    { $apply: 'unknown' },
-  ]
-  const data = {
-    content: { heading: 'The heading' },
-    meta: { hits: '45' },
-  }
-
-  const ret = mapTransform(def, options)(data)
-
-  t.deepEqual(ret, { title: 'The heading', viewCount: '45' })
-})
-
 test('should apply pipeline as operation object going forward only', (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
@@ -350,4 +312,42 @@ test('should use reverse alias', (t) => {
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
+})
+
+test('should throw when applying an unknown pipeline id', (t) => {
+  const def = [
+    {
+      title: 'content.heading',
+      viewCount: 'meta.hits',
+    },
+    apply('unknown'),
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { hits: '45' },
+  }
+
+  const error = t.throws(() => mapTransform(def, options)(data))
+
+  t.true(error instanceof Error)
+  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+})
+
+test('should throw when applying an unknown pipeline as operation object', (t) => {
+  const def = [
+    {
+      title: 'content.heading',
+      viewCount: 'meta.hits',
+    },
+    { $apply: 'unknown' },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { hits: '45' },
+  }
+
+  const error = t.throws(() => mapTransform(def, options)(data))
+
+  t.true(error instanceof Error)
+  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
 })

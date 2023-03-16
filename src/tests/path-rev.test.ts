@@ -151,7 +151,7 @@ test('should reverse map with object array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.only('should reverse map several layers', (t) => {
+test('should reverse map several layers', (t) => {
   const def = [
     'content.articles',
     {

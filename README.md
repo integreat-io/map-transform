@@ -639,7 +639,9 @@ iterate the array. Mapping over each item needs to be handled in the transform
 itself, or wrap the `transform` operation in an `iterate` operation.
 
 So far we have used the `transform` function in our examples, but you also have
-the option to define a transform operation as an object (an operation object):
+the option to define a transform operation as an operation object, referencing
+the transformer with an id. The transformer themselves should be made available
+on the `options.transformers` object:
 
 ```javascript
 import mapTransform from 'map-transform'
@@ -675,6 +677,11 @@ accepting an object with props, that returns the actual function used as the
 transformer (which again returns a function mapping the data). Any properties
 given on the operation object, apart from `$transform`, will be passed in the
 `props` object.
+
+If you provide `$transform` with an unknown transformer id, `mapTransform()`
+will throw. Note that this happens right away, on the first function call, so
+you don't have to try to run the mapper function with any data to discover the
+mistake.
 
 When you define the `transform` operation as an object, you may specify
 `$iterate: true` on the object to apply the transform to every item on an array,
@@ -742,6 +749,11 @@ const def9asObject = [
   { $filter: 'onlyActives' }
 ]
 ```
+
+If you provide `$filter` with an unknown transformer id, `mapTransform()`
+will throw. Note that this happens right away, on the first function call, so
+you don't have to try to run the mapper function with any data to discover the
+mistake.
 
 You may also set `$direction: 'fwd'` or `$direction: 'rev'` on the object, to
 have it filter in one direction only.

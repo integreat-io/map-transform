@@ -59,6 +59,7 @@ export const isOperationType = <T extends OperationObject>(
   def: TransformObject | OperationObject,
   prop: string
 ): def is T => def[prop] !== undefined
+
 export const hasOperationProps = (
   def: TransformObject | OperationObject
 ): def is OperationObject =>
@@ -107,6 +108,9 @@ function wrapFromDefinition(
   }
 }
 
+const humanizeOperatorName = (operatorProp: string) =>
+  `${operatorProp[1].toUpperCase()}${operatorProp.slice(2)}`
+
 const createOperation =
   <U extends OperationObject>(
     operationFn: (fn: DataMapperWithOptions) => Operation,
@@ -116,7 +120,23 @@ const createOperation =
   (options) =>
   (next) => {
     const { [fnProp]: fnId, ...props } = def
-    const fn = options.transformers && options.transformers[fnId as string]
+    if (typeof fnId !== 'string') {
+      throw new Error(
+        `${humanizeOperatorName(
+          fnProp
+        )} operator was given no transformer id or an invalid transformer id`
+      )
+    }
+
+    const fn = options.transformers && options.transformers[fnId]
+    if (typeof fn !== 'function') {
+      throw new Error(
+        `${humanizeOperatorName(
+          fnProp
+        )} operator was given the unknown transformer id '${fnId}'`
+      )
+    }
+
     return typeof fn === 'function'
       ? wrapFromDefinition(operationFn(fn(props)), def)(options)(next)
       : (state) => next(state)

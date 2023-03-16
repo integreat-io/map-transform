@@ -1,6 +1,5 @@
 import { State, Options, Operation, DataMapperWithOptions } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
-import { identity } from '../utils/functional.js'
 
 function callTransformFn(fn: DataMapperWithOptions, options: Options) {
   const fnWithOptions = fn(options)
@@ -13,8 +12,12 @@ export default function transform(
   revFn?: DataMapperWithOptions
 ): Operation {
   return (options) => {
-    const fwdTransform =
-      typeof fn === 'function' ? callTransformFn(fn, options) : identity
+    if (typeof fn !== 'function') {
+      throw new Error(
+        'Transform operation was called without a valid transformer function'
+      )
+    }
+    const fwdTransform = callTransformFn(fn, options)
     const revTransform =
       typeof revFn === 'function'
         ? callTransformFn(revFn, options)

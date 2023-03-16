@@ -309,18 +309,6 @@ test('should apply filter with compare function from operation object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip filter when unknown function', (t) => {
-  const def = [{ title: 'content.heading' }, { $filter: 'unknown' }]
-  const data = {
-    content: { heading: 'The heading' },
-  }
-  const expected = { title: 'The heading' }
-
-  const ret = mapTransform(def, { transformers })(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should only apply filter from operation object going forward', (t) => {
   const def = [
     { title: 'content.heading' },
@@ -375,4 +363,35 @@ test('should filter after a lookup', (t) => {
   const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
+})
+
+test('should throw when filter is given an unknown transformer id', (t) => {
+  const def = [{ title: 'content.heading' }, { $filter: 'unknown' }]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+
+  const error = t.throws(() => mapTransform(def, { transformers })(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    "Filter operator was given the unknown transformer id 'unknown'"
+  )
+})
+
+test('should throw when filter operator is missing a transformer id', (t) => {
+  const def = [{ title: 'content.heading' }, { $filter: null }] // Missing transformer id
+  const data = {
+    content: { heading: 'The heading' },
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const error = t.throws(() => mapTransform(def as any, { transformers })(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    'Filter operator was given no transformer id or an invalid transformer id'
+  )
 })

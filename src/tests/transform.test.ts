@@ -281,28 +281,6 @@ test('should apply transform from an operation object with arguments', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip unknown transformer', (t) => {
-  const def = [
-    {
-      titleLength: [
-        'content.heading',
-        { $transform: 'getLength' },
-        { $transform: 'unknown' },
-      ],
-    },
-  ]
-  const data = {
-    content: { heading: 'The heading' },
-  }
-  const expected = {
-    titleLength: 11,
-  }
-
-  const ret = mapTransform(def, { transformers })(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should use built in get function', (t) => {
   const def = {
     title: ['content', { $transform: 'get', path: 'heading' }],
@@ -608,25 +586,6 @@ test('should provide index when iterating in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when transform operation has unknown function', (t) => {
-  const def = [
-    'content',
-    {
-      $iterate: true,
-      title: ['heading', { $transform: 'unknown' }],
-    },
-  ]
-  const data = {
-    content: [{ heading: 'The heading' }, { heading: 'The other' }],
-  }
-
-  const expected = [{ title: 'The heading' }, { title: 'The other' }]
-
-  const ret = mapTransform(def, { transformers })(data)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should support $value shorthand', (t) => {
   const def = [
     {
@@ -692,22 +651,65 @@ test('should shallow merge object with $merge', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when transform operation has invalid function id', (t) => {
+test('should throw when transform is given an unknown transformer id', (t) => {
+  const def = [
+    {
+      titleLength: ['content.heading', { $transform: 'unknown' }],
+    },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+
+  const error = t.throws(() => mapTransform(def, { transformers })(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    "Transform operator was given the unknown transformer id 'unknown'"
+  )
+})
+
+test('should throw when transform operation is missing a transformer id', (t) => {
   const def = [
     'content',
     {
       $iterate: true,
-      title: ['heading', { $transform: { id: 13 } }],
+      title: ['heading', { $transform: null }], // No transformer id
     },
   ]
   const data = {
     content: [{ heading: 'The heading' }, { heading: 'The other' }],
   }
 
-  const expected = [{ title: 'The heading' }, { title: 'The other' }]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const error = t.throws(() => mapTransform(def as any, { transformers })(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    'Transform operator was given no transformer id or an invalid transformer id'
+  )
+})
+
+test('should throw when transform operation has invalid transformer id', (t) => {
+  const def = [
+    'content',
+    {
+      $iterate: true,
+      title: ['heading', { $transform: { id: 13 } }], // Just something invalid
+    },
+  ]
+  const data = {
+    content: [{ heading: 'The heading' }, { heading: 'The other' }],
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ret = mapTransform(def as any, { transformers })(data)
+  const error = t.throws(() => mapTransform(def as any, { transformers })(data))
 
-  t.deepEqual(ret, expected)
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    'Transform operator was given no transformer id or an invalid transformer id'
+  )
 })

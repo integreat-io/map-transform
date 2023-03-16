@@ -46,18 +46,6 @@ test('should run transform function on array value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not touch value run with anything else than a function', (t) => {
-  const state = {
-    context: [{}],
-    value: 'Entry 1',
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ret = transform('wrong' as any)(options)(identity)(state)
-
-  t.deepEqual(ret, state)
-})
-
 test('should run transform in reverse', (t) => {
   const state = {
     context: [{ title: 'Entry 1' }],
@@ -137,4 +125,21 @@ test('should pass state to rev transform function', (t) => {
   transform(upper, () => fn)(options)(identity)(state)
 
   t.deepEqual(fn.args[0][1], expected)
+})
+
+test('should throw when given something other than a function', (t) => {
+  const state = {
+    context: [{}],
+    value: 'Entry 1',
+  }
+
+  const error = t.throws(
+    () => transform('wrong' as any)(options)(identity)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
+  )
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    'Transform operation was called without a valid transformer function'
+  )
 })

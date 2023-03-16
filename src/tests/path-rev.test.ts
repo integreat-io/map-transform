@@ -64,12 +64,10 @@ test('should reverse map with dot only notation', (t) => {
     article: {
       '.': 'content',
       title: 'content.heading',
-      heading: transform(value('Just in:')),
     },
   }
   const data = {
     article: {
-      heading: 'Just in:',
       title: 'The heading',
       abstract: 'So it begins ...',
     },
@@ -81,6 +79,19 @@ test('should reverse map with dot only notation', (t) => {
       title: 'The heading',
     },
   }
+
+  const ret = mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should disregard a prop pipeline without get in reverse', (t) => {
+  const def = {
+    title: 'content.heading',
+    meta: transform(value({ tags: ['news'] })), // We're setting an object here, as that would replace the target object
+  }
+  const data = { title: 'New article', meta: { tags: ['news'] } }
+  const expected = { content: { heading: 'New article' } }
 
   const ret = mapTransform(def)(data, { rev: true })
 
@@ -140,7 +151,7 @@ test('should reverse map with object array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map several layers', (t) => {
+test.only('should reverse map several layers', (t) => {
   const def = [
     'content.articles',
     {

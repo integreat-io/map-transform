@@ -17,7 +17,7 @@ import {
   setStateValue,
   setTargetOnState,
   setValueFromState,
-  isNoneValueState,
+  isNonvalueState,
   stopIteration,
 } from '../utils/stateHelpers.js'
 import {
@@ -141,12 +141,12 @@ const runOperations =
     options: Options
   ) =>
   (state: State) =>
-    isNoneValueState(state, options.nonvalues)
+    isNonvalueState(state, options.nonvalues)
       ? state
       : modifyFn(
           operations.reduce(
             runOperationWithOriginalValue(state, options),
-            state // Note: We used to clear the target here with `setTargetOnState(state, undefined)`, but it seems to be unnecessary and unwanted ...
+            state
           ),
           state
         )
@@ -155,6 +155,7 @@ const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
   ...state,
   noDefaults: noDefaults || state.noDefaults || false,
   flip: flip || state.flip || false,
+  target: undefined,
 })
 
 export default function props(def: TransformObject): Operation {
@@ -180,8 +181,8 @@ export default function props(def: TransformObject): Operation {
     return function doMutate(state) {
       const nextState = next(state)
       if (
-        isNoneValueState(state, options.nonvalues) ||
-        isWrongDirectionFn(state.rev)
+        isNonvalueState(nextState, options.nonvalues) ||
+        isWrongDirectionFn(nextState.rev)
       ) {
         return nextState
       }

@@ -37,13 +37,58 @@ test('should map with object path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with target', (t) => {
+test('should map to sub paths', (t) => {
   const def = [
-    'content.article',
+    'content',
     {
-      title: 'content.heading',
+      article: 'meta',
+      'article.title': 'article.content.heading',
     },
   ]
+  const data = {
+    content: {
+      article: {
+        content: { heading: 'Heading 1' },
+      },
+      meta: { id: 'ent1' },
+    },
+  }
+  const expected = { article: { id: 'ent1', title: 'Heading 1' } }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should replace prop with transform object', (t) => {
+  const def = {
+    content: 'content',
+    'content.article': {
+      title: 'content.article.content.heading',
+    },
+  }
+  const data = {
+    content: {
+      article: {
+        content: { heading: 'Heading 1' },
+      },
+      meta: { id: 'ent1' },
+    },
+  }
+  const expected = {
+    content: {
+      article: { title: 'Heading 1' },
+      meta: { id: 'ent1' },
+    },
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with target', (t) => {
+  const def = ['content.article.content.heading', '>title']
   const data = { content: { article: { content: { heading: 'Heading 1' } } } }
   const target = { id: 'ent1', title: 'Default title' }
   const expected = { id: 'ent1', title: 'Heading 1' }

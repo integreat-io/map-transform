@@ -1062,8 +1062,8 @@ Had we ran this without the `modify()` operation, the returned object would only
 have the `data` prop, as no props from the source data will be set in the target
 data, unless they are "picked up" by dot notation paths.
 
-This is equivalent to setting the `$modify` property to `true` on the object
-mutation object:
+This is equivalent to setting the `$modify` property to `true` on the transform
+object:
 
 ```javascript
 const def34b = {
@@ -1170,7 +1170,9 @@ const def13b = ['data.items[].content', '>content[]']
 You may notice that the examples above could have been written with a transform
 object, and you're absolutely right. The transform object is actually an
 alternative to using `get` and `set` operations, and will be converted to
-operations behind the curtains.
+operations behind the curtains. There's however a big different, in that the
+transform object will replace any data at the path it is set on, while a
+pipeline with `set` will be merged with the existing structure.
 
 This example results in the exact same pipeline as the examples above:
 
@@ -1183,7 +1185,7 @@ const def13c = {
 It's simply a matter of taste and of what's easiest in each case. We believe
 that the transform object is best in cases where you describe a target object
 with several properties, while `get` and `set` operations is best suited to
-define root paths for objects or arrays.
+define paths for objects or arrays.
 
 #### `root(pipeline)` operation
 
@@ -1351,7 +1353,7 @@ const def19 = [
 ]
 ```
 
-You may also define this with a transform object:
+You may also define this with an operation object:
 
 ```javascript
 const def19b = [
@@ -1363,7 +1365,7 @@ const def19b = [
 ]
 ```
 
-When you define the `compare` transformer as a transform object in JSON and need
+When you define the `compare` transformer as an operation object in JSON and need
 to compare to `undefined`, use `**undefined**` instead.
 
 #### `explode()` transformer
@@ -1398,7 +1400,7 @@ mapTransform(def32)(data)
 //      { key: 'EUR', value: 0.1 }]
 ```
 
-Or as a transform object:
+Or as an operation object:
 
 ```javascript
 const def32b = ['currencies', { $transform: 'explode' }]

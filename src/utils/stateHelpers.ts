@@ -57,15 +57,15 @@ export const setValueFromState = (
   context: shouldSetContext ? context : state.context,
 })
 
-export const isNoneValue = (
+export const isNonvalue = (
   value: unknown,
   nonvalues: unknown[] = [undefined]
 ) => nonvalues.includes(value)
 
-export const isNoneValueState = (
+export const isNonvalueState = (
   state: State,
   nonvalues: unknown[] = [undefined]
-) => isNoneValue(state.value, nonvalues)
+) => isNonvalue(state.value, nonvalues)
 
 // State
 

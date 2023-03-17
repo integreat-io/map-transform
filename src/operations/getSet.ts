@@ -7,7 +7,7 @@ import {
   setTargetOnState,
   getLastContext,
   getRootFromState,
-  isNoneValue,
+  isNonvalue,
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
@@ -127,7 +127,7 @@ function getSet(isSet = false) {
             getSetFn(value, true, indexOfIfArray(target, index))
 
           const nextValue = getStateValue(nextState)
-          if (state.noDefaults && isNoneValue(nextValue, options.nonvalues)) {
+          if (state.noDefaults && isNonvalue(nextValue, options.nonvalues)) {
             return setStateValue(state, target)
           }
           const value = isArr
@@ -147,7 +147,7 @@ function getSet(isSet = false) {
           const thisValue = getSetFn(getStateValue(nextState), false)
 
           const value =
-            state.noDefaults && isNoneValue(thisValue, options.nonvalues)
+            state.noDefaults && isNonvalue(thisValue, options.nonvalues)
               ? undefined
               : isArr
               ? ensureArray(thisValue, options.nonvalues)

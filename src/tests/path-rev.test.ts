@@ -38,10 +38,7 @@ test('should reverse map simple object', (t) => {
 })
 
 test('should reverse map with target', (t) => {
-  const def = {
-    title: 'content.heading',
-    author: 'meta.writer.username',
-  }
+  const def = ['content.heading', '>title']
   const data = {
     title: 'The heading',
     author: 'johnf',
@@ -51,7 +48,6 @@ test('should reverse map with target', (t) => {
   }
   const expected = {
     content: { id: 'ent1', heading: 'The heading' },
-    meta: { writer: { username: 'johnf' } },
   }
 
   const ret = mapTransform(def)(data, { target, rev: true })

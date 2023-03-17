@@ -3,7 +3,7 @@ import { Operation, State, TransformDefinition } from '../types.js'
 import {
   getStateValue,
   setStateValue,
-  isNoneValueState,
+  isNonvalueState,
 } from '../utils/stateHelpers.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
@@ -47,7 +47,7 @@ export default function merge(...defs: TransformDefinition[]): Operation {
 
     return function (state) {
       const nextState = next(state)
-      return isNoneValueState(nextState, options.nonvalues)
+      return isNonvalueState(nextState, options.nonvalues)
         ? setStateValue(nextState, undefined)
         : pipelines.map((pipeline) => pipeline(nextState)).reduce(mergeStates)
     }

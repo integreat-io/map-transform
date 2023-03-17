@@ -2,7 +2,7 @@ import { Operation, TransformDefinition } from '../types.js'
 import {
   setStateValue,
   getLastContext,
-  isNoneValueState,
+  isNonvalueState,
   setValueFromState,
   removeLastContext,
 } from '../utils/stateHelpers.js'
@@ -18,17 +18,17 @@ const runAlt = (isOneMode: boolean) =>
 
       if (isFirst) {
         const thisState = operation(options)(identity)(nextState)
-        return isNoneValueState(thisState, nonvalues)
+        return isNonvalueState(thisState, nonvalues)
           ? { ...thisState, context: [...nextState.context, nextState.value] }
           : thisState
       } else {
-        if (isNoneValueState(nextState, nonvalues)) {
+        if (isNonvalueState(nextState, nonvalues)) {
           const thisState = operation(options)(identity)(
             removeLastContext(
               setStateValue(nextState, getLastContext(nextState))
             )
           )
-          return isNoneValueState(thisState, nonvalues)
+          return isNonvalueState(thisState, nonvalues)
             ? setValueFromState(nextState, thisState)
             : thisState
         } else {

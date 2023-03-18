@@ -1,5 +1,9 @@
 import { DataMapper, TransformDefinition, Operation } from '../types.js'
-import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
+import {
+  getStateValue,
+  setStateValue,
+  goForward,
+} from '../utils/stateHelpers.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 
@@ -35,7 +39,7 @@ export default function (
 
     return (state) => {
       const nextState = next(state)
-      const bool = getStateValue(runCondition(nextState))
+      const bool = getStateValue(runCondition(goForward(nextState)))
       return bool ? runTrue(nextState) : runFalse(nextState)
     }
   }

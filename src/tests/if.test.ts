@@ -148,6 +148,68 @@ test('should support $and - not matching', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should support $and - matching in reverse', (t) => {
+  const def = [
+    'content',
+    {
+      $if: {
+        $and: [
+          { $transform: 'compare', path: 'section', match: 'news' },
+          { $transform: 'compare', path: 'archived', match: false },
+        ],
+      },
+      then: { heading: 'heading' },
+      else: { heading: 'title' },
+    },
+  ]
+  const data = {
+    title: 'The title',
+    heading: 'The heading',
+    section: 'news',
+    archived: false,
+  }
+  const expected = {
+    content: {
+      heading: 'The heading',
+    },
+  }
+
+  const ret = mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support $and - not matching in reverse', (t) => {
+  const def = [
+    'content',
+    {
+      $if: {
+        $and: [
+          { $transform: 'compare', path: 'section', match: 'news' },
+          { $transform: 'compare', path: 'archived', match: true },
+        ],
+      },
+      then: { heading: 'heading' },
+      else: { heading: 'title' },
+    },
+  ]
+  const data = {
+    title: 'The title',
+    heading: 'The heading',
+    section: 'news',
+    archived: false,
+  }
+  const expected = {
+    content: {
+      title: 'The heading',
+    },
+  }
+
+  const ret = mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
 test('should support $or - matching', (t) => {
   const def = [
     'content',

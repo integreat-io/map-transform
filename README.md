@@ -812,6 +812,8 @@ Note that `$if`, `then`, and `else` in the object notation may be any type of
 pipeline definition. The only gotcha is that if `$if` is a function, it is
 treated as a `conditionFn`, like in `def31`, not as a state mapper.
 
+Note also that the `conditionFn` pipeline will always be run in forward mode.
+
 #### `iterate(pipeline)` operation
 
 If you want to map over the items of an array, the `iterate` operation is your

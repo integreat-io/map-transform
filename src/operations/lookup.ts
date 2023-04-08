@@ -1,30 +1,64 @@
-import mapAny = require('map-any')
-import { Operation, State, Path, Prop } from '../types'
-import getter, { GetFunction } from '../utils/pathGetter'
-import { get } from './getSet'
-import { setStateValue } from '../utils/stateHelpers'
+import mapAny from 'map-any'
+import type {
+  Operation,
+  State,
+  Path,
+  DataMapper,
+  TransformerProps,
+} from '../types.js'
+import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
+import { defToDataMapper, defToOperation } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
+import xor from '../utils/xor.js'
 
-const matchPropInArray = (getProp: GetFunction) => (arr: Prop[]) => (
-  value: string | number | boolean | null
-) => (arr as any[]).find(obj => getProp(obj) === value)
+export interface Props extends TransformerProps {
+  arrayPath: Path
+  propPath: Path
+  matchSeveral?: boolean
+}
 
-const mapValue = (getArray: Operation, getProp: GetFunction) => {
-  const matchInArray = matchPropInArray(getProp)
+const FLATTEN_DEPTH = 1
+
+const flattenIfArray = (data: unknown) =>
+  Array.isArray(data) ? data.flat(FLATTEN_DEPTH) : data
+
+const matchPropInArray =
+  (getProp: DataMapper, matchSeveral: boolean) =>
+  (arr: unknown[], state: State) =>
+  (value: string | number | boolean | null) =>
+    matchSeveral
+      ? arr.filter((obj) => getProp(obj, state) === value)
+      : arr.find((obj) => getProp(obj, state) === value)
+
+const mapValue = (
+  getArray: Operation,
+  getProp: DataMapper,
+  matchSeveral: boolean
+) => {
+  const matchInArray = matchPropInArray(getProp, matchSeveral)
   return (state: State) => {
-    if (state.rev) {
-      return getProp
+    if (xor(state.rev, state.flip)) {
+      return (value: unknown) => getProp(value, { ...state, rev: false }) // Do a regular get, even though we're in rev
     } else {
-      const { value: arr } = getArray({})(state)
-      return arr ? matchInArray(arr as Prop[]) : () => undefined
+      const { value: arr } = getArray({})(identity)(state)
+      return arr ? matchInArray(arr as unknown[], state) : () => undefined
     }
   }
 }
 
-export default function lookup(arrayPath: Path, propPath: Path): Operation {
-  return () => {
-    const mapValueFn = mapValue(get(arrayPath), getter(propPath))
+export default function lookup({
+  arrayPath,
+  propPath,
+  matchSeveral = false,
+}: Props): Operation {
+  return (options) => (next) => {
+    const getter = defToDataMapper(propPath, options)
+    const mapValueFn = mapValue(defToOperation(arrayPath), getter, matchSeveral)
 
-    return (state: State) =>
-      setStateValue(state, mapAny(mapValueFn(state), state.value))
+    return function doLookup(state) {
+      const nextState = next(state)
+      const matches = mapAny(mapValueFn(nextState), getStateValue(nextState))
+      return setStateValue(nextState, flattenIfArray(matches))
+    }
   }
 }

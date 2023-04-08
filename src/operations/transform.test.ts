@@ -1,13 +1,16 @@
 import test from 'ava'
-import sinon = require('sinon')
-import { Data } from '../types'
+import sinon from 'sinon'
+import { identity } from '../utils/functional.js'
 
-import transform from './transform'
+import transform from './transform.js'
 
 // Setup
 
-const upper = (str: Data) => (typeof str === 'string') ? str.toUpperCase() : str
-const lower = (str: Data) => (typeof str === 'string') ? str.toLowerCase() : str
+const upper = () => (str: unknown) =>
+  typeof str === 'string' ? str.toUpperCase() : str
+const lower = () => (str: unknown) =>
+  typeof str === 'string' ? str.toLowerCase() : str
+const length = () => (arr: unknown) => Array.isArray(arr) ? arr.length : 0
 
 const options = {}
 
@@ -15,124 +18,128 @@ const options = {}
 
 test('should run transform function on value', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
-    value: 'Entry 1'
+    context: [{ title: 'Entry 1' }],
+    value: 'Entry 1',
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
-    value: 'ENTRY 1'
+    context: [{ title: 'Entry 1' }],
+    value: 'ENTRY 1',
   }
 
-  const ret = transform(upper)(options)(state)
+  const ret = transform(upper)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not touch value run with anything else than a function', (t) => {
+test('should run transform function on array value', (t) => {
   const state = {
-    root: {},
-    context: {},
-    value: 'Entry 1'
+    context: [[{ title: 'Entry 1' }, { title: 'Entry 2' }]],
+    value: ['Entry 1', 'Entry 2'],
+  }
+  const expected = {
+    context: [[{ title: 'Entry 1' }, { title: 'Entry 2' }]],
+    value: 2,
   }
 
-  const ret = transform('wrong' as any)(options)(state)
+  const ret = transform(length)(options)(identity)(state)
 
-  t.deepEqual(ret, state)
+  t.deepEqual(ret, expected)
 })
 
 test('should run transform in reverse', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: true
+    rev: true,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'ENTRY 1',
-    rev: true
+    rev: true,
   }
 
-  const ret = transform(upper)(options)(state)
+  const ret = transform(upper)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should run dedicated transform in reverse', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: true
+    rev: true,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'entry 1',
-    rev: true
+    rev: true,
   }
 
-  const ret = transform(upper, lower)(options)(state)
+  const ret = transform(upper, lower)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should not mind reverse transform going forward', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: false
+    rev: false,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'ENTRY 1',
-    rev: false
+    rev: false,
   }
 
-  const ret = transform(upper, lower)(options)(state)
+  const ret = transform(upper, lower)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should pass rev and onlyMapped to transform function', (t) => {
+test('should pass state to transform function', (t) => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
     rev: false,
-    onlyMapped: true
+    noDefaults: true,
   }
-  const expected = {
-    rev: false,
-    onlyMappedValues: true
-  }
+  const expected = state
 
-  transform(fn)(options)(state)
+  transform(() => fn)(options)(identity)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })
 
-test('should pass rev and onlyMapped to rev transform function', (t) => {
+test('should pass state to rev transform function', (t) => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
     rev: true,
-    onlyMapped: false
+    noDefaults: false,
   }
-  const expected = {
-    rev: true,
-    onlyMappedValues: false
-  }
+  const expected = state
 
-  transform(upper, fn)(options)(state)
+  transform(upper, () => fn)(options)(identity)(state)
 
   t.deepEqual(fn.args[0][1], expected)
+})
+
+test('should throw when given something other than a function', (t) => {
+  const state = {
+    context: [{}],
+    value: 'Entry 1',
+  }
+
+  const error = t.throws(
+    () => transform('wrong' as any)(options)(identity)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
+  )
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    'Transform operation was called without a valid transformer function'
+  )
 })

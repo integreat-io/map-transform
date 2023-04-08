@@ -1,18 +1,26 @@
-import { State, Data, Prop, Operation, MapDefinition, Options } from '../types'
-import { setStateValue, getStateValue } from '../utils/stateHelpers'
-import { mapFunctionFromDef } from '../utils/definitionHelpers'
+import type { Operation, TransformDefinition } from '../types.js'
+import { setStateValue, getStateValue } from '../utils/stateHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
 
-const merge = (left: Prop[], right: Data) => (Array.isArray(right)) ? [...left, ...right] : [...left, right]
+const merge = <T, U>(left: T[], right: U | U[]) =>
+  Array.isArray(right) ? [...left, ...right] : [...left, right]
 
-export default function concat (...defs: MapDefinition[]): Operation {
-  return (options: Options) => {
-    const fns = defs.map((def) => mapFunctionFromDef(def, options))
+export default function concat(...defs: TransformDefinition[]): Operation {
+  return (options) => (next) => {
+    const fns = defs.map((def) => defToOperation(def)(options)(identity))
 
-    return (state: State) => setStateValue(
-      state,
-      fns
-      .reduce((value, fn) => merge(value, getStateValue(fn(state))), [] as Prop[])
-      .filter((val) => typeof val !== 'undefined')
-    )
+    return function doConcat(state) {
+      const nextState = next(state)
+      return setStateValue(
+        nextState,
+        fns
+          .reduce(
+            (value, fn) => merge(value, getStateValue(fn(nextState))),
+            [] as unknown[]
+          )
+          .filter((val) => val !== undefined)
+      )
+    }
   }
 }

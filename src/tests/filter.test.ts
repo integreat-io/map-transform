@@ -1,19 +1,24 @@
 import test from 'ava'
+import { isObject } from '../utils/is.js'
+import mapTransform, {
+  set,
+  filter,
+  fwd,
+  rev,
+  transformers as coreTransformers,
+} from '../index.js'
+const { compare, not } = coreTransformers
 
-import { mapTransform, filter, fwd, rev, validate, not, Data, functions } from '..'
-const { compare } = functions
+// Setup
 
-// Helpers
+const noHeadingTitle = () => () => (item: unknown) =>
+  isObject(item) && !/heading/gi.test(item.title as string)
 
-const isObject = (item: Data): item is object => (!!item && typeof item === 'object')
+const noAlso = () => (item: unknown) =>
+  isObject(item) && !/also/gi.test(item.title as string)
 
-const noHeadingTitle = () => (item: Data) =>
-  (isObject(item)) && !(/heading/gi).test((item as any).title)
-
-const noAlso = (item: Data) => (isObject(item)) && !(/also/gi).test((item as any).title)
-
-const customFunctions = {
-  noHeadingTitle
+const transformers = {
+  noHeadingTitle,
 }
 
 // Tests
@@ -21,12 +26,12 @@ const customFunctions = {
 test('should filter out item', (t) => {
   const def = [
     {
-      title: 'content.heading'
+      title: 'content.heading',
     },
-    filter(noHeadingTitle())
+    filter(noHeadingTitle()),
   ]
   const data = {
-    content: { heading: 'The heading' }
+    content: { heading: 'The heading' },
   }
   const expected = undefined
 
@@ -38,18 +43,17 @@ test('should filter out item', (t) => {
 test('should filter out items in array', (t) => {
   const def = [
     {
-      title: 'content.heading'
+      $iterate: true,
+      title: 'content.heading',
     },
-    filter(noHeadingTitle())
+    filter(noHeadingTitle()),
   ]
   const data = [
     { content: { heading: 'The heading' } },
     { content: { heading: 'Just this' } },
-    { content: { heading: 'Another heading' } }
+    { content: { heading: 'Another heading' } },
   ]
-  const expected = [
-    { title: 'Just this' }
-  ]
+  const expected = [{ title: 'Just this' }]
 
   const ret = mapTransform(def)(data)
 
@@ -59,20 +63,19 @@ test('should filter out items in array', (t) => {
 test('should filter with several filters', (t) => {
   const def = [
     {
-      title: 'content.heading'
+      $iterate: true,
+      title: 'content.heading',
     },
     filter(noHeadingTitle()),
-    filter(noAlso)
+    filter(noAlso),
   ]
   const data = [
     { content: { heading: 'The heading' } },
     { content: { heading: 'Just this' } },
     { content: { heading: 'Another heading' } },
-    { content: { heading: 'Also this' } }
+    { content: { heading: 'Also this' } },
   ]
-  const expected = [
-    { title: 'Just this' }
-  ]
+  const expected = [{ title: 'Just this' }]
 
   const ret = mapTransform(def)(data)
 
@@ -80,22 +83,20 @@ test('should filter with several filters', (t) => {
 })
 
 test('should set filtered items on path', (t) => {
-  const def = {
-    'items[]': [
-      {
-        title: 'content.heading'
-      },
-      filter(noHeadingTitle())
-    ]
-  }
+  const def = [
+    {
+      $iterate: true,
+      title: 'content.heading',
+    },
+    filter(noHeadingTitle()),
+    set('items[]'),
+  ]
   const data = [
     { content: { heading: 'The heading' } },
-    { content: { heading: 'Just this' } }
+    { content: { heading: 'Just this' } },
   ]
   const expected = {
-    items: [
-      { title: 'Just this' }
-    ]
+    items: [{ title: 'Just this' }],
   }
 
   const ret = mapTransform(def)(data)
@@ -107,22 +108,18 @@ test('should filter items from parent mapping for reverse mapping', (t) => {
   const def = {
     'items[]': [
       {
-        title: 'content.heading'
+        $iterate: true,
+        title: 'content.heading',
       },
-      filter(noHeadingTitle())
-    ]
+      filter(noHeadingTitle()),
+    ],
   }
   const data = {
-    items: [
-      { title: 'The heading' },
-      { title: 'Just this' }
-    ]
+    items: [{ title: 'The heading' }, { title: 'Just this' }],
   }
-  const expected = [
-    { content: { heading: 'Just this' } }
-  ]
+  const expected = [{ content: { heading: 'Just this' } }]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -130,22 +127,21 @@ test('should filter items from parent mapping for reverse mapping', (t) => {
 test('should filter on reverse mapping', (t) => {
   const def = [
     {
-      title: 'content.heading'
+      $iterate: true,
+      title: 'content.heading',
     },
     filter(noHeadingTitle()),
-    filter(noAlso)
+    filter(noAlso),
   ]
   const data = [
     { title: 'The heading' },
     { title: 'Just this' },
     { title: 'Another heading' },
-    { title: 'Also this' }
+    { title: 'Also this' },
   ]
-  const expected = [
-    { content: { heading: 'Just this' } }
-  ]
+  const expected = [{ content: { heading: 'Just this' } }]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -153,21 +149,22 @@ test('should filter on reverse mapping', (t) => {
 test('should use directional filters - going forward', (t) => {
   const def = [
     {
-      title: 'content.heading'
+      $iterate: true,
+      title: 'content.heading',
     },
     fwd(filter(noAlso)),
-    rev(filter(noHeadingTitle()))
+    rev(filter(noHeadingTitle())),
   ]
   const data = [
     { content: { heading: 'The heading' } },
     { content: { heading: 'Just this' } },
     { content: { heading: 'Another heading' } },
-    { content: { heading: 'Also this' } }
+    { content: { heading: 'Also this' } },
   ]
   const expected = [
     { title: 'The heading' },
     { title: 'Just this' },
-    { title: 'Another heading' }
+    { title: 'Another heading' },
   ]
 
   const ret = mapTransform(def)(data)
@@ -178,23 +175,24 @@ test('should use directional filters - going forward', (t) => {
 test('should use directional filters - going reverse', (t) => {
   const def = [
     {
-      title: 'content.heading'
+      $iterate: true,
+      title: 'content.heading',
     },
     fwd(filter(noAlso)),
-    rev(filter(noHeadingTitle()))
+    rev(filter(noHeadingTitle())),
   ]
   const data = [
     { title: 'The heading' },
     { title: 'Just this' },
     { title: 'Another heading' },
-    { title: 'Also this' }
+    { title: 'Also this' },
   ]
   const expected = [
     { content: { heading: 'Just this' } },
-    { content: { heading: 'Also this' } }
+    { content: { heading: 'Also this' } },
   ]
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -204,11 +202,11 @@ test('should filter before mapping', (t) => {
     'content',
     filter(noHeadingTitle()),
     {
-      heading: 'title'
-    }
+      heading: 'title',
+    },
   ]
   const data = {
-    content: { title: 'The heading' }
+    content: { title: 'The heading' },
   }
   const expected = undefined
 
@@ -222,15 +220,15 @@ test('should filter with filter before mapping on reverse mapping', (t) => {
     'content',
     filter(noHeadingTitle()),
     {
-      heading: 'title'
-    }
+      heading: 'title',
+    },
   ]
   const data = {
-    heading: 'The heading'
+    heading: 'The heading',
   }
   const expected = { content: undefined }
 
-  const ret = mapTransform(def).rev(data)
+  const ret = mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -240,10 +238,10 @@ test('should filter with compare helper', (t) => {
     {
       title: 'heading',
       meta: {
-        section: 'section'
-      }
+        section: 'section',
+      },
     },
-    filter(compare({ path: 'meta.section', match: 'news' }))
+    filter(compare({ path: 'meta.section', match: 'news' })),
   ]
   const data = { heading: 'The heading', section: 'fashion' }
   const expected = undefined
@@ -258,38 +256,16 @@ test('should filter with not and compare helpers', (t) => {
     {
       title: 'heading',
       meta: {
-        section: 'section'
-      }
+        section: 'section',
+      },
     },
-    filter(not(compare({ path: 'meta.section', match: 'news' })))
+    filter(not(compare({ path: 'meta.section', match: 'news' }))),
   ]
   const data = { heading: 'The heading', section: 'fashion' }
   const expected = {
     title: 'The heading',
-    meta: { section: 'fashion' }
+    meta: { section: 'fashion' },
   }
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should filter with validate', (t) => {
-  const def = [
-    'content',
-    filter(validate('draft', { const: false })),
-    {
-      title: 'heading'
-    }
-  ]
-  const data = [
-    { content: { heading: 'The heading', draft: true } },
-    { content: { heading: 'Just this', draft: false } },
-    { content: { heading: 'Another heading' } }
-  ]
-  const expected = [
-    { title: 'Just this' }
-  ]
 
   const ret = mapTransform(def)(data)
 
@@ -299,29 +275,32 @@ test('should filter with validate', (t) => {
 test('should apply filter from operation object', (t) => {
   const def = [
     {
-      title: 'content.heading'
+      title: 'content.heading',
     },
-    { $filter: 'noHeadingTitle' }
+    { $filter: 'noHeadingTitle' },
   ]
   const data = {
-    content: { heading: 'The heading' }
+    content: { heading: 'The heading' },
   }
   const expected = undefined
 
-  const ret = mapTransform(def, { customFunctions })(data)
+  const ret = mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
 test('should apply filter with compare function from operation object', (t) => {
   const def = [
+    { title: 'content.heading' },
     {
-      title: 'content.heading'
+      $filter: 'compare',
+      path: 'title',
+      operator: '=',
+      match: 'Other heading',
     },
-    { $filter: 'compare', path: 'title', operator: '=', match: 'Other heading' }
   ]
   const data = {
-    content: { heading: 'The heading' }
+    content: { heading: 'The heading' },
   }
   const expected = undefined
 
@@ -330,21 +309,89 @@ test('should apply filter with compare function from operation object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip filter when unknown function', (t) => {
+test('should only apply filter from operation object going forward', (t) => {
   const def = [
+    { title: 'content.heading' },
+    { $filter: 'noHeadingTitle', $direction: 'fwd' },
+  ]
+  const dataFwd = { content: { heading: 'The heading' } }
+  const dataRev = { title: 'The heading' }
+
+  const retFwd = mapTransform(def, { transformers })(dataFwd)
+  const retRev = mapTransform(def, { transformers })(dataRev, { rev: true })
+
+  t.is(retFwd, undefined)
+  t.deepEqual(retRev, dataFwd)
+})
+
+test('should only apply filter from operation object going in reverse', (t) => {
+  const def = [
+    { title: 'content.heading' },
+    { $filter: 'noHeadingTitle', $direction: 'rev' },
+  ]
+  const dataFwd = { content: { heading: 'The heading' } }
+  const dataRev = { title: 'The heading' }
+
+  const retFwd = mapTransform(def, { transformers })(dataFwd)
+  const retRev = mapTransform(def, { transformers })(dataRev, { rev: true })
+
+  t.deepEqual(retFwd, dataRev)
+  t.is(retRev, undefined)
+})
+
+test('should filter after a lookup', (t) => {
+  const def = [
+    'ids',
+    { $lookup: '^^.content', path: 'id' },
     {
-      title: 'content.heading'
+      $iterate: true,
+      title: 'heading',
     },
-    { $filter: 'unknown' }
+    filter(noHeadingTitle()),
   ]
   const data = {
-    content: { heading: 'The heading' }
+    ids: ['ent1', 'ent2'],
+    content: [
+      { id: 'ent1', heading: 'The heading' },
+      { id: 'ent2', heading: 'Just this' },
+      { id: 'ent3', heading: 'Another heading' },
+      { id: 'ent3', heading: 'And not this' },
+    ],
   }
-  const expected = {
-    title: 'The heading'
-  }
+  const expected = [{ title: 'Just this' }]
 
-  const ret = mapTransform(def, { customFunctions })(data)
+  const ret = mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
+})
+
+test('should throw when filter is given an unknown transformer id', (t) => {
+  const def = [{ title: 'content.heading' }, { $filter: 'unknown' }]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+
+  const error = t.throws(() => mapTransform(def, { transformers })(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    "Filter operator was given the unknown transformer id 'unknown'"
+  )
+})
+
+test('should throw when filter operator is missing a transformer id', (t) => {
+  const def = [{ title: 'content.heading' }, { $filter: null }] // Missing transformer id
+  const data = {
+    content: { heading: 'The heading' },
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const error = t.throws(() => mapTransform(def as any, { transformers })(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    'Filter operator was given no transformer id or an invalid transformer id'
+  )
 })

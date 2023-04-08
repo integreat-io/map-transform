@@ -1,25 +1,32 @@
-import { MapDefinition, Operation, Options } from '../types'
-import { mapFunctionFromDef } from '../utils/definitionHelpers'
+import type { TransformDefinition, Operation, Options } from '../types.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
+import xor from '../utils/xor.js'
 
-const applyInDirection = (def: MapDefinition, rev: boolean): Operation => {
-  return (options: Options) => {
-    const fn = mapFunctionFromDef(def, options)
-    return (state) => (rev ? state.rev : !state.rev) ? fn(state) : state
+const applyInDirection = (
+  def: TransformDefinition,
+  rev: boolean
+): Operation => {
+  return (options: Options) => (next) => {
+    const fn = defToOperation(def)(options)(next)
+    return (state) => (xor(rev, !state.rev) ? fn(state) : next(state))
   }
 }
 
-export function fwd (def: MapDefinition): Operation {
+export function fwd(def: TransformDefinition): Operation {
   return applyInDirection(def, false)
 }
 
-export function rev (def: MapDefinition): Operation {
+export function rev(def: TransformDefinition): Operation {
   return applyInDirection(def, true)
 }
 
-export function divide (fwdDef: Operation, revDef: Operation): Operation {
-  return (options: Options) => {
-    const fwdFn = mapFunctionFromDef(fwdDef, options)
-    const revFn = mapFunctionFromDef(revDef, options)
-    return (state) => (state.rev) ? revFn(state) : fwdFn(state)
+export function divide(
+  fwdDef: TransformDefinition,
+  revDef: TransformDefinition
+): Operation {
+  return (options) => (next) => {
+    const fwdFn = defToOperation(fwdDef)(options)(next)
+    const revFn = defToOperation(revDef)(options)(next)
+    return (state) => (state.rev ? revFn(state) : fwdFn(state))
   }
 }

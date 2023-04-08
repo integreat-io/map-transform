@@ -1,7 +1,7 @@
-version: "2"
+version: '2'
 exclude_patterns:
-- "**/*.js"
-- "**/*.test.ts"
-- "lib/tests/"
-- "node_modules/"
-- "dist"
+  - '**/*-test.ts'
+  - 'tests/'
+  - 'node_modules/'
+  - 'coverage/'
+  - 'dist/'

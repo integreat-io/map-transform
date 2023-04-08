@@ -1,36 +1,50 @@
-import mapAny = require('map-any')
+import type { Operation, TransformDefinition } from '../types.js'
 import {
-  State,
-  Data,
-  Operation,
-  StateMapper,
-  MapDefinition,
-  Options
-} from '../types'
-import { setStateValue, getStateValue } from '../utils/stateHelpers'
-import { mapFunctionFromDef } from '../utils/definitionHelpers'
+  setStateValue,
+  getLastContext,
+  isNonvalueState,
+  setValueFromState,
+  removeLastContext,
+} from '../utils/stateHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
+import { identity } from '../utils/functional.js'
 
-const getOne = (context: Data | Data[], index?: number) =>
-  typeof index === 'undefined' || !Array.isArray(context)
-    ? context
-    : context[index]
+const runAlt = (isOneMode: boolean) =>
+  function runAlt(operation: Operation, index: number): Operation {
+    return (options) => (next) => (state) => {
+      const nextState = next(state)
+      const { nonvalues } = options
+      const isFirst = !isOneMode && index === 0
 
-const getValueOrDefault = (state: State, runAlt: StateMapper) => (
-  value: Data,
-  index?: number
-) =>
-  typeof value === 'undefined'
-    ? getStateValue(runAlt({ ...state, value: getOne(state.context, index) }))
-    : value
-
-export default function alt(fn: MapDefinition): Operation {
-  return (options: Options) => {
-    const runAlt = mapFunctionFromDef(fn, options)
-
-    return (state: State) =>
-      setStateValue(
-        state,
-        mapAny(getValueOrDefault(state, runAlt), state.value)
-      )
+      if (isFirst) {
+        const thisState = operation(options)(identity)(nextState)
+        return isNonvalueState(thisState, nonvalues)
+          ? { ...thisState, context: [...nextState.context, nextState.value] }
+          : thisState
+      } else {
+        if (isNonvalueState(nextState, nonvalues)) {
+          const thisState = operation(options)(identity)(
+            removeLastContext(
+              setStateValue(nextState, getLastContext(nextState))
+            )
+          )
+          return isNonvalueState(thisState, nonvalues)
+            ? setValueFromState(nextState, thisState)
+            : thisState
+        } else {
+          return nextState
+        }
+      }
+    }
   }
+
+export default function alt(...defs: TransformDefinition[]): Operation[] {
+  // Prepare all alt operations
+  const altOperations = defs.map((def) => defToOperation(def))
+  const isOneMode = altOperations.length === 1
+
+  // All alt operations are returned as individual operations, but the first one
+  // is run in isolation (if it returns undefined, it will not polute the
+  // context) and the rest are run only if the state value is not set
+  return altOperations.map(runAlt(isOneMode))
 }

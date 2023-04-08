@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "module": "node16",
+    "moduleResolution": "node16",
+    "moduleDetection": "force",
     "declaration": true,
     "sourceMap": true,
-    "outDir": "./dist",
     "noEmitOnError": false,
     "strict": true,
     "noImplicitAny": true,
@@ -19,7 +20,11 @@
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"]
-    }
+    },
+    "outDir": "./dist"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "ts-node": {
+    "transpileOnly": true
+  }
 }

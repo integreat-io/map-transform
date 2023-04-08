@@ -1,6 +1,7 @@
 import test from 'ava'
+import { identity } from '../utils/functional.js'
 
-import plug from './plug'
+import plug from './plug.js'
 
 // Setup
 
@@ -10,36 +11,48 @@ const options = {}
 
 test('should set value to undefined', (t) => {
   const state = {
-    root: { data: { name: 'John F.' } },
-    context: { data: { name: 'John F.' } },
-    value: { data: { name: 'John F.' } }
+    context: [],
+    value: { data: { name: 'John F.' } },
   }
   const expected = {
-    root: { data: { name: 'John F.' } },
-    context: { data: { name: 'John F.' } },
-    value: undefined
+    context: [],
+    value: undefined,
   }
 
-  const ret = plug()(options)(state)
+  const ret = plug()(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value to undefined when onlyMapped', (t) => {
+test('should set value to undefined when noDefaults', (t) => {
   const state = {
-    root: { data: { name: 'John F.' } },
-    context: { data: { name: 'John F.' } },
+    context: [],
     value: { data: { name: 'John F.' } },
-    onlyMapped: true
+    noDefaults: true,
   }
   const expected = {
-    root: { data: { name: 'John F.' } },
-    context: { data: { name: 'John F.' } },
+    context: [],
     value: undefined,
-    onlyMapped: true
+    noDefaults: true,
   }
 
-  const ret = plug()(options)(state)
+  const ret = plug()(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set target as value when present', (t) => {
+  const state = {
+    context: [],
+    target: { data: { name: 'John F.', age: 32 } },
+    value: { data: { name: 'John F.' } },
+  }
+  const expected = {
+    ...state,
+    value: { data: { name: 'John F.', age: 32 } },
+  }
+
+  const ret = plug()(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

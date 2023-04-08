@@ -1,86 +1,192 @@
-export interface ObjectWithProps {
-  [key: string]: Data
+// Dictionary types
+
+export type DictionaryValue = string | number | boolean | null | undefined
+
+export type DictionaryTuple = readonly [DictionaryValue, DictionaryValue]
+export type Dictionary = DictionaryTuple[]
+
+export interface Dictionaries {
+  [key: string]: Dictionary
 }
 
-export type Prop = string | number | boolean | object | null | undefined | ObjectWithProps
+// State type
 
-export type Data = Prop | Prop[]
-
-export type Path = string
-
-export interface Operands {
-  [key: string]: Data
+export interface InitialState {
+  target?: unknown
+  rev?: boolean
+  noDefaults?: boolean
 }
 
-export interface Context {
-  rev: boolean,
-  onlyMappedValues: boolean
-}
-
-export interface DataMapper<U = Data, V = Data | boolean> {
-  (data: U, context: Context): V
-}
-
-export interface CustomFunction<T = Operands, U = Data, V = Data | boolean> {
-  (operands: T): DataMapper<U, V>
-}
-
-export interface CustomFunctions {
-  [key: string]: CustomFunction
-}
-
-export interface State {
-  root: Data,
-  context: Data,
-  value: Data,
-  rev?: boolean,
-  onlyMapped?: boolean,
+export interface State extends InitialState {
+  context: unknown[]
+  value: unknown
+  flip?: boolean
   arr?: boolean
+  iterate?: boolean
+  index?: number
 }
+
+// MapTransform options type
 
 export interface Options {
-  customFunctions?: CustomFunctions
+  transformers?: {
+    [key: string]: Transformer
+  }
+  pipelines?: {
+    [key: string]: TransformDefinition
+  }
+  dictionaries?: Dictionaries
+  nonvalues?: unknown[]
+  fwdAlias?: string
+  revAlias?: string
 }
 
-export interface TransformObject extends Operands {
-  $transform: string
+// Data mapper types
+
+export interface DataMapper {
+  (data: unknown, state: State): unknown
 }
 
-export interface FilterObject extends Operands {
-  $filter: string
+export interface DataMapperEntry {
+  (data: unknown, state?: InitialState): unknown
 }
 
-export type OperationObject = TransformObject | FilterObject
+export interface DataMapperWithOptions {
+  (options: Options): DataMapper
+}
+
+// Operation types
 
 export interface StateMapper {
   (state: State): State
 }
 
 export interface Operation {
-  (options: Options): StateMapper
+  (options: Options): (next: StateMapper) => StateMapper
 }
 
-export interface MapFunction {
-  (options: Options): (state: State) => State
+// Transformer types
+
+export type TransformerProps = Record<string, unknown>
+
+export interface Transformer<T = TransformerProps> {
+  (props: T): DataMapperWithOptions
 }
 
-type MapPipeSimple = (MapObject | Operation | OperationObject | Path)[]
+// Transform definition types
 
-export type MapPipe = (MapObject | Operation | OperationObject | Path | MapPipeSimple)[]
+export type Path = string
 
-export interface MapObject {
-  [key: string]: MapDefinition | undefined,
-  $transform?: undefined,
+export interface TransformOperation extends TransformerProps {
+  $transform: string
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface FilterOperation extends TransformerProps {
+  $filter: string
+  $direction?: string
+}
+
+export interface IfOperation extends TransformerProps {
+  $if: TransformDefinition
+  $direction?: string
+  then?: TransformDefinition
+  else?: TransformDefinition
+}
+
+export interface ApplyOperation extends TransformerProps {
+  $apply: string
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface AltOperation extends TransformerProps {
+  $alt: TransformDefinition[]
+  $iterate?: boolean
+  $direction?: string
+  $undefined?: unknown[]
+}
+
+export interface MergeOperation extends TransformerProps {
+  $merge: unknown
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface ValueOperation extends TransformerProps {
+  $value: unknown
+  $iterate?: boolean
+  $direction?: string
+}
+
+export interface AndOperation extends TransformerProps {
+  $and: TransformDefinition[]
+}
+
+export interface OrOperation extends TransformerProps {
+  $or: TransformDefinition[]
+}
+
+export interface NotOperation extends TransformerProps {
+  $not: TransformDefinition
+}
+
+export interface ConcatOperation extends TransformerProps {
+  $concat: TransformDefinition[]
+}
+
+export interface LookupOperation extends TransformerProps {
+  $lookup: Path
+  path: Path
+}
+
+export type OperationObject =
+  | TransformOperation
+  | FilterOperation
+  | IfOperation
+  | ApplyOperation
+  | AltOperation
+  | ValueOperation
+  | MergeOperation
+  | AndOperation
+  | OrOperation
+  | NotOperation
+  | ConcatOperation
+  | LookupOperation
+
+export type Pipeline = (
+  | TransformObject
+  | Operation
+  | OperationObject
+  | Path
+  | Pipeline
+)[]
+
+export interface TransformObject {
+  [key: string]: TransformDefinition | undefined | boolean
+  $iterate?: boolean
+  $modify?: boolean | Path
+  $noDefaults?: boolean
+  $flip?: boolean
+  // The following props are included to make sure they don't appear on the TransformObject
+  $transform?: undefined
   $filter?: undefined
+  $if?: undefined
+  $apply?: undefined
+  $value?: undefined
+  $alt?: undefined
+  $and?: undefined
+  $or?: undefined
+  $concat?: undefined
+  $lookup?: undefined
+  $merge?: undefined
 }
 
-export type MapDefinition = MapObject | Operation | OperationObject | MapPipe | Path | null
-
-export interface MapTransformWithOnlyMappedValues {
-  (data: Data): Data
-  onlyMappedValues: (data: Data) => Data
-}
-
-export interface MapTransform extends MapTransformWithOnlyMappedValues {
-  rev: MapTransformWithOnlyMappedValues
-}
+export type TransformDefinition =
+  | TransformObject
+  | Operation
+  | OperationObject
+  | Pipeline
+  | Path
+  | null

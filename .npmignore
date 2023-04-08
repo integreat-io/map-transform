@@ -2,4 +2,6 @@ src/
 *.test*
 .*
 tsconfig.json
-tslint.json
+tsconfig.json
+*.config.js
+*.config.cjs

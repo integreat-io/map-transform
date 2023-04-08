@@ -1,13 +1,20 @@
 import test from 'ava'
-import { identity } from 'ramda'
-import { MapFunction, Options } from '../types'
+import { get, set } from './getSet.js'
+import pipe from './pipe.js'
+import { identity } from '../utils/functional.js'
+import type { Operation } from '../types.js'
 
-import { fwd, rev, divide } from './directionals'
+import { fwd, rev, divide } from './directionals.js'
 
 // Helpers
 
-const upperCase = (str: string | any) => (typeof str === 'string') ? str.toUpperCase() : str
-const upper: MapFunction = (_options: Options) => (state) => ({ ...state, value: upperCase(state.value) })
+const upperCase = (str: unknown) =>
+  typeof str === 'string' ? str.toUpperCase() : str
+
+const upper: Operation = (_options) => (next) => (state) => ({
+  ...next(state),
+  value: upperCase(next(state).value),
+})
 
 const options = {}
 
@@ -15,106 +22,114 @@ const options = {}
 
 test('should apply function when not rev', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: false
+    rev: false,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'ENTRY 1',
-    rev: false
+    rev: false,
   }
 
-  const ret = fwd(upper)(options)(state)
+  const ret = fwd(upper)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should not apply function when rev', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: true
+    rev: true,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: true
+    rev: true,
   }
 
-  const ret = fwd(upper)(options)(state)
+  const ret = fwd(upper)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should treat string as get path in fwd', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: { title: 'Entry 1' },
-    rev: false
+    rev: false,
   }
   const expectedValue = 'Entry 1'
 
-  const ret = fwd('title')(options)(state)
+  const ret = fwd('title')(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+test('should apply in pipe', (t) => {
+  const def = [fwd(get('title')), fwd(set('heading'))]
+  const state = {
+    context: [],
+    value: { title: 'Entry 1' },
+    rev: false,
+  }
+  const expected = {
+    context: [],
+    value: { heading: 'Entry 1' },
+    rev: false,
+  }
+
+  const ret = pipe(def)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
 })
 
 // Tests -- reverse
 
 test('should apply function when rev', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: true
+    rev: true,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'ENTRY 1',
-    rev: true
+    rev: true,
   }
 
-  const ret = rev(upper)(options)(state)
+  const ret = rev(upper)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should not apply function when fwd', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: false
+    rev: false,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: false
+    rev: false,
   }
 
-  const ret = rev(upper)(options)(state)
+  const ret = rev(upper)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should treat string as get path in rev', (t) => {
   const state = {
-    root: 'Entry 1',
-    context: 'Entry 1',
+    context: [],
     value: 'Entry 1',
-    rev: true
+    rev: true,
   }
   const expectedValue = { title: 'Entry 1' }
 
-  const ret = rev('title')(options)(state)
+  const ret = rev('title')(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -123,38 +138,34 @@ test('should treat string as get path in rev', (t) => {
 
 test('should apply first function when not rev', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: false
+    rev: false,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'ENTRY 1',
-    rev: false
+    rev: false,
   }
 
-  const ret = divide(upper, () => identity)(options)(state)
+  const ret = divide(upper, () => identity)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
 test('should apply second function when rev', (t) => {
   const state = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: true
+    rev: true,
   }
   const expected = {
-    root: { title: 'Entry 1' },
-    context: { title: 'Entry 1' },
+    context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: true
+    rev: true,
   }
 
-  const ret = divide(upper, () => identity)(options)(state)
+  const ret = divide(upper, () => identity)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

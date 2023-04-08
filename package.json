@@ -1,9 +1,7 @@
 {
   "name": "map-transform",
-  "version": "0.3.12",
+  "version": "0.4.0",
   "description": "Map and transform objects with mapping definitions",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "author": "Kjell-Morten Bratsberg Thorsen <post@kjellmorten.no>",
   "license": "ISC",
   "keywords": [
@@ -13,80 +11,50 @@
     "object",
     "path"
   ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./definitionHelpers.js": {
+      "import": "./dist/utils/definitionHelpers.js",
+      "types": "./dist/utils/definitionHelpers.d.ts"
+    },
+    "./types.js": {
+      "types": "./dist/types.d.ts"
+    }
+  },
   "scripts": {
-    "start": "tsc && node index.js",
-    "test": "nyc --reporter=text-summary ava dist/**/*.test.js",
+    "test": "npm run lint && npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.cjs",
     "test:watch": "npm run dev",
-    "test:inspect": "node --inspect node_modules/ava/profile.js",
     "dev": "ava --watch",
     "build": "tsc",
-    "prepare": "npm run build",
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "nyc:report": "nyc report",
-    "lint": "tslint --project tsconfig.json --config tslint.json"
-  },
-  "ava": {
-    "compileEnhancements": false,
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register/transpile-only"
-    ],
-    "files": [
-      "src/**/*.test.ts"
-    ],
-    "sources": [
-      "src/**/!(*.test).ts"
-    ]
-  },
-  "nyc": {
-    "extension": [
-      ".ts",
-      ".js"
-    ],
-    "include": [
-      "**/!(*.test).js",
-      "**/!(*.test|*.d).ts"
-    ]
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "jsxSingleQuote": true
+    "prepublish": "npm run build",
+    "coverage": "c8 report",
+    "lint": "eslint --ext .ts src"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/integreat-io/map-transform.git"
   },
   "engines": {
-    "node": ">= 8.6",
-    "npm": ">= 5.4"
+    "node": ">= 14"
   },
   "bugs": {
     "url": "https://github.com/integreat-io/map-transform/issues"
   },
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
-    "@types/ramda": "^0.26.44",
-    "ajv": "^6.12.6",
-    "map-any": "^0.2.1",
-    "ramda": "^0.27.1"
+    "ajv": "^8.12.0",
+    "deepmerge": "^4.3.1",
+    "map-any": "^0.2.1"
   },
   "devDependencies": {
+    "@integreat/ts-dev-setup": "^4.0.1",
     "@types/deep-freeze": "^0.1.2",
-    "@types/sinon": "^7.5.2",
-    "ava": "^2.4.0",
-    "coveralls": "^3.1.0",
+    "@types/sinon": "^10.0.13",
     "deep-freeze": "0.0.1",
-    "nyc": "^15.1.0",
-    "prettier": "^1.19.1",
-    "sinon": "^8.1.1",
-    "ts-node": "^8.10.2",
-    "tslint": "^6.1.3",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-config-security": "^1.16.0",
-    "tslint-config-standard": "^9.0.0",
-    "typescript": "^3.9.9"
+    "sinon": "^15.0.3"
   }
 }

@@ -1,10 +1,8 @@
-import { MapDefinition, Operation, Options } from '../types'
-import { mapFunctionFromDef } from '../utils/definitionHelpers'
+import pipe from './pipe.js'
+import type { TransformDefinition, Operation } from '../types.js'
+import { defToOperations } from '../utils/definitionHelpers.js'
 
-export default function (def: MapDefinition): Operation {
-  return (options: Options) => {
-    const pipeline = mapFunctionFromDef(def, options)
-
-    return (state) => pipeline({ ...state, value: state.root })
-  }
+export default function (def: TransformDefinition): Operation {
+  const pipeline = ['^^', defToOperations(def)].flat()
+  return pipe(pipeline)
 }

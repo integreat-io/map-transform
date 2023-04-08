@@ -1,4 +1,4 @@
-import { Transformer, TransformerProps } from '../types.js'
+import type { Transformer, TransformerProps } from '../types.js'
 
 export interface Props extends TransformerProps {
   depth?: number

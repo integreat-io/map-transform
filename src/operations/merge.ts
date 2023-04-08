@@ -1,5 +1,5 @@
-import deepmerge = require('deepmerge')
-import { Operation, State, TransformDefinition } from '../types.js'
+import deepmerge from 'deepmerge'
+import type { Operation, State, TransformDefinition } from '../types.js'
 import {
   getStateValue,
   setStateValue,

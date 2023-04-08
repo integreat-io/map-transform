@@ -2,7 +2,7 @@ import test from 'ava'
 import { get, set } from './getSet.js'
 import pipe from './pipe.js'
 import { identity } from '../utils/functional.js'
-import { Operation } from '../types.js'
+import type { Operation } from '../types.js'
 
 import { fwd, rev, divide } from './directionals.js'
 

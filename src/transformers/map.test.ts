@@ -1,5 +1,5 @@
 import test from 'ava'
-import { Dictionary } from '../types.js'
+import type { Dictionary } from '../types.js'
 
 import map from './map.js'
 

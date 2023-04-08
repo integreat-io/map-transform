@@ -4,7 +4,7 @@ import pipe from './pipe.js'
 import { set } from './getSet.js'
 import { divide } from './directionals.js'
 import plug from './plug.js'
-import {
+import type {
   Operation,
   State,
   TransformObject,

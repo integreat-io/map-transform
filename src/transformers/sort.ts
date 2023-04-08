@@ -1,4 +1,4 @@
-import {
+import type {
   Path,
   State,
   DataMapper,

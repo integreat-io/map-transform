@@ -1,4 +1,4 @@
-import { Operation, TransformDefinition } from '../types.js'
+import type { Operation, TransformDefinition } from '../types.js'
 import { setStateValue, getStateValue } from '../utils/stateHelpers.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'

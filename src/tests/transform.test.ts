@@ -1,5 +1,5 @@
 import test from 'ava'
-import { TransformerProps } from '../types.js'
+import type { TransformerProps } from '../types.js'
 import { isObject } from '../utils/is.js'
 
 import mapTransform, { transform, rev } from '../index.js'

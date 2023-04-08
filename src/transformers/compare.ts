@@ -1,5 +1,5 @@
-import mapAny = require('map-any')
-import { TransformerProps, Path, Transformer } from '../types.js'
+import mapAny from 'map-any'
+import type { TransformerProps, Path, Transformer } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'

@@ -1,6 +1,6 @@
-import mapAny = require('map-any')
+import mapAny from 'map-any'
 import { escapeValue, unescapeValue } from '../utils/escape.js'
-import {
+import type {
   Dictionary,
   DictionaryValue,
   Dictionaries,

@@ -1,4 +1,4 @@
-import { Options, Operation, State } from '../types.js'
+import type { Options, Operation, State } from '../types.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 

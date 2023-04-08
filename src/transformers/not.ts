@@ -1,5 +1,5 @@
 import { isObject } from '../utils/is.js'
-import {
+import type {
   TransformDefinition,
   DataMapperWithOptions,
   Transformer,

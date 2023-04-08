@@ -1,4 +1,4 @@
-import { DataMapper, TransformDefinition, Operation } from '../types.js'
+import type { DataMapper, TransformDefinition, Operation } from '../types.js'
 import {
   getStateValue,
   setStateValue,

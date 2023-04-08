@@ -1,4 +1,4 @@
-import { State, InitialState } from '../types.js'
+import type { State, InitialState } from '../types.js'
 
 // Context
 

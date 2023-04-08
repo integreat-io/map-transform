@@ -1,5 +1,5 @@
 import test from 'ava'
-import { State } from '../types.js'
+import type { State } from '../types.js'
 import { identity } from '../utils/functional.js'
 
 import filter from './filter.js'

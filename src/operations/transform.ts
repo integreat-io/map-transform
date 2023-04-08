@@ -1,4 +1,9 @@
-import { State, Options, Operation, DataMapperWithOptions } from '../types.js'
+import type {
+  State,
+  Options,
+  Operation,
+  DataMapperWithOptions,
+} from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 
 function callTransformFn(fn: DataMapperWithOptions, options: Options) {

@@ -1,4 +1,9 @@
-import { Operation, TransformDefinition, State, StateMapper } from '../types.js'
+import type {
+  Operation,
+  TransformDefinition,
+  State,
+  StateMapper,
+} from '../types.js'
 import {
   pushContext,
   getStateValue,

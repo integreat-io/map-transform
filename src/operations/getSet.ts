@@ -1,5 +1,5 @@
 /* eslint-disable security/detect-object-injection */
-import mapAny = require('map-any')
+import mapAny from 'map-any'
 import {
   getStateValue,
   setStateValue,
@@ -12,7 +12,7 @@ import {
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
 import { identity } from '../utils/functional.js'
-import { Path, Operation, State, StateMapper } from '../types.js'
+import type { Path, Operation, State, StateMapper } from '../types.js'
 import xor from '../utils/xor.js'
 
 const adjustIsSet = (isSet: boolean, { rev = false, flip = false }: State) =>

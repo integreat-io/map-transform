@@ -1,4 +1,4 @@
-import { Operation, TransformDefinition } from '../types.js'
+import type { Operation, TransformDefinition } from '../types.js'
 import {
   getStateValue,
   setStateValue,

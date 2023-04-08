@@ -1,4 +1,4 @@
-import { TransformerProps, Transformer } from '../types.js'
+import type { TransformerProps, Transformer } from '../types.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 
 export interface Props extends TransformerProps {

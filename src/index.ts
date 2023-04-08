@@ -1,4 +1,4 @@
-import { TransformDefinition, DataMapperEntry, Options } from './types.js'
+import type { TransformDefinition, DataMapperEntry, Options } from './types.js'
 import { defToOperation } from './utils/definitionHelpers.js'
 import { populateState, getStateValue } from './utils/stateHelpers.js'
 import transformers from './transformers/index.js'

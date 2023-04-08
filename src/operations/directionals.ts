@@ -1,4 +1,4 @@
-import { TransformDefinition, Operation, Options } from '../types.js'
+import type { TransformDefinition, Operation, Options } from '../types.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import xor from '../utils/xor.js'
 

@@ -1,4 +1,4 @@
-import { Operation, DataMapperWithOptions } from '../types.js'
+import type { Operation, DataMapperWithOptions } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 
 const filterValue = (value: unknown, filterFn: (data: unknown) => boolean) =>

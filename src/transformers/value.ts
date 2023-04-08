@@ -1,4 +1,4 @@
-import { Transformer } from '../types.js'
+import type { Transformer } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
 import { isObject } from '../utils/is.js'
 

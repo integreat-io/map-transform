@@ -1,5 +1,5 @@
 import test from 'ava'
-import { Pipeline } from '../types.js'
+import type { Pipeline } from '../types.js'
 import { get, set } from './getSet.js'
 import transform from './transform.js'
 import { value } from '../transformers/value.js'

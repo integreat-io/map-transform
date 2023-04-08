@@ -1,5 +1,5 @@
-import mapAny = require('map-any')
-import {
+import mapAny from 'map-any'
+import type {
   Operation,
   State,
   Path,

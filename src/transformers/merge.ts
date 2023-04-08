@@ -1,5 +1,5 @@
 import { ensureArray } from '../utils/array.js'
-import { TransformerProps, Transformer } from '../types.js'
+import type { TransformerProps, Transformer } from '../types.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'

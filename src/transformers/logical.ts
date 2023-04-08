@@ -1,6 +1,6 @@
 import { setTargetOnState, goForward } from '../utils/stateHelpers.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
-import { Transformer, TransformerProps, Path } from '../types.js'
+import type { Transformer, TransformerProps, Path } from '../types.js'
 import { ensureArray } from '../utils/array.js'
 
 export type Operator = 'AND' | 'OR'

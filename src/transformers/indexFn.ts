@@ -1,4 +1,4 @@
-import { Transformer } from '../types.js'
+import type { Transformer } from '../types.js'
 
 const transformer: Transformer = function index() {
   return () => (_data, state) => {

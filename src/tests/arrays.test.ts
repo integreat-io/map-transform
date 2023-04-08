@@ -481,5 +481,3 @@ test('should not hijack array', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should split mappings with array path in the middle')

@@ -404,7 +404,7 @@ test('should get from parent outside array', (t) => {
 })
 
 test('should get path with parent from array', (t) => {
-  const path = '^[0].field' // TODO: Should we be able to fetch from parent without specifying index?
+  const path = '^[0].field'
   const state = {
     context: [
       {
@@ -839,6 +839,22 @@ test('should set with escaped brackets', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not strip away star', (t) => {
+  const path = 's:header.*tu:api-key'
+  const value = 's3cr3t'
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    context: [],
+    value: { 's:header': { '*tu:api-key': 's3cr3t' } },
+  }
+
+  const fn = pipe(set(path))
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not set undefined when state.noDefaults is true', (t) => {
   const path = 'name'
   const value = undefined
@@ -1057,10 +1073,3 @@ test('should set on array path in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should not strip away star')
-// const state = {
-//   context: [],
-//   value: 's3cr3t',
-// }
-// const expectedValue = { 's:header': { '*tu:api-key': 's3cr3t' } }

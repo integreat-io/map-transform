@@ -38,6 +38,7 @@ import concat from '../operations/concat.js'
 import lookup, { Props as LookupProps } from '../operations/lookup.js'
 import pipe from '../operations/pipe.js'
 import { unescapeValue } from './escape.js'
+import { ensureArray } from './array.js'
 
 const removeProp = (obj: Record<string, unknown>, prop: string) =>
   Object.fromEntries(Object.entries(obj).filter(([key]) => key !== prop))
@@ -197,7 +198,7 @@ function createPipelineOperation(
   fnProp: '$concat',
   def: ConcatOperation
 ) {
-  const pipelines = def[fnProp] as TransformDefinition[] // TODO: Do more validation checks here?
+  const pipelines = ensureArray(def[fnProp])
   return operationFn(...pipelines)
 }
 

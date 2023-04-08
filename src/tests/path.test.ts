@@ -1006,5 +1006,3 @@ test('should map with parent through several iterations', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should set on given target')

@@ -619,6 +619,24 @@ test('should concat arrays with $concat', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should treat one path given to $concat as an array of one', (t) => {
+  const def = [
+    'org',
+    {
+      $concat: 'users',
+    },
+  ]
+  const data = {
+    org: { users: ['johnf', 'maryk'], admins: ['theboss'] },
+  }
+  const expected = ['johnf', 'maryk']
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ret = mapTransform(def as any)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should shallow merge object with $merge', (t) => {
   const def = {
     $merge: ['original', 'modified'],

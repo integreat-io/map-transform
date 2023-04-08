@@ -82,16 +82,6 @@ test('should return undefined when data is not an array', (t) => {
   t.is(ret, undefined)
 })
 
-// TODO: Should we support this?
-test('should accept path instead of props object', (t) => {
-  const path = 'meta.user'
-  const expected = 'johnf'
-
-  const ret = get(path)(options)(data, state)
-
-  t.is(ret, expected)
-})
-
 test('should support root in path', (t) => {
   const path = '^^meta.user'
   const data = { id: 'ent1', $type: 'entry' }

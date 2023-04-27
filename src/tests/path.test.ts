@@ -584,7 +584,7 @@ test('should map with root operation', (t) => {
         title: 'heading',
       },
       relationships: {
-        author: root('meta.writer.username'),
+        author: root({ def: 'meta.writer.username' }),
       },
     },
   ]

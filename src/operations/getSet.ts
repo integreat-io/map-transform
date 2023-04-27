@@ -150,8 +150,8 @@ function getSet(isSet = false) {
             state.noDefaults && isNonvalue(thisValue, options.nonvalues)
               ? undefined
               : isArr
-              ? ensureArray(thisValue, options.nonvalues)
-              : thisValue
+                ? ensureArray(thisValue, options.nonvalues)
+                : thisValue
 
           return setStateValue(
             nextState,

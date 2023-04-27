@@ -50,7 +50,7 @@ export default function pipe(defs?: Pipeline): Operation {
     return (next) => {
       const run = pipeFn(...fns)(next)
       const runRev = composeFn(...fns)(next)
-      return function doPipe(state) {
+      return (state) => {
         const isRev = xor(state.rev, state.flip)
         return setValueFromState(state, isRev ? runRev(state) : run(state))
       }

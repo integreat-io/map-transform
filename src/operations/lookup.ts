@@ -24,11 +24,11 @@ const flattenIfArray = (data: unknown) =>
 
 const matchPropInArray =
   (getProp: DataMapper, matchSeveral: boolean) =>
-  (arr: unknown[], state: State) =>
-  (value: string | number | boolean | null) =>
-    matchSeveral
-      ? arr.filter((obj) => getProp(obj, state) === value)
-      : arr.find((obj) => getProp(obj, state) === value)
+    (arr: unknown[], state: State) =>
+      (value: string | number | boolean | null) =>
+        matchSeveral
+          ? arr.filter((obj) => getProp(obj, state) === value)
+          : arr.find((obj) => getProp(obj, state) === value)
 
 const mapValue = (
   getArray: Operation,

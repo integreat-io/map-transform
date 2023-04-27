@@ -35,7 +35,7 @@ function isRegularProp(
   return prop[0] !== '$' && isTransformDefinition(pipeline)
 }
 
-function isWrongDirection(direction: unknown, options: Options) {
+function isWrongDirection({ direction, options }: { direction: unknown; options: Options }): (rev?: boolean) => boolean {
   if (
     direction === 'rev' ||
     (options.revAlias && direction === options.revAlias)
@@ -54,7 +54,7 @@ function isWrongDirection(direction: unknown, options: Options) {
   }
 }
 
-function runOperationWithOriginalValue({ value }: State, options: Options) {
+function runOperationWithOriginalValue({ value }: State, options: Options): (state: State, fn: Operation) => State {
   return (state: State, fn: Operation) => {
     const nextState = fn(options)(identity)(setStateValue(state, value))
 
@@ -86,7 +86,7 @@ const isArr = (prop: string) =>
 
 const isNumeric = (value: string) => !Number.isNaN(Number.parseInt(value, 10))
 
-function removeSlash(prop: string) {
+function removeSlash({ prop }: { prop: string }): string {
   const index = prop.indexOf('/')
   if (
     index > -1 &&
@@ -112,7 +112,7 @@ function createSetPipeline([prop, pipeline]: [
   }
 
   // Handle slashed props
-  const unslashedProp = removeSlash(prop)
+  const unslashedProp = removeSlash({ prop })
   const onlyRev = prop !== unslashedProp // If these are different, we have removed a slash. Run in rev only
 
   // Prepare the operations and return as an operation
@@ -124,7 +124,7 @@ function modifyWithGivenPath(
   path: string | undefined,
   options: Options,
   next: StateMapper
-) {
+): (state: State, nextState: State) => State {
   if (path) {
     const fn = modify(path)(options)(next)
     return (state: State, nextState: State) =>
@@ -158,7 +158,7 @@ const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
   target: undefined,
 })
 
-export default function props(def: TransformObject): Operation {
+export default function props({ def }: { def: TransformObject }): Operation {
   if (Object.keys(def).length === 0) {
     return (_options) => (next) => (state) =>
       setStateValue(next(state), undefined)
@@ -176,24 +176,21 @@ export default function props(def: TransformObject): Operation {
   return (options) => (next) => {
     const modifyFn = modifyWithGivenPath(modifyPath, options, identity)
     const run = runOperations(modifyFn, operations, options)
-    const isWrongDirectionFn = isWrongDirection(def.$direction, options)
+    const isWrongDirectionFn = isWrongDirection({ direction: def.$direction, options })
 
-    return function doMutate(state) {
+    return (state): State => {
       const nextState = next(state)
-      if (
-        isNonvalueState(nextState, options.nonvalues) ||
-        isWrongDirectionFn(nextState.rev)
-      ) {
+      if (isNonvalueState(nextState, options.nonvalues) ||
+        isWrongDirectionFn(nextState.rev)) {
         return nextState
       }
 
       const propsState = setStateProps(nextState, def.$noDefaults, def.$flip)
-      const thisState =
-        def.$iterate === true
-          ? iterate(() => () => run)(options)(identity)(
-              stopIteration(propsState) // Don't pass on iteration to props
-            )
-          : run(propsState)
+      const thisState = def.$iterate === true
+        ? iterate(() => () => run)(options)(identity)(
+          stopIteration(propsState) // Don't pass on iteration to props
+        )
+        : run(propsState)
 
       return setValueFromState(nextState, thisState)
     }

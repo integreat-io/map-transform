@@ -7,12 +7,12 @@ export const extractValue = (value: unknown): unknown => {
   return unescapeValue(typeof val === 'function' ? val() : val)
 }
 
-const value: Transformer<unknown> = function value(props: unknown) {
+const value: Transformer<unknown> = (props: unknown) => {
   const value = extractValue(props)
   return () => (_data, state) => state.noDefaults ? undefined : value
 }
 
-const fixed: Transformer<unknown> = function fixed(props: unknown) {
+const fixed: Transformer<unknown> = (props: unknown) => {
   const value = extractValue(props)
   return () => () => value
 }

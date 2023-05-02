@@ -13,10 +13,10 @@ name: "Code Quality Check"
 
 on:
   push:
-    branches: [ "feature/*" ]
+    branches: [ "feature/*","main" ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "feature/*" ]
+    branches: [ "feature/*","main" ]
   schedule:
     - cron: '19 19 * * 5'
 

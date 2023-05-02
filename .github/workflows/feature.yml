@@ -5,9 +5,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "feature/refasctor*" ]
+    branches: [ "feature/refasctor*","main" ]
   pull_request:
-    branches: [ "feature/refasctor*" ]
+    branches: [ "feature/refasctor*","main" ]
 
 jobs:
   build:

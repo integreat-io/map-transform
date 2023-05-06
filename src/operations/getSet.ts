@@ -65,14 +65,19 @@ function getSetProp(path: string) {
   }
 }
 
+const calculateIndex = (index: number, arr: unknown[]) =>
+  index >= 0 ? index : arr.length + index
+
 function getSetIndex(index: number) {
   return (value: unknown, isSet: boolean, target?: unknown) => {
     if (isSet) {
       const arr = Array.isArray(target) ? [...target] : []
-      arr[index] = value
+      arr[calculateIndex(index, arr)] = value
       return arr
     } else {
-      return Array.isArray(value) ? value[index] : undefined
+      return Array.isArray(value)
+        ? value[calculateIndex(index, value)]
+        : undefined
     }
   }
 }

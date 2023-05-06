@@ -59,6 +59,25 @@ test('should split up path with array index', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should split up path with negative array index', (t) => {
+  const path = 'data.scientists[-1].name'
+  const value = {
+    data: {
+      scientists: [{ name: 'Bohr' }, { name: 'Bohm' }, { name: 'Planck' }],
+    },
+  }
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    value: 'Planck',
+  }
+
+  const fn = pipe(get(path))
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should get path with several array indeces', (t) => {
   const path = 'data[0].scientists[1].name'
   const value = { data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }] }

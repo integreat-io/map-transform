@@ -57,13 +57,12 @@ test('should return item at given array index', (t) => {
   t.is(ret, expected)
 })
 
-test('should return undefined when index is too low', (t) => {
-  // Note: Maybe this should return last item instead ...?
+test('should return the last item', (t) => {
   const path = '[-1]'
 
   const ret = get({ path })(options)(arrayData, state)
 
-  t.is(ret, undefined)
+  t.is(ret, 'third')
 })
 
 test('should return undefined when index is too high', (t) => {

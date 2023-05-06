@@ -498,7 +498,8 @@ expect, as long as you use the brackets notation to guide MapTransform.
 > Editors note: We should give more complicated examples as well.
 
 Finally, you may include index numbers between the brackets, to only get a
-specified item. `tags[0].id` would get `'news'` from the data above. The index
+specified item. `tags[0].id` would get `'news'` from the data above. Use a
+negative number to count from the end (`-1` being the last item). The index
 version of the brackets notation won't return an array (as expected).
 
 When setting with an index bracket notation, you'll get an array where the

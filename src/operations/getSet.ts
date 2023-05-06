@@ -28,16 +28,20 @@ function flatMapAny(fn: (value: unknown, target?: unknown) => unknown) {
 function preparePath(
   path: string | number
 ): [string | number, boolean, boolean] {
-  if (typeof path === 'string' && path.includes('[')) {
-    if (path.endsWith('][')) {
-      return [path.slice(0, path.length - 2), false, true]
-    }
-    const pos = path.indexOf('[')
-    if (path[pos - 1] === '\\') {
-      return [path.replace('\\[', '['), false, false]
-    } else {
-      const isArr = path[pos + 1] === ']'
-      return [path.slice(0, pos), isArr, false]
+  if (typeof path === 'string') {
+    if (path.includes('[')) {
+      if (path.endsWith('][')) {
+        return [path.slice(0, path.length - 2), false, true]
+      }
+      const pos = path.indexOf('[')
+      if (path[pos - 1] === '\\') {
+        return [path.replace('\\[', '['), false, false]
+      } else {
+        const isArr = path[pos + 1] === ']'
+        return [path.slice(0, pos), isArr, false]
+      }
+    } else if (path.startsWith('\\$')) {
+      return [path.slice(1), false, false]
     }
   }
 

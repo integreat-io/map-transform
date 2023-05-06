@@ -172,6 +172,21 @@ test('should force array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should get path starting with escaped $', (t) => {
+  const path = '\\$type'
+  const value = { id: '1', $type: 'scientist', name: 'Bohm' }
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    value: 'scientist',
+  }
+
+  const fn = pipe(get(path)) // Note: `get()` returns an array and needs to be run through pipe
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return undefined when object is null', (t) => {
   const path = 'name'
   const value = null
@@ -866,6 +881,21 @@ test('should not strip away star', (t) => {
     ...state,
     context: [],
     value: { 's:header': { '*tu:api-key': 's3cr3t' } },
+  }
+
+  const fn = pipe(set(path))
+  const ret = fn(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set with escaped $', (t) => {
+  const path = '\\$type'
+  const value = 'scientist'
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    value: { $type: 'scientist' },
   }
 
   const fn = pipe(set(path))

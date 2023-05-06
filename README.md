@@ -505,6 +505,11 @@ version of the brackets notation won't return an array (as expected).
 When setting with an index bracket notation, you'll get an array where the
 brackets are, with one item at the index you've specified.
 
+Note that keys starting with a dollar sign `$` has special meaning in
+MapTransform, so when you need keys in your data to actualy start with `$`, you
+need to escape it in your paths. E.g. `data[].\$type`. (Remember to
+double-escape in JavaScript and other contexts that require it.)
+
 #### Parent and root paths
 
 A subtle aspect of using paths to get values in

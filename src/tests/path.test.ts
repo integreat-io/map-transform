@@ -16,7 +16,7 @@ const { value } = transformers
 
 // Tests
 
-test('should map with object path', t => {
+test('should map with object path', (t) => {
   const def = [
     'content.article',
     {
@@ -119,7 +119,7 @@ test('should get object from alt path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with object shape', t => {
+test('should map with object shape', (t) => {
   const def = {
     attributes: {
       title: 'content.heading',
@@ -216,7 +216,7 @@ test('should map null values path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should allow colons in paths', t => {
+test('should allow colons in paths', (t) => {
   const def = [
     {
       'b:title': 'content.a:heading',
@@ -314,6 +314,31 @@ test('should map with root path', (t) => {
       attributes: {
         title: 'content.heading',
         section: '^^meta.section',
+      },
+    },
+  ]
+  const data = {
+    content: { heading: 'The heading', copy: 'A long text' },
+    meta: { section: 'news' },
+  }
+  const expected = {
+    attributes: {
+      title: 'The heading',
+      section: 'news',
+    },
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with root path in pipeline', (t) => {
+  const def = [
+    {
+      attributes: {
+        title: 'content.heading',
+        section: ['content.copy', '^^meta.section'], // This pipeline doesn't really make sense, but does the job of testing the root path
       },
     },
   ]
@@ -456,7 +481,7 @@ test('should map several layers of arrays with bracket notation in set path', (t
   t.deepEqual(ret, expected)
 })
 
-test('should map with lookup', t => {
+test('should map with lookup', (t) => {
   const def = {
     title: 'content.heading',
     authors: [
@@ -576,7 +601,7 @@ test('should treat nonvalues as undefined', (t) => {
   t.is(ret, null)
 })
 
-test('should map with root operation', t => {
+test('should map with root operation', (t) => {
   const def = [
     'content',
     {
@@ -750,7 +775,7 @@ test('should map with nested mappings', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should forward map with directional paths', t => {
+test('should forward map with directional paths', (t) => {
   const def = [
     fwd(get('content.articles[]')),
     rev(get('wrong.path[]')),
@@ -778,7 +803,7 @@ test('should forward map with directional paths', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should set to undefined when moving forward', t => {
+test('should set to undefined when moving forward', (t) => {
   const def = {
     title: [fwd(plug()), rev('content.heading')],
   }
@@ -878,7 +903,7 @@ test('should shallow merge (modify) original object with transformed object on s
   t.deepEqual(ret, expected)
 })
 
-test('should return data when no mapping def', t => {
+test('should return data when no mapping def', (t) => {
   const def = null
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -891,7 +916,7 @@ test('should return data when no mapping def', t => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when mapping def is empty object', t => {
+test('should return undefined when mapping def is empty object', (t) => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -903,7 +928,7 @@ test('should return undefined when mapping def is empty object', t => {
   t.is(ret, undefined)
 })
 
-test('should try to map even when no data is given', t => {
+test('should try to map even when no data is given', (t) => {
   const def = {
     title: 'content.heading',
   }

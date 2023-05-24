@@ -402,6 +402,28 @@ test.failing(
   }
 )
 
+test('should preserve context during alt paths', (t) => {
+  const def = [
+    'items[]',
+    {
+      $iterate: true,
+      title: [{ $alt: ['content.heading', 'content.title'] }, '^^.id'], // This path doesn't make sense, but does the job of testing the context
+    },
+  ]
+  const data = {
+    items: [
+      { content: { title: 'The title' } },
+      { content: { heading: 'The heading' } },
+    ],
+    id: '12345',
+  }
+  const expected = [{ title: '12345' }, { title: '12345' }]
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 // The problem here is that every pipeline given to $alt gets the original value,
 // and when the $value is skipped due to $direction, it simply returns this
 // value untouched. This results in the original value being returned instead of

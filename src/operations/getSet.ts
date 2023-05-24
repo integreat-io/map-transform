@@ -97,19 +97,24 @@ function getRoot(state: State) {
   return { ...state, context: [], value: nextValue }
 }
 
+function getSetParentOrRoot(path: string, isSet: boolean): Operation {
+  const getFn = path[1] === '^' ? getRoot : getParent
+  return () => (next) => (state) => {
+    const nextState = next(state)
+    if (adjustIsSet(isSet, state)) {
+      // Simple return target instead of setting anything
+      return setStateValue(nextState, state.target)
+    } else {
+      // Get root or parent
+      return getFn(nextState)
+    }
+  }
+}
+
 function getSet(isSet = false) {
   return (path: string | number): Operation => {
     if (typeof path === 'string' && path[0] === '^') {
-      const getFn = path[1] === '^' ? getRoot : getParent
-      return () => (next) => (state) => {
-        if (adjustIsSet(isSet, state)) {
-          // Simple return target instead of setting anything
-          return setStateValue(next(state), state.target)
-        } else {
-          // Get root
-          return next(getFn(state))
-        }
-      }
+      return getSetParentOrRoot(path, isSet)
     }
 
     const [basePath, isArr, isIndexProp] = preparePath(path)
@@ -119,7 +124,8 @@ function getSet(isSet = false) {
     return (options) => (next) =>
       function doGetSet(state: State): State {
         if (adjustIsSet(isSet, state)) {
-          // We're setting, so we'll go backwards first. Start by preparing target for the next set
+          // Set
+          // We'll go backwards first. Start by preparing target for the next set
           const target = getTargetFromState(state)
           const nextTarget = getSetFn(target, false)
 
@@ -151,6 +157,7 @@ function getSet(isSet = false) {
           // Return the value
           return setStateValue(state, thisValue)
         } else {
+          // Get
           // Go backwards
           const nextState = next(state)
           const thisValue = getSetFn(getStateValue(nextState), false)

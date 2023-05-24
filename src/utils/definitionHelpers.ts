@@ -21,6 +21,8 @@ import type {
   LookupOperation,
   Options,
   DataMapperWithOptions,
+  State,
+  StateMapper,
 } from '../types.js'
 import { getStateValue, setStateValue } from './stateHelpers.js'
 import { identity } from './functional.js'
@@ -39,6 +41,9 @@ import lookup, { Props as LookupProps } from '../operations/lookup.js'
 import pipe from '../operations/pipe.js'
 import { unescapeValue } from './escape.js'
 import { ensureArray } from './array.js'
+
+const passStateThroughNext = (next: StateMapper) => (state: State) =>
+  next(state)
 
 const removeProp = (obj: Record<string, unknown>, prop: string) =>
   Object.fromEntries(Object.entries(obj).filter(([key]) => key !== prop))
@@ -115,8 +120,7 @@ const createOperation =
     fnProp: string,
     def: U
   ): Operation =>
-  (options) =>
-  (next) => {
+  (options) => {
     const { [fnProp]: fnId, ...props } = def
     if (typeof fnId !== 'string') {
       throw new Error(
@@ -136,8 +140,8 @@ const createOperation =
     }
 
     return typeof fn === 'function'
-      ? wrapFromDefinition(operationFn(fn(props)), def)(options)(next)
-      : (state) => next(state)
+      ? wrapFromDefinition(operationFn(fn(props)), def)(options)
+      : passStateThroughNext
   }
 
 const createTransformOperation = (def: TransformOperation): Operation =>
@@ -163,13 +167,12 @@ const createAltOperation =
           operationFn(...defs),
           def
         )(setNoneValuesOnOptions(options, nonvalues))
-      : (next) => (state) => next(state)
+      : passStateThroughNext
   }
 
 const createIfOperation =
   (def: IfOperation): Operation =>
-  (options) =>
-  (next) => {
+  (options) => {
     const {
       $if: conditionPipeline,
       then: thenPipeline,
@@ -178,7 +181,7 @@ const createIfOperation =
     return wrapFromDefinition(
       ifelse(conditionPipeline, thenPipeline, elsePipeline),
       def
-    )(options)(next)
+    )(options)
   }
 
 function createApplyOperation(

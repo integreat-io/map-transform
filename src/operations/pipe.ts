@@ -36,7 +36,10 @@ function splitArrayPaths(defs: Pipeline) {
   return pipeline
 }
 
-export default function pipe(defs?: Pipeline): Operation {
+export default function pipe(
+  defs?: Pipeline,
+  doReturnContext = false
+): Operation {
   return (options) => {
     if (!Array.isArray(defs) || defs.length === 0) {
       return identity
@@ -52,7 +55,8 @@ export default function pipe(defs?: Pipeline): Operation {
       const runRev = composeFn(...fns)(next)
       return function doPipe(state) {
         const isRev = xor(state.rev, state.flip)
-        return setValueFromState(state, isRev ? runRev(state) : run(state))
+        const thisState = isRev ? runRev(state) : run(state)
+        return doReturnContext ? thisState : setValueFromState(state, thisState)
       }
     }
   }

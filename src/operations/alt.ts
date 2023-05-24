@@ -1,4 +1,4 @@
-import type { Operation, TransformDefinition } from '../types.js'
+import pipe from './pipe.js'
 import {
   setStateValue,
   getLastContext,
@@ -6,8 +6,9 @@ import {
   setValueFromState,
   removeLastContext,
 } from '../utils/stateHelpers.js'
-import { defToOperation } from '../utils/definitionHelpers.js'
+import { defToOperations } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
+import type { Operation, TransformDefinition } from '../types.js'
 
 const runAlt = (isOneMode: boolean) =>
   function runAlt(operation: Operation, index: number): Operation {
@@ -40,7 +41,9 @@ const runAlt = (isOneMode: boolean) =>
 
 export default function alt(...defs: TransformDefinition[]): Operation[] {
   // Prepare all alt operations
-  const altOperations = defs.map((def) => defToOperation(def))
+  const altOperations = defs
+    .map((def) => defToOperations(def))
+    .map((def) => (Array.isArray(def) ? pipe(def, true) : def)) // We insert into pipe here when necessary, to specify that the pipe should return context
   const isOneMode = altOperations.length === 1
 
   // All alt operations are returned as individual operations, but the first one

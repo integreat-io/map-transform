@@ -48,6 +48,23 @@ test('should return with same context as it got', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should return context from pipeline when specified', (t) => {
+  const doReturnContext = true
+  const def = ['name']
+  const state = {
+    context: [{ data: { name: 'John F.' } }],
+    value: { name: 'John F.' },
+  }
+  const expected = {
+    context: [{ data: { name: 'John F.' } }, { name: 'John F.' }],
+    value: 'John F.',
+  }
+
+  const ret = pipe(def, doReturnContext)(options)(identity)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should allow combination of string path and get operation', (t) => {
   const def = ['data', get('name')]
   const expected = {

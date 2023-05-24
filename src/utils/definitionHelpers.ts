@@ -91,18 +91,18 @@ function wrapFromDefinition(
   def: OperationObject
 ): Operation {
   const fnIterated = def.$iterate === true ? iterate(fn) : fn
-  return (options) => (next) => {
+  return (options) => {
     const dir = def.$direction
     if (typeof dir === 'string') {
       if (dir === 'rev' || dir === options.revAlias) {
-        return rev(fnIterated)(options)(next)
+        return rev(fnIterated)(options)
       } else if (dir === 'fwd' || dir === options.fwdAlias) {
-        return fwd(fnIterated)(options)(next)
+        return fwd(fnIterated)(options)
       }
     }
     return Array.isArray(fnIterated)
-      ? pipe(fnIterated)(options)(next)
-      : fnIterated(options)(next)
+      ? pipe(fnIterated, true)(options)
+      : fnIterated(options)
   }
 }
 
@@ -156,15 +156,14 @@ const createAltOperation =
     operationFn: (...defs: TransformDefinition[]) => Operation[],
     def: AltOperation
   ): Operation | Operation[] =>
-  (options) =>
-  (next) => {
+  (options) => {
     const { $alt: defs, $undefined: nonvalues } = def
     return Array.isArray(defs)
       ? wrapFromDefinition(
           operationFn(...defs),
           def
-        )(setNoneValuesOnOptions(options, nonvalues))(next)
-      : (state) => next(state)
+        )(setNoneValuesOnOptions(options, nonvalues))
+      : (next) => (state) => next(state)
   }
 
 const createIfOperation =

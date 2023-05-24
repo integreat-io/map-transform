@@ -3,9 +3,7 @@
 Map and transform objects with mapping definitions.
 
 [![npm Version](https://img.shields.io/npm/v/map-transform.svg)](https://www.npmjs.com/package/map-transform)
-[![Build Status](https://travis-ci.org/integreat-io/map-transform.svg?branch=master)](https://travis-ci.org/integreat-io/map-transform)
-[![Coverage Status](https://coveralls.io/repos/github/integreat-io/map-transform/badge.svg?branch=master)](https://coveralls.io/github/integreat-io/map-transform?branch=master)
-[![Maintainability](https://api.codeclimate.com/v1/badges/fbb6638a32ee5c5f60b7/maintainability)](https://codeclimate.com/github/integreat-io/map-transform/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/fe35a58dd457837b457c/maintainability)](https://codeclimate.com/github/integreat-io/map-transform/maintainability)
 
 Behind this rather boring name hides a powerful JavaScript object transformer.
 

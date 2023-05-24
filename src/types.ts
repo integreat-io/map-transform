@@ -163,8 +163,8 @@ export type Pipeline = (
   | Pipeline
 )[]
 
-export interface TransformObject {
-  [key: string]: TransformDefinition | undefined | boolean
+export interface TransformObject
+  extends Record<string, TransformDefinition | undefined | boolean> {
   $iterate?: boolean
   $modify?: boolean | Path
   $noDefaults?: boolean

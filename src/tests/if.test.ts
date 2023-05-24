@@ -67,6 +67,24 @@ test('should run `else` pipeline when transform returns false', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should return undefined from else pipeline', (t) => {
+  const def = [
+    'content',
+    {
+      $if: { $transform: 'compare', path: 'section', match: 'news' },
+      then: { title: 'heading' },
+      else: { $value: undefined },
+    },
+  ]
+  const data = {
+    content: { heading: 'The heading', title: 'The title', section: 'sports' },
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.is(ret, undefined)
+})
+
 test('should run $if deeper in the structure', (t) => {
   const def = [
     'content',

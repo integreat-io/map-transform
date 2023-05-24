@@ -59,7 +59,7 @@ const transformDefFromShortcut = (
 export const isOperationType = <T extends OperationObject>(
   def: TransformObject | OperationObject,
   prop: string
-): def is T => def[prop] !== undefined
+): def is T => (def as object).hasOwnProperty(prop)
 
 export const hasOperationProps = (
   def: TransformObject | OperationObject

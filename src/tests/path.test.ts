@@ -775,6 +775,23 @@ test('should map with nested mappings', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not iterate when $iterate is not set', (t) => {
+  const def = {
+    'articles[]': [{ title: 'content.heading' }],
+  }
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } },
+  ]
+  const expected = {
+    articles: [{ title: ['Heading 1', 'Heading 2'] }],
+  }
+
+  const ret = mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should forward map with directional paths', (t) => {
   const def = [
     fwd(get('content.articles[]')),

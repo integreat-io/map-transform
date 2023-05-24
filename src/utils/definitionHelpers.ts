@@ -86,14 +86,11 @@ export const isTransformDefinition = (
 ): def is TransformDefinition =>
   isPath(def) || isObject(def) || isPipeline(def) || isOperation(def)
 
-const iterateIf = (fn: Operation | Operation[], should: boolean) =>
-  should ? iterate(fn) : fn
-
 function wrapFromDefinition(
   fn: Operation | Operation[],
   def: OperationObject
 ): Operation {
-  const fnIterated = iterateIf(fn, def.$iterate === true)
+  const fnIterated = def.$iterate === true ? iterate(fn) : fn
   return (options) => (next) => {
     const dir = def.$direction
     if (typeof dir === 'string') {

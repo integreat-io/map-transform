@@ -187,12 +187,12 @@ export default function props(def: TransformObject): Operation {
         return nextState
       }
 
-      const propsState = setStateProps(nextState, def.$noDefaults, def.$flip)
+      const propsState = stopIteration(
+        setStateProps(nextState, def.$noDefaults, def.$flip)
+      ) // Don't pass on iteration to props
       const thisState =
         def.$iterate === true
-          ? iterate(() => () => run)(options)(identity)(
-              stopIteration(propsState) // Don't pass on iteration to props
-            )
+          ? iterate(() => () => run)(options)(identity)(propsState)
           : run(propsState)
 
       return setValueFromState(nextState, thisState)

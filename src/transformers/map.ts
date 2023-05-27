@@ -51,11 +51,15 @@ function extractDictionary(
   }
 }
 
+const escapeDictionary = (dictionary?: Dictionary): Dictionary | undefined =>
+  dictionary
+    ? dictionary.map(([from, to]) => [escapeValue(from), escapeValue(to)])
+    : undefined
+
 const transformer: Transformer<Props> = function map(props) {
   return (options) => {
-    const dictionary = extractDictionary(
-      props.dictionary,
-      options && options.dictionaries
+    const dictionary = escapeDictionary(
+      extractDictionary(props.dictionary, options && options.dictionaries)
     )
     if (!dictionary) {
       return () => undefined

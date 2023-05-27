@@ -27,6 +27,12 @@ const selective = [
 
 const withUndefined = [
   ['LOCAL', 'NOK'],
+  ['*', undefined],
+  [undefined, 'USD'],
+] as Dictionary
+
+const withUndefinedKeyword = [
+  ['LOCAL', 'NOK'],
   ['*', '**undefined**'],
   ['**undefined**', 'USD'],
 ] as Dictionary
@@ -115,6 +121,14 @@ test('should map disallowed dictionary values using star', (t) => {
 
 test('should map to and from undefined', (t) => {
   const mapping = map({ dictionary: withUndefined })(options)
+
+  t.is(mapping('SEK', state), undefined)
+  t.is(mapping(undefined, state), 'USD')
+  t.is(mapping('LOCAL', state), 'NOK') // Just to verify
+})
+
+test('should map to and from undefined keyword', (t) => {
+  const mapping = map({ dictionary: withUndefinedKeyword })(options)
 
   t.is(mapping('SEK', state), undefined)
   t.is(mapping(undefined, state), 'USD')

@@ -1,30 +1,5 @@
-/* eslint-disable security/detect-object-injection */
-import type {
-  Operation,
-  DataMapper,
-  TransformDefinition,
-  TransformObject,
-  Path,
-  Pipeline,
-  OperationObject,
-  TransformOperation,
-  FilterOperation,
-  IfOperation,
-  ApplyOperation,
-  AltOperation,
-  MergeOperation,
-  ValueOperation,
-  AndOperation,
-  OrOperation,
-  NotOperation,
-  ConcatOperation,
-  LookupOperation,
-  Options,
-  DataMapperWithOptions,
-  State,
-  StateMapper,
-} from '../types.js'
 import { getStateValue, setStateValue } from './stateHelpers.js'
+import modifyOperationObject from './modifyOperationObject.js'
 import { identity } from './functional.js'
 import { isObject } from './is.js'
 import { get } from '../operations/getSet.js'
@@ -41,48 +16,52 @@ import lookup, { Props as LookupProps } from '../operations/lookup.js'
 import pipe from '../operations/pipe.js'
 import { unescapeValue } from './escape.js'
 import { ensureArray } from './array.js'
+import type {
+  Operation,
+  DataMapper,
+  TransformDefinition,
+  TransformObject,
+  Path,
+  Pipeline,
+  OperationObject,
+  TransformOperation,
+  FilterOperation,
+  IfOperation,
+  ApplyOperation,
+  AltOperation,
+  ConcatOperation,
+  LookupOperation,
+  Options,
+  DataMapperWithOptions,
+  State,
+  StateMapper,
+} from '../types.js'
 
 const passStateThroughNext = (next: StateMapper) => (state: State) =>
   next(state)
 
-const removeProp = (obj: Record<string, unknown>, prop: string) =>
-  Object.fromEntries(Object.entries(obj).filter(([key]) => key !== prop))
+const nonOperatorKeys = [
+  '$iterate',
+  '$modify',
+  '$noDefaults',
+  '$flip',
+  '$direction',
+]
 
-const transformDefFromShortcut = (
-  def: OperationObject | TransformObject,
-  transformer: string,
-  prop: string,
-  overrideTransformerId?: string,
-  props: Record<string, unknown> = {}
-) => ({
-  ...removeProp(def, `$${transformer}`),
-  ...props,
-  $transform: overrideTransformerId || transformer,
-  [prop]: def[`$${transformer}`],
-})
+const isOperatorKey = (key: string) =>
+  key[0] === '$' && !nonOperatorKeys.includes(key)
+
+const isOperationObject = (def: unknown): def is OperationObject =>
+  isObject(def) && Object.keys(def).filter(isOperatorKey).length > 0
 
 export const isOperationType = <T extends OperationObject>(
   def: TransformObject | OperationObject,
   prop: string
 ): def is T => (def as object).hasOwnProperty(prop)
 
-export const hasOperationProps = (
-  def: TransformObject | OperationObject
-): def is OperationObject =>
-  isOperationType<TransformOperation>(def, '$transform') ||
-  isOperationType<FilterOperation>(def, '$filter') ||
-  isOperationType<IfOperation>(def, '$if') ||
-  isOperationType<ApplyOperation>(def, '$apply') ||
-  isOperationType<AltOperation>(def, '$alt') ||
-  isOperationType<ValueOperation>(def, '$value') ||
-  isOperationType<AndOperation>(def, '$and') ||
-  isOperationType<OrOperation>(def, '$or') ||
-  isOperationType<ConcatOperation>(def, '$concat') ||
-  isOperationType<LookupOperation>(def, '$lookup')
-
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isTransformObject = (def: unknown): def is TransformObject =>
-  isObject(def) && !hasOperationProps(def as TransformObject | OperationObject)
+  isObject(def) && !isOperationObject(def)
 export const isPipeline = (def: unknown): def is Pipeline => Array.isArray(def)
 export const isOperation = (def: unknown): def is Operation =>
   typeof def === 'function'
@@ -130,6 +109,7 @@ const createOperation =
       )
     }
 
+    // eslint-disable-next-line security/detect-object-injection
     const fn = options.transformers && options.transformers[fnId]
     if (typeof fn !== 'function') {
       throw new Error(
@@ -194,10 +174,9 @@ function createApplyOperation(
 
 function createPipelineOperation(
   operationFn: (...fn: TransformDefinition[]) => Operation,
-  fnProp: '$concat',
   def: ConcatOperation
 ) {
-  const pipelines = ensureArray(def[fnProp])
+  const pipelines = ensureArray(def.$concat)
   return operationFn(...pipelines)
 }
 
@@ -209,63 +188,54 @@ function createLookupOperation(
   return wrapFromDefinition(operationFn({ ...props, arrayPath, propPath }), def)
 }
 
-function operationFromObject(def: OperationObject | TransformObject) {
-  if (isOperationType<TransformOperation>(def, '$transform')) {
-    return createTransformOperation(def)
-  } else if (isOperationType<ValueOperation>(def, '$value')) {
-    return createTransformOperation(
-      transformDefFromShortcut(def, 'value', 'value')
-    )
-  } else if (isOperationType<FilterOperation>(def, '$filter')) {
-    return createFilterOperation(def)
-  } else if (isOperationType<IfOperation>(def, '$if')) {
-    return createIfOperation(def)
-  } else if (isOperationType<ApplyOperation>(def, '$apply')) {
-    return createApplyOperation(apply, def)
-  } else if (isOperationType<AltOperation>(def, '$alt')) {
-    return createAltOperation(alt, def)
-  } else if (isOperationType<AndOperation>(def, '$and')) {
-    return createTransformOperation(
-      transformDefFromShortcut(def, 'and', 'path', 'logical', {
-        operator: 'AND',
-      })
-    )
-  } else if (isOperationType<OrOperation>(def, '$or')) {
-    return createTransformOperation(
-      transformDefFromShortcut(def, 'or', 'path', 'logical', { operator: 'OR' })
-    )
-  } else if (isOperationType<NotOperation>(def, '$not')) {
-    return createTransformOperation(
-      transformDefFromShortcut(def, 'not', 'path')
-    )
-  } else if (isOperationType<ConcatOperation>(def, '$concat')) {
-    return createPipelineOperation(concat, '$concat', def)
-  } else if (isOperationType<LookupOperation>(def, '$lookup')) {
-    return createLookupOperation(lookup, def)
-  } else if (isOperationType<MergeOperation>(def, '$merge')) {
-    return createTransformOperation(
-      transformDefFromShortcut(def, 'merge', 'path')
-    )
+function operationFromObject(
+  defRaw: OperationObject | TransformObject,
+  options: Options
+) {
+  const def = modifyOperationObject(defRaw, options.modifyOperationObject)
+
+  if (isOperationObject(def)) {
+    if (isOperationType<TransformOperation>(def, '$transform')) {
+      return createTransformOperation(def)
+    } else if (isOperationType<FilterOperation>(def, '$filter')) {
+      return createFilterOperation(def)
+    } else if (isOperationType<IfOperation>(def, '$if')) {
+      return createIfOperation(def)
+    } else if (isOperationType<ApplyOperation>(def, '$apply')) {
+      return createApplyOperation(apply, def)
+    } else if (isOperationType<AltOperation>(def, '$alt')) {
+      return createAltOperation(alt, def)
+    } else if (isOperationType<ConcatOperation>(def, '$concat')) {
+      return createPipelineOperation(concat, def)
+    } else if (isOperationType<LookupOperation>(def, '$lookup')) {
+      return createLookupOperation(lookup, def)
+    } else {
+      return (_options: Options) => identity // This is not a known operation
+    }
   } else {
-    return props(def)
+    return props(def as TransformObject)
   }
 }
 
 export const defToOperations = (
-  def?: TransformDefinition
+  def: TransformDefinition | undefined,
+  options: Options
 ): Operation[] | Operation =>
   Array.isArray(def)
-    ? def.flatMap(defToOperations)
+    ? def.flatMap((def) => defToOperations(def, options))
     : isObject(def)
-    ? operationFromObject(def)
+    ? operationFromObject(def, options)
     : isPath(def)
     ? get(def)
     : isOperation(def)
     ? def
     : (_options: Options) => identity
 
-export function defToOperation(def?: TransformDefinition): Operation {
-  const operations = Array.isArray(def) ? def : defToOperations(def)
+export function defToOperation(
+  def: TransformDefinition | undefined,
+  options: Options
+): Operation {
+  const operations = Array.isArray(def) ? def : defToOperations(def, options)
   return Array.isArray(operations) ? pipe(operations) : operations
 }
 
@@ -281,5 +251,5 @@ export function defToDataMapper(
   def?: TransformDefinition,
   options: Options = {}
 ): DataMapper {
-  return operationToDataMapper(defToOperation(def), options)
+  return operationToDataMapper(defToOperation(def, options), options)
 }

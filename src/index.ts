@@ -33,7 +33,7 @@ export default function mapTransform(
   options: Options = {}
 ): DataMapperEntry {
   const completeOptions = mergeOptions(options)
-  const stateMapper = defToOperation(def)(completeOptions)(identity)
+  const stateMapper = defToOperation(def, options)(completeOptions)(identity)
 
   return function transform(data, initialState) {
     return getStateValue(stateMapper(populateState(data, initialState || {})))

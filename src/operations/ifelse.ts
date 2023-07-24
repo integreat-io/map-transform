@@ -22,25 +22,27 @@ export default function (
   trueDef?: TransformDefinition,
   falseDef?: TransformDefinition
 ): Operation {
-  const falseFn = defToOperation(falseDef)
-  if (!conditionDef) {
-    return falseFn
-  }
-  const conditionFn: Operation =
-    typeof conditionDef === 'function'
-      ? runCondition(conditionDef as DataMapper) // We know to expect a datamapper here
-      : defToOperation(conditionDef)
-  const trueFn = defToOperation(trueDef)
+  return (options) => {
+    const falseFn = defToOperation(falseDef, options)
+    if (!conditionDef) {
+      return falseFn(options)
+    }
+    const conditionFn: Operation =
+      typeof conditionDef === 'function'
+        ? runCondition(conditionDef as DataMapper) // We know to expect a datamapper here
+        : defToOperation(conditionDef, options)
+    const trueFn = defToOperation(trueDef, options)
 
-  return (options) => (next) => {
-    const runCondition = conditionFn(options)(identity)
-    const runTrue = trueFn(options)(identity)
-    const runFalse = falseFn(options)(identity)
+    return (next) => {
+      const runCondition = conditionFn(options)(identity)
+      const runTrue = trueFn(options)(identity)
+      const runFalse = falseFn(options)(identity)
 
-    return (state) => {
-      const nextState = next(state)
-      const bool = getStateValue(runCondition(goForward(nextState)))
-      return bool ? runTrue(nextState) : runFalse(nextState)
+      return (state) => {
+        const nextState = next(state)
+        const bool = getStateValue(runCondition(goForward(nextState)))
+        return bool ? runTrue(nextState) : runFalse(nextState)
+      }
     }
   }
 }

@@ -10,12 +10,23 @@ import { defToOperations } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 import type { Operation, TransformDefinition } from '../types.js'
 
-const runAlt = (isOneMode: boolean) =>
-  function runAlt(operation: Operation, index: number): Operation {
-    return (options) => (next) => (state) => {
+// We insert into pipe here when necessary, to specify that the pipe should return context
+const pipeIfArray = (def: Operation | Operation[]) =>
+  Array.isArray(def) ? pipe(def, true) : def
+
+function createOneAltOperation(
+  def: TransformDefinition,
+  index: number,
+  isSingleMode: boolean
+): Operation {
+  return (options) => {
+    // Prepare alt operation
+    const operation = pipeIfArray(defToOperations(def, options))
+
+    return (next) => (state) => {
       const nextState = next(state)
       const { nonvalues } = options
-      const isFirst = !isOneMode && index === 0
+      const isFirst = !isSingleMode && index === 0
 
       if (isFirst) {
         const thisState = operation(options)(identity)(nextState)
@@ -38,16 +49,18 @@ const runAlt = (isOneMode: boolean) =>
       }
     }
   }
+}
 
+/**
+ * All alt operations are returned as individual operations, but the first one
+ * is run in isolation (if it returns undefined, it will not polute the context)
+ * and the rest are run only if the state value is not set. The exception is
+ * when there is only one alt operation, in which case it is run as if it was
+ * not the first (the "first" is the value already in the pipeline).
+ */
 export default function alt(...defs: TransformDefinition[]): Operation[] {
-  // Prepare all alt operations
-  const altOperations = defs
-    .map((def) => defToOperations(def))
-    .map((def) => (Array.isArray(def) ? pipe(def, true) : def)) // We insert into pipe here when necessary, to specify that the pipe should return context
-  const isOneMode = altOperations.length === 1
-
-  // All alt operations are returned as individual operations, but the first one
-  // is run in isolation (if it returns undefined, it will not polute the
-  // context) and the rest are run only if the state value is not set
-  return altOperations.map(runAlt(isOneMode))
+  const isSingleMode = defs.length === 1
+  return defs.map((def, index) =>
+    createOneAltOperation(def, index, isSingleMode)
+  )
 }

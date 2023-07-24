@@ -47,7 +47,7 @@ export default function pipe(
 
     const fns = splitArrayPaths(defs)
       .flat()
-      .flatMap((def) => defToOperations(def))
+      .flatMap((def) => defToOperations(def, options))
       .map((fn) => fn(options))
 
     return (next) => {

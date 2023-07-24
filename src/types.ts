@@ -39,6 +39,9 @@ export interface Options {
   nonvalues?: unknown[]
   fwdAlias?: string
   revAlias?: string
+  modifyOperationObject?: (
+    operation: Record<string, unknown>
+  ) => Record<string, unknown>
 }
 
 // Data mapper types
@@ -108,30 +111,6 @@ export interface AltOperation extends TransformerProps {
   $undefined?: unknown[]
 }
 
-export interface MergeOperation extends TransformerProps {
-  $merge: unknown
-  $iterate?: boolean
-  $direction?: string
-}
-
-export interface ValueOperation extends TransformerProps {
-  $value: unknown
-  $iterate?: boolean
-  $direction?: string
-}
-
-export interface AndOperation extends TransformerProps {
-  $and: TransformDefinition[]
-}
-
-export interface OrOperation extends TransformerProps {
-  $or: TransformDefinition[]
-}
-
-export interface NotOperation extends TransformerProps {
-  $not: TransformDefinition
-}
-
 export interface ConcatOperation extends TransformerProps {
   $concat: TransformDefinition[]
 }
@@ -147,11 +126,6 @@ export type OperationObject =
   | IfOperation
   | ApplyOperation
   | AltOperation
-  | ValueOperation
-  | MergeOperation
-  | AndOperation
-  | OrOperation
-  | NotOperation
   | ConcatOperation
   | LookupOperation
 
@@ -169,18 +143,7 @@ export interface TransformObject
   $modify?: boolean | Path
   $noDefaults?: boolean
   $flip?: boolean
-  // The following props are included to make sure they don't appear on the TransformObject
-  $transform?: undefined
-  $filter?: undefined
-  $if?: undefined
-  $apply?: undefined
-  $value?: undefined
-  $alt?: undefined
-  $and?: undefined
-  $or?: undefined
-  $concat?: undefined
-  $lookup?: undefined
-  $merge?: undefined
+  $direction?: string
 }
 
 export type TransformDefinition =

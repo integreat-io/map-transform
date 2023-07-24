@@ -731,3 +731,29 @@ test('should throw when transform operation has invalid transformer id', (t) => 
     'Transform operator was given no transformer id or an invalid transformer id'
   )
 })
+
+test('should run operation objects trought modifyOperationObject', (t) => {
+  const modifyOperationObject = (op: Record<string, unknown>) =>
+    op.$append
+      ? {
+          $transform: 'appendToTitle',
+          text: op.$append,
+        }
+      : op
+  const def = [
+    {
+      title: 'content.heading',
+    },
+    { $append: ' - archived' },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+  const expected = {
+    title: 'The heading - archived',
+  }
+
+  const ret = mapTransform(def, { transformers, modifyOperationObject })(data)
+
+  t.deepEqual(ret, expected)
+})

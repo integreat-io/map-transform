@@ -19,7 +19,7 @@ export default function apply(pipelineId: string): Operation {
     }
 
     const fn = pipeline
-      ? defToOperation(pipeline)(options)(identity)
+      ? defToOperation(pipeline, options)(options)(identity)
       : undefined
     return (state) => {
       const nextState = next(state)

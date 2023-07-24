@@ -53,7 +53,11 @@ export default function lookup({
 }: Props): Operation {
   return (options) => (next) => {
     const getter = defToDataMapper(propPath, options)
-    const mapValueFn = mapValue(defToOperation(arrayPath), getter, matchSeveral)
+    const mapValueFn = mapValue(
+      defToOperation(arrayPath, options),
+      getter,
+      matchSeveral
+    )
 
     return function doLookup(state) {
       const nextState = next(state)

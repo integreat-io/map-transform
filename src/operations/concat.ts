@@ -8,7 +8,9 @@ const merge = <T, U>(left: T[], right: U | U[]) =>
 
 export default function concat(...defs: TransformDefinition[]): Operation {
   return (options) => (next) => {
-    const fns = defs.map((def) => defToOperation(def)(options)(identity))
+    const fns = defs.map((def) =>
+      defToOperation(def, options)(options)(identity)
+    )
 
     return function doConcat(state) {
       const nextState = next(state)

@@ -43,7 +43,9 @@ export default function merge(...defs: TransformDefinition[]): Operation {
     if (defs.length === 0) {
       return (state) => setStateValue(next(state), undefined)
     }
-    const pipelines = defs.map((def) => defToOperation(def)(options)(next))
+    const pipelines = defs.map((def) =>
+      defToOperation(def, options)(options)(next)
+    )
 
     return function (state) {
       const nextState = next(state)

@@ -696,6 +696,18 @@ This way of defining transform operations is useful to seperate the transform
 defintions and the transformers, and it also results in defintions that may be
 stored as JSON (but see [the note on JSON](#a-note-on-json)).
 
+There are a few useful shorthands for the operation objects, like
+`{ $value: 'The value' }` instead of
+`{ $transform: 'value', value: 'The value' }`. These are noted under the
+relevant transformers etc.
+
+You may also create your own shorthands by providing a `transformOperation`
+function in the `options` object passed to `mapTransform`. This function
+receives an operation object and my modify it to another operation object. In
+fact, transform object (objects that are not operation objects) are also passed
+through this function, so you may also use it to modify transform objects. Make
+sure to return a valid object here, though, or you will kill your pipeline.
+
 #### `filter(conditionFn)` operation
 
 Just like the `transform` operation, the `filter` operation will apply whatever

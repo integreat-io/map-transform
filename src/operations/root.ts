@@ -3,6 +3,8 @@ import type { TransformDefinition, Operation } from '../types.js'
 import { defToOperations } from '../utils/definitionHelpers.js'
 
 export default function (def: TransformDefinition): Operation {
-  const pipeline = ['^^', defToOperations(def)].flat()
-  return pipe(pipeline)
+  return (options) => {
+    const pipeline = ['^^', defToOperations(def, options)].flat()
+    return pipe(pipeline)(options)
+  }
 }

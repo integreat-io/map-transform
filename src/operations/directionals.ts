@@ -7,7 +7,7 @@ const applyInDirection = (
   rev: boolean
 ): Operation => {
   return (options: Options) => (next) => {
-    const fn = defToOperation(def)(options)(next)
+    const fn = defToOperation(def, options)(options)(next)
     return (state) => (xor(rev, !state.rev) ? fn(state) : next(state))
   }
 }
@@ -25,8 +25,8 @@ export function divide(
   revDef: TransformDefinition
 ): Operation {
   return (options) => (next) => {
-    const fwdFn = defToOperation(fwdDef)(options)(next)
-    const revFn = defToOperation(revDef)(options)(next)
+    const fwdFn = defToOperation(fwdDef, options)(options)(next)
+    const revFn = defToOperation(revDef, options)(options)(next)
     return (state) => (state.rev ? revFn(state) : fwdFn(state))
   }
 }

@@ -99,26 +99,27 @@ function removeSlash(prop: string) {
   return prop
 }
 
-function createSetPipeline([prop, pipeline]: [
-  string,
-  TransformDefinition
-]): Operation {
-  // Adjust sub map object
-  if (isTransformObject(pipeline)) {
-    pipeline = {
-      ...pipeline,
-      $iterate: pipeline.$iterate || isArr(prop),
+const createSetPipeline = (options: Options) =>
+  function createSetPipeline([prop, pipeline]: [
+    string,
+    TransformDefinition
+  ]): Operation {
+    // Adjust sub map object
+    if (isTransformObject(pipeline)) {
+      pipeline = {
+        ...pipeline,
+        $iterate: pipeline.$iterate || isArr(prop),
+      }
     }
+
+    // Handle slashed props
+    const unslashedProp = removeSlash(prop)
+    const onlyRev = prop !== unslashedProp // If these are different, we have removed a slash. Run in rev only
+
+    // Prepare the operations and return as an operation
+    const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
+    return onlyRev ? divide(plug(), operations) : pipe(operations)
   }
-
-  // Handle slashed props
-  const unslashedProp = removeSlash(prop)
-  const onlyRev = prop !== unslashedProp // If these are different, we have removed a slash. Run in rev only
-
-  // Prepare the operations and return as an operation
-  const operations = [defToOperation(pipeline), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
-  return onlyRev ? divide(plug(), operations) : pipe(operations)
-}
 
 function modifyWithGivenPath(
   path: string | undefined,
@@ -167,35 +168,37 @@ export default function props(def: TransformObject): Operation {
   // Prepare path
   const modifyPath = def.$modify === true ? '.' : def.$modify || undefined
 
-  // Prepare one operation for each prop
-  const operations = Object.entries(def)
-    .filter(isRegularProp)
-    .map(createSetPipeline)
+  return (options) => {
+    // Prepare one operation for each prop
+    const operations = Object.entries(def)
+      .filter(isRegularProp)
+      .map(createSetPipeline(options))
 
-  // Return operation
-  return (options) => (next) => {
-    const modifyFn = modifyWithGivenPath(modifyPath, options, identity)
-    const run = runOperations(modifyFn, operations, options)
-    const isWrongDirectionFn = isWrongDirection(def.$direction, options)
+    // Return operation
+    return (next) => {
+      const modifyFn = modifyWithGivenPath(modifyPath, options, identity)
+      const run = runOperations(modifyFn, operations, options)
+      const isWrongDirectionFn = isWrongDirection(def.$direction, options)
 
-    return function doMutate(state) {
-      const nextState = next(state)
-      if (
-        isNonvalueState(nextState, options.nonvalues) ||
-        isWrongDirectionFn(nextState.rev)
-      ) {
-        return nextState
+      return function doMutate(state) {
+        const nextState = next(state)
+        if (
+          isNonvalueState(nextState, options.nonvalues) ||
+          isWrongDirectionFn(nextState.rev)
+        ) {
+          return nextState
+        }
+
+        const propsState = stopIteration(
+          setStateProps(nextState, def.$noDefaults, def.$flip)
+        ) // Don't pass on iteration to props
+        const thisState =
+          def.$iterate === true
+            ? iterate(() => () => run)(options)(identity)(propsState)
+            : run(propsState)
+
+        return setValueFromState(nextState, thisState)
       }
-
-      const propsState = stopIteration(
-        setStateProps(nextState, def.$noDefaults, def.$flip)
-      ) // Don't pass on iteration to props
-      const thisState =
-        def.$iterate === true
-          ? iterate(() => () => run)(options)(identity)(propsState)
-          : run(propsState)
-
-      return setValueFromState(nextState, thisState)
     }
   }
 }

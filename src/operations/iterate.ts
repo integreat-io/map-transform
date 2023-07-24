@@ -47,9 +47,8 @@ export default function iterate(def: TransformDefinition): Operation {
     return (_options) => (next) => (state) =>
       setStateValue(next(state), undefined)
   }
-  const fn = defToOperation(def)
-
   return (options) => {
+    const fn = defToOperation(def, options)
     const runIteration = iterateState(fn(options)(identity))
     return (next) =>
       function doIterate(state) {

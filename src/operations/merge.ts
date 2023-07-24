@@ -32,8 +32,8 @@ function mergeStates(state: State, thisState: State) {
   const value = !isObject(source)
     ? target
     : !isObject(target)
-    ? source
-    : deepmerge(target, source, { arrayMerge: mergeExisting })
+      ? source
+      : deepmerge(target, source, { arrayMerge: mergeExisting })
 
   return setStateValue(state, value)
 }

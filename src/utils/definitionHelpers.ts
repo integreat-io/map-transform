@@ -248,7 +248,7 @@ function operationFromObject(def: OperationObject | TransformObject) {
       transformDefFromShortcut(def, 'merge', 'path')
     )
   } else {
-    return props(def)
+    return props({ def })
   }
 }
 

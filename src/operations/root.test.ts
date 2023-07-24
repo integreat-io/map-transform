@@ -19,7 +19,7 @@ test('should apply pipeline to root', (t) => {
     value: 'news',
   }
 
-  const ret = root('section')(options)(identity)(state)
+  const ret = root({ def: 'section' })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

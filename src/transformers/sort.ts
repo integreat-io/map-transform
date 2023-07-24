@@ -15,7 +15,7 @@ export interface Props extends TransformerProps {
 }
 
 const compare = (direction: number, getFn: DataMapper, state: State) =>
-  function compare(valueA: unknown, valueB: unknown) {
+  (valueA: unknown, valueB: unknown) => {
     const a = getFn(valueA, state)
     const b = getFn(valueB, state)
     if (typeof a === 'number' && typeof b === 'number') {
@@ -31,16 +31,14 @@ const compare = (direction: number, getFn: DataMapper, state: State) =>
     }
   }
 
-const transformer: Transformer<Props> = function sort(props) {
-  return (options) => {
-    const direction = props?.asc === false ? -1 : 1
-    const getFn = props?.path ? defToDataMapper(props.path, options) : identity
+const transformer: Transformer<Props> = (props) => (options) => {
+  const direction = props?.asc === false ? -1 : 1
+  const getFn = props?.path ? defToDataMapper(props.path, options) : identity
 
-    return (data, state) => {
-      return Array.isArray(data)
-        ? data.slice().sort(compare(direction, getFn, goForward(state)))
-        : data
-    }
+  return (data, state) => {
+    return Array.isArray(data)
+      ? data.slice().sort(compare(direction, getFn, goForward(state)))
+      : data
   }
 }
 

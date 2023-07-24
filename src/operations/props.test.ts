@@ -49,7 +49,7 @@ test('should mutate shallow object with map transformer', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -84,7 +84,7 @@ test('should mutate object with depth', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -110,7 +110,7 @@ test('should support root in value', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -135,7 +135,7 @@ test('should mutate object with map pipe', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -158,7 +158,7 @@ test('should mutate object with props in the given order', (t) => {
   const expectedPropsAttrs = ['title', 'text', 'age']
   const expectedPropsRels = ['author']
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   const item = (
     ret.value as Record<string, Record<string, Record<string, unknown>>>
@@ -181,7 +181,7 @@ test('should skip slashed properties going forward', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -199,7 +199,7 @@ test('should mutate with set in pipeline', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -221,7 +221,7 @@ test('should shallow merge original object and transformed object', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -243,7 +243,7 @@ test('should shallow merge a path from original object and transformed object', 
     },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -279,7 +279,7 @@ test('should shallow merge in sub object and use $modify path', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -330,7 +330,7 @@ test('should modify on several levels', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -345,7 +345,7 @@ test('should iterate when $iterate is true', (t) => {
     value: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
   }
 
-  const ret = props(def)(options)(identity)(stateWithArray)
+  const ret = props({ def })(options)(identity)(stateWithArray)
 
   t.deepEqual(ret, expected)
 })
@@ -359,7 +359,7 @@ test('should not iterate when $iterate is false', (t) => {
     title: ['Entry 1', 'Entry 2'],
   }
 
-  const ret = props(def)(options)(identity)(stateWithArray)
+  const ret = props({ def })(options)(identity)(stateWithArray)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -375,7 +375,7 @@ test('should honor $iterate on sub objects', (t) => {
     articles: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
   }
 
-  const ret = props(def)(options)(identity)(stateWithArray)
+  const ret = props({ def })(options)(identity)(stateWithArray)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -390,7 +390,7 @@ test('should iterate sub objects on brackets notation paths', (t) => {
     articles: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
   }
 
-  const ret = props(def)(options)(identity)(stateWithArray)
+  const ret = props({ def })(options)(identity)(stateWithArray)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -412,7 +412,7 @@ test('should map missing array to empty array', (t) => {
     articles: [],
   }
 
-  const ret = props(def)(options)(identity)(stateWithArray)
+  const ret = props({ def })(options)(identity)(stateWithArray)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -425,7 +425,7 @@ test('should iterate pipelines on brackets notation paths', (t) => {
     articles: ['Entry 1', 'Entry 2'],
   }
 
-  const ret = props(def)(options)(identity)(stateWithArray)
+  const ret = props({ def })(options)(identity)(stateWithArray)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -442,7 +442,7 @@ test('should iterate sub pipeline on brackets notation paths', (t) => {
     articles: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
   }
 
-  const ret = props(def)(options)(identity)(stateWithArray)
+  const ret = props({ def })(options)(identity)(stateWithArray)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -464,7 +464,7 @@ test('should not include values from value transformer when $noDefaults is true'
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -481,7 +481,7 @@ test('should not include values in iterations from value transformer when $noDef
     value: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
   }
 
-  const ret = props(def)(options)(identity)(stateWithArray)
+  const ret = props({ def })(options)(identity)(stateWithArray)
 
   t.deepEqual(ret, expected)
 })
@@ -506,7 +506,7 @@ test('should include values from value transformer when $noDefaults is false', (
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -529,7 +529,7 @@ test('should not clear $noDefaults when not set', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithNoDefaults)
+  const ret = props({ def })(options)(identity)(stateWithNoDefaults)
 
   t.deepEqual(ret, expected)
 })
@@ -559,7 +559,7 @@ test('should add array to context when iterating', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -590,7 +590,7 @@ test('should add array to context when iterating through two arrays', (t) => {
     ],
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -616,7 +616,7 @@ test('should add array to context through two transform objects', (t) => {
     articles: [{ title: 'Entry 1', tags: 'news' }],
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -647,7 +647,7 @@ test('should add array to context through two iterations', (t) => {
     ],
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -660,7 +660,7 @@ test('should set on index notation paths', (t) => {
     articles: [{ title: 'Entry 1' }],
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -695,7 +695,7 @@ test('should flip and mutate object', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -731,7 +731,7 @@ test('should flip and mutate object in reverse', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -762,7 +762,7 @@ test('should map complex shape', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)({ ...stateWithObject })
+  const ret = props({ def })(options)(identity)({ ...stateWithObject })
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -781,7 +781,7 @@ test('should skip unknown dollar props', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -800,7 +800,7 @@ test('should skip props without a pipeline', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -816,7 +816,7 @@ test('should not mutate undefined value', (t) => {
   }
   const expected = state
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -833,7 +833,7 @@ test('should not mutate null value when included in nonvalues', (t) => {
   }
   const expected = state
 
-  const ret = props(def)(optionsWithNullAsNone)(identity)(state)
+  const ret = props({ def })(optionsWithNullAsNone)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -850,7 +850,7 @@ test('should not mutate undefined value in array', (t) => {
   }
   const expected = state
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -868,7 +868,7 @@ test('should not mutate null value in array when included in nonvalues', (t) => 
   }
   const expected = state
 
-  const ret = props(def)(optionsWithNullAsNone)(identity)(state)
+  const ret = props({ def })(optionsWithNullAsNone)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -884,7 +884,7 @@ test('should set value to undefined when no map transformer', (t) => {
     value: undefined,
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -908,7 +908,7 @@ test('should reverse map', (t) => {
   }
   const expectedValue = { headline: 'The title' }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -932,7 +932,7 @@ test('should skip values with no set in reverse', (t) => {
   }
   const expectedValue = { headline: 'The title' }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -956,7 +956,7 @@ test('should set value in reverse', (t) => {
   }
   const expectedValue = { key: 'ent1', headline: 'The title', tags: ['news'] }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -989,7 +989,7 @@ test('should reverse map with sub objects', (t) => {
     meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -1023,7 +1023,7 @@ test('should reverse map with sub objects flipped', (t) => {
     meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -1044,7 +1044,7 @@ test('should set slashed properties in reverse', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1057,7 +1057,7 @@ test('should iterate in reverse', (t) => {
   const state = { ...stateWithArray, rev: true }
   const expectedValue = [{ title: 'Entry 1' }, { title: 'Entry 2' }]
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -1070,7 +1070,7 @@ test('should iterate in reverse with get operation', (t) => {
   const state = { ...stateWithArray, rev: true }
   const expectedValue = [{ title: 'Entry 1' }, { title: 'Entry 2' }]
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -1094,7 +1094,7 @@ test('should reverse map with value array', (t) => {
   }
   const expectedValue = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -1123,7 +1123,7 @@ test('should reverse map with several sets', (t) => {
     meta: { user: 'johnf', tag: 'news' },
   }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -1149,7 +1149,7 @@ test('should skip root path in reverse', (t) => {
   }
   const expectedValue = [{ headline: 'Entry 1' }, { headline: 'Entry 2' }]
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -1164,7 +1164,7 @@ test('should skip transform object with $direction: rev going forward', (t) => {
   }
   const expected = stateWithObject
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -1187,7 +1187,7 @@ test('should transform object with $direction: rev in reverse', (t) => {
   }
   const expectedValue = { headline: 'The title' }
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -1210,7 +1210,7 @@ test('should skip transform object with $direction: fwd in reverse', (t) => {
   }
   const expected = state
 
-  const ret = props(def)(options)(identity)(state)
+  const ret = props({ def })(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1229,7 +1229,7 @@ test('should transform object with $direction: fwd going forward', (t) => {
     },
   }
 
-  const ret = props(def)(options)(identity)(stateWithObject)
+  const ret = props({ def })(options)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })
@@ -1253,7 +1253,7 @@ test('should use forward alias', (t) => {
   }
   const expected = state
 
-  const ret = props(def)(optionsWithAlias)(identity)(state)
+  const ret = props({ def })(optionsWithAlias)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1267,7 +1267,7 @@ test('should use reverse alias', (t) => {
   }
   const expected = stateWithObject
 
-  const ret = props(def)(optionsWithAlias)(identity)(stateWithObject)
+  const ret = props({ def })(optionsWithAlias)(identity)(stateWithObject)
 
   t.deepEqual(ret, expected)
 })

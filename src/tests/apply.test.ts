@@ -36,6 +36,7 @@ const hitsOnly = { hits: 'meta.hits' }
 const pipelines = {
   cast_entry: castEntry,
   getItems,
+  [Symbol.for('getItems')]: getItems,
   hitsOnly,
   entry: entryMutation,
 }
@@ -70,6 +71,29 @@ test('should apply pipeline by id', (t) => {
 test('should apply path pipeline by id', (t) => {
   const def = [
     apply('getItems'),
+    {
+      title: 'content.heading',
+    },
+  ]
+  const data = {
+    data: {
+      entries: {
+        content: { heading: 'The heading' },
+      },
+    },
+  }
+  const expected = {
+    title: 'The heading',
+  }
+
+  const ret = mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply path pipeline by id as Symbol', (t) => {
+  const def = [
+    apply(Symbol.for('getItems')),
     {
       title: 'content.heading',
     },
@@ -314,6 +338,29 @@ test('should use reverse alias', (t) => {
   t.deepEqual(retRev, expectedRev)
 })
 
+test('should apply path pipeline through operaion object with id as Symbol', (t) => {
+  const def = [
+    { $apply: Symbol.for('getItems') },
+    {
+      title: 'content.heading',
+    },
+  ]
+  const data = {
+    data: {
+      entries: {
+        content: { heading: 'The heading' },
+      },
+    },
+  }
+  const expected = {
+    title: 'The heading',
+  }
+
+  const ret = mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should throw when applying an unknown pipeline id', (t) => {
   const def = [
     {
@@ -331,6 +378,28 @@ test('should throw when applying an unknown pipeline id', (t) => {
 
   t.true(error instanceof Error)
   t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+})
+
+test('should throw when applying an unknown pipeline id as Symbol', (t) => {
+  const def = [
+    {
+      title: 'content.heading',
+      viewCount: 'meta.hits',
+    },
+    apply(Symbol.for('unknown')),
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { hits: '45' },
+  }
+
+  const error = t.throws(() => mapTransform(def, options)(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    "Failed to apply pipeline 'Symbol(unknown)'. Unknown pipeline"
+  )
 })
 
 test('should throw when applying an unknown pipeline as operation object', (t) => {

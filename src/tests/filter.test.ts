@@ -19,6 +19,7 @@ const noAlso = () => (item: unknown) =>
 
 const transformers = {
   noHeadingTitle,
+  [Symbol.for('noHeadingTitle')]: noHeadingTitle,
 }
 
 // Tests
@@ -365,6 +366,23 @@ test('should filter after a lookup', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should apply filter from operation object with Symbol id', (t) => {
+  const def = [
+    {
+      title: 'content.heading',
+    },
+    { $filter: Symbol.for('noHeadingTitle') },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+  const expected = undefined
+
+  const ret = mapTransform(def, { transformers })(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should throw when filter is given an unknown transformer id', (t) => {
   const def = [{ title: 'content.heading' }, { $filter: 'unknown' }]
   const data = {
@@ -377,6 +395,21 @@ test('should throw when filter is given an unknown transformer id', (t) => {
   t.is(
     error?.message,
     "Filter operator was given the unknown transformer id 'unknown'"
+  )
+})
+
+test('should throw when filter is given an unknown transformer id as symbol', (t) => {
+  const def = [{ title: 'content.heading' }, { $filter: Symbol.for('unknown') }]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+
+  const error = t.throws(() => mapTransform(def, { transformers })(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    "Filter operator was given the unknown transformer id 'Symbol(unknown)'"
   )
 })
 

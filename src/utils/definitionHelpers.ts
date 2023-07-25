@@ -101,7 +101,7 @@ const createOperation =
   ): Operation =>
   (options) => {
     const { [fnProp]: fnId, ...props } = def
-    if (typeof fnId !== 'string') {
+    if (typeof fnId !== 'string' && typeof fnId !== 'symbol') {
       throw new Error(
         `${humanizeOperatorName(
           fnProp
@@ -115,7 +115,7 @@ const createOperation =
       throw new Error(
         `${humanizeOperatorName(
           fnProp
-        )} operator was given the unknown transformer id '${fnId}'`
+        )} operator was given the unknown transformer id '${String(fnId)}'`
       )
     }
 
@@ -165,7 +165,7 @@ const createIfOperation =
   }
 
 function createApplyOperation(
-  operationFn: (pipelineId: string) => Operation,
+  operationFn: (pipelineId: string | symbol) => Operation,
   def: ApplyOperation
 ) {
   const pipelineId = def.$apply

@@ -54,6 +54,7 @@ const transformers = {
   appendToTitle,
   generateTag,
   getLength,
+  [Symbol.for('getLength')]: getLength,
 }
 
 // Tests
@@ -669,6 +670,24 @@ test('should shallow merge object with $merge', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should apply transform from an operation object with Symbol as key', (t) => {
+  const def = [
+    {
+      titleLength: ['content.heading', { $transform: Symbol.for('getLength') }],
+    },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+  const expected = {
+    titleLength: 11,
+  }
+
+  const ret = mapTransform(def, { transformers })(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should throw when transform is given an unknown transformer id', (t) => {
   const def = [
     {
@@ -685,6 +704,25 @@ test('should throw when transform is given an unknown transformer id', (t) => {
   t.is(
     error?.message,
     "Transform operator was given the unknown transformer id 'unknown'"
+  )
+})
+
+test('should throw when transform is given an unknown transformer id symbol', (t) => {
+  const def = [
+    {
+      titleLength: ['content.heading', { $transform: Symbol.for('unknown') }],
+    },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+
+  const error = t.throws(() => mapTransform(def, { transformers })(data))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    "Transform operator was given the unknown transformer id 'Symbol(unknown)'"
   )
 })
 

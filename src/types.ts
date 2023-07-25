@@ -30,10 +30,10 @@ export interface State extends InitialState {
 
 export interface Options {
   transformers?: {
-    [key: string]: Transformer
+    [key: string | symbol]: Transformer
   }
   pipelines?: {
-    [key: string]: TransformDefinition
+    [key: string | symbol]: TransformDefinition
   }
   dictionaries?: Dictionaries
   nonvalues?: unknown[]
@@ -81,13 +81,13 @@ export interface Transformer<T = TransformerProps> {
 export type Path = string
 
 export interface TransformOperation extends TransformerProps {
-  $transform: string
+  $transform: string | symbol
   $iterate?: boolean
   $direction?: string
 }
 
 export interface FilterOperation extends TransformerProps {
-  $filter: string
+  $filter: string | symbol
   $direction?: string
 }
 
@@ -99,7 +99,7 @@ export interface IfOperation extends TransformerProps {
 }
 
 export interface ApplyOperation extends TransformerProps {
-  $apply: string
+  $apply: string | symbol
   $iterate?: boolean
   $direction?: string
 }

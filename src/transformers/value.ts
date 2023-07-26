@@ -9,12 +9,12 @@ export const extractValue = (value: unknown): unknown => {
 
 const value: Transformer<unknown> = function value(props: unknown) {
   const value = extractValue(props)
-  return () => async (_data, state) => state.noDefaults ? undefined : value
+  return () => (_data, state) => state.noDefaults ? undefined : value
 }
 
 const fixed: Transformer<unknown> = function fixed(props: unknown) {
   const value = extractValue(props)
-  return () => async () => value
+  return () => () => value
 }
 
 export { value, fixed }

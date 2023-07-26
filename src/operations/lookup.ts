@@ -3,6 +3,7 @@ import type {
   State,
   Path,
   DataMapperWithState,
+  AsyncDataMapperWithState,
   TransformerProps,
 } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
@@ -26,7 +27,10 @@ const flattenIfArray = (data: unknown) =>
   Array.isArray(data) ? data.flat(FLATTEN_DEPTH) : data
 
 const matchPropInArray =
-  (getProp: DataMapperWithState, matchSeveral: boolean) =>
+  (
+    getProp: DataMapperWithState | AsyncDataMapperWithState,
+    matchSeveral: boolean
+  ) =>
   (arr: unknown[], state: State) =>
   async (value: unknown) => {
     if (matchSeveral) {
@@ -38,7 +42,7 @@ const matchPropInArray =
 
 const mapValue = (
   getArray: Operation,
-  getProp: DataMapperWithState,
+  getProp: DataMapperWithState | AsyncDataMapperWithState,
   matchSeveral: boolean
 ) => {
   const matchInArray = matchPropInArray(getProp, matchSeveral)

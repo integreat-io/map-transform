@@ -3,18 +3,22 @@ import type {
   Options,
   Operation,
   DataMapperWithOptions,
+  AsyncDataMapperWithOptions,
 } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 
-function callTransformFn(fn: DataMapperWithOptions, options: Options) {
+function callTransformFn(
+  fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
+  options: Options
+) {
   const fnWithOptions = fn(options)
   return async (state: State) =>
     setStateValue(state, await fnWithOptions(getStateValue(state), state))
 }
 
 export default function transform(
-  fn: DataMapperWithOptions,
-  revFn?: DataMapperWithOptions
+  fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
+  revFn?: DataMapperWithOptions | AsyncDataMapperWithOptions
 ): Operation {
   return (options) => {
     if (typeof fn !== 'function') {

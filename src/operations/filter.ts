@@ -1,7 +1,9 @@
 import type {
   Operation,
   DataMapperWithOptions,
+  AsyncDataMapperWithOptions,
   DataMapperWithState,
+  AsyncDataMapperWithState,
   State,
 } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
@@ -10,7 +12,7 @@ import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 // value if it passes the filter.
 async function filterValue(
   value: unknown,
-  filterFn: DataMapperWithState,
+  filterFn: DataMapperWithState | AsyncDataMapperWithState,
   state: State
 ) {
   if (Array.isArray(value)) {
@@ -26,7 +28,9 @@ async function filterValue(
  * Given a filter function, returns an operation that will filter arrays or
  * single values with that filter function.
  */
-export default function filter(fn: DataMapperWithOptions): Operation {
+export default function filter(
+  fn: DataMapperWithOptions | AsyncDataMapperWithOptions
+): Operation {
   return (options) => (next) => {
     if (typeof fn !== 'function') {
       return async (state) => await next(state)

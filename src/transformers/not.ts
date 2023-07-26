@@ -2,7 +2,10 @@ import { isObject } from '../utils/is.js'
 import type {
   TransformDefinition,
   DataMapperWithOptions,
-  Transformer,
+  AsyncDataMapperWithOptions,
+  DataMapperWithState,
+  AsyncDataMapperWithState,
+  AsyncTransformer,
   TransformerProps,
   Options,
 } from '../types.js'
@@ -13,21 +16,21 @@ export interface Props extends TransformerProps {
 }
 
 function dataMapperFromProps(
-  props: Props | DataMapperWithOptions,
+  props: Props | DataMapperWithOptions | AsyncDataMapperWithOptions,
   options: Options
-) {
+): DataMapperWithState | AsyncDataMapperWithState {
   if (typeof props === 'function') {
     return props(options)
   } else if (isObject(props)) {
     return defToDataMapper(props.path, options)
   } else {
-    return async (value: unknown) => value
+    return (value: unknown) => value
   }
 }
 
-const transformer: Transformer<Props | DataMapperWithOptions> = function not(
-  props
-) {
+const transformer: AsyncTransformer<
+  Props | DataMapperWithOptions | AsyncDataMapperWithOptions
+> = function not(props) {
   return (options) => {
     const fn = dataMapperFromProps(props, options)
     return async (value, state) => !(await fn(value, state))

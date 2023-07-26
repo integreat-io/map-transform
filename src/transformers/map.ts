@@ -62,9 +62,9 @@ const transformer: Transformer<Props> = function map(props) {
       extractDictionary(props.dictionary, options && options.dictionaries)
     )
     if (!dictionary) {
-      return async () => undefined
+      return () => undefined
     }
-    return async (data, state) => {
+    return (data, state) => {
       const { rev = false } = state
       const match = translate(escapeValue(data), dictionary, rev)
       return match === '*' ? data : unescapeValue(match)

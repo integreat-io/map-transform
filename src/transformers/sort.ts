@@ -2,8 +2,9 @@ import type {
   Path,
   State,
   DataMapperWithState,
+  AsyncDataMapperWithState,
   TransformerProps,
-  Transformer,
+  AsyncTransformer,
 } from '../types.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
@@ -30,14 +31,17 @@ const compare = (direction: number) =>
     }
   }
 
-function fetchSortValue(getFn: DataMapperWithState, state: State) {
+function fetchSortValue(
+  getFn: DataMapperWithState | AsyncDataMapperWithState,
+  state: State
+) {
   return async function fetchSortValue(item: unknown): Promise<SortValue> {
     const sortBy = await getFn(item, state)
     return [sortBy, item]
   }
 }
 
-const transformer: Transformer<Props> = function sort(props) {
+const transformer: AsyncTransformer<Props> = function sort(props) {
   return (options) => {
     const direction = props?.asc === false ? -1 : 1
     const getFn = props?.path

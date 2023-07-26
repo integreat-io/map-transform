@@ -1,5 +1,5 @@
 import mapAny from 'map-any'
-import type { TransformerProps, Path, Transformer } from '../types.js'
+import type { TransformerProps, Path, AsyncTransformer } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
@@ -81,7 +81,7 @@ function createComparer(operator: string) {
   }
 }
 
-const transformer: Transformer<Props> = function compare({
+const transformer: AsyncTransformer<Props> = function compare({
   path = '.',
   operator = '=',
   match,

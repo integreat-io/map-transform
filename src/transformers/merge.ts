@@ -1,7 +1,7 @@
 import { ensureArray } from '../utils/array.js'
 import type {
   TransformerProps,
-  Transformer,
+  AsyncTransformer,
   TransformDefinition,
 } from '../types.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
@@ -22,7 +22,7 @@ const undefinedFirst = (
 // arrays of objects) or one path that points to an array of objects.
 // Any values in the array (after flattening) that are not objects, will be
 // skipped.
-const transformer: Transformer<Props> = function merge({ path }) {
+const transformer: AsyncTransformer<Props> = function merge({ path }) {
   return (options) => {
     const getFns = ensureArray(path).map((path) =>
       defToDataMapper(path, options)

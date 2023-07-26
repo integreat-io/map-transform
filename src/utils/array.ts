@@ -1,5 +1,9 @@
 import { isNonvalue } from '../utils/stateHelpers.js'
-import type { DataMapperWithState, State } from '../types.js'
+import type {
+  DataMapperWithState,
+  AsyncDataMapperWithState,
+  State,
+} from '../types.js'
 
 export const ensureArray = <T = unknown>(
   value: T | T[],
@@ -14,7 +18,7 @@ export const indexOfIfArray = (arr: unknown, index?: number) =>
 
 export async function filterAsyncWithDataMapper<T extends State = State>(
   arr: unknown[],
-  getter: DataMapperWithState,
+  getter: DataMapperWithState | AsyncDataMapperWithState,
   state: T,
   value: unknown
 ) {
@@ -26,7 +30,7 @@ export async function filterAsyncWithDataMapper<T extends State = State>(
 
 export async function findAsyncWithDataMapper<T extends State = State>(
   arr: unknown[],
-  getter: DataMapperWithState,
+  getter: DataMapperWithState | AsyncDataMapperWithState,
   state: T,
   value: unknown
 ) {

@@ -30,7 +30,7 @@ export interface State extends InitialState {
 
 export interface Options {
   transformers?: {
-    [key: string | symbol]: Transformer
+    [key: string | symbol]: Transformer | AsyncTransformer
   }
   pipelines?: {
     [key: string | symbol]: TransformDefinition
@@ -50,8 +50,16 @@ export interface DataMapper<T extends InitialState | undefined = State> {
   (data: unknown, state?: T): Promise<unknown>
 }
 
+export interface AsyncDataMapperWithState {
+  (data: unknown, state: State): Promise<unknown>
+}
+
 export interface DataMapperWithState {
-  (data: unknown, state: State): Promise<unknown> | unknown
+  (data: unknown, state: State): unknown
+}
+
+export interface AsyncDataMapperWithOptions {
+  (options: Options): AsyncDataMapperWithState
 }
 
 export interface DataMapperWithOptions {
@@ -74,6 +82,10 @@ export type TransformerProps = Record<string, unknown>
 
 export interface Transformer<T = TransformerProps> {
   (props: T): DataMapperWithOptions
+}
+
+export interface AsyncTransformer<T = TransformerProps> {
+  (props: T): AsyncDataMapperWithOptions
 }
 
 // Transform definition types

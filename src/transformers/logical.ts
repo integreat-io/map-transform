@@ -1,6 +1,6 @@
 import { setTargetOnState, goForward } from '../utils/stateHelpers.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
-import type { Transformer, TransformerProps, Path } from '../types.js'
+import type { AsyncTransformer, TransformerProps, Path } from '../types.js'
 import { ensureArray } from '../utils/array.js'
 
 export type Operator = 'AND' | 'OR'
@@ -15,7 +15,7 @@ const getLogicalFn = (operator: Operator) =>
     ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)
     : (a: unknown, b: unknown) => Boolean(a) && Boolean(b)
 
-const transformer: Transformer<Props> = function logical({
+const transformer: AsyncTransformer<Props> = function logical({
   path = '.',
   operator = 'AND',
 }) {

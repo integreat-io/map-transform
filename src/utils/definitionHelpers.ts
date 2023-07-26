@@ -33,8 +33,10 @@ import type {
   Options,
   DataMapperWithState,
   DataMapperWithOptions,
+  AsyncDataMapperWithOptions,
   State,
   StateMapper,
+  AsyncDataMapperWithState,
 } from '../types.js'
 
 const passStateThroughNext = (next: StateMapper) => async (state: State) =>
@@ -95,7 +97,9 @@ const humanizeOperatorName = (operatorProp: string) =>
 
 const createOperation =
   <U extends OperationObject>(
-    operationFn: (fn: DataMapperWithOptions) => Operation,
+    operationFn: (
+      fn: DataMapperWithOptions | AsyncDataMapperWithOptions
+    ) => Operation,
     fnProp: string,
     def: U
   ): Operation =>
@@ -243,7 +247,7 @@ export function defToOperation(
 export function operationToDataMapper(
   operation: Operation,
   options: Options
-): DataMapperWithState {
+): DataMapperWithState | AsyncDataMapperWithState {
   const fn = operation(options)(noopNext)
   return async (value, state) =>
     getStateValue(await fn(setStateValue(state, value)))
@@ -252,6 +256,6 @@ export function operationToDataMapper(
 export function defToDataMapper(
   def?: TransformDefinition,
   options: Options = {}
-): DataMapperWithState {
+): DataMapperWithState | AsyncDataMapperWithState {
   return operationToDataMapper(defToOperation(def, options), options)
 }

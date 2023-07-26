@@ -5,7 +5,7 @@ import {
   goForward,
 } from '../utils/stateHelpers.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 function runCondition(conditionDef: DataMapper): Operation {
   return () => (next) => async (state) => {
@@ -34,9 +34,9 @@ export default function (
     const trueFn = defToOperation(trueDef, options)
 
     return (next) => {
-      const runCondition = conditionFn(options)(identity)
-      const runTrue = trueFn(options)(identity)
-      const runFalse = falseFn(options)(identity)
+      const runCondition = conditionFn(options)(noopNext)
+      const runTrue = trueFn(options)(noopNext)
+      const runFalse = falseFn(options)(noopNext)
 
       return async (state) => {
         const nextState = await next(state)

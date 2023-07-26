@@ -87,3 +87,5 @@ export const goForward = (state: State) => ({
 })
 
 export const stopIteration = (state: State) => ({ ...state, iterate: false })
+
+export const noopNext = async (state: State) => state

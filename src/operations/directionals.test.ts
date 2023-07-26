@@ -1,7 +1,7 @@
 import test from 'ava'
 import { get, set } from './getSet.js'
 import pipe from './pipe.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 import type { Operation } from '../types.js'
 
 import { fwd, rev, divide } from './directionals.js'
@@ -34,7 +34,7 @@ test('should apply function when not rev', async (t) => {
     rev: false,
   }
 
-  const ret = await fwd(upper)(options)(identity)(state)
+  const ret = await fwd(upper)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -51,7 +51,7 @@ test('should not apply function when rev', async (t) => {
     rev: true,
   }
 
-  const ret = await fwd(upper)(options)(identity)(state)
+  const ret = await fwd(upper)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -64,7 +64,7 @@ test('should treat string as get path in fwd', async (t) => {
   }
   const expectedValue = 'Entry 1'
 
-  const ret = await fwd('title')(options)(identity)(state)
+  const ret = await fwd('title')(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -82,7 +82,7 @@ test('should apply in pipe', async (t) => {
     rev: false,
   }
 
-  const ret = await pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -101,7 +101,7 @@ test('should apply function when rev', async (t) => {
     rev: true,
   }
 
-  const ret = await rev(upper)(options)(identity)(state)
+  const ret = await rev(upper)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -118,7 +118,7 @@ test('should not apply function when fwd', async (t) => {
     rev: false,
   }
 
-  const ret = await rev(upper)(options)(identity)(state)
+  const ret = await rev(upper)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -131,7 +131,7 @@ test('should treat string as get path in rev', async (t) => {
   }
   const expectedValue = { title: 'Entry 1' }
 
-  const ret = await rev('title')(options)(identity)(state)
+  const ret = await rev('title')(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -150,7 +150,7 @@ test('should apply first function when not rev', async (t) => {
     rev: false,
   }
 
-  const ret = await divide(upper, noop)(options)(identity)(state)
+  const ret = await divide(upper, noop)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -167,7 +167,7 @@ test('should apply second function when rev', async (t) => {
     rev: true,
   }
 
-  const ret = await divide(upper, noop)(options)(identity)(state)
+  const ret = await divide(upper, noop)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

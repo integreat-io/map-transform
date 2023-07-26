@@ -5,10 +5,9 @@ import type {
   InitialState,
 } from './types.js'
 import { defToOperation } from './utils/definitionHelpers.js'
-import { populateState, getStateValue } from './utils/stateHelpers.js'
+import { populateState, getStateValue, noopNext } from './utils/stateHelpers.js'
 import transformers from './transformers/index.js'
 import iterate from './operations/iterate.js'
-import { identity } from './utils/functional.js'
 
 export { default as apply } from './operations/apply.js'
 export { default as concat } from './operations/concat.js'
@@ -44,7 +43,7 @@ export default function mapTransform(
   options: Options = {}
 ): DataMapper<InitialState> {
   const completeOptions = mergeOptions(options)
-  const stateMapper = defToOperation(def, options)(completeOptions)(identity)
+  const stateMapper = defToOperation(def, options)(completeOptions)(noopNext)
 
   return async function transform(data, initialState) {
     const nextState = await stateMapper(populateState(data, initialState || {}))

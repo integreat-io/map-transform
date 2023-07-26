@@ -1,7 +1,7 @@
 import test from 'ava'
 import { set } from './getSet.js'
 import iterate from './iterate.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import merge from './merge.js'
 
@@ -48,7 +48,7 @@ test('should run pipelines and merge the result', async (t) => {
     sections: ['popular', 'news'],
   }
 
-  const ret = await merge(...pipelines)(options)(identity)(stateWithObject)
+  const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -67,7 +67,7 @@ test('should merge with existing object', async (t) => {
     tags: ['popular', 'news'],
   }
 
-  const ret = await merge(...pipelines)(options)(identity)(stateWithObject)
+  const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -86,7 +86,7 @@ test('should run pipelines and merge the result with several levels', async (t) 
     },
   }
 
-  const ret = await merge(...pipelines)(options)(identity)(stateWithObject)
+  const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -105,7 +105,7 @@ test('should clone Date to new Date', async (t) => {
     },
   }
 
-  const ret = await merge(...pipelines)(options)(identity)(stateWithObject)
+  const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -128,7 +128,7 @@ test('should run pipelines and merge arrays', async (t) => {
     },
   ]
 
-  const ret = await iterate(merge(...pipelines))(options)(identity)(
+  const ret = await iterate(merge(...pipelines))(options)(noopNext)(
     stateWithArray
   )
 
@@ -141,7 +141,7 @@ test('should run one pipeline', async (t) => {
     title: 'Entry 1',
   }
 
-  const ret = await merge(...pipelines)(options)(identity)(stateWithObject)
+  const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -150,7 +150,7 @@ test('should run no pipeline', async (t) => {
   const pipelines = [] as string[][]
   const expectedValue = undefined
 
-  const ret = await merge(...pipelines)(options)(identity)(stateWithObject)
+  const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -159,7 +159,7 @@ test('should not run pipelines on undefined value', async (t) => {
   const pipelines = [['heading', set('title')]]
   const state = { ...stateWithObject, value: undefined }
 
-  const ret = await merge(...pipelines)(options)(identity)(state)
+  const ret = await merge(...pipelines)(options)(noopNext)(state)
 
   t.is(ret.value, undefined)
 })
@@ -169,7 +169,7 @@ test('should not run pipelines on null value when null is included in nonvalues'
   const state = { ...stateWithObject, value: null }
   const optionsNullAsNone = { ...options, nonvalues: [undefined, null] }
 
-  const ret = await merge(...pipelines)(optionsNullAsNone)(identity)(state)
+  const ret = await merge(...pipelines)(optionsNullAsNone)(noopNext)(state)
 
   t.is(ret.value, undefined)
 })
@@ -180,7 +180,7 @@ test('should run pipelines on null value when null is notincluded in nonvalues',
   const optionsMutateNull = { ...options, nonvalues: [undefined] }
   const expected = { title: null }
 
-  const ret = await merge(...pipelines)(optionsMutateNull)(identity)(state)
+  const ret = await merge(...pipelines)(optionsMutateNull)(noopNext)(state)
 
   t.deepEqual(ret.value, expected)
 })
@@ -190,7 +190,7 @@ test('should run pipelines on null value as default', async (t) => {
   const state = { ...stateWithObject, value: null }
   const expected = { title: null }
 
-  const ret = await merge(...pipelines)(options)(identity)(state)
+  const ret = await merge(...pipelines)(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expected)
 })

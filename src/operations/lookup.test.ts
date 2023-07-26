@@ -1,5 +1,5 @@
 import test from 'ava'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import lookup from './lookup.js'
 
@@ -29,7 +29,7 @@ test('should lookup data', async (t) => {
     value: { id: 'user2', name: 'User 2' },
   }
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -57,7 +57,7 @@ test('should lookup array of data', async (t) => {
     ],
   }
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -84,7 +84,7 @@ test('should match only first of several matches', async (t) => {
     { id: 'user3', name: 'User 3' },
   ]
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -114,7 +114,7 @@ test('should match several matches when `matchSeveral` is true', async (t) => {
     { id: 'user3', name: 'Another 3' },
   ]
 
-  const ret = await lookup(propsMatchSeveral)(options)(identity)(state)
+  const ret = await lookup(propsMatchSeveral)(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -135,7 +135,7 @@ test('should force the value at array path to an array', async (t) => {
     value: { id: 'user2', name: 'User 2' },
   }
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -149,7 +149,7 @@ test('should set value to undefined when array path yields undefined', async (t)
     value: 'user2',
   }
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.is(ret.value, undefined)
 })
@@ -169,7 +169,7 @@ test('should set value to undefined when no match', async (t) => {
     value: 'user3',
   }
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.is(ret.value, undefined)
 })
@@ -189,7 +189,7 @@ test('should get lookup prop in reverse', async (t) => {
     rev: true,
   }
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -210,7 +210,7 @@ test('should get lookup prop on array in reverse', async (t) => {
     rev: true,
   }
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -238,7 +238,7 @@ test('should lookup data in reverse when flipped', async (t) => {
     flip: true,
   }
 
-  const ret = await lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

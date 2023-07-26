@@ -1,5 +1,5 @@
 import test from 'ava'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import root from './root.js'
 
@@ -19,7 +19,7 @@ test('should apply pipeline to root', async (t) => {
     value: 'news',
   }
 
-  const ret = await root('section')(options)(identity)(state)
+  const ret = await root('section')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

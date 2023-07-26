@@ -1,6 +1,6 @@
 import type { Options, Operation, State } from '../types.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 const extractPipeline = (pipelineId: string | symbol, { pipelines }: Options) =>
   (typeof pipelineId === 'string' || typeof pipelineId === 'symbol') &&
@@ -22,7 +22,7 @@ export default function apply(pipelineId: string | symbol): Operation {
     }
 
     const fn = pipeline
-      ? defToOperation(pipeline, options)(options)(identity)
+      ? defToOperation(pipeline, options)(options)(noopNext)
       : undefined
     return async (state) => {
       const nextState = await next(state)

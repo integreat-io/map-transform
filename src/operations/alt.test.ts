@@ -4,7 +4,7 @@ import iterate from './iterate.js'
 import pipe from './pipe.js'
 import transform from './transform.js'
 import { value } from '../transformers/value.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import alt from './alt.js'
 
@@ -26,7 +26,7 @@ test('should use alternative pipeline when first yields undefined', async (t) =>
     value: 'johnf',
   }
 
-  const ret = await pipe(alt(def1, def2))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -43,7 +43,7 @@ test('should use first pipeline when it yields a value', async (t) => {
     value: 'John F.',
   }
 
-  const ret = await pipe(alt(def1, def2))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -61,7 +61,7 @@ test('should use third pipeline when the first two yields undefined', async (t) 
     value: 'johnf',
   }
 
-  const ret = await pipe(alt(def1, def2, def3))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2, def3))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -78,7 +78,7 @@ test('should yield alt value from a dot path', async (t) => {
     value: '12345',
   }
 
-  const ret = await pipe(alt(def1, def2))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -97,7 +97,7 @@ test('should not polute context from unyielding pipeline', async (t) => {
     value: 'Entry 1',
   }
 
-  const ret = await pipe(alt(def1, def2, def3))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2, def3))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -114,7 +114,7 @@ test('should treat path as an pipeline', async (t) => {
     value: 'johnf',
   }
 
-  const ret = await pipe(alt(def1, def2))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -128,7 +128,7 @@ test('should support transform pipeline', async (t) => {
   }
   const expectedValue = 'johnf'
 
-  const ret = await pipe(alt(def1, def2))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
 
   t.is(ret.value, expectedValue)
 })
@@ -142,7 +142,7 @@ test('should treat array as a value and not iterate', async (t) => {
   }
   const expectedValue = ['John F.', 'The John']
 
-  const ret = await pipe(alt(def1, def2))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -162,7 +162,7 @@ test('should support set on first path in reverse, and set default value', async
     rev: true,
   }
 
-  const ret = await pipe(alt(def1, def2, def3))(options)(identity)(state)
+  const ret = await pipe(alt(def1, def2, def3))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -177,7 +177,7 @@ test('should support nonvalues from options', async (t) => {
   }
   const expectedValue = 'johnf'
 
-  const ret = await pipe(alt(def1, def2))(optionsWithNullAsNoValue)(identity)(
+  const ret = await pipe(alt(def1, def2))(optionsWithNullAsNoValue)(noopNext)(
     state
   )
 
@@ -193,7 +193,7 @@ test('should behave correctly when iterated', async (t) => {
   }
   const expectedValue = ['admin', 'John F.']
 
-  const ret = await iterate(alt(def1, def2))(options)(identity)(state)
+  const ret = await iterate(alt(def1, def2))(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -211,7 +211,7 @@ test('should run if value is undefined when only one pipeline', async (t) => {
     value: 'johnf',
   }
 
-  const ret = await pipe(alt(def))(options)(identity)(state)
+  const ret = await pipe(alt(def))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -227,7 +227,7 @@ test('should not run if value is not undefined when only one pipeline', async (t
     value: 'John F.',
   }
 
-  const ret = await pipe(alt(def))(options)(identity)(state)
+  const ret = await pipe(alt(def))(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -244,7 +244,7 @@ test('should run if value is null when included in nonvalues only one pipeline',
     value: 'johnf',
   }
 
-  const ret = await pipe(alt(def))(optionsWithNullAsNoValue)(identity)(state)
+  const ret = await pipe(alt(def))(optionsWithNullAsNoValue)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

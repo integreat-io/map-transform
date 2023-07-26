@@ -1,7 +1,7 @@
 import test from 'ava'
 import alt from './alt.js'
 import transform from './transform.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import iterate from './iterate.js'
 
@@ -33,7 +33,7 @@ test('should map over a value array', async (t) => {
     ],
   }
 
-  const ret = await iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -49,7 +49,7 @@ test('should map over non-array', async (t) => {
   }
   const expectedValue = { id: 'ent1', title: 'Entry 1' }
 
-  const ret = await iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -73,7 +73,7 @@ test('should provide array as context', async (t) => {
     ],
   }
 
-  const ret = await iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -101,8 +101,8 @@ test('should provide array as context through several iterations', async (t) => 
     ],
   }
 
-  const ret1 = await iterate(def1)(options)(identity)(state)
-  const ret2 = await iterate(def2)(options)(identity)(ret1)
+  const ret1 = await iterate(def1)(options)(noopNext)(state)
+  const ret2 = await iterate(def2)(options)(noopNext)(ret1)
 
   t.deepEqual(ret2, expected)
 })
@@ -139,7 +139,7 @@ test('should provide array as context through double arrays', async (t) => {
     ],
   }
 
-  const ret = await iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -151,7 +151,7 @@ test('should return undefined when no def', async (t) => {
     value: data,
   }
 
-  const ret = await iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(noopNext)(state)
 
   t.is(ret.value, undefined)
 })
@@ -184,7 +184,7 @@ test('should iterate context to support alt operation etc.', async (t) => {
     value: ['From somewhere else', 'ent2: Entry 2'],
   }
 
-  const ret = await iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -207,7 +207,7 @@ test('should map over a value array in reverse', async (t) => {
     ],
   }
 
-  const ret = await iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

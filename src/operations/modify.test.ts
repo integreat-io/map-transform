@@ -1,5 +1,5 @@
 import test from 'ava'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import modify from './modify.js'
 
@@ -22,7 +22,7 @@ test('should fetch data from context with pipeline and merge with value', async 
     value: { status: 'ok', data: items },
   }
 
-  const ret = await modify(pipeline)(options)(identity)(state)
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -41,7 +41,7 @@ test('should shallow merge objects', async (t) => {
     value: { id: '1', name: 'John', meta: { count: 134 } },
   }
 
-  const ret = await modify(pipeline)(options)(identity)(state)
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -61,7 +61,7 @@ test('should shallow merge objects in reverse', async (t) => {
     value: { id: '1', name: 'John', meta: { count: 134 } },
   }
 
-  const ret = await modify(pipeline)(options)(identity)(state)
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -82,7 +82,7 @@ test('should shallow merge objects flipped and in reverse', async (t) => {
     value: { id: '1', name: 'John', meta: { count: 134 } },
   }
 
-  const ret = await modify(pipeline)(options)(identity)(state)
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -101,7 +101,7 @@ test('should support pipeline more complex than path', async (t) => {
     value: { id: '1', data: { name: 'John', meta: { count: 134 } } },
   }
 
-  const ret = await modify(pipeline)(options)(identity)(state)
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -115,7 +115,7 @@ test('should not merge when pipeline yields non-object', async (t) => {
   }
   const expected = state
 
-  const ret = await modify(pipeline)(options)(identity)(state)
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -129,7 +129,7 @@ test('should not merge when value is a non-object', async (t) => {
   }
   const expected = state
 
-  const ret = await modify(pipeline)(options)(identity)(state)
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -146,7 +146,7 @@ test('should not mutate undefined', async (t) => {
     value: undefined,
   }
 
-  const ret = await modify(pipeline)(options)(identity)(state)
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -161,7 +161,7 @@ test('should return undefined for null when included in nonvalues', async (t) =>
   }
   const expected = state
 
-  const ret = await modify(pipeline)(optionsWithNullAsNone)(identity)(state)
+  const ret = await modify(pipeline)(optionsWithNullAsNone)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

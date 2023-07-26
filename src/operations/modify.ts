@@ -7,7 +7,7 @@ import {
 } from '../utils/stateHelpers.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 export default function modify(def: TransformDefinition): Operation {
   return (options) => {
@@ -18,7 +18,7 @@ export default function modify(def: TransformDefinition): Operation {
         nextState,
         getTargetFromState(nextState)
       )
-      const thisState = await runFn(options)(identity)(goForward(contextState))
+      const thisState = await runFn(options)(noopNext)(goForward(contextState))
 
       const thisValue = getStateValue(thisState)
       const nextValue = getStateValue(nextState)

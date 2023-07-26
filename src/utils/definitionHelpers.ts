@@ -1,6 +1,6 @@
 import { getStateValue, setStateValue } from './stateHelpers.js'
 import modifyOperationObject from './modifyOperationObject.js'
-import { identity } from './functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 import { isObject } from './is.js'
 import { get } from '../operations/getSet.js'
 import props from '../operations/props.js'
@@ -244,7 +244,7 @@ export function operationToDataMapper(
   operation: Operation,
   options: Options
 ): DataMapperWithState {
-  const fn = operation(options)(identity)
+  const fn = operation(options)(noopNext)
   return async (value, state) =>
     getStateValue(await fn(setStateValue(state, value)))
 }

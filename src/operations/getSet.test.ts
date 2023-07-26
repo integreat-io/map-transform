@@ -1,6 +1,6 @@
 import test from 'ava'
 import pipe from './pipe.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import { get, set } from './getSet.js'
 
@@ -24,7 +24,7 @@ test('should return simple get function', async (t) => {
   const expected = { ...state, context: [{ name: 'Bohm' }], value: 'Bohm' }
 
   const fn = get(path)[0] // Note: `get()` returns an array, but we'll run the first operation directly as there will be only one
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -39,7 +39,7 @@ test('should get dot path', async (t) => {
   }
 
   const fn = pipe(get(path)) // Note: `get()` returns an array and needs to be run through pipe
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -54,7 +54,7 @@ test('should split up path with array index', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -73,7 +73,7 @@ test('should split up path with negative array index', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -88,7 +88,7 @@ test('should get path with several array indeces', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -103,7 +103,7 @@ test('should get array index as root', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -122,7 +122,7 @@ test('should handle array notation in path', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -137,7 +137,7 @@ test('should return a flattened array', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -152,7 +152,7 @@ test('should not touch escaped brackets', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -167,7 +167,7 @@ test('should force array', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -182,7 +182,7 @@ test('should get path starting with escaped $', async (t) => {
   }
 
   const fn = pipe(get(path)) // Note: `get()` returns an array and needs to be run through pipe
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -194,7 +194,7 @@ test('should return undefined when object is null', async (t) => {
   const expected = { ...state, context: [null], value: undefined }
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -209,7 +209,7 @@ test('should return empty array with null when value is null and expecting array
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -221,7 +221,7 @@ test('should return value when path is empty', async (t) => {
   const expected = state
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -233,7 +233,7 @@ test('should return value when path is dot', async (t) => {
   const expected = state
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -248,7 +248,7 @@ test('should disregard spaces in path', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -263,7 +263,7 @@ test('should return undefined when path does not match data', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -278,7 +278,7 @@ test('should return empty array when path does not match, but expecting array', 
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -294,7 +294,7 @@ test('should return empty array for missing array', async (t) => {
   }
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -310,7 +310,7 @@ test('should return array with null by default', async (t) => {
   }
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -327,7 +327,7 @@ test('should return empty array when value is null and null is a nonvalue', asyn
   }
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -344,7 +344,7 @@ test('should not return empty array when noDefaults is true', async (t) => {
   }
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -365,7 +365,7 @@ test('should get path with parent', async (t) => {
   const expectedValue = 'physics'
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -385,7 +385,7 @@ test('should get path with several parents', async (t) => {
   const expectedValue = 0
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -407,7 +407,7 @@ test('should get path with parents from array index', async (t) => {
   const expectedValue = 0
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -432,7 +432,7 @@ test('should get from parent outside array', async (t) => {
   const expectedValue = 'physics'
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -456,7 +456,7 @@ test('should get path with parent from array', async (t) => {
   const expectedValue = 'physics'
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -477,7 +477,7 @@ test('should get path with several parents from array', async (t) => {
   const expectedValue = 0
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -499,7 +499,7 @@ test('should get path with root from context', async (t) => {
   const expectedValue = 0
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -517,7 +517,7 @@ test('should get path with root from value', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -537,7 +537,7 @@ test('should get path with root without dot', async (t) => {
   const expectedValue = 0
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -557,7 +557,7 @@ test('should support obsolete root notation with one carret', async (t) => {
   const expectedValue = 0
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -575,7 +575,7 @@ test('should get root when value is root', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -602,7 +602,7 @@ test('should clear context when getting root', async (t) => {
   }
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -616,7 +616,7 @@ test('should set with simple path', async (t) => {
   const expected = { ...state, context: [], value: { name: 'Bohm' } }
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -631,7 +631,7 @@ test('should set with dot path', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -646,7 +646,7 @@ test('should set path with array index', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -661,7 +661,7 @@ test('should set path with several array indeces', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -673,7 +673,7 @@ test('should treat path prefixed by > as set', async (t) => {
   const expected = { ...state, context: [], value: { name: 'Bohm' } }
 
   const fn = get(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -688,7 +688,7 @@ test('should set array index as root', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -707,7 +707,7 @@ test('should iterate array at array notation', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -736,7 +736,7 @@ test('should iterate array at array notation with target', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -751,7 +751,7 @@ test('should set simple path in root array', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -766,7 +766,7 @@ test('should set array for path without array notation', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -785,7 +785,7 @@ test('should set path with array notation in reverse', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -803,7 +803,7 @@ test('should not set on sub target', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -822,7 +822,7 @@ test('should set path with array notation when flipping', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -838,7 +838,7 @@ test('should not set with when both rev and flipping', async (t) => {
   const expectedValue = ['Bohr', 'Bohm']
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -853,7 +853,7 @@ test('should set path with several arrays', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -868,7 +868,7 @@ test('should set with escaped brackets', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -884,7 +884,7 @@ test('should not strip away star', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -899,7 +899,7 @@ test('should set with escaped $', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -911,7 +911,7 @@ test('should not set undefined when state.noDefaults is true', async (t) => {
   const expected = { ...state, context: [], value: undefined }
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -923,7 +923,7 @@ test('should not set nonvalue when state.noDefaults is true and bracket notation
   const expected = { ...state, context: [], value: undefined }
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -936,7 +936,7 @@ test('should not set null when state.noDefaults is true and null is in nonvalues
   const expected = { ...state, context: [], value: undefined }
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -951,7 +951,7 @@ test('should not set undefined on a target when state.noDefaults is true', async
   const expected = { ...state, context: [], value: { id: 'johnf' } }
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -963,7 +963,7 @@ test('should return value when path is empty - for set', async (t) => {
   const expected = state
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -975,7 +975,7 @@ test('should return value when path is dot - for set', async (t) => {
   const expected = state
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -990,7 +990,7 @@ test('should set null value', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1005,7 +1005,7 @@ test('should not set when parent path -- for now', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1020,7 +1020,7 @@ test('should not set with root path -- for now', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1040,7 +1040,7 @@ test('should set on target', async (t) => {
   }
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1058,7 +1058,7 @@ test('should set on target with depth', async (t) => {
   }
 
   const fn = pipe(set(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1076,7 +1076,7 @@ test('should set array index on target', async (t) => {
   }
 
   const fn = set(path)[0]
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1098,7 +1098,7 @@ test('should set on path in reverse', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -1118,7 +1118,7 @@ test('should set on array path in reverse', async (t) => {
   }
 
   const fn = pipe(get(path))
-  const ret = await fn(options)(identity)(state)
+  const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

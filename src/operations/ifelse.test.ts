@@ -2,7 +2,7 @@ import test from 'ava'
 import sinon from 'sinon'
 import { isObject } from '../utils/is.js'
 import { set } from './getSet.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import ifelse from './ifelse.js'
 
@@ -28,7 +28,7 @@ test('should run truePipeline when true', async (t) => {
   }
 
   const ret = await ifelse(conditionFn, truePipeline, falsePipeline)(options)(
-    identity
+    noopNext
   )(state)
 
   t.deepEqual(ret, expected)
@@ -44,7 +44,7 @@ test('should run falsePipeline when false', async (t) => {
   const expectedValue = { inactive: [data] }
 
   const ret = await ifelse(conditionFn, truePipeline, falsePipeline)(options)(
-    identity
+    noopNext
   )(state)
 
   t.deepEqual(ret.value, expectedValue)
@@ -59,7 +59,7 @@ test('should do nothing when true and no truePipeline', async (t) => {
   }
 
   const ret = await ifelse(conditionFn, undefined, falsePipeline)(options)(
-    identity
+    noopNext
   )(state)
 
   t.deepEqual(ret, state)
@@ -73,7 +73,7 @@ test('should do nothing when false and no falsePipeline', async (t) => {
     value: data,
   }
 
-  const ret = await ifelse(conditionFn, truePipeline)(options)(identity)(state)
+  const ret = await ifelse(conditionFn, truePipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, state)
 })
@@ -87,7 +87,7 @@ test('should run falsePipeline when no conditionFn', async (t) => {
   const expectedValue = { inactive: [data] }
 
   const ret = await ifelse(undefined, truePipeline, falsePipeline)(options)(
-    identity
+    noopNext
   )(state)
 
   t.deepEqual(ret.value, expectedValue)
@@ -108,7 +108,7 @@ test('should set primitive value', async (t) => {
   }
 
   const ret = await ifelse(conditionFn, truePipeline, falsePipeline)(options)(
-    identity
+    noopNext
   )(state)
 
   t.deepEqual(ret, expected)
@@ -130,7 +130,7 @@ test('should set primitive value in reverse', async (t) => {
   }
 
   const ret = await ifelse(conditionFn, truePipeline, falsePipeline)(options)(
-    identity
+    noopNext
   )(state)
 
   t.deepEqual(ret, expected)
@@ -152,7 +152,7 @@ test('should run truePipeline with pipeline as condition', async (t) => {
     conditionPipeline,
     truePipeline,
     falsePipeline
-  )(options)(identity)(state)
+  )(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -170,7 +170,7 @@ test('should run falsePipeline with pipeline as condition', async (t) => {
     conditionPipeline,
     truePipeline,
     falsePipeline
-  )(options)(identity)(state)
+  )(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })

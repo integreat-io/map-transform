@@ -13,7 +13,7 @@ import {
 } from '../utils/stateHelpers.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { indexOfIfArray } from '../utils/array.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 export const iterateState =
   (fn: StateMapper) => async (state: State, target: unknown) => {
@@ -51,7 +51,7 @@ export default function iterate(def: TransformDefinition): Operation {
   }
   return (options) => {
     const fn = defToOperation(def, options)
-    const runIteration = iterateState(fn(options)(identity))
+    const runIteration = iterateState(fn(options)(noopNext))
     return (next) =>
       async function doIterate(state) {
         const nextState = await next(state)

@@ -5,7 +5,6 @@ import type {
   TransformerProps,
   Transformer,
 } from '../types.js'
-import { identity } from '../utils/functional.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
 
@@ -41,7 +40,9 @@ function fetchSortValue(getFn: DataMapperWithState, state: State) {
 const transformer: Transformer<Props> = function sort(props) {
   return (options) => {
     const direction = props?.asc === false ? -1 : 1
-    const getFn = props?.path ? defToDataMapper(props.path, options) : identity
+    const getFn = props?.path
+      ? defToDataMapper(props.path, options)
+      : async (value: unknown) => value
 
     return async (data, state) => {
       if (!Array.isArray(data) || data.length < 2) {

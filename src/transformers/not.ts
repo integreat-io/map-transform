@@ -7,7 +7,6 @@ import type {
   Options,
 } from '../types.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
-import { identity } from '../utils/functional.js'
 
 export interface Props extends TransformerProps {
   path?: TransformDefinition
@@ -22,7 +21,7 @@ function dataMapperFromProps(
   } else if (isObject(props)) {
     return defToDataMapper(props.path, options)
   } else {
-    return identity
+    return async (value: unknown) => value
   }
 }
 

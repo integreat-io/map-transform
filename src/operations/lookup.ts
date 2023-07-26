@@ -7,7 +7,7 @@ import type {
 } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { defToDataMapper, defToOperation } from '../utils/definitionHelpers.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 import xor from '../utils/xor.js'
 import {
   filterAsyncWithDataMapper,
@@ -47,7 +47,7 @@ const mapValue = (
       return async (value: unknown) =>
         await getProp(value, { ...state, rev: false }) // Do a regular get, even though we're in rev
     } else {
-      const { value: arr } = await getArray({})(identity)(state)
+      const { value: arr } = await getArray({})(noopNext)(state)
       return arr ? matchInArray(arr as unknown[], state) : async () => undefined
     }
   }

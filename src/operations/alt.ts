@@ -7,7 +7,7 @@ import {
   removeLastContext,
 } from '../utils/stateHelpers.js'
 import { defToOperations } from '../utils/definitionHelpers.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 import type { Operation, TransformDefinition } from '../types.js'
 
 // We run an array of operations through a pipe here when necessary, and specify
@@ -30,13 +30,13 @@ function createOneAltOperation(
       const isFirst = !isSingleMode && index === 0
 
       if (isFirst) {
-        const thisState = await operation(options)(identity)(nextState)
+        const thisState = await operation(options)(noopNext)(nextState)
         return isNonvalueState(thisState, nonvalues)
           ? { ...thisState, context: [...nextState.context, nextState.value] }
           : thisState
       } else {
         if (isNonvalueState(nextState, nonvalues)) {
-          const thisState = await operation(options)(identity)(
+          const thisState = await operation(options)(noopNext)(
             removeLastContext(
               setStateValue(nextState, getLastContext(nextState))
             )

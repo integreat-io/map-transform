@@ -1,6 +1,6 @@
 import test from 'ava'
 import sinon from 'sinon'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import transform from './transform.js'
 
@@ -26,7 +26,7 @@ test('should run transform function on value', async (t) => {
     value: 'ENTRY 1',
   }
 
-  const ret = await transform(upper)(options)(identity)(state)
+  const ret = await transform(upper)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -41,7 +41,7 @@ test('should run transform function on array value', async (t) => {
     value: 2,
   }
 
-  const ret = await transform(length)(options)(identity)(state)
+  const ret = await transform(length)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -58,7 +58,7 @@ test('should run transform in reverse', async (t) => {
     rev: true,
   }
 
-  const ret = await transform(upper)(options)(identity)(state)
+  const ret = await transform(upper)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -75,7 +75,7 @@ test('should run dedicated transform in reverse', async (t) => {
     rev: true,
   }
 
-  const ret = await transform(upper, lower)(options)(identity)(state)
+  const ret = await transform(upper, lower)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -92,7 +92,7 @@ test('should not mind reverse transform going forward', async (t) => {
     rev: false,
   }
 
-  const ret = await transform(upper, lower)(options)(identity)(state)
+  const ret = await transform(upper, lower)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -107,7 +107,7 @@ test('should pass state to transform function', async (t) => {
   }
   const expected = state
 
-  await transform(() => fn)(options)(identity)(state)
+  await transform(() => fn)(options)(noopNext)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })
@@ -122,7 +122,7 @@ test('should pass state to rev transform function', async (t) => {
   }
   const expected = state
 
-  await transform(upper, () => fn)(options)(identity)(state)
+  await transform(upper, () => fn)(options)(noopNext)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })
@@ -134,7 +134,7 @@ test('should throw when given something other than a function', (t) => {
   }
 
   const error = t.throws(
-    () => transform('wrong' as any)(options)(identity)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
+    () => transform('wrong' as any)(options)(noopNext)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
   )
 
   t.true(error instanceof Error)

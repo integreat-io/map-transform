@@ -25,7 +25,7 @@ import {
   isTransformDefinition,
   defToOperation,
 } from '../utils/definitionHelpers.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 
 function isRegularProp(
@@ -56,7 +56,7 @@ function isWrongDirection(direction: unknown, options: Options) {
 
 function runOperationWithOriginalValue({ value }: State, options: Options) {
   return async (state: State, fn: Operation) => {
-    const nextState = await fn(options)(identity)(setStateValue(state, value))
+    const nextState = await fn(options)(noopNext)(setStateValue(state, value))
 
     const target = state.target
     const nextValue = getStateValue(nextState)
@@ -179,7 +179,7 @@ export default function props(def: TransformObject): Operation {
 
     // Return operation
     return (next) => {
-      const modifyFn = modifyWithGivenPath(modifyPath, options, identity)
+      const modifyFn = modifyWithGivenPath(modifyPath, options, noopNext)
       const run = runOperations(modifyFn, operations, options)
       const isWrongDirectionFn = isWrongDirection(def.$direction, options)
 
@@ -197,7 +197,7 @@ export default function props(def: TransformObject): Operation {
         ) // Don't pass on iteration to props
         const thisState =
           def.$iterate === true
-            ? await iterate(() => () => run)(options)(identity)(propsState)
+            ? await iterate(() => () => run)(options)(noopNext)(propsState)
             : await run(propsState)
 
         return setValueFromState(nextState, thisState)

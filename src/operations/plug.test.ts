@@ -1,5 +1,5 @@
 import test from 'ava'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import plug from './plug.js'
 
@@ -19,7 +19,7 @@ test('should set value to undefined', async (t) => {
     value: undefined,
   }
 
-  const ret = await plug()(options)(identity)(state)
+  const ret = await plug()(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -36,7 +36,7 @@ test('should set value to undefined when noDefaults', async (t) => {
     noDefaults: true,
   }
 
-  const ret = await plug()(options)(identity)(state)
+  const ret = await plug()(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -52,7 +52,7 @@ test('should set target as value when present', async (t) => {
     value: { data: { name: 'John F.', age: 32 } },
   }
 
-  const ret = await plug()(options)(identity)(state)
+  const ret = await plug()(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

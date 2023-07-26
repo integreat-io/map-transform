@@ -1,6 +1,6 @@
 import test from 'ava'
 import type { State } from '../types.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import filter from './filter.js'
 
@@ -26,7 +26,7 @@ test('should set value to undefined when filter returns false', async (t) => {
     value: undefined,
   }
 
-  const ret = await filter(beginsWithA)(options)(identity)(state)
+  const ret = await filter(beginsWithA)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -37,7 +37,7 @@ test('should not touch value when filter returns true', async (t) => {
     value: 'An entry',
   }
 
-  const ret = await filter(beginsWithA)(options)(identity)(state)
+  const ret = await filter(beginsWithA)(options)(noopNext)(state)
 
   t.deepEqual(ret, state)
 })
@@ -52,7 +52,7 @@ test('should remove values in array when filter returns false', async (t) => {
     value: ['Andy'],
   }
 
-  const ret = await filter(beginsWithA)(options)(identity)(state)
+  const ret = await filter(beginsWithA)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -68,7 +68,7 @@ test('should provide state to filter function', async (t) => {
     value: ['John F'],
   }
 
-  const ret = await filter(isParam)(options)(identity)(state)
+  const ret = await filter(isParam)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -80,7 +80,7 @@ test('should not touch value when filter is not a function', async (t) => {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ret = await filter('notallowed' as any)(options)(identity)(state)
+  const ret = await filter('notallowed' as any)(options)(noopNext)(state)
 
   t.deepEqual(ret, state)
 })

@@ -1,7 +1,7 @@
 import test from 'ava'
 import transform from './transform.js'
 import { value } from '../transformers/value.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import concat from './concat.js'
 
@@ -21,7 +21,7 @@ test('should just pass on state when given one pipeline', async (t) => {
     value: ['johnf', 'maryk'],
   }
 
-  const ret = await concat('users[]')(options)(identity)(state)
+  const ret = await concat('users[]')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -33,7 +33,7 @@ test('should merge arrays from several pipelines', async (t) => {
   }
   const expectedValue = ['johnf', 'maryk', 'theboss']
 
-  const ret = await concat('users[]', 'admins[]')(options)(identity)(state)
+  const ret = await concat('users[]', 'admins[]')(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
@@ -46,7 +46,7 @@ test('should merge strings from several pipelines into array', async (t) => {
   const expectedValue = ['bergen', '-', 'johnf']
 
   const ret = await concat('group', transform(value('-')), 'user')(options)(
-    identity
+    noopNext
   )(state)
 
   t.deepEqual(ret.value, expectedValue)
@@ -60,7 +60,7 @@ test('should strip away undefined', async (t) => {
   const expectedValue = ['bergen', 'johnf', null]
 
   const ret = await concat('group', 'unknown', 'user', 'team')(options)(
-    identity
+    noopNext
   )(state)
 
   t.deepEqual(ret.value, expectedValue)

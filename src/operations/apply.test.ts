@@ -1,6 +1,6 @@
 import test from 'ava'
 import { set } from './getSet.js'
-import { identity } from '../utils/functional.js'
+import { noopNext } from '../utils/stateHelpers.js'
 
 import apply from './apply.js'
 
@@ -30,7 +30,7 @@ test('should run pipeline by id', async (t) => {
     value: 'Entry 1',
   }
 
-  const ret = await apply('extractTitle')(options)(identity)(state)
+  const ret = await apply('extractTitle')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -47,7 +47,7 @@ test('should run pipeline by id - in rev', async (t) => {
     rev: true,
   }
 
-  const ret = await apply('extractTitle')(options)(identity)(state)
+  const ret = await apply('extractTitle')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -62,7 +62,7 @@ test('should run object pipeline by id', async (t) => {
     value: { headline: 'Entry 1' },
   }
 
-  const ret = await apply('renameTitle')(options)(identity)(state)
+  const ret = await apply('renameTitle')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -79,7 +79,7 @@ test('should run object pipeline by id - in rev', async (t) => {
     rev: true,
   }
 
-  const ret = await apply('renameTitle')(options)(identity)(state)
+  const ret = await apply('renameTitle')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -95,7 +95,7 @@ test('should not pass on flip', async (t) => {
     value: { headline: 'Entry 1' },
   }
 
-  const ret = await apply('renameTitle')(options)(identity)(state)
+  const ret = await apply('renameTitle')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -113,7 +113,7 @@ test('should not pass on flip - in rev', async (t) => {
     rev: true,
   }
 
-  const ret = await apply('renameTitle')(options)(identity)(state)
+  const ret = await apply('renameTitle')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -128,7 +128,7 @@ test('should run pipeline on undefined', async (t) => {
     value: { title: undefined },
   }
 
-  const ret = await apply('setTitle')(options)(identity)(state)
+  const ret = await apply('setTitle')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
@@ -139,7 +139,7 @@ test('should throw when given an unknown pipeline id', (t) => {
     value: { title: 'Entry 1' },
   }
 
-  const error = t.throws(() => apply('unknown')(options)(identity)(state))
+  const error = t.throws(() => apply('unknown')(options)(noopNext)(state))
 
   t.true(error instanceof Error)
   t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
@@ -152,7 +152,7 @@ test('should throw when not given a pipeline id', (t) => {
   }
 
   const error = t.throws(
-    () => apply(undefined as any)(options)(identity)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
+    () => apply(undefined as any)(options)(noopNext)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
   )
 
   t.true(error instanceof Error)

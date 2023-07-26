@@ -252,3 +252,47 @@ test('should merge in reverse', async (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should run pipelines and merge the result', async (t) => {
+  const path = [
+    ['heading', '>title'],
+    ['createdBy', '>author'],
+    ['tags', '>sections[]'],
+  ]
+  const data = {
+    heading: 'Entry 1',
+    createdBy: 'johnf',
+    createdAt: new Date('2021-07-01T07:11:33Z'),
+    tags: ['popular', 'news'],
+  }
+  const expectedValue = {
+    title: 'Entry 1',
+    author: 'johnf',
+    sections: ['popular', 'news'],
+  }
+
+  const ret = await merge({ path })(options)(data, state)
+
+  t.deepEqual(ret, expectedValue)
+})
+
+test('should merge with existing object', async (t) => {
+  const path = [['.'], ['createdBy', '>heading'], ['heading', '>title']]
+  const data = {
+    heading: 'Entry 1',
+    createdBy: 'johnf',
+    createdAt: new Date('2021-07-01T07:11:33Z'),
+    tags: ['popular', 'news'],
+  }
+  const expectedValue = {
+    heading: 'johnf',
+    title: 'Entry 1',
+    createdBy: 'johnf',
+    createdAt: new Date('2021-07-01T07:11:33Z'),
+    tags: ['popular', 'news'],
+  }
+
+  const ret = await merge({ path })(options)(data, state)
+
+  t.deepEqual(ret, expectedValue)
+})

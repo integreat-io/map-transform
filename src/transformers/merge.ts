@@ -1,11 +1,15 @@
 import { ensureArray } from '../utils/array.js'
-import type { TransformerProps, Transformer } from '../types.js'
+import type {
+  TransformerProps,
+  Transformer,
+  TransformDefinition,
+} from '../types.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 
 export interface Props extends TransformerProps {
-  path?: string | string[]
+  path?: TransformDefinition | TransformDefinition[]
 }
 
 // Sort entries with value === undefined before other entries, to make sure that values are not overwritten by `undefined`

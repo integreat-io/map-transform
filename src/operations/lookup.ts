@@ -10,10 +10,6 @@ import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { defToDataMapper, defToOperation } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import xor from '../utils/xor.js'
-import {
-  filterAsyncWithDataMapper,
-  findAsyncWithDataMapper,
-} from '../utils/array.js'
 
 export interface Props extends TransformerProps {
   arrayPath: Path
@@ -34,9 +30,22 @@ const matchPropInArray =
   (arr: unknown[], state: State) =>
   async (value: unknown) => {
     if (matchSeveral) {
-      return filterAsyncWithDataMapper(arr, getProp, state, value)
+      // Find all matches in array. This has to support async, so we first map
+      // over the array and get the value to compare against, then filter
+      // against these values.
+      const results = await Promise.all(
+        arr.map(async (val) => await getProp(val, state))
+      )
+      return arr.filter((_v, index) => results[index] === value) // eslint-disable-line security/detect-object-injection
     } else {
-      return findAsyncWithDataMapper(arr, getProp, state, value)
+      // Find first match in array. We use a for loop here, as we have to do it
+      // asyncronously.
+      for (const val of arr) {
+        if ((await getProp(val, state)) === value) {
+          return val
+        }
+      }
+      return undefined
     }
   }
 

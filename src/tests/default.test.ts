@@ -5,7 +5,7 @@ import { get } from '../operations/getSet.js'
 
 // Tests
 
-test('should use default value', (t) => {
+test('should use default value', async (t) => {
   const def = {
     $iterate: true,
     title: [alt('content.heading', transform(value('Default heading')))],
@@ -13,22 +13,22 @@ test('should use default value', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use default value on root', (t) => {
+test('should use default value on root', async (t) => {
   const def = alt(transform(value('No value')))
   const data = undefined
   const expected = 'No value'
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use default value for null', (t) => {
+test('should use default value for null', async (t) => {
   const optionsWithNullAsNoValue = { nonvalues: [undefined, null] }
   const def = {
     $iterate: true,
@@ -40,12 +40,12 @@ test('should use default value for null', (t) => {
   ]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def, optionsWithNullAsNoValue)(data)
+  const ret = await mapTransform(def, optionsWithNullAsNoValue)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use default value in array', (t) => {
+test('should use default value in array', async (t) => {
   const def = {
     $iterate: true,
     id: [alt('id', get('key'))],
@@ -53,12 +53,12 @@ test('should use default value in array', (t) => {
   const data = [{ id: 'id1', key: 'key1' }, { key: 'key2' }]
   const expected = [{ id: 'id1' }, { id: 'key2' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use default value in reverse', (t) => {
+test('should use default value in reverse', async (t) => {
   const def = {
     $iterate: true,
     title: alt('content.heading', rev(transform(value('Default heading')))),
@@ -69,12 +69,12 @@ test('should use default value in reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should run function as default value', (t) => {
+test('should run function as default value', async (t) => {
   const def = {
     $iterate: true,
     title: [
@@ -84,12 +84,12 @@ test('should run function as default value', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default from function' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use alternative path', (t) => {
+test('should use alternative path', async (t) => {
   const def = {
     $iterate: true,
     title: [alt('heading', 'headline')],
@@ -97,12 +97,12 @@ test('should use alternative path', (t) => {
   const data = [{ heading: 'Entry 1' }, { headline: 'Entry 2' }]
   const expected = [{ title: 'Entry 1' }, { title: 'Entry 2' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use alternative path with dot notation', (t) => {
+test('should use alternative path with dot notation', async (t) => {
   const def = {
     $iterate: true,
     attributes: {
@@ -118,12 +118,12 @@ test('should use alternative path with dot notation', (t) => {
     { attributes: { title: 'Entry 2' } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not set on alternative path in reverse', (t) => {
+test('should not set on alternative path in reverse', async (t) => {
   const def = {
     $iterate: true,
     attributes: {
@@ -139,12 +139,12 @@ test('should not set on alternative path in reverse', (t) => {
     { content: { heading: 'Entry 2' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should set missing values to undefined when no default', (t) => {
+test('should set missing values to undefined when no default', async (t) => {
   const def = {
     $iterate: true,
     title: 'content.heading',
@@ -152,12 +152,12 @@ test('should set missing values to undefined when no default', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: undefined }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use directional default value - forward', (t) => {
+test('should use directional default value - forward', async (t) => {
   const def = {
     $iterate: true,
     title: [
@@ -171,12 +171,12 @@ test('should use directional default value - forward', (t) => {
   const data = [{}, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use directional default value - reverse', (t) => {
+test('should use directional default value - reverse', async (t) => {
   const def = {
     $iterate: true,
     title: [
@@ -193,12 +193,12 @@ test('should use directional default value - reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should not use default values', (t) => {
+test('should not use default values', async (t) => {
   const def = {
     $iterate: true,
     $noDefaults: true,
@@ -207,12 +207,12 @@ test('should not use default values', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [undefined, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not set missing data when $noDefaults is true', (t) => {
+test('should not set missing data when $noDefaults is true', async (t) => {
   const def = [
     'data',
     {
@@ -227,12 +227,12 @@ test('should not set missing data when $noDefaults is true', (t) => {
     id: 'item',
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not set missing prop to undefined in array', (t) => {
+test('should not set missing prop to undefined in array', async (t) => {
   const def = {
     $iterate: true,
     $noDefaults: true,
@@ -241,12 +241,12 @@ test('should not set missing prop to undefined in array', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [undefined, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not use default values on rev', (t) => {
+test('should not use default values on rev', async (t) => {
   const def = {
     $iterate: true,
     $noDefaults: true,
@@ -255,12 +255,12 @@ test('should not use default values on rev', (t) => {
   const data = [{}, { title: 'From data' }]
   const expected = [undefined, { content: { heading: 'From data' } }]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should not use default values when noDefault is provided on initial state', (t) => {
+test('should not use default values when noDefault is provided on initial state', async (t) => {
   const noDefaults = true
   const def = {
     $iterate: true,
@@ -269,12 +269,12 @@ test('should not use default values when noDefault is provided on initial state'
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [undefined, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data, { noDefaults })
+  const ret = await mapTransform(def)(data, { noDefaults })
 
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined for undefined', (t) => {
+test('should return undefined for undefined', async (t) => {
   const def = {
     $noDefaults: true,
     title: 'content.heading',
@@ -282,12 +282,12 @@ test('should return undefined for undefined', (t) => {
   const data = undefined
   const expected = undefined
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply default value from an operation object', (t) => {
+test('should apply default value from an operation object', async (t) => {
   const def = [
     '[]',
     {
@@ -298,12 +298,12 @@ test('should apply default value from an operation object', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply default value from an operation object in reverse', (t) => {
+test('should apply default value from an operation object in reverse', async (t) => {
   const def = [
     '[]',
     {
@@ -317,12 +317,12 @@ test('should apply default value from an operation object in reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply default value from an operation object in flipped reverse', (t) => {
+test('should apply default value from an operation object in flipped reverse', async (t) => {
   const def = [
     '[]',
     {
@@ -334,12 +334,12 @@ test('should apply default value from an operation object in flipped reverse', (
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply default value to null from an operation object', (t) => {
+test('should apply default value to null from an operation object', async (t) => {
   const def = [
     '[]',
     {
@@ -356,12 +356,12 @@ test('should apply default value to null from an operation object', (t) => {
   ]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply default value through iteration of operation object', (t) => {
+test('should apply default value through iteration of operation object', async (t) => {
   const def = {
     $alt: ['heading', { $value: 'Default heading' }],
     $iterate: true,
@@ -369,7 +369,7 @@ test('should apply default value through iteration of operation object', (t) => 
   const data = [{}, { heading: 'From data' }]
   const expected = ['Default heading', 'From data']
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -380,7 +380,7 @@ test('should apply default value through iteration of operation object', (t) => 
 // the undefined from the first path
 test.failing(
   'should apply default value from an operation object going forward only',
-  (t) => {
+  async (t) => {
     const def = {
       title: {
         $alt: [
@@ -394,15 +394,15 @@ test.failing(
     const dataRev = { content: {} }
     const expectedRev = undefined
 
-    const retFwd = mapTransform(def)(dataFwd)
-    const retRev = mapTransform(def)(dataRev, { rev: true })
+    const retFwd = await mapTransform(def)(dataFwd)
+    const retRev = await mapTransform(def)(dataRev, { rev: true })
 
     t.deepEqual(retFwd, expectedFwd)
     t.deepEqual(retRev, expectedRev)
   }
 )
 
-test('should preserve context during alt paths', (t) => {
+test('should preserve context during alt paths', async (t) => {
   const def = [
     'items[]',
     {
@@ -419,12 +419,12 @@ test('should preserve context during alt paths', (t) => {
   }
   const expected = [{ title: '12345' }, { title: '12345' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should preserve context during alt paths on top level object', (t) => {
+test('should preserve context during alt paths on top level object', async (t) => {
   const def = {
     'ids[]': ['response', { $alt: ['items', 'entries'] }, '^^.id'], // This path doesn't make sense, but does the job of testing the context
   }
@@ -441,7 +441,7 @@ test('should preserve context during alt paths on top level object', (t) => {
     ids: ['12345'],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -452,7 +452,7 @@ test('should preserve context during alt paths on top level object', (t) => {
 // the undefined from the first path
 test.failing(
   'should apply default value from an operation object going in reverse only',
-  (t) => {
+  async (t) => {
     const def = {
       title: {
         $alt: [
@@ -466,15 +466,15 @@ test.failing(
     const dataRev = { content: {} }
     const expectedRev = { content: { heading: 'Default heading' } }
 
-    const retFwd = mapTransform(def)(dataFwd)
-    const retRev = mapTransform(def)(dataRev, { rev: true })
+    const retFwd = await mapTransform(def)(dataFwd)
+    const retRev = await mapTransform(def)(dataRev, { rev: true })
 
     t.deepEqual(retFwd, expectedFwd)
     t.deepEqual(retRev, expectedRev)
   }
 )
 
-test('should apply default in iterated deep structure', (t) => {
+test('should apply default in iterated deep structure', async (t) => {
   const def = [
     'data',
     {
@@ -496,7 +496,7 @@ test('should apply default in iterated deep structure', (t) => {
     { attributes: { title: 'Second', num: 2 } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

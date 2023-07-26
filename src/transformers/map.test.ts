@@ -54,92 +54,92 @@ const options = {}
 
 // Tests
 
-test('should map', (t) => {
+test('should map', async (t) => {
   const mapping = map({ dictionary: simple })(options)
 
-  t.is(mapping('1', state), 'stripe')
-  t.is(mapping('2', state), 'paypal')
-  t.is(mapping('0', state), undefined)
+  t.is(await mapping('1', state), 'stripe')
+  t.is(await mapping('2', state), 'paypal')
+  t.is(await mapping('0', state), undefined)
 })
 
-test('should map in reverse', (t) => {
+test('should map in reverse', async (t) => {
   const mapping = map({ dictionary: simple })(options)
 
-  t.is(mapping('stripe', stateRev), '1')
-  t.is(mapping('paypal', stateRev), '2')
-  t.is(mapping('shilling', stateRev), undefined)
+  t.is(await mapping('stripe', stateRev), '1')
+  t.is(await mapping('paypal', stateRev), '2')
+  t.is(await mapping('shilling', stateRev), undefined)
 })
 
-test('should map with several alternatives and defaults', (t) => {
+test('should map with several alternatives and defaults', async (t) => {
   const mapping = map({ dictionary: complex })(options)
 
-  t.is(mapping('200', state), 'ok')
-  t.is(mapping('201', state), 'ok')
-  t.is(mapping('404', state), 'notfound')
-  t.is(mapping('500', state), 'error')
-  t.is(mapping('507', state), 'error')
+  t.is(await mapping('200', state), 'ok')
+  t.is(await mapping('201', state), 'ok')
+  t.is(await mapping('404', state), 'notfound')
+  t.is(await mapping('500', state), 'error')
+  t.is(await mapping('507', state), 'error')
 })
 
-test('should map with several alternatives and defaults in reverse', (t) => {
+test('should map with several alternatives and defaults in reverse', async (t) => {
   const mapping = map({ dictionary: complex })(options)
 
-  t.is(mapping('ok', stateRev), '200')
-  t.is(mapping('notfound', stateRev), '404')
-  t.is(mapping('noaction', stateRev), '404')
-  t.is(mapping('error', stateRev), '500')
-  t.is(mapping('timeout', stateRev), '500')
+  t.is(await mapping('ok', stateRev), '200')
+  t.is(await mapping('notfound', stateRev), '404')
+  t.is(await mapping('noaction', stateRev), '404')
+  t.is(await mapping('error', stateRev), '500')
+  t.is(await mapping('timeout', stateRev), '500')
 })
 
-test('should pick first star', (t) => {
+test('should pick first star', async (t) => {
   const mapping = map({ dictionary: selective })(options)
 
-  t.is(mapping('LOCAL', state), 'NOK')
-  t.is(mapping('EUR', state), 'UNKNOWN')
+  t.is(await mapping('LOCAL', state), 'NOK')
+  t.is(await mapping('EUR', state), 'UNKNOWN')
 })
 
-test('should map to source value for double star', (t) => {
+test('should map to source value for double star', async (t) => {
   const mapping = map({ dictionary: selective })(options)
 
-  t.is(mapping('NOK', stateRev), 'LOCAL')
-  t.is(mapping('EUR', stateRev), 'EUR')
-  t.is(mapping('USD', stateRev), 'USD')
+  t.is(await mapping('NOK', stateRev), 'LOCAL')
+  t.is(await mapping('EUR', stateRev), 'EUR')
+  t.is(await mapping('USD', stateRev), 'USD')
 })
 
-test('should map to undefined when no dictionary', (t) => {
+test('should map to undefined when no dictionary', async (t) => {
   const mapping = map({})(options)
 
-  t.is(mapping('1', state), undefined)
-  t.is(mapping('2', stateRev), undefined)
+  t.is(await mapping('1', state), undefined)
+  t.is(await mapping('2', stateRev), undefined)
 })
 
-test('should map disallowed dictionary values using star', (t) => {
+test('should map disallowed dictionary values using star', async (t) => {
   const mapping = map({ dictionary: complex })(options)
 
-  t.is(mapping({}, state), 'error')
-  t.is(mapping(new Date(), state), 'error')
+  t.is(await mapping({}, state), 'error')
+  t.is(await mapping(new Date(), state), 'error')
 })
 
-test('should map to and from undefined', (t) => {
+test('should map to and from undefined', async (t) => {
   const mapping = map({ dictionary: withUndefined })(options)
 
-  t.is(mapping('SEK', state), undefined)
-  t.is(mapping(undefined, state), 'USD')
-  t.is(mapping('LOCAL', state), 'NOK') // Just to verify
+  t.is(await mapping('SEK', state), undefined)
+  t.is(await mapping(undefined, state), 'USD')
+  t.is(await mapping('LOCAL', state), 'NOK') // Just to verify
 })
 
-test('should map to and from undefined keyword', (t) => {
+test('should map to and from undefined keyword', async (t) => {
   const mapping = map({ dictionary: withUndefinedKeyword })(options)
 
-  t.is(mapping('SEK', state), undefined)
-  t.is(mapping(undefined, state), 'USD')
-  t.is(mapping('LOCAL', state), 'NOK') // Just to verify
+  t.is(await mapping('SEK', state), undefined)
+  t.is(await mapping(undefined, state), 'USD')
+  t.is(await mapping('LOCAL', state), 'NOK') // Just to verify
 })
 
-test('should map with named dictionary', (t) => {
+test('should map with named dictionary', async (t) => {
   const options = { dictionaries: { simple } }
   const mapping = map({ dictionary: 'simple' })(options)
 
-  t.is(mapping('1', state), 'stripe')
-  t.is(mapping('2', state), 'paypal')
-  t.is(mapping('0', state), undefined)
+  t.is(await mapping('1', state), 'stripe')
+  t.is(await mapping('2', state), 'paypal')
+  t.is(await mapping('0', state), undefined)
 })

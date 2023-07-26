@@ -2,15 +2,14 @@ import type { TransformDefinition, Operation, Options } from '../types.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import xor from '../utils/xor.js'
 
-const applyInDirection = (
-  def: TransformDefinition,
-  rev: boolean
-): Operation => {
-  return (options: Options) => (next) => {
+const applyInDirection =
+  (def: TransformDefinition, rev: boolean): Operation =>
+  (options: Options) =>
+  (next) => {
     const fn = defToOperation(def, options)(options)(next)
-    return (state) => (xor(rev, !state.rev) ? fn(state) : next(state))
+    return async (state) =>
+      xor(rev, !state.rev) ? await fn(state) : await next(state)
   }
-}
 
 export function fwd(def: TransformDefinition): Operation {
   return applyInDirection(def, false)
@@ -27,6 +26,7 @@ export function divide(
   return (options) => (next) => {
     const fwdFn = defToOperation(fwdDef, options)(options)(next)
     const revFn = defToOperation(revDef, options)(options)(next)
-    return (state) => (state.rev ? revFn(state) : fwdFn(state))
+    return async (state) =>
+      state.rev ? await revFn(state) : await fwdFn(state)
   }
 }

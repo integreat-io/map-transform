@@ -34,6 +34,13 @@ Install from npm:
 npm install map-transform
 ```
 
+## Breaking changes in v0.5
+
+- MapTransform now supports async transformers, and therefore the main
+  function is async as well, and you'll have to await the result. In most cases
+  nothing else will have to change, unless you want to start writing async
+  transformers.
+
 ## Breaking changes in v0.4
 
 - Map objects won't be mapped over an array by default. You have to specify
@@ -77,7 +84,7 @@ const def = {
 
 // You feed it to mapTransform and get a function that will transform data
 // according to your defintion
-const mapper = mapTransform(def)
+const mapper = await mapTransform(def)
 
 // Now, run the source object through the mapper and get what you want
 const target = mapper(source)
@@ -145,7 +152,7 @@ const def3 = [
   },
 ]
 
-mapTransform(def3)(source)
+await mapTransform(def3)(source)
 // --> {
 //   title: 'An interesting piece',
 //   author: 'fredj',
@@ -164,7 +171,7 @@ applied to. Continuing from the previous example:
 ```javascript
 const target = { id: '12345', title: 'Default title' }
 
-mapTransform(def3)(source, { target })
+await mapTransform(def3)(source, { target })
 // --> {
 //   id: '12345',
 //   title: 'An interesting piece',
@@ -285,8 +292,8 @@ const source1 = {
   },
 }
 
-// `mapTransform(def4)(source1)` will transform to:
-// {
+await mapTransform(def4)(source1)
+// --> {
 //   title: 'The actual heading'
 // }
 ```
@@ -595,7 +602,7 @@ const data = {
   },
 }
 
-mapTransform(def7)(data)
+await mapTransform(def7)(data)
 // --> {
 //   count: 18
 // }
@@ -608,8 +615,9 @@ reverse transformer called `ensureString`, if it makes sense in your
 particular case, or provide one transformer that parses to an integer going
 forward and stringifies in reverse.
 
-The functions you provide for the transform operation are expected to be pure,
-i.e. they should not have any side effects. This means they should
+The functions you provide for the transform operation should, as far as
+possible, be pure, i.e. they should not have any side effects. This means
+they should
 
 1. not alter the data their are given, and
 2. not rely on anything besides the function arguments (the data and
@@ -620,6 +628,26 @@ when it's what you would expect for the particular case. As an example of the
 latter, say you write the function `toAge`, that would return the number of
 years since a given year or date. You would have to use the current date to be
 able to do this, even though it would be a violation of principle 2.
+
+Principle 2 will also often have to go when you write asyncronous transformers,
+like the following:
+
+```javascript
+const readFile = () =>
+  async function readFile(fileName: unknown) {
+    if (typeof fileName === 'string') {
+      // Insert code to read file
+      return fileContent
+    } else {
+      return undefined
+    }
+  }
+```
+
+Reading a file, like in this example, is a side effect, but that's also the goal
+of this transformer, so it wouldn't make sense without. However, it still
+doesn't change anything. A transformer that writes to a file, would probably be
+a bad idea, though.
 
 That said, you should always search for ways to satisfy both principles. Instead
 of a `toAge` function, you could instead write a curried `yearsSince` function,
@@ -670,7 +698,7 @@ const data = {
   },
 }
 
-mapTransform(def7asObject, options)(data)
+await mapTransform(def7asObject, options)(data)
 // --> {
 //   count: 18
 // }
@@ -917,7 +945,7 @@ const data = {
   },
 }
 
-mapTransform(def7, options)(data)
+await mapTransform(def7, options)(data)
 // --> {
 //   title: 'Entry 1',
 //   count: 18
@@ -1232,7 +1260,7 @@ const data = {
   meta: { section: 'news' },
 }
 
-mapTransform(def15)(data)
+await mapTransform(def15)(data)
 // --> [
 //   { id: '1', title: 'An article', section: 'news' }
 //   /* ... */
@@ -1305,7 +1333,7 @@ const data = {
   ],
 }
 const mapper = mapTransform(def18)
-const mappedData = mapper(data)
+const mappedData = await mapper(data)
 // --> [
 //   { id: 'user1', name: 'User 1' },
 //   { id: 'user3', name: 'User 3' }
@@ -1413,7 +1441,7 @@ const data = {
 
 const def32 = ['currencies', transform(explode())]
 
-mapTransform(def32)(data)
+await mapTransform(def32)(data)
 // --> [{ key: 'NOK', value: 1 }, { key: 'USD', value: 0.125 },
 //      { key: 'EUR', value: 0.1 }]
 ```
@@ -1576,7 +1604,7 @@ const def38 = {
   data: transform(merge({ path: ['original', 'updated', 'final'] })),
 }
 
-const ret = mapTransform(def38)(data)
+await mapTransform(def38)(data)
 // --> { id: 'ent1', title: 'Better title', text: 'Here we are now' }
 ```
 
@@ -1643,7 +1671,7 @@ const def35 = {
   data: ['items', transform(sort({ asc: true, path: 'id' }))],
 }
 
-const ret = mapTransform(def35)(data)
+await mapTransform(def35)(data)
 // --> [{ id: 'ent1' }, { id: 'ent3' }, { id: 'ent5' }]
 ```
 
@@ -1736,7 +1764,7 @@ const data = [
   { id: 'cust3' },
 ]
 
-const dataAfterRev = mapTransform(def22)(data, { rev: true })
+await mapTransform(def22)(data, { rev: true })
 // --> {
 // data: {
 //   customers: [
@@ -1772,7 +1800,7 @@ const def23 = [
 
 const data = [{ id: 'cust1', name: 'Fred Johnsen' }]
 
-const dataAfterRev = mapTransform(def23)(data, { rev: true })
+await mapTransform(def23)(data, { rev: true })
 // --> {
 // data: {
 //   customers: [
@@ -1879,8 +1907,8 @@ const def24 = {
   name: alt('fullname', transform(value('Anonymous'))),
 }
 
-const mapper17 = mapTransform(def17)
-const mapper24 = mapTransform(def24)
+const mapper17 = await mapTransform(def17)
+const mapper24 = await mapTransform(def24)
 
 mapper17({ customerNo: 'cust4' })
 // --> { id: 'cust4', name: 'Anonymous' }

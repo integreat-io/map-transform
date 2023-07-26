@@ -22,7 +22,7 @@ const options = {}
 
 // Tests
 
-test('should merge two objects', (t) => {
+test('should merge two objects', async (t) => {
   const path = ['original', 'modified']
   const data = {
     original: {
@@ -49,12 +49,12 @@ test('should merge two objects', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(options)(data, state)
+  const ret = await merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should merge three objects', (t) => {
+test('should merge three objects', async (t) => {
   const path = ['original', 'modified', 'final']
   const data = {
     original: {
@@ -85,12 +85,12 @@ test('should merge three objects', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(options)(data, state)
+  const ret = await merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return one object', (t) => {
+test('should return one object', async (t) => {
   const path = ['original']
   const data = {
     original: {
@@ -111,12 +111,12 @@ test('should return one object', (t) => {
     tags: ['news', 'politics'],
   }
 
-  const ret = merge({ path })(options)(data, state)
+  const ret = await merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should merge array of objects', (t) => {
+test('should merge array of objects', async (t) => {
   const path = 'all'
   const data = {
     all: [
@@ -149,12 +149,12 @@ test('should merge array of objects', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(options)(data, state)
+  const ret = await merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should merge object and array of objects', (t) => {
+test('should merge object and array of objects', async (t) => {
   const path = ['original', 'therest']
   const data = {
     original: {
@@ -187,12 +187,12 @@ test('should merge object and array of objects', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(options)(data, state)
+  const ret = await merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should skip non-objects', (t) => {
+test('should skip non-objects', async (t) => {
   const path = ['original', 'unknown', 'somethingelse', 'arr', 'perhaps']
   const data = {
     original: {
@@ -216,12 +216,12 @@ test('should skip non-objects', (t) => {
     tags: ['news', 'politics'],
   }
 
-  const ret = merge({ path })(options)(data, state)
+  const ret = await merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should merge in reverse', (t) => {
+test('should merge in reverse', async (t) => {
   const path = ['original', 'modified']
   const data = {
     original: {
@@ -248,7 +248,7 @@ test('should merge in reverse', (t) => {
     tags: ['sports'],
   }
 
-  const ret = merge({ path })(options)(data, stateRev)
+  const ret = await merge({ path })(options)(data, stateRev)
 
   t.deepEqual(ret, expected)
 })

@@ -4,8 +4,9 @@ import mapTransform, { set, ifelse } from '../index.js'
 
 // Tests
 
-test('should map with ifelse', (t) => {
-  const isPublished = (data: unknown) => isObject(data) && !!data.published
+test('should map with ifelse', async (t) => {
+  const isPublished = async (data: unknown) =>
+    isObject(data) && !!data.published
   const def = [
     'content.article',
     {
@@ -24,12 +25,12 @@ test('should map with ifelse', (t) => {
   }
   const expected = { drafts: [{ title: 'Heading 1', published: false }] }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run `then` pipeline when transform returns true', (t) => {
+test('should run `then` pipeline when transform returns true', async (t) => {
   const def = [
     'content',
     {
@@ -43,12 +44,12 @@ test('should run `then` pipeline when transform returns true', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run `else` pipeline when transform returns false', (t) => {
+test('should run `else` pipeline when transform returns false', async (t) => {
   const def = [
     'content',
     {
@@ -62,12 +63,12 @@ test('should run `else` pipeline when transform returns false', (t) => {
   }
   const expected = { title: 'The title' }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined from else pipeline', (t) => {
+test('should return undefined from else pipeline', async (t) => {
   const def = [
     'content',
     {
@@ -80,12 +81,12 @@ test('should return undefined from else pipeline', (t) => {
     content: { heading: 'The heading', title: 'The title', section: 'sports' },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.is(ret, undefined)
 })
 
-test('should run $if deeper in the structure', (t) => {
+test('should run $if deeper in the structure', async (t) => {
   const def = [
     'content',
     {
@@ -103,12 +104,12 @@ test('should run $if deeper in the structure', (t) => {
   }
   const expected = { articles: [{ title: 'The heading' }] }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should support $and - matching', (t) => {
+test('should support $and - matching', async (t) => {
   const def = [
     'content',
     {
@@ -132,12 +133,12 @@ test('should support $and - matching', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should support $and - not matching', (t) => {
+test('should support $and - not matching', async (t) => {
   const def = [
     'content',
     {
@@ -161,12 +162,12 @@ test('should support $and - not matching', (t) => {
   }
   const expected = { title: 'The title' }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should support $and - matching in reverse', (t) => {
+test('should support $and - matching in reverse', async (t) => {
   const def = [
     'content',
     {
@@ -192,12 +193,12 @@ test('should support $and - matching in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should support $and - not matching in reverse', (t) => {
+test('should support $and - not matching in reverse', async (t) => {
   const def = [
     'content',
     {
@@ -223,12 +224,12 @@ test('should support $and - not matching in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should support $or - matching', (t) => {
+test('should support $or - matching', async (t) => {
   const def = [
     'content',
     {
@@ -252,12 +253,12 @@ test('should support $or - matching', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should support $or - not matching', (t) => {
+test('should support $or - not matching', async (t) => {
   const def = [
     'content',
     {
@@ -281,12 +282,12 @@ test('should support $or - not matching', (t) => {
   }
   const expected = { title: 'The title' }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should support $not', (t) => {
+test('should support $not', async (t) => {
   const def = [
     'content',
     {
@@ -307,7 +308,7 @@ test('should support $not', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })

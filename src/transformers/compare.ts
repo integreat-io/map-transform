@@ -99,13 +99,13 @@ const transformer: Transformer<Props> = function compare({
     const getMatch =
       typeof matchPath === 'string'
         ? defToDataMapper(matchPath, options)
-        : () => realMatchValue
+        : async () => realMatchValue
     const comparer = createComparer(operator)
 
-    return (data, state) => {
+    return async (data, state) => {
       const fwdState = goForward(state)
-      const value = getValue(data, fwdState)
-      const match = getMatch(data, fwdState)
+      const value = await getValue(data, fwdState)
+      const match = await getMatch(data, fwdState)
       const result = comparer(value, match)
       return not ? !result : result
     }

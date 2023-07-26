@@ -8,8 +8,8 @@ import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 
 function callTransformFn(fn: DataMapperWithOptions, options: Options) {
   const fnWithOptions = fn(options)
-  return (state: State) =>
-    setStateValue(state, fnWithOptions(getStateValue(state), state))
+  return async (state: State) =>
+    setStateValue(state, await fnWithOptions(getStateValue(state), state))
 }
 
 export default function transform(
@@ -28,9 +28,11 @@ export default function transform(
         ? callTransformFn(revFn, options)
         : fwdTransform
 
-    return (next) => (state) => {
-      const nextState = next(state)
-      return state.rev ? revTransform(nextState) : fwdTransform(nextState)
+    return (next) => async (state) => {
+      const nextState = await next(state)
+      return state.rev
+        ? await revTransform(nextState)
+        : await fwdTransform(nextState)
     }
   }
 }

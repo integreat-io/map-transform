@@ -24,8 +24,8 @@ export default function apply(pipelineId: string | symbol): Operation {
     const fn = pipeline
       ? defToOperation(pipeline, options)(options)(identity)
       : undefined
-    return (state) => {
-      const nextState = next(state)
+    return async (state) => {
+      const nextState = await next(state)
       return fn ? fn(removeFlip(nextState)) : nextState
     }
   }

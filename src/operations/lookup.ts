@@ -1,15 +1,18 @@
-import mapAny from 'map-any'
 import type {
   Operation,
   State,
   Path,
-  DataMapper,
+  DataMapperWithState,
   TransformerProps,
 } from '../types.js'
 import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 import { defToDataMapper, defToOperation } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 import xor from '../utils/xor.js'
+import {
+  filterAsyncWithDataMapper,
+  findAsyncWithDataMapper,
+} from '../utils/array.js'
 
 export interface Props extends TransformerProps {
   arrayPath: Path
@@ -23,25 +26,29 @@ const flattenIfArray = (data: unknown) =>
   Array.isArray(data) ? data.flat(FLATTEN_DEPTH) : data
 
 const matchPropInArray =
-  (getProp: DataMapper, matchSeveral: boolean) =>
+  (getProp: DataMapperWithState, matchSeveral: boolean) =>
   (arr: unknown[], state: State) =>
-  (value: string | number | boolean | null) =>
-    matchSeveral
-      ? arr.filter((obj) => getProp(obj, state) === value)
-      : arr.find((obj) => getProp(obj, state) === value)
+  async (value: unknown) => {
+    if (matchSeveral) {
+      return filterAsyncWithDataMapper(arr, getProp, state, value)
+    } else {
+      return findAsyncWithDataMapper(arr, getProp, state, value)
+    }
+  }
 
 const mapValue = (
   getArray: Operation,
-  getProp: DataMapper,
+  getProp: DataMapperWithState,
   matchSeveral: boolean
 ) => {
   const matchInArray = matchPropInArray(getProp, matchSeveral)
-  return (state: State) => {
+  return async (state: State) => {
     if (xor(state.rev, state.flip)) {
-      return (value: unknown) => getProp(value, { ...state, rev: false }) // Do a regular get, even though we're in rev
+      return async (value: unknown) =>
+        await getProp(value, { ...state, rev: false }) // Do a regular get, even though we're in rev
     } else {
-      const { value: arr } = getArray({})(identity)(state)
-      return arr ? matchInArray(arr as unknown[], state) : () => undefined
+      const { value: arr } = await getArray({})(identity)(state)
+      return arr ? matchInArray(arr as unknown[], state) : async () => undefined
     }
   }
 }
@@ -59,9 +66,13 @@ export default function lookup({
       matchSeveral
     )
 
-    return function doLookup(state) {
-      const nextState = next(state)
-      const matches = mapAny(mapValueFn(nextState), getStateValue(nextState))
+    return async function doLookup(state) {
+      const nextState = await next(state)
+      const fn = await mapValueFn(nextState)
+      const value = getStateValue(nextState)
+      const matches = Array.isArray(value)
+        ? await Promise.all(value.map(fn))
+        : await fn(value)
       return setStateValue(nextState, flattenIfArray(matches))
     }
   }

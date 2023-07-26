@@ -10,7 +10,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should lookup data', (t) => {
+test('should lookup data', async (t) => {
   const data = {
     content: { author: 'user2' },
     related: {
@@ -29,12 +29,12 @@ test('should lookup data', (t) => {
     value: { id: 'user2', name: 'User 2' },
   }
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should lookup array of data', (t) => {
+test('should lookup array of data', async (t) => {
   const data = {
     content: { authors: ['user1', 'user3'] },
     related: {
@@ -57,12 +57,12 @@ test('should lookup array of data', (t) => {
     ],
   }
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should match only first of several matches', (t) => {
+test('should match only first of several matches', async (t) => {
   const data = {
     content: { authors: ['user1', 'user3'] },
     related: {
@@ -84,12 +84,12 @@ test('should match only first of several matches', (t) => {
     { id: 'user3', name: 'User 3' },
   ]
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should match several matches when `matchSeveral` is true', (t) => {
+test('should match several matches when `matchSeveral` is true', async (t) => {
   const propsMatchSeveral = { ...props, matchSeveral: true }
   const data = {
     content: { authors: ['user1', 'user3'] },
@@ -114,12 +114,12 @@ test('should match several matches when `matchSeveral` is true', (t) => {
     { id: 'user3', name: 'Another 3' },
   ]
 
-  const ret = lookup(propsMatchSeveral)(options)(identity)(state)
+  const ret = await lookup(propsMatchSeveral)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should force the value at array path to an array', (t) => {
+test('should force the value at array path to an array', async (t) => {
   const data = {
     content: { author: 'user2' },
     related: {
@@ -135,12 +135,12 @@ test('should force the value at array path to an array', (t) => {
     value: { id: 'user2', name: 'User 2' },
   }
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value to undefined when array path yields undefined', (t) => {
+test('should set value to undefined when array path yields undefined', async (t) => {
   const data = {
     content: { author: 'user2' },
   }
@@ -149,12 +149,12 @@ test('should set value to undefined when array path yields undefined', (t) => {
     value: 'user2',
   }
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.is(ret.value, undefined)
 })
 
-test('should set value to undefined when no match', (t) => {
+test('should set value to undefined when no match', async (t) => {
   const data = {
     content: { author: 'user3' },
     related: {
@@ -169,14 +169,14 @@ test('should set value to undefined when no match', (t) => {
     value: 'user3',
   }
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.is(ret.value, undefined)
 })
 
 // Tests -- reverse
 
-test('should get lookup prop in reverse', (t) => {
+test('should get lookup prop in reverse', async (t) => {
   const data = { id: 'user2', name: 'User 2' }
   const state = {
     context: [],
@@ -189,12 +189,12 @@ test('should get lookup prop in reverse', (t) => {
     rev: true,
   }
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should get lookup prop on array in reverse', (t) => {
+test('should get lookup prop on array in reverse', async (t) => {
   const data = [
     { id: 'user1', name: 'User 1' },
     { id: 'user2', name: 'User 2' },
@@ -210,12 +210,12 @@ test('should get lookup prop on array in reverse', (t) => {
     rev: true,
   }
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should lookup data in reverse when flipped', (t) => {
+test('should lookup data in reverse when flipped', async (t) => {
   const data = {
     content: { author: 'user2' },
     related: {
@@ -238,7 +238,7 @@ test('should lookup data in reverse when flipped', (t) => {
     flip: true,
   }
 
-  const ret = lookup(props)(options)(identity)(state)
+  const ret = await lookup(props)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

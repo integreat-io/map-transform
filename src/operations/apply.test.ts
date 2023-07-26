@@ -20,7 +20,7 @@ const options = {
 
 // Tests
 
-test('should run pipeline by id', (t) => {
+test('should run pipeline by id', async (t) => {
   const state = {
     context: [],
     value: { title: 'Entry 1' },
@@ -30,12 +30,12 @@ test('should run pipeline by id', (t) => {
     value: 'Entry 1',
   }
 
-  const ret = apply('extractTitle')(options)(identity)(state)
+  const ret = await apply('extractTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run pipeline by id - in rev', (t) => {
+test('should run pipeline by id - in rev', async (t) => {
   const state = {
     context: [],
     value: 'Entry 1',
@@ -47,12 +47,12 @@ test('should run pipeline by id - in rev', (t) => {
     rev: true,
   }
 
-  const ret = apply('extractTitle')(options)(identity)(state)
+  const ret = await apply('extractTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run object pipeline by id', (t) => {
+test('should run object pipeline by id', async (t) => {
   const state = {
     context: [],
     value: { title: 'Entry 1' },
@@ -62,12 +62,12 @@ test('should run object pipeline by id', (t) => {
     value: { headline: 'Entry 1' },
   }
 
-  const ret = apply('renameTitle')(options)(identity)(state)
+  const ret = await apply('renameTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run object pipeline by id - in rev', (t) => {
+test('should run object pipeline by id - in rev', async (t) => {
   const state = {
     context: [],
     value: { headline: 'Entry 1' },
@@ -79,12 +79,12 @@ test('should run object pipeline by id - in rev', (t) => {
     rev: true,
   }
 
-  const ret = apply('renameTitle')(options)(identity)(state)
+  const ret = await apply('renameTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not pass on flip', (t) => {
+test('should not pass on flip', async (t) => {
   const state = {
     context: [],
     value: { title: 'Entry 1' },
@@ -95,12 +95,12 @@ test('should not pass on flip', (t) => {
     value: { headline: 'Entry 1' },
   }
 
-  const ret = apply('renameTitle')(options)(identity)(state)
+  const ret = await apply('renameTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not pass on flip - in rev', (t) => {
+test('should not pass on flip - in rev', async (t) => {
   const state = {
     context: [],
     value: { headline: 'Entry 1' },
@@ -113,12 +113,12 @@ test('should not pass on flip - in rev', (t) => {
     rev: true,
   }
 
-  const ret = apply('renameTitle')(options)(identity)(state)
+  const ret = await apply('renameTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run pipeline on undefined', (t) => {
+test('should run pipeline on undefined', async (t) => {
   const state = {
     context: [],
     value: undefined,
@@ -128,7 +128,7 @@ test('should run pipeline on undefined', (t) => {
     value: { title: undefined },
   }
 
-  const ret = apply('setTitle')(options)(identity)(state)
+  const ret = await apply('setTitle')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

@@ -1,4 +1,9 @@
-import type { TransformDefinition, DataMapperEntry, Options } from './types.js'
+import type {
+  TransformDefinition,
+  DataMapper,
+  Options,
+  InitialState,
+} from './types.js'
 import { defToOperation } from './utils/definitionHelpers.js'
 import { populateState, getStateValue } from './utils/stateHelpers.js'
 import transformers from './transformers/index.js'
@@ -28,14 +33,21 @@ const mergeOptions = (options: Options) => ({
   },
 })
 
+/**
+ * Return a function that will transform data according to the given transform
+ * definition, and with the provided options. The returned function will also
+ * accept an optional initial state, that will be used as a starting point for
+ * the transformation.
+ */
 export default function mapTransform(
   def: TransformDefinition,
   options: Options = {}
-): DataMapperEntry {
+): DataMapper<InitialState> {
   const completeOptions = mergeOptions(options)
   const stateMapper = defToOperation(def, options)(completeOptions)(identity)
 
-  return function transform(data, initialState) {
-    return getStateValue(stateMapper(populateState(data, initialState || {})))
+  return async function transform(data, initialState) {
+    const nextState = await stateMapper(populateState(data, initialState || {}))
+    return getStateValue(nextState)
   }
 }

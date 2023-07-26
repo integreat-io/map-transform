@@ -9,7 +9,7 @@ const options = {}
 
 // Tests
 
-test('should set value to undefined', (t) => {
+test('should set value to undefined', async (t) => {
   const state = {
     context: [],
     value: { data: { name: 'John F.' } },
@@ -19,12 +19,12 @@ test('should set value to undefined', (t) => {
     value: undefined,
   }
 
-  const ret = plug()(options)(identity)(state)
+  const ret = await plug()(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set value to undefined when noDefaults', (t) => {
+test('should set value to undefined when noDefaults', async (t) => {
   const state = {
     context: [],
     value: { data: { name: 'John F.' } },
@@ -36,12 +36,12 @@ test('should set value to undefined when noDefaults', (t) => {
     noDefaults: true,
   }
 
-  const ret = plug()(options)(identity)(state)
+  const ret = await plug()(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set target as value when present', (t) => {
+test('should set target as value when present', async (t) => {
   const state = {
     context: [],
     target: { data: { name: 'John F.', age: 32 } },
@@ -52,7 +52,7 @@ test('should set target as value when present', (t) => {
     value: { data: { name: 'John F.', age: 32 } },
   }
 
-  const ret = plug()(options)(identity)(state)
+  const ret = await plug()(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

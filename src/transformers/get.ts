@@ -11,9 +11,7 @@ const extractPath = (path: Props | string) =>
 const transformer: Transformer<Props | string> = function get(props) {
   return (options) => {
     const path = extractPath(props) || '.'
-    const getFn = defToDataMapper(path, options)
-
-    return getFn
+    return defToDataMapper(path, options)
   }
 }
 

@@ -15,44 +15,44 @@ const options = {}
 
 // Tests -- value
 
-test('should return value', (t) => {
+test('should return value', async (t) => {
   const data = undefined
 
-  const ret = value({ value: 'The default' })(options)(data, state)
+  const ret = await value({ value: 'The default' })(options)(data, state)
 
   t.is(ret, 'The default')
 })
 
-test('should unescape value', (t) => {
+test('should unescape value', async (t) => {
   const data = { something: 'new' }
 
-  const ret = value({ value: '**undefined**' })(options)(data, state)
+  const ret = await value({ value: '**undefined**' })(options)(data, state)
 
   t.is(ret, undefined)
 })
 
-test('should return value from function', (t) => {
+test('should return value from function', async (t) => {
   const data = undefined
   const valueFunction = () => 'Value from function'
 
-  const ret = value({ value: valueFunction })(options)(data, state)
+  const ret = await value({ value: valueFunction })(options)(data, state)
 
   t.is(ret, 'Value from function')
 })
 
-test('should return value when not undefined', (t) => {
+test('should return value when not undefined', async (t) => {
   const data = { title: 'The data' }
 
-  const ret = value({ value: 'The default' })(options)(data, state)
+  const ret = await value({ value: 'The default' })(options)(data, state)
 
   t.is(ret, 'The default')
 })
 
-test('should not return default value when noDefaults is true', (t) => {
+test('should not return default value when noDefaults is true', async (t) => {
   const data = undefined
   const stateWithNoDefaults = { ...state, noDefaults: true }
 
-  const ret = value({ value: 'The default' })(options)(
+  const ret = await value({ value: 'The default' })(options)(
     data,
     stateWithNoDefaults
   )
@@ -60,46 +60,46 @@ test('should not return default value when noDefaults is true', (t) => {
   t.is(ret, undefined)
 })
 
-test('should return value given without object', (t) => {
+test('should return value given without object', async (t) => {
   const data = undefined
 
-  const ret = value('The default')(options)(data, state)
+  const ret = await value('The default')(options)(data, state)
 
   t.is(ret, 'The default')
 })
 
 // Tests -- fixed
 
-test('should return fixed value', (t) => {
+test('should return fixed value', async (t) => {
   const data = undefined
 
-  const ret = fixed({ value: 'The default' })(options)(data, state)
+  const ret = await fixed({ value: 'The default' })(options)(data, state)
 
   t.is(ret, 'The default')
 })
 
-test('should unescape fixed value', (t) => {
+test('should unescape fixed value', async (t) => {
   const data = { something: 'new' }
 
-  const ret = fixed({ value: '**undefined**' })(options)(data, state)
+  const ret = await fixed({ value: '**undefined**' })(options)(data, state)
 
   t.is(ret, undefined)
 })
 
-test('should return fixed value from function', (t) => {
+test('should return fixed value from function', async (t) => {
   const data = undefined
   const valueFunction = () => 'Value from function'
 
-  const ret = fixed({ value: valueFunction })(options)(data, state)
+  const ret = await fixed({ value: valueFunction })(options)(data, state)
 
   t.is(ret, 'Value from function')
 })
 
-test('should return fixed value also when noDefaults is true', (t) => {
+test('should return fixed value also when noDefaults is true', async (t) => {
   const data = undefined
   const stateWithNoDefaults = { ...state, noDefaults: true }
 
-  const ret = fixed({ value: 'The default' })(options)(
+  const ret = await fixed({ value: 'The default' })(options)(
     data,
     stateWithNoDefaults
   )
@@ -107,10 +107,10 @@ test('should return fixed value also when noDefaults is true', (t) => {
   t.is(ret, 'The default')
 })
 
-test('should return fixed value without object', (t) => {
+test('should return fixed value without object', async (t) => {
   const data = undefined
 
-  const ret = fixed('The default')(options)(data, state)
+  const ret = await fixed('The default')(options)(data, state)
 
   t.is(ret, 'The default')
 })

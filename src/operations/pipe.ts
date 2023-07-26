@@ -2,12 +2,28 @@ import { divide, fwd } from './directionals.js'
 import iterate from './iterate.js'
 import transform from './transform.js'
 import flatten from '../transformers/flatten.js'
-import type { Pipeline, Operation } from '../types.js'
 import { defToOperations } from '../utils/definitionHelpers.js'
-import { identity } from '../utils/functional.js'
-import { compose as composeFn, pipe as pipeFn } from '../utils/functional.js'
 import xor from '../utils/xor.js'
 import { setValueFromState } from '../utils/stateHelpers.js'
+import type { Pipeline, Operation, StateMapper } from '../types.js'
+
+interface Fn {
+  (next: StateMapper): StateMapper
+}
+
+const composeFn = (...fns: Fn[]): Fn =>
+  fns.reduceRight(
+    (f, g) =>
+      (...args) =>
+        g(f(...args))
+  )
+
+const pipeFn = (...fns: Fn[]): Fn =>
+  fns.reduce(
+    (f, g) =>
+      (...args) =>
+        g(f(...args))
+  )
 
 // Run through a pipeline def and split up any paths with open array brackets
 // in the middle. The path after the brackets will be iterated along with the
@@ -42,7 +58,7 @@ export default function pipe(
 ): Operation {
   return (options) => {
     if (!Array.isArray(defs) || defs.length === 0) {
-      return identity
+      return () => async (state) => state
     }
 
     const fns = splitArrayPaths(defs)
@@ -53,9 +69,9 @@ export default function pipe(
     return (next) => {
       const run = pipeFn(...fns)(next)
       const runRev = composeFn(...fns)(next)
-      return function doPipe(state) {
+      return async function doPipe(state) {
         const isRev = xor(state.rev, state.flip)
-        const thisState = isRev ? runRev(state) : run(state)
+        const thisState = isRev ? await runRev(state) : await run(state)
         return doReturnContext ? thisState : setValueFromState(state, thisState)
       }
     }

@@ -10,7 +10,8 @@ import { defToOperations } from '../utils/definitionHelpers.js'
 import { identity } from '../utils/functional.js'
 import type { Operation, TransformDefinition } from '../types.js'
 
-// We insert into pipe here when necessary, to specify that the pipe should return context
+// We run an array of operations through a pipe here when necessary, and specify
+// that the pipe should return context
 const pipeIfArray = (def: Operation | Operation[]) =>
   Array.isArray(def) ? pipe(def, true) : def
 
@@ -23,19 +24,19 @@ function createOneAltOperation(
     // Prepare alt operation
     const operation = pipeIfArray(defToOperations(def, options))
 
-    return (next) => (state) => {
-      const nextState = next(state)
+    return (next) => async (state) => {
+      const nextState = await next(state)
       const { nonvalues } = options
       const isFirst = !isSingleMode && index === 0
 
       if (isFirst) {
-        const thisState = operation(options)(identity)(nextState)
+        const thisState = await operation(options)(identity)(nextState)
         return isNonvalueState(thisState, nonvalues)
           ? { ...thisState, context: [...nextState.context, nextState.value] }
           : thisState
       } else {
         if (isNonvalueState(nextState, nonvalues)) {
-          const thisState = operation(options)(identity)(
+          const thisState = await operation(options)(identity)(
             removeLastContext(
               setStateValue(nextState, getLastContext(nextState))
             )

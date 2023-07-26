@@ -1,7 +1,7 @@
 import type {
   Path,
   State,
-  DataMapper,
+  DataMapperWithState,
   TransformerProps,
   Transformer,
 } from '../types.js'
@@ -14,10 +14,10 @@ export interface Props extends TransformerProps {
   path?: Path
 }
 
-const compare = (direction: number, getFn: DataMapper, state: State) =>
-  function compare(valueA: unknown, valueB: unknown) {
-    const a = getFn(valueA, state)
-    const b = getFn(valueB, state)
+type SortValue = [unknown, unknown]
+
+const compare = (direction: number) =>
+  function compare([a]: SortValue, [b]: SortValue) {
     if (typeof a === 'number' && typeof b === 'number') {
       return (a - b) * direction
     } else if (a instanceof Date && b instanceof Date) {
@@ -31,15 +31,32 @@ const compare = (direction: number, getFn: DataMapper, state: State) =>
     }
   }
 
+function fetchSortValue(getFn: DataMapperWithState, state: State) {
+  return async function fetchSortValue(item: unknown): Promise<SortValue> {
+    const sortBy = await getFn(item, state)
+    return [sortBy, item]
+  }
+}
+
 const transformer: Transformer<Props> = function sort(props) {
   return (options) => {
     const direction = props?.asc === false ? -1 : 1
     const getFn = props?.path ? defToDataMapper(props.path, options) : identity
 
-    return (data, state) => {
-      return Array.isArray(data)
-        ? data.slice().sort(compare(direction, getFn, goForward(state)))
-        : data
+    return async (data, state) => {
+      if (!Array.isArray(data) || data.length < 2) {
+        // We don't need to sort one or no item
+        return data
+      }
+
+      const fwdState = goForward(state)
+
+      // We first fetch value to sort by for each item ...
+      const sortArray: SortValue[] = await Promise.all(
+        data.map<Promise<SortValue>>(fetchSortValue(getFn, fwdState))
+      )
+      /// ... and then sort the array and returns the original items
+      return sortArray.sort(compare(direction)).map(([_, item]) => item)
     }
   }
 }

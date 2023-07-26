@@ -11,7 +11,6 @@ import {
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
-import { identity } from '../utils/functional.js'
 import type { Path, Operation, State, StateMapper } from '../types.js'
 import xor from '../utils/xor.js'
 
@@ -25,33 +24,41 @@ function flatMapAny(fn: (value: unknown, target?: unknown) => unknown) {
       : fn(value, target)
 }
 
+// Get rid of some special characters in the path and return the clean path and
+// some flags to indicate if we're dealing with an array or index notation
 function preparePath(
   path: string | number
 ): [string | number, boolean, boolean] {
   if (typeof path === 'string') {
     if (path.includes('[')) {
+      // We have an array notation
       if (path.endsWith('][')) {
-        return [path.slice(0, path.length - 2), false, true]
+        // This is an index notation
+        return [path.slice(0, path.length - 2), false, true /* isIndexProp */]
       }
       const pos = path.indexOf('[')
       if (path[pos - 1] === '\\') {
+        // We have an escaped [, return the path with the backslash removed
         return [path.replace('\\[', '['), false, false]
       } else {
+        // This is an array notation if the next char is ]
         const isArr = path[pos + 1] === ']'
         return [path.slice(0, pos), isArr, false]
       }
     } else if (path.startsWith('\\$')) {
+      // This is an escaped $, remove the backslash and return the path with $
       return [path.slice(1), false, false]
     }
   }
 
+  // We have just a plain path
   return [path, false, false]
 }
 
 function getSetProp(path: string) {
   if (path === '') {
-    // Don't set empty path
-    return identity
+    // We have an empty path, return the value as is
+    return (value: unknown) => value
   }
 
   const getFn = flatMapAny((value) =>
@@ -99,8 +106,8 @@ function getRoot(state: State) {
 
 function getSetParentOrRoot(path: string, isSet: boolean): Operation {
   const getFn = path[1] === '^' ? getRoot : getParent
-  return () => (next) => (state) => {
-    const nextState = next(state)
+  return () => (next) => async (state) => {
+    const nextState = await next(state)
     if (adjustIsSet(isSet, state)) {
       // Simple return target instead of setting anything
       return setStateValue(nextState, state.target)
@@ -122,7 +129,7 @@ function getSet(isSet = false) {
     const getSetFn = isIndex ? getSetIndex(basePath) : getSetProp(basePath)
 
     return (options) => (next) =>
-      function doGetSet(state: State): State {
+      async function doGetSet(state) {
         if (adjustIsSet(isSet, state)) {
           // Set
           // We'll go backwards first. Start by preparing target for the next set
@@ -130,7 +137,7 @@ function getSet(isSet = false) {
           const nextTarget = getSetFn(target, false)
 
           // Invoke the "previous" path part with the right target, iterate if array
-          const nextState = next(
+          const nextState = await next(
             setTargetOnState(
               { ...state, iterate: state.iterate || isArr },
               nextTarget
@@ -159,7 +166,7 @@ function getSet(isSet = false) {
         } else {
           // Get
           // Go backwards
-          const nextState = next(state)
+          const nextState = await next(state)
           const thisValue = getSetFn(getStateValue(nextState), false)
 
           const value =
@@ -179,7 +186,7 @@ function getSet(isSet = false) {
   }
 }
 
-function dividePath(path: string) {
+function splitUpArrayAndParentNotation(path: string) {
   const pos = path.indexOf('[')
   if (pos > -1 && path[pos - 1] !== '\\') {
     const index = Number.parseInt(path.slice(pos + 1), 10)
@@ -187,33 +194,51 @@ function dividePath(path: string) {
       const basePath = path.slice(0, pos).trim()
       return basePath ? [`${basePath}][`, index] : [index] // `][` is our crazy notation for an index prop
     }
+    // Fall through to returning the path as is it's not an index notation
   } else if (path.startsWith('^')) {
     if (path.startsWith('^^') && path.length > 2) {
-      return ['^^', path.slice(2)]
+      return ['^^', path.slice(2).trim()]
     } else if (path.length > 1 && path !== '^^') {
-      return ['^^', path.slice(1)]
+      return ['^^', path.slice(1).trim()]
     }
   }
   return path.trim()
 }
 
+// Prepare a get or set path, depending on isSet. It's essentially the same,
+// only with reversed order and setting or getting by default. When ran in
+// reverse mode, it will run the other way.
 function pathToNextOperations(path: Path, isSet = false): Operation[] {
   if (!path || path === '.') {
-    return [() => (next: StateMapper) => (state: State) => next(state)]
+    return [
+      () => (next: StateMapper) => async (state: State) => await next(state),
+    ]
   }
 
+  // Treat as a set if it starts with >
   if (path[0] === '>') {
     path = path.slice(1)
     isSet = true
   }
 
-  const parts = path.split('.').flatMap(dividePath)
+  // Split the path into parts, and get the operations for each part
+  const parts = path.split('.').flatMap(splitUpArrayAndParentNotation)
   const operations = parts.map(getSet(isSet))
+
+  // Reverse order when we're setting
   if (isSet) {
     operations.reverse()
   }
+
   return operations
 }
 
+/**
+ * Run a get path.
+ */
 export const get = (path: Path) => pathToNextOperations(path, false)
+
+/**
+ * Run a set path.
+ */
 export const set = (path: Path) => pathToNextOperations(path, true)

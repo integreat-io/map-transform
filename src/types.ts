@@ -46,22 +46,22 @@ export interface Options {
 
 // Data mapper types
 
-export interface DataMapper {
-  (data: unknown, state: State): unknown
+export interface DataMapper<T extends InitialState | undefined = State> {
+  (data: unknown, state?: T): Promise<unknown>
 }
 
-export interface DataMapperEntry {
-  (data: unknown, state?: InitialState): unknown
+export interface DataMapperWithState {
+  (data: unknown, state: State): Promise<unknown> | unknown
 }
 
 export interface DataMapperWithOptions {
-  (options: Options): DataMapper
+  (options: Options): DataMapperWithState
 }
 
 // Operation types
 
 export interface StateMapper {
-  (state: State): State
+  (state: State): Promise<State>
 }
 
 export interface Operation {

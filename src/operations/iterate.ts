@@ -16,23 +16,25 @@ import { indexOfIfArray } from '../utils/array.js'
 import { identity } from '../utils/functional.js'
 
 export const iterateState =
-  (fn: StateMapper) => (state: State, target: unknown) => {
+  (fn: StateMapper) => async (state: State, target: unknown) => {
     const value = getStateValue(state)
     if (Array.isArray(value)) {
       const nextState = pushContext(state, value)
-      return value.map((item, index) =>
-        getStateValue(
-          fn(
-            setTargetOnState(
-              { ...nextState, index, value: item },
-              indexOfIfArray(target, index)
+      return Promise.all(
+        value.map(async (item, index) =>
+          getStateValue(
+            await fn(
+              setTargetOnState(
+                { ...nextState, index, value: item },
+                indexOfIfArray(target, index)
+              )
             )
           )
         )
       )
     } else {
       return getStateValue(
-        fn(
+        await fn(
           setTargetOnState(
             { ...state, index: 0, value },
             indexOfIfArray(target, 0)
@@ -44,19 +46,19 @@ export const iterateState =
 
 export default function iterate(def: TransformDefinition): Operation {
   if (!def || (typeof def === 'object' && Object.keys(def).length === 0)) {
-    return (_options) => (next) => (state) =>
-      setStateValue(next(state), undefined)
+    return (_options) => (next) => async (state) =>
+      setStateValue(await next(state), undefined)
   }
   return (options) => {
     const fn = defToOperation(def, options)
     const runIteration = iterateState(fn(options)(identity))
     return (next) =>
-      function doIterate(state) {
-        const nextState = next(state)
+      async function doIterate(state) {
+        const nextState = await next(state)
 
         return setStateValue(
           nextState,
-          runIteration(nextState, getTargetFromState(nextState))
+          await runIteration(nextState, getTargetFromState(nextState))
         )
       }
   }

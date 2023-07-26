@@ -12,16 +12,18 @@ export default function concat(...defs: TransformDefinition[]): Operation {
       defToOperation(def, options)(options)(identity)
     )
 
-    return function doConcat(state) {
-      const nextState = next(state)
+    return async function doConcat(state) {
+      const nextState = await next(state)
+
+      let nextValue: unknown[] = []
+      for (const fn of fns) {
+        const value = getStateValue(await fn(nextState))
+        nextValue = merge(nextValue, value)
+      }
+
       return setStateValue(
         nextState,
-        fns
-          .reduce(
-            (value, fn) => merge(value, getStateValue(fn(nextState))),
-            [] as unknown[]
-          )
-          .filter((val) => val !== undefined)
+        nextValue.filter((val) => val !== undefined)
       )
     }
   }

@@ -16,23 +16,23 @@ const state = {
 
 const options = {}
 
-const json = () => (data: unknown) => JSON.stringify(data)
+const json = () => async (data: unknown) => JSON.stringify(data)
 
 // Tests
 
-test('should run simple map pipe', (t) => {
+test('should run simple map pipe', async (t) => {
   const def = ['data', 'name']
   const expected = {
     context: [],
     value: 'John F.',
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return with same context as it got', (t) => {
+test('should return with same context as it got', async (t) => {
   const def = ['name']
   const state = {
     context: [{ data: { name: 'John F.' } }],
@@ -43,12 +43,12 @@ test('should return with same context as it got', (t) => {
     value: 'John F.',
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return context from pipeline when specified', (t) => {
+test('should return context from pipeline when specified', async (t) => {
   const doReturnContext = true
   const def = ['name']
   const state = {
@@ -60,33 +60,33 @@ test('should return context from pipeline when specified', (t) => {
     value: 'John F.',
   }
 
-  const ret = pipe(def, doReturnContext)(options)(identity)(state)
+  const ret = await pipe(def, doReturnContext)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should allow combination of string path and get operation', (t) => {
+test('should allow combination of string path and get operation', async (t) => {
   const def = ['data', get('name')]
   const expected = {
     context: [],
     value: 'John F.',
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should treat object as map object', (t) => {
+test('should treat object as map object', async (t) => {
   const def = ['data', { fullName: 'name' }]
   const expectedValue = { fullName: 'John F.' }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should run pipeline in reverse on reverse mapping', (t) => {
+test('should run pipeline in reverse on reverse mapping', async (t) => {
   const def = [get('data'), get('name')]
   const state = {
     context: [],
@@ -99,12 +99,12 @@ test('should run pipeline in reverse on reverse mapping', (t) => {
     rev: true,
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map pipe when flipping', (t) => {
+test('should reverse map pipe when flipping', async (t) => {
   const def = [get('data'), get('name')]
   const state = {
     context: [],
@@ -119,12 +119,12 @@ test('should reverse map pipe when flipping', (t) => {
     rev: false,
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not reverse map when rev and flipping', (t) => {
+test('should not reverse map when rev and flipping', async (t) => {
   const def = ['data', 'name']
   const stateFlipRev = {
     ...state,
@@ -136,12 +136,12 @@ test('should not reverse map when rev and flipping', (t) => {
     value: 'John F.',
   }
 
-  const ret = pipe(def)(options)(identity)(stateFlipRev)
+  const ret = await pipe(def)(options)(identity)(stateFlipRev)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not leak flipping between objects and skip the fwd dir', (t) => {
+test('should not leak flipping between objects and skip the fwd dir', async (t) => {
   const def = [
     { $flip: true, items: 'items' },
     { $direction: 'fwd', items: 'items' },
@@ -158,12 +158,12 @@ test('should not leak flipping between objects and skip the fwd dir', (t) => {
     rev: true,
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should pass flipping on to layers in the pipeline when presented to the pipeline', (t) => {
+test('should pass flipping on to layers in the pipeline when presented to the pipeline', async (t) => {
   const def = [{ items: 'users' }, { data: { name: 'items.name' } }]
   const state = {
     context: [],
@@ -178,12 +178,12 @@ test('should pass flipping on to layers in the pipeline when presented to the pi
     flip: true,
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set on target', (t) => {
+test('should set on target', async (t) => {
   const def = ['>name', '>data.personal']
   const state = {
     context: [],
@@ -196,12 +196,12 @@ test('should set on target', (t) => {
     value: { data: { personal: { age: 32, name: 'John F.' } } },
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should get and set on target', (t) => {
+test('should get and set on target', async (t) => {
   const def = ['user', '>data.personal.name']
   const state = {
     context: [],
@@ -214,12 +214,12 @@ test('should get and set on target', (t) => {
     value: { data: { personal: { age: 32, name: 'John F.' } } },
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should get and set on target with sub pipes', (t) => {
+test('should get and set on target with sub pipes', async (t) => {
   const def = [pipe(['user']), pipe(['>data.personal.name'])]
   const state = {
     context: [],
@@ -232,12 +232,12 @@ test('should get and set on target with sub pipes', (t) => {
     value: { data: { personal: { age: 32, name: 'John F.' } } },
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should get and set on target with iteration', (t) => {
+test('should get and set on target with iteration', async (t) => {
   const def = ['data[]', 'nickname', '>name', '>people[]']
   const state = {
     context: [],
@@ -250,12 +250,12 @@ test('should get and set on target with iteration', (t) => {
     value: { people: [{ name: 'John F.' }] },
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should treat target correctly going forward', (t) => {
+test('should treat target correctly going forward', async (t) => {
   const def = [set('name'), set('personal'), transform(json), set('data.user')]
   const state = {
     context: [],
@@ -273,12 +273,12 @@ test('should treat target correctly going forward', (t) => {
     },
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should treat target correctly in reverse', (t) => {
+test('should treat target correctly in reverse', async (t) => {
   const def = ['data.user', transform(json), get('personal'), 'name']
   const state = {
     context: ['John F.', ,],
@@ -296,31 +296,31 @@ test('should treat target correctly in reverse', (t) => {
     },
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should handle empty pipeline', (t) => {
+test('should handle empty pipeline', async (t) => {
   const def: Pipeline = []
   const expected = state
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should handle empty pipeline in reverse', (t) => {
+test('should handle empty pipeline in reverse', async (t) => {
   const def: Pipeline = []
   const stateRev = { ...state, rev: true }
   const expected = stateRev
 
-  const ret = pipe(def)(options)(identity)(stateRev)
+  const ret = await pipe(def)(options)(identity)(stateRev)
 
   t.deepEqual(ret, expected)
 })
 
-test('should modify on several levels and with several objects', (t) => {
+test('should modify on several levels and with several objects', async (t) => {
   const def = [
     {
       $modify: '.',
@@ -372,12 +372,12 @@ test('should modify on several levels and with several objects', (t) => {
     },
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should run complex case forward', (t) => {
+test('should run complex case forward', async (t) => {
   const def = [{ user: ['data', 'name'] }, set('attributes')]
   const state = {
     context: [],
@@ -388,12 +388,12 @@ test('should run complex case forward', (t) => {
     value: { attributes: { user: 'John F.' } },
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run complex case in reverse', (t) => {
+test('should run complex case in reverse', async (t) => {
   const def = [{ name: ['attributes', 'user'] }, set('data')]
   const state = {
     context: [],
@@ -406,12 +406,12 @@ test('should run complex case in reverse', (t) => {
     rev: true,
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map with parent', (t) => {
+test('should map with parent', async (t) => {
   const def = [
     'invoices[].lines[]',
     {
@@ -455,12 +455,12 @@ test('should map with parent', (t) => {
     rev: false,
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map with parent through several iterations', (t) => {
+test('should map with parent through several iterations', async (t) => {
   const def = [
     'invoice.lines[]',
     {
@@ -498,12 +498,12 @@ test('should map with parent through several iterations', (t) => {
     rev: false,
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map with parent in reverse', (t) => {
+test('should map with parent in reverse', async (t) => {
   const def = [
     'invoices[].lines[]',
     {
@@ -538,16 +538,16 @@ test('should map with parent in reverse', (t) => {
     rev: true,
   }
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should do nothing when no pipeline', (t) => {
+test('should do nothing when no pipeline', async (t) => {
   const def = undefined
   const expected = state
 
-  const ret = pipe(def)(options)(identity)(state)
+  const ret = await pipe(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

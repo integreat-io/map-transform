@@ -55,8 +55,8 @@ function isWrongDirection(direction: unknown, options: Options) {
 }
 
 function runOperationWithOriginalValue({ value }: State, options: Options) {
-  return (state: State, fn: Operation) => {
-    const nextState = fn(options)(identity)(setStateValue(state, value))
+  return async (state: State, fn: Operation) => {
+    const nextState = await fn(options)(identity)(setStateValue(state, value))
 
     const target = state.target
     const nextValue = getStateValue(nextState)
@@ -128,29 +128,32 @@ function modifyWithGivenPath(
 ) {
   if (path) {
     const fn = modify(path)(options)(next)
-    return (state: State, nextState: State) =>
-      fn(setTargetOnState(state, getStateValue(nextState)))
+    return async (state: State, nextState: State) =>
+      await fn(setTargetOnState(state, getStateValue(nextState)))
   }
 
-  return identity
+  return async (state: State, _nextState: State) => state
 }
 
 const runOperations =
   (
-    modifyFn: (state: State, nextState: State) => State,
+    modifyFn: (state: State, nextState: State) => Promise<State>,
     operations: Operation[],
     options: Options
   ) =>
-  (state: State) =>
-    isNonvalueState(state, options.nonvalues)
-      ? state
-      : modifyFn(
-          operations.reduce(
-            runOperationWithOriginalValue(state, options),
-            state
-          ),
-          state
-        )
+  async (state: State) => {
+    if (isNonvalueState(state, options.nonvalues)) {
+      return state
+    } else {
+      const run = runOperationWithOriginalValue(state, options)
+      let nextState: State = state
+      for (const operation of operations) {
+        nextState = await run(nextState, operation)
+      }
+
+      return modifyFn(nextState, state)
+    }
+  }
 
 const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
   ...state,
@@ -161,8 +164,8 @@ const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
 
 export default function props(def: TransformObject): Operation {
   if (Object.keys(def).length === 0) {
-    return (_options) => (next) => (state) =>
-      setStateValue(next(state), undefined)
+    return (_options) => (next) => async (state) =>
+      setStateValue(await next(state), undefined)
   }
 
   // Prepare path
@@ -180,8 +183,8 @@ export default function props(def: TransformObject): Operation {
       const run = runOperations(modifyFn, operations, options)
       const isWrongDirectionFn = isWrongDirection(def.$direction, options)
 
-      return function doMutate(state) {
-        const nextState = next(state)
+      return async function doMutate(state) {
+        const nextState = await next(state)
         if (
           isNonvalueState(nextState, options.nonvalues) ||
           isWrongDirectionFn(nextState.rev)
@@ -194,8 +197,8 @@ export default function props(def: TransformObject): Operation {
         ) // Don't pass on iteration to props
         const thisState =
           def.$iterate === true
-            ? iterate(() => () => run)(options)(identity)(propsState)
-            : run(propsState)
+            ? await iterate(() => () => run)(options)(identity)(propsState)
+            : await run(propsState)
 
         return setValueFromState(nextState, thisState)
       }

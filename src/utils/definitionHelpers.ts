@@ -18,7 +18,6 @@ import { unescapeValue } from './escape.js'
 import { ensureArray } from './array.js'
 import type {
   Operation,
-  DataMapper,
   TransformDefinition,
   TransformObject,
   Path,
@@ -32,12 +31,13 @@ import type {
   ConcatOperation,
   LookupOperation,
   Options,
+  DataMapperWithState,
   DataMapperWithOptions,
   State,
   StateMapper,
 } from '../types.js'
 
-const passStateThroughNext = (next: StateMapper) => (state: State) =>
+const passStateThroughNext = (next: StateMapper) => async (state: State) =>
   next(state)
 
 const nonOperatorKeys = [
@@ -191,7 +191,7 @@ function createLookupOperation(
 function operationFromObject(
   defRaw: OperationObject | TransformObject,
   options: Options
-) {
+): Operation | Operation[] {
   const def = modifyOperationObject(defRaw, options.modifyOperationObject)
 
   if (isOperationObject(def)) {
@@ -210,7 +210,8 @@ function operationFromObject(
     } else if (isOperationType<LookupOperation>(def, '$lookup')) {
       return createLookupOperation(lookup, def)
     } else {
-      return (_options: Options) => identity // This is not a known operation
+      // Not a known operation
+      return () => () => async (value) => value
     }
   } else {
     return props(def as TransformObject)
@@ -229,7 +230,7 @@ export const defToOperations = (
     ? get(def)
     : isOperation(def)
     ? def
-    : (_options: Options) => identity
+    : () => () => async (value) => value
 
 export function defToOperation(
   def: TransformDefinition | undefined,
@@ -242,14 +243,15 @@ export function defToOperation(
 export function operationToDataMapper(
   operation: Operation,
   options: Options
-): DataMapper {
+): DataMapperWithState {
   const fn = operation(options)(identity)
-  return (value, state) => getStateValue(fn(setStateValue(state, value)))
+  return async (value, state) =>
+    getStateValue(await fn(setStateValue(state, value)))
 }
 
 export function defToDataMapper(
   def?: TransformDefinition,
   options: Options = {}
-): DataMapper {
+): DataMapperWithState {
   return operationToDataMapper(defToOperation(def, options), options)
 }

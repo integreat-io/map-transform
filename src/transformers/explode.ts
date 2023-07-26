@@ -54,11 +54,13 @@ function doExplode(data: unknown): unknown[] | undefined {
 }
 
 const explode: Transformer = function explode() {
-  return () => (data, state) => state.rev ? doImplode(data) : doExplode(data)
+  return () => async (data, state) =>
+    state.rev ? doImplode(data) : doExplode(data)
 }
 
 const implode: Transformer = function implode() {
-  return () => (data, state) => state.rev ? doExplode(data) : doImplode(data)
+  return () => async (data, state) =>
+    state.rev ? doExplode(data) : doImplode(data)
 }
 
 export { explode, implode }

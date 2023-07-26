@@ -1,14 +1,14 @@
 import test from 'ava'
-import type { TransformerProps } from '../types.js'
+import type { TransformerProps, TransformDefinition } from '../types.js'
 import { isObject } from '../utils/is.js'
 
 import mapTransform, { transform, rev } from '../index.js'
 
 // Setup
 
-const createTitle = (item: Record<string, unknown>) =>
+const createTitle = async (item: Record<string, unknown>) =>
   `${item.title} - by ${item.author}`
-const removeAuthor = (item: Record<string, unknown>) =>
+const removeAuthor = async (item: Record<string, unknown>) =>
   typeof item.title === 'string' && item.title.endsWith(` - by ${item.author}`)
     ? item.title.slice(
         0,
@@ -21,33 +21,33 @@ const removeAuthor = (item: Record<string, unknown>) =>
 const appendToTitle =
   ({ text }: TransformerProps) =>
   () =>
-  (item: unknown) =>
+  async (item: unknown) =>
     isObject(item) ? { ...item, title: `${item.title}${text}` } : item
 
-const appendAuthorToTitle = () => (item: unknown) =>
-  isObject(item) ? { ...item, title: createTitle(item) } : item
+const appendAuthorToTitle = () => async (item: unknown) =>
+  isObject(item) ? { ...item, title: await createTitle(item) } : item
 
-const removeAuthorFromTitle = () => (item: unknown) =>
-  isObject(item) ? { ...item, title: removeAuthor(item) } : item
+const removeAuthorFromTitle = () => async (item: unknown) =>
+  isObject(item) ? { ...item, title: await removeAuthor(item) } : item
 
-const setActive = () => (item: unknown) =>
+const setActive = () => async (item: unknown) =>
   isObject(item) ? { ...item, active: true } : item
 
-const prepareAuthorName = ({ author }: Record<string, unknown>) =>
+const prepareAuthorName = async ({ author }: Record<string, unknown>) =>
   typeof author === 'string'
     ? `${author[0].toUpperCase()}${author.slice(1)}.`
     : ''
 
-const setAuthorName = () => (item: unknown) =>
-  isObject(item) ? { ...item, authorName: prepareAuthorName(item) } : item
+const setAuthorName = () => async (item: unknown) =>
+  isObject(item) ? { ...item, authorName: await prepareAuthorName(item) } : item
 
-const appendEllipsis = () => (str: unknown) =>
+const appendEllipsis = () => async (str: unknown) =>
   typeof str === 'string' ? str + ' ...' : str
 
-const getLength = () => () => (str: unknown) =>
+const getLength = () => () => async (str: unknown) =>
   typeof str === 'string' ? str.length : -1
 
-const generateTag = () => () => (value: unknown) =>
+const generateTag = () => () => async (value: unknown) =>
   isObject(value) ? `${value.tag}-${value.sequence}` : undefined
 
 const transformers = {
@@ -59,7 +59,7 @@ const transformers = {
 
 // Tests
 
-test('should map simple object with one transform function', (t) => {
+test('should map simple object with one transform function', async (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -76,12 +76,36 @@ test('should map simple object with one transform function', (t) => {
     author: 'johnf',
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map simple object with several transforms', (t) => {
+test('should map simple object with old synchronous transform function', async (t) => {
+  const exclamateTitle = () => (item: unknown) =>
+    isObject(item) ? { ...item, title: `${item.title}!` } : item
+  const def = [
+    {
+      title: 'content.heading',
+      author: 'meta.writer.username',
+    },
+    transform(exclamateTitle),
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } },
+  }
+  const expected = {
+    title: 'The heading!',
+    author: 'johnf',
+  }
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map simple object with several transforms', async (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -100,12 +124,12 @@ test('should map simple object with several transforms', (t) => {
     active: true,
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map simple object with rev transform', (t) => {
+test('should reverse map simple object with rev transform', async (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -123,12 +147,12 @@ test('should reverse map simple object with rev transform', (t) => {
     meta: { writer: { username: 'johnf', name: 'Johnf.' } },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map simple object with dedicated rev transform', (t) => {
+test('should reverse map simple object with dedicated rev transform', async (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -145,12 +169,12 @@ test('should reverse map simple object with dedicated rev transform', (t) => {
     meta: { writer: { username: 'johnf' } },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should transform beofre data is set on outer path', (t) => {
+test('should transform beofre data is set on outer path', async (t) => {
   const def = {
     attributes: [
       'result.data',
@@ -176,12 +200,12 @@ test('should transform beofre data is set on outer path', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should transform before mapping', (t) => {
+test('should transform before mapping', async (t) => {
   const def = [
     transform(setActive),
     {
@@ -197,12 +221,12 @@ test('should transform before mapping', (t) => {
     enabled: true,
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply transforms from left to right', (t) => {
+test('should apply transforms from left to right', async (t) => {
   const def = [
     {
       titleLength: [
@@ -219,12 +243,12 @@ test('should apply transforms from left to right', (t) => {
     titleLength: 15,
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object', (t) => {
+test('should apply transform from an operation object', async (t) => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: 'getLength' }],
@@ -237,12 +261,12 @@ test('should apply transform from an operation object', (t) => {
     titleLength: 11,
   }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should interate transform from an operation object', (t) => {
+test('should interate transform from an operation object', async (t) => {
   const def = [
     {
       titleLengths: [
@@ -258,12 +282,12 @@ test('should interate transform from an operation object', (t) => {
     titleLengths: [11, 16],
   }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object with arguments', (t) => {
+test('should apply transform from an operation object with arguments', async (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -277,36 +301,36 @@ test('should apply transform from an operation object with arguments', (t) => {
     title: 'The heading - archived',
   }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use built in get function', (t) => {
+test('should use built in get function', async (t) => {
   const def = {
     title: ['content', { $transform: 'get', path: 'heading' }],
   }
   const data = { content: { heading: 'The heading', meta: { user: 'johnf' } } }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function', (t) => {
+test('should use built in fixed function', async (t) => {
   const def = {
     title: ['content', { $transform: 'fixed', value: "I'm always here" }],
   }
   const data = { content: { heading: 'The heading' } }
   const expected = { title: "I'm always here" }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function with value function', (t) => {
+test('should use built in fixed function with value function', async (t) => {
   const def = {
     title: [
       'content',
@@ -316,24 +340,24 @@ test('should use built in fixed function with value function', (t) => {
   const data = { content: { heading: 'The heading' } }
   const expected = { title: "I'm from the function!" }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function in reverse', (t) => {
+test('should use built in fixed function in reverse', async (t) => {
   const def = {
     title: ['content', { $transform: 'fixed', value: "I'm always here" }],
   }
   const data = { title: 'The heading' }
   const expected = { content: "I'm always here" }
 
-  const ret = mapTransform(def, { transformers })(data, { rev: true })
+  const ret = await mapTransform(def, { transformers })(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should use built in map function', (t) => {
+test('should use built in map function', async (t) => {
   const def = {
     result: [
       'status',
@@ -350,12 +374,12 @@ test('should use built in map function', (t) => {
   const data = { status: 404 }
   const expected = { result: 'notfound' }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use built in map function with named dictionary', (t) => {
+test('should use built in map function with named dictionary', async (t) => {
   const def = {
     result: [
       'status',
@@ -375,12 +399,12 @@ test('should use built in map function with named dictionary', (t) => {
   const data = { status: 404 }
   const expected = { result: 'notfound' }
 
-  const ret = mapTransform(def, { transformers, dictionaries })(data)
+  const ret = await mapTransform(def, { transformers, dictionaries })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use built in explode function', (t) => {
+test('should use built in explode function', async (t) => {
   const def = {
     rate: [
       'currencies',
@@ -394,12 +418,12 @@ test('should use built in explode function', (t) => {
   }
   const expected = { rate: 0.1 }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should use built in implode function', (t) => {
+test('should use built in implode function', async (t) => {
   const def = { properties: { $transform: 'implode' } }
   const data = [
     { key: 'value', value: 32 },
@@ -407,12 +431,12 @@ test('should use built in implode function', (t) => {
   ]
   const expected = { properties: { value: 32, unit: 'KG' } }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should only use transform going forward', (t) => {
+test('should only use transform going forward', async (t) => {
   const def = {
     title: [
       'content',
@@ -423,14 +447,14 @@ test('should only use transform going forward', (t) => {
   const expectedFwd = { title: "I'm always here" }
   const expectedRev = { content: undefined }
 
-  const retFwd = mapTransform(def, { transformers })(data)
-  const retRev = mapTransform(def, { transformers })(data, { rev: true })
+  const retFwd = await mapTransform(def, { transformers })(data)
+  const retRev = await mapTransform(def, { transformers })(data, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should only use transform going in reverse', (t) => {
+test('should only use transform going in reverse', async (t) => {
   const def = {
     title: [
       'content',
@@ -441,14 +465,14 @@ test('should only use transform going in reverse', (t) => {
   const expectedFwd = { title: undefined }
   const expectedRev = { content: "I'm always here" }
 
-  const retFwd = mapTransform(def, { transformers })(data)
-  const retRev = mapTransform(def, { transformers })(data, { rev: true })
+  const retFwd = await mapTransform(def, { transformers })(data)
+  const retRev = await mapTransform(def, { transformers })(data, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should provide index when iterating', (t) => {
+test('should provide index when iterating', async (t) => {
   const def = [
     'content',
     {
@@ -466,12 +490,12 @@ test('should provide index when iterating', (t) => {
     { title: 'The other', sequence: 1 },
   ]
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should provide index deep down when iterating', (t) => {
+test('should provide index deep down when iterating', async (t) => {
   const def = [
     'content',
     {
@@ -500,12 +524,12 @@ test('should provide index deep down when iterating', (t) => {
     { title: 'The other', meta: { sectionId: 'sports-1' } },
   ]
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform function to array with iteration', (t) => {
+test('should apply transform function to array with iteration', async (t) => {
   const def = [
     'content',
     {
@@ -521,12 +545,12 @@ test('should apply transform function to array with iteration', (t) => {
 
   const expected = { tags: ['news-1', 'sports-2'] }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should provide index through apply when iterating', (t) => {
+test('should provide index through apply when iterating', async (t) => {
   const sectionIdDef = [
     {
       sequence: { $transform: 'index' },
@@ -556,7 +580,7 @@ test('should provide index through apply when iterating', (t) => {
     { title: 'The other', meta: { sectionId: 'sports-1' } },
   ]
 
-  const ret = mapTransform(def, {
+  const ret = await mapTransform(def, {
     transformers,
     pipelines: { sectionId: sectionIdDef },
   })(data)
@@ -564,7 +588,7 @@ test('should provide index through apply when iterating', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should provide index when iterating in reverse', (t) => {
+test('should provide index when iterating in reverse', async (t) => {
   const def = [
     'content',
     {
@@ -582,12 +606,12 @@ test('should provide index when iterating in reverse', (t) => {
     ],
   }
 
-  const ret = mapTransform(def, { transformers })(data, { rev: true })
+  const ret = await mapTransform(def, { transformers })(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should support $value shorthand', (t) => {
+test('should support $value shorthand', async (t) => {
   const def = [
     {
       title: ['content.heading', { $value: 'Default title' }],
@@ -598,12 +622,12 @@ test('should support $value shorthand', (t) => {
     title: 'Default title',
   }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should concat arrays with $concat', (t) => {
+test('should concat arrays with $concat', async (t) => {
   const def = [
     'org',
     {
@@ -615,12 +639,12 @@ test('should concat arrays with $concat', (t) => {
   }
   const expected = ['johnf', 'maryk', 'theboss']
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should treat one path given to $concat as an array of one', (t) => {
+test('should treat one path given to $concat as an array of one', async (t) => {
   const def = [
     'org',
     {
@@ -633,12 +657,12 @@ test('should treat one path given to $concat as an array of one', (t) => {
   const expected = ['johnf', 'maryk']
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ret = mapTransform(def as any)(data)
+  const ret = await mapTransform(def as any)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should shallow merge object with $merge', (t) => {
+test('should shallow merge object with $merge', async (t) => {
   const def = {
     $merge: ['original', 'modified'],
   }
@@ -665,12 +689,12 @@ test('should shallow merge object with $merge', (t) => {
     tags: ['sports'],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object with Symbol as key', (t) => {
+test('should apply transform from an operation object with Symbol as key', async (t) => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: Symbol.for('getLength') }],
@@ -683,12 +707,12 @@ test('should apply transform from an operation object with Symbol as key', (t) =
     titleLength: 11,
   }
 
-  const ret = mapTransform(def, { transformers })(data)
+  const ret = await mapTransform(def, { transformers })(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should throw when transform is given an unknown transformer id', (t) => {
+test('should throw when transform is given an unknown transformer id', async (t) => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: 'unknown' }],
@@ -698,7 +722,7 @@ test('should throw when transform is given an unknown transformer id', (t) => {
     content: { heading: 'The heading' },
   }
 
-  const error = t.throws(() => mapTransform(def, { transformers })(data))
+  const error = await t.throwsAsync(mapTransform(def, { transformers })(data))
 
   t.true(error instanceof Error)
   t.is(
@@ -707,7 +731,7 @@ test('should throw when transform is given an unknown transformer id', (t) => {
   )
 })
 
-test('should throw when transform is given an unknown transformer id symbol', (t) => {
+test('should throw when transform is given an unknown transformer id symbol', async (t) => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: Symbol.for('unknown') }],
@@ -717,7 +741,7 @@ test('should throw when transform is given an unknown transformer id symbol', (t
     content: { heading: 'The heading' },
   }
 
-  const error = t.throws(() => mapTransform(def, { transformers })(data))
+  const error = await t.throwsAsync(mapTransform(def, { transformers })(data))
 
   t.true(error instanceof Error)
   t.is(
@@ -726,20 +750,19 @@ test('should throw when transform is given an unknown transformer id symbol', (t
   )
 })
 
-test('should throw when transform operation is missing a transformer id', (t) => {
+test('should throw when transform operation is missing a transformer id', async (t) => {
   const def = [
     'content',
     {
       $iterate: true,
       title: ['heading', { $transform: null }], // No transformer id
     },
-  ]
+  ] as unknown as TransformDefinition
   const data = {
     content: [{ heading: 'The heading' }, { heading: 'The other' }],
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = t.throws(() => mapTransform(def as any, { transformers })(data))
+  const error = await t.throwsAsync(mapTransform(def, { transformers })(data))
 
   t.true(error instanceof Error)
   t.is(
@@ -748,20 +771,19 @@ test('should throw when transform operation is missing a transformer id', (t) =>
   )
 })
 
-test('should throw when transform operation has invalid transformer id', (t) => {
+test('should throw when transform operation has invalid transformer id', async (t) => {
   const def = [
     'content',
     {
       $iterate: true,
       title: ['heading', { $transform: { id: 13 } }], // Just something invalid
     },
-  ]
+  ] as unknown as TransformDefinition
   const data = {
     content: [{ heading: 'The heading' }, { heading: 'The other' }],
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = t.throws(() => mapTransform(def as any, { transformers })(data))
+  const error = await t.throwsAsync(mapTransform(def, { transformers })(data))
 
   t.true(error instanceof Error)
   t.is(
@@ -770,7 +792,7 @@ test('should throw when transform operation has invalid transformer id', (t) => 
   )
 })
 
-test('should run operation objects trought modifyOperationObject', (t) => {
+test('should run operation objects trought modifyOperationObject', async (t) => {
   const modifyOperationObject = (op: Record<string, unknown>) =>
     op.$append
       ? {
@@ -791,7 +813,9 @@ test('should run operation objects trought modifyOperationObject', (t) => {
     title: 'The heading - archived',
   }
 
-  const ret = mapTransform(def, { transformers, modifyOperationObject })(data)
+  const ret = await mapTransform(def, { transformers, modifyOperationObject })(
+    data
+  )
 
   t.deepEqual(ret, expected)
 })

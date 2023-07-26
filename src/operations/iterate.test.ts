@@ -16,7 +16,7 @@ const options = {}
 
 // Tests
 
-test('should map over a value array', (t) => {
+test('should map over a value array', async (t) => {
   const def = {
     id: 'key',
     title: 'headline',
@@ -33,12 +33,12 @@ test('should map over a value array', (t) => {
     ],
   }
 
-  const ret = iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map over non-array', (t) => {
+test('should map over non-array', async (t) => {
   const def = {
     id: 'key',
     title: 'headline',
@@ -49,12 +49,12 @@ test('should map over non-array', (t) => {
   }
   const expectedValue = { id: 'ent1', title: 'Entry 1' }
 
-  const ret = iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret.value, expectedValue)
 })
 
-test('should provide array as context', (t) => {
+test('should provide array as context', async (t) => {
   const def = {
     id: 'key',
     title: 'headline',
@@ -73,12 +73,12 @@ test('should provide array as context', (t) => {
     ],
   }
 
-  const ret = iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should provide array as context through several iterations', (t) => {
+test('should provide array as context through several iterations', async (t) => {
   const def1 = {
     key: 'key',
     headline: 'key',
@@ -101,13 +101,13 @@ test('should provide array as context through several iterations', (t) => {
     ],
   }
 
-  const ret1 = iterate(def1)(options)(identity)(state)
-  const ret2 = iterate(def2)(options)(identity)(ret1)
+  const ret1 = await iterate(def1)(options)(identity)(state)
+  const ret2 = await iterate(def2)(options)(identity)(ret1)
 
   t.deepEqual(ret2, expected)
 })
 
-test('should provide array as context through double arrays', (t) => {
+test('should provide array as context through double arrays', async (t) => {
   const def = {
     articles: [
       'items[]',
@@ -139,35 +139,35 @@ test('should provide array as context through double arrays', (t) => {
     ],
   }
 
-  const ret = iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when no def', (t) => {
+test('should return undefined when no def', async (t) => {
   const def = {}
   const state = {
     context: [],
     value: data,
   }
 
-  const ret = iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(identity)(state)
 
   t.is(ret.value, undefined)
 })
 
-test('should iterate context to support alt operation etc.', (t) => {
+test('should iterate context to support alt operation etc.', async (t) => {
   const def = alt(
     // First set value for all items with key === 'ent1' ...
     transform(
-      () => (item?: unknown) =>
+      () => async (item?: unknown) =>
         item && (item as Record<string, unknown>).key === 'ent1'
           ? 'From somewhere else'
           : undefined
     ),
     // ... then set value for all that got `undefined` from the previous transform
     transform(
-      () => (item?: unknown) =>
+      () => async (item?: unknown) =>
         item
           ? `${(item as Record<string, unknown>).key}: ${
               (item as Record<string, unknown>).headline
@@ -184,12 +184,12 @@ test('should iterate context to support alt operation etc.', (t) => {
     value: ['From somewhere else', 'ent2: Entry 2'],
   }
 
-  const ret = iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should map over a value array in reverse', (t) => {
+test('should map over a value array in reverse', async (t) => {
   const def = {
     key: 'id',
     headline: 'title',
@@ -207,7 +207,7 @@ test('should map over a value array in reverse', (t) => {
     ],
   }
 
-  const ret = iterate(def)(options)(identity)(state)
+  const ret = await iterate(def)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

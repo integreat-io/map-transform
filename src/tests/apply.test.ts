@@ -5,16 +5,16 @@ import mapTransform, { transform, apply, fwd, rev, filter } from '../index.js'
 // Setup
 
 const castEntry = [
-  fwd(filter(() => () => true)),
-  rev(transform(() => (data) => data)),
+  fwd(filter(() => async () => true)),
+  rev(transform(() => async (data) => data)),
   {
     $iterate: true,
     id: 'id',
-    title: ['title', transform(() => String)],
-    viewCount: ['viewCount', transform(() => Number)],
+    title: ['title', transform(() => async (value) => String(value))],
+    viewCount: ['viewCount', transform(() => async (value) => Number(value))],
   },
-  fwd(transform(() => (data) => data)),
-  rev(filter(() => () => true)),
+  fwd(transform(() => async (data) => data)),
+  rev(filter(() => async () => true)),
 ]
 
 const getItems = 'data.entries'
@@ -45,7 +45,7 @@ const options = { pipelines }
 
 // Tests
 
-test('should apply pipeline by id', (t) => {
+test('should apply pipeline by id', async (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -63,12 +63,12 @@ test('should apply pipeline by id', (t) => {
     viewCount: 45,
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = await mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply path pipeline by id', (t) => {
+test('should apply path pipeline by id', async (t) => {
   const def = [
     apply('getItems'),
     {
@@ -86,12 +86,12 @@ test('should apply path pipeline by id', (t) => {
     title: 'The heading',
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = await mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply path pipeline by id as Symbol', (t) => {
+test('should apply path pipeline by id as Symbol', async (t) => {
   const def = [
     apply(Symbol.for('getItems')),
     {
@@ -109,12 +109,12 @@ test('should apply path pipeline by id as Symbol', (t) => {
     title: 'The heading',
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = await mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply pipeline by id in reverse', (t) => {
+test('should apply pipeline by id in reverse', async (t) => {
   const def = [
     apply('getItems'),
     {
@@ -132,12 +132,12 @@ test('should apply pipeline by id in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = await mapTransform(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply pipeline as operation object', (t) => {
+test('should apply pipeline as operation object', async (t) => {
   const def = [
     {
       title: 'content.heading',
@@ -155,12 +155,12 @@ test('should apply pipeline as operation object', (t) => {
     viewCount: 45,
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = await mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should iterate applied pipeline', (t) => {
+test('should iterate applied pipeline', async (t) => {
   const def = [{ $apply: 'hitsOnly', $iterate: true }]
   const data = [
     {
@@ -181,12 +181,12 @@ test('should iterate applied pipeline', (t) => {
     },
   ]
 
-  const ret = mapTransform(def, options)(data)
+  const ret = await mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply pipeline from array path', (t) => {
+test('should apply pipeline from array path', async (t) => {
   const def = { data: ['content.data[].createOrMutate', apply('entry')] }
   const data = {
     content: {
@@ -215,12 +215,12 @@ test('should apply pipeline from array path', (t) => {
     ],
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = await mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply pipeline from array path in reverse', (t) => {
+test('should apply pipeline from array path in reverse', async (t) => {
   const def = {
     data: ['content.data[].createOrMutate', apply('entry')],
   }
@@ -251,12 +251,12 @@ test('should apply pipeline from array path in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = await mapTransform(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should apply pipeline as operation object going forward only', (t) => {
+test('should apply pipeline as operation object going forward only', async (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
     { $apply: 'cast_entry', $direction: 'fwd' },
@@ -269,14 +269,14 @@ test('should apply pipeline as operation object going forward only', (t) => {
     meta: { hits: '45' },
   }
 
-  const retFwd = mapTransform(def, options)(dataFwd)
-  const retRev = mapTransform(def, options)(dataRev, { rev: true })
+  const retFwd = await mapTransform(def, options)(dataFwd)
+  const retRev = await mapTransform(def, options)(dataRev, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should apply pipeline as operation object going in reverse only', (t) => {
+test('should apply pipeline as operation object going in reverse only', async (t) => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
     { $apply: 'cast_entry', $direction: 'rev' },
@@ -289,14 +289,14 @@ test('should apply pipeline as operation object going in reverse only', (t) => {
     meta: { hits: 45 },
   }
 
-  const retFwd = mapTransform(def, options)(dataFwd)
-  const retRev = mapTransform(def, options)(dataRev, { rev: true })
+  const retFwd = await mapTransform(def, options)(dataFwd)
+  const retRev = await mapTransform(def, options)(dataRev, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should use forward alias', (t) => {
+test('should use forward alias', async (t) => {
   const optionsWithAlias = { ...options, fwdAlias: 'from' }
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
@@ -310,14 +310,16 @@ test('should use forward alias', (t) => {
     meta: { hits: '45' },
   }
 
-  const retFwd = mapTransform(def, optionsWithAlias)(dataFwd)
-  const retRev = mapTransform(def, optionsWithAlias)(dataRev, { rev: true })
+  const retFwd = await mapTransform(def, optionsWithAlias)(dataFwd)
+  const retRev = await mapTransform(def, optionsWithAlias)(dataRev, {
+    rev: true,
+  })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should use reverse alias', (t) => {
+test('should use reverse alias', async (t) => {
   const optionsWithAlias = { ...options, revAlias: 'to' }
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
@@ -331,14 +333,16 @@ test('should use reverse alias', (t) => {
     meta: { hits: 45 },
   }
 
-  const retFwd = mapTransform(def, optionsWithAlias)(dataFwd)
-  const retRev = mapTransform(def, optionsWithAlias)(dataRev, { rev: true })
+  const retFwd = await mapTransform(def, optionsWithAlias)(dataFwd)
+  const retRev = await mapTransform(def, optionsWithAlias)(dataRev, {
+    rev: true,
+  })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
 })
 
-test('should apply path pipeline through operaion object with id as Symbol', (t) => {
+test('should apply path pipeline through operaion object with id as Symbol', async (t) => {
   const def = [
     { $apply: Symbol.for('getItems') },
     {
@@ -356,7 +360,7 @@ test('should apply path pipeline through operaion object with id as Symbol', (t)
     title: 'The heading',
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = await mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })

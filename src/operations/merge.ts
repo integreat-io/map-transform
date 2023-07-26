@@ -41,17 +41,22 @@ function mergeStates(state: State, thisState: State) {
 export default function merge(...defs: TransformDefinition[]): Operation {
   return (options) => (next) => {
     if (defs.length === 0) {
-      return (state) => setStateValue(next(state), undefined)
+      return async (state) => setStateValue(await next(state), undefined)
     }
     const pipelines = defs.map((def) =>
       defToOperation(def, options)(options)(next)
     )
 
-    return function (state) {
-      const nextState = next(state)
-      return isNonvalueState(nextState, options.nonvalues)
-        ? setStateValue(nextState, undefined)
-        : pipelines.map((pipeline) => pipeline(nextState)).reduce(mergeStates)
+    return async function (state) {
+      const nextState = await next(state)
+      if (isNonvalueState(nextState, options.nonvalues)) {
+        return setStateValue(nextState, undefined)
+      } else {
+        const states = await Promise.all(
+          pipelines.map((pipeline) => pipeline(nextState))
+        )
+        return states.reduce(mergeStates)
+      }
     }
   }
 }

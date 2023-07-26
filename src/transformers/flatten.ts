@@ -5,7 +5,7 @@ export interface Props extends TransformerProps {
 }
 
 const transformer: Transformer<Props> = function flatten({ depth = 1 }) {
-  return () => (data) => Array.isArray(data) ? data.flat(depth) : data
+  return () => async (data) => Array.isArray(data) ? data.flat(depth) : data
 }
 
 export default transformer

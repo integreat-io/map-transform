@@ -9,7 +9,7 @@ const options = {}
 
 // Tests
 
-test('should apply pipeline to root', (t) => {
+test('should apply pipeline to root', async (t) => {
   const state = {
     context: [{ content: { title: 'An article' }, section: 'news' }],
     value: { title: 'An article' },
@@ -19,7 +19,7 @@ test('should apply pipeline to root', (t) => {
     value: 'news',
   }
 
-  const ret = root('section')(options)(identity)(state)
+  const ret = await root('section')(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })

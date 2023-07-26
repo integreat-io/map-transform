@@ -6,17 +6,17 @@ import filter from './filter.js'
 
 // Helpers
 
-const beginsWithA = () => (str: unknown) =>
+const beginsWithA = () => async (str: unknown) =>
   typeof str === 'string' ? str.startsWith('A') : false
 
-const isParam = () => (str: unknown, state: State) =>
+const isParam = () => async (str: unknown, state: State) =>
   str === (state.target as Record<string, unknown>).allowedUser
 
 const options = {}
 
 // Tests
 
-test('should set value to undefined when filter returns false', (t) => {
+test('should set value to undefined when filter returns false', async (t) => {
   const state = {
     context: [{ title: 'Other entry' }],
     value: 'Other entry',
@@ -26,23 +26,23 @@ test('should set value to undefined when filter returns false', (t) => {
     value: undefined,
   }
 
-  const ret = filter(beginsWithA)(options)(identity)(state)
+  const ret = await filter(beginsWithA)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not touch value when filter returns true', (t) => {
+test('should not touch value when filter returns true', async (t) => {
   const state = {
     context: [{ title: 'An entry' }],
     value: 'An entry',
   }
 
-  const ret = filter(beginsWithA)(options)(identity)(state)
+  const ret = await filter(beginsWithA)(options)(identity)(state)
 
   t.deepEqual(ret, state)
 })
 
-test('should remove values in array when filter returns false', (t) => {
+test('should remove values in array when filter returns false', async (t) => {
   const state = {
     context: [{ users: ['John F', 'Andy'] }],
     value: ['John F', 'Andy'],
@@ -52,12 +52,12 @@ test('should remove values in array when filter returns false', (t) => {
     value: ['Andy'],
   }
 
-  const ret = filter(beginsWithA)(options)(identity)(state)
+  const ret = await filter(beginsWithA)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should provide state to filter function', (t) => {
+test('should provide state to filter function', async (t) => {
   const state = {
     context: [],
     target: { users: ['John F', 'Andy'], allowedUser: 'John F' },
@@ -68,19 +68,19 @@ test('should provide state to filter function', (t) => {
     value: ['John F'],
   }
 
-  const ret = filter(isParam)(options)(identity)(state)
+  const ret = await filter(isParam)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not touch value when filter is not a function', (t) => {
+test('should not touch value when filter is not a function', async (t) => {
   const state = {
     context: [{ title: 'An entry' }],
     value: 'An entry',
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ret = filter('notallowed' as any)(options)(identity)(state)
+  const ret = await filter('notallowed' as any)(options)(identity)(state)
 
   t.deepEqual(ret, state)
 })

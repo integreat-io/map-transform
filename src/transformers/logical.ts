@@ -26,16 +26,16 @@ const transformer: Transformer<Props> = function logical({
 
     const logicalOp = getLogicalFn(operator)
 
-    return (data, state) => {
+    return async (data, state) => {
       if (state.rev) {
         const value = Boolean(data)
-        return setFns.reduce(
-          (obj: unknown, setFn) =>
-            setFn(value, setTargetOnState(goForward(state), obj)),
-          undefined
-        )
+        let obj: unknown
+        for (const setFn of setFns) {
+          obj = await setFn(value, setTargetOnState(goForward(state), obj))
+        }
+        return obj
       } else {
-        const values = getFns.map((fn) => fn(data, state))
+        const values = await Promise.all(getFns.map((fn) => fn(data, state)))
         return values.reduce(logicalOp)
       }
     }

@@ -13,12 +13,12 @@ const { value } = transformers
 
 // Setup
 
-const threeLetters = () => (value: unknown) =>
+const threeLetters = () => async (value: unknown) =>
   typeof value === 'string' ? value.slice(0, 3) : value
 
 // Tests
 
-test('should reverse map simple object', (t) => {
+test('should reverse map simple object', async (t) => {
   const def = {
     title: 'content.heading',
     author: 'meta.writer.username',
@@ -32,12 +32,12 @@ test('should reverse map simple object', (t) => {
     meta: { writer: { username: 'johnf' } },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with target', (t) => {
+test('should reverse map with target', async (t) => {
   const def = ['content.heading', '>title']
   const data = {
     title: 'The heading',
@@ -50,12 +50,12 @@ test('should reverse map with target', (t) => {
     content: { id: 'ent1', heading: 'The heading' },
   }
 
-  const ret = mapTransform(def)(data, { target, rev: true })
+  const ret = await mapTransform(def)(data, { target, rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with dot only notation', (t) => {
+test('should reverse map with dot only notation', async (t) => {
   const def = {
     article: {
       '.': 'content',
@@ -76,12 +76,12 @@ test('should reverse map with dot only notation', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should disregard a prop pipeline without get in reverse', (t) => {
+test('should disregard a prop pipeline without get in reverse', async (t) => {
   const def = {
     title: 'content.heading',
     meta: transform(value({ tags: ['news'] })), // We're setting an object here, as that would replace the target object
@@ -89,12 +89,12 @@ test('should disregard a prop pipeline without get in reverse', (t) => {
   const data = { title: 'New article', meta: { tags: ['news'] } }
   const expected = { content: { heading: 'New article' } }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map array of objects', (t) => {
+test('should reverse map array of objects', async (t) => {
   const def = {
     $iterate: true,
     title: 'content.heading',
@@ -115,12 +115,12 @@ test('should reverse map array of objects', (t) => {
     },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with object array path', (t) => {
+test('should reverse map with object array path', async (t) => {
   const def = [
     'content.articles[]',
     {
@@ -142,12 +142,12 @@ test('should reverse map with object array path', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map several layers', (t) => {
+test('should reverse map several layers', async (t) => {
   const def = [
     'content.articles',
     {
@@ -177,12 +177,12 @@ test('should reverse map several layers', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map several layers of arrays', (t) => {
+test('should reverse map several layers of arrays', async (t) => {
   const def = [
     'content.articles[]',
     {
@@ -224,12 +224,12 @@ test('should reverse map several layers of arrays', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map several layers of arrays with bracket notation in set path', (t) => {
+test('should reverse map several layers of arrays with bracket notation in set path', async (t) => {
   const def = {
     data: [
       'content.articles[]',
@@ -282,12 +282,12 @@ test('should reverse map several layers of arrays with bracket notation in set p
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should set several props in array in reverse', (t) => {
+test('should set several props in array in reverse', async (t) => {
   const def = {
     'content.prop1': 'props[0].value',
     'content.prop2': 'props[1].value',
@@ -302,12 +302,12 @@ test('should set several props in array in reverse', (t) => {
     props: [{ value: 'Value 1' }, { value: 'Value 2' }],
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with null value', (t) => {
+test('should reverse map with null value', async (t) => {
   const def = {
     title: 'content.heading',
   }
@@ -318,12 +318,12 @@ test('should reverse map with null value', (t) => {
     content: { heading: null },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should use slashed properties in reverse', (t) => {
+test('should use slashed properties in reverse', async (t) => {
   const def = [
     'content.article',
     {
@@ -342,12 +342,12 @@ test('should use slashed properties in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with root array path', (t) => {
+test('should reverse map with root array path', async (t) => {
   const def = [
     '[]',
     {
@@ -361,12 +361,12 @@ test('should reverse map with root array path', (t) => {
     { content: { heading: 'Heading 2' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should shallow merge (modify) original object with transformed object in reverse', (t) => {
+test('should shallow merge (modify) original object with transformed object in reverse', async (t) => {
   const def = {
     $modify: true,
     name: 'title',
@@ -382,12 +382,12 @@ test('should shallow merge (modify) original object with transformed object in r
     text: 'This is high quality content for sure',
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should shallow merge (modify) original object with transformed object in reverse - flipped', (t) => {
+test('should shallow merge (modify) original object with transformed object in reverse - flipped', async (t) => {
   const def = {
     $flip: true,
     article: {
@@ -409,12 +409,12 @@ test('should shallow merge (modify) original object with transformed object in r
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should allow $flip to affect transform objects through pipelines', (t) => {
+test('should allow $flip to affect transform objects through pipelines', async (t) => {
   const def = {
     $flip: true,
     article: {
@@ -438,12 +438,12 @@ test('should allow $flip to affect transform objects through pipelines', (t) => 
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should treat get/set transformers and get/set paths the same even when flipped', (t) => {
+test('should treat get/set transformers and get/set paths the same even when flipped', async (t) => {
   const def = {
     $flip: true,
     article: [get('name'), set('title')],
@@ -457,12 +457,12 @@ test('should treat get/set transformers and get/set paths the same even when fli
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should skip transform object with $direction: fwd', (t) => {
+test('should skip transform object with $direction: fwd', async (t) => {
   const def = {
     $direction: 'fwd',
     title: 'content.heading',
@@ -474,12 +474,12 @@ test('should skip transform object with $direction: fwd', (t) => {
   }
   const expected = data
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should skip transform object when $direction is fwdAlias', (t) => {
+test('should skip transform object when $direction is fwdAlias', async (t) => {
   const options = { fwdAlias: 'from' }
   const def = {
     $direction: 'from',
@@ -492,12 +492,12 @@ test('should skip transform object when $direction is fwdAlias', (t) => {
   }
   const expected = data
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = await mapTransform(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should treat lookup as get in reverse', (t) => {
+test('should treat lookup as get in reverse', async (t) => {
   const def = {
     title: 'content.heading',
     authors: [
@@ -516,12 +516,12 @@ test('should treat lookup as get in reverse', (t) => {
     content: { heading: 'The heading', authors: ['user1', 'user3'] },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should run lookup as normal in reverse when flipped', (t) => {
+test('should run lookup as normal in reverse when flipped', async (t) => {
   const def = {
     $flip: true,
     title: 'content.heading',
@@ -548,12 +548,12 @@ test('should run lookup as normal in reverse when flipped', (t) => {
     ],
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should return map data as is when no mapping', (t) => {
+test('should return map data as is when no mapping', async (t) => {
   const def = ['content']
   const data = {
     title: 'The heading',
@@ -566,12 +566,12 @@ test('should return map data as is when no mapping', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with nested mapping', (t) => {
+test('should reverse map with nested mapping', async (t) => {
   const def = {
     'content.articles[]': {
       title: 'content.heading',
@@ -587,12 +587,12 @@ test('should reverse map with nested mapping', (t) => {
     { content: { heading: 'Heading 2' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with directional paths', (t) => {
+test('should reverse map with directional paths', async (t) => {
   const def = [
     fwd(get('wrong.path[]')),
     rev(get('content.articles[]')),
@@ -615,12 +615,12 @@ test('should reverse map with directional paths', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with root path', (t) => {
+test('should reverse map with root path', async (t) => {
   const def = [
     {
       title: 'item.heading',
@@ -639,12 +639,12 @@ test('should reverse map with root path', (t) => {
     section: 'news',
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should reverse map with flipped mutate object', (t) => {
+test('should reverse map with flipped mutate object', async (t) => {
   const data = [
     { key: 'ent1', headline: 'Entry 1' },
     { key: 'ent2', headline: 'Entry 2' },
@@ -689,12 +689,12 @@ test('should reverse map with flipped mutate object', (t) => {
     ],
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expectedValue)
 })
 
-test('should return data when no mapping def and reverse mapping', (t) => {
+test('should return data when no mapping def and reverse mapping', async (t) => {
   const def = null
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -702,12 +702,12 @@ test('should return data when no mapping def and reverse mapping', (t) => {
   ]
   const expected = data
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when mapping def is empty', (t) => {
+test('should return undefined when mapping def is empty', async (t) => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -715,17 +715,17 @@ test('should return undefined when mapping def is empty', (t) => {
   ]
   const expected = undefined
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = await mapTransform(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
 
-test('should map undefined to undefined when noDefaults is true', (t) => {
+test('should map undefined to undefined when noDefaults is true', async (t) => {
   const def = ['items[]', { attributes: { title: 'content.heading' } }]
   const data = undefined
   const expected = undefined
 
-  const ret = mapTransform(def)(data, { rev: true, noDefaults: true })
+  const ret = await mapTransform(def)(data, { rev: true, noDefaults: true })
 
   t.deepEqual(ret, expected)
 })

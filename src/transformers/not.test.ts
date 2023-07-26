@@ -4,7 +4,7 @@ import not from './not.js'
 
 // Setup
 
-const returnIt = () => (value: unknown) => !!value
+const returnIt = () => async (value: unknown) => !!value
 const state = {
   rev: false,
   noDefaults: false,
@@ -16,24 +16,25 @@ const options = {}
 
 // Tests
 
-test('should return true for false', (t) => {
+test('should return true for false', async (t) => {
   const data = false
 
-  const ret = not(returnIt)(options)(data, state)
+  const ret = await not(returnIt)(options)(data, state)
   t.true(ret)
 })
 
-test('should return false for true', (t) => {
+test('should return false for true', async (t) => {
   const data = true
 
-  const ret = not(returnIt)(options)(data, state)
+  const ret = await not(returnIt)(options)(data, state)
   t.false(ret)
 })
 
-test('should return true for false from a path', (t) => {
+test('should return true for false from a path', async (t) => {
   const data = { visible: false }
   const path = 'visible'
 
-  const ret = not({ path })(options)(data, state)
+  const ret = await not({ path })(options)(data, state)
+
   t.true(ret)
 })

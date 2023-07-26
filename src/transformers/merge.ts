@@ -24,9 +24,11 @@ const transformer: Transformer<Props> = function merge({ path }) {
       defToDataMapper(path, options)
     )
 
-    return function mergePipelines(data, state) {
-      const values = getFns
-        .flatMap((fn) => fn(data, goForward(state)))
+    return async function mergePipelines(data, state) {
+      const values = (
+        await Promise.all(getFns.map((fn) => fn(data, goForward(state))))
+      )
+        .flat()
         .filter(isObject)
       return Object.fromEntries(
         values.flatMap(Object.entries).sort(undefinedFirst)

@@ -6,17 +6,17 @@ import transform from './transform.js'
 
 // Setup
 
-const upper = () => (str: unknown) =>
+const upper = () => async (str: unknown) =>
   typeof str === 'string' ? str.toUpperCase() : str
-const lower = () => (str: unknown) =>
+const lower = () => async (str: unknown) =>
   typeof str === 'string' ? str.toLowerCase() : str
-const length = () => (arr: unknown) => Array.isArray(arr) ? arr.length : 0
+const length = () => async (arr: unknown) => Array.isArray(arr) ? arr.length : 0
 
 const options = {}
 
 // Tests
 
-test('should run transform function on value', (t) => {
+test('should run transform function on value', async (t) => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -26,12 +26,12 @@ test('should run transform function on value', (t) => {
     value: 'ENTRY 1',
   }
 
-  const ret = transform(upper)(options)(identity)(state)
+  const ret = await transform(upper)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run transform function on array value', (t) => {
+test('should run transform function on array value', async (t) => {
   const state = {
     context: [[{ title: 'Entry 1' }, { title: 'Entry 2' }]],
     value: ['Entry 1', 'Entry 2'],
@@ -41,12 +41,12 @@ test('should run transform function on array value', (t) => {
     value: 2,
   }
 
-  const ret = transform(length)(options)(identity)(state)
+  const ret = await transform(length)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run transform in reverse', (t) => {
+test('should run transform in reverse', async (t) => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -58,12 +58,12 @@ test('should run transform in reverse', (t) => {
     rev: true,
   }
 
-  const ret = transform(upper)(options)(identity)(state)
+  const ret = await transform(upper)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run dedicated transform in reverse', (t) => {
+test('should run dedicated transform in reverse', async (t) => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -75,12 +75,12 @@ test('should run dedicated transform in reverse', (t) => {
     rev: true,
   }
 
-  const ret = transform(upper, lower)(options)(identity)(state)
+  const ret = await transform(upper, lower)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not mind reverse transform going forward', (t) => {
+test('should not mind reverse transform going forward', async (t) => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -92,12 +92,12 @@ test('should not mind reverse transform going forward', (t) => {
     rev: false,
   }
 
-  const ret = transform(upper, lower)(options)(identity)(state)
+  const ret = await transform(upper, lower)(options)(identity)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should pass state to transform function', (t) => {
+test('should pass state to transform function', async (t) => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
     context: [{ title: 'Entry 1' }],
@@ -107,12 +107,12 @@ test('should pass state to transform function', (t) => {
   }
   const expected = state
 
-  transform(() => fn)(options)(identity)(state)
+  await transform(() => fn)(options)(identity)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })
 
-test('should pass state to rev transform function', (t) => {
+test('should pass state to rev transform function', async (t) => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
     context: [{ title: 'Entry 1' }],
@@ -122,7 +122,7 @@ test('should pass state to rev transform function', (t) => {
   }
   const expected = state
 
-  transform(upper, () => fn)(options)(identity)(state)
+  await transform(upper, () => fn)(options)(identity)(state)
 
   t.deepEqual(fn.args[0][1], expected)
 })

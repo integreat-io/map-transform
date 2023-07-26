@@ -31,7 +31,7 @@ const transformer: Transformer<Props | DataMapperWithOptions> = function not(
 ) {
   return (options) => {
     const fn = dataMapperFromProps(props, options)
-    return (value, state) => !fn(value, state)
+    return async (value, state) => !(await fn(value, state))
   }
 }
 

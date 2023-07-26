@@ -12,13 +12,13 @@ import { identity } from '../utils/functional.js'
 export default function modify(def: TransformDefinition): Operation {
   return (options) => {
     const runFn = defToOperation(def, options)
-    return (next) => (state) => {
-      const nextState = next(state)
+    return (next) => async (state) => {
+      const nextState = await next(state)
       const contextState = setStateValue(
         nextState,
         getTargetFromState(nextState)
       )
-      const thisState = runFn(options)(identity)(goForward(contextState))
+      const thisState = await runFn(options)(identity)(goForward(contextState))
 
       const thisValue = getStateValue(thisState)
       const nextValue = getStateValue(nextState)

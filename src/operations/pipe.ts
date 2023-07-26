@@ -11,19 +11,13 @@ interface Fn {
   (next: StateMapper): StateMapper
 }
 
-const composeFn = (...fns: Fn[]): Fn =>
-  fns.reduceRight(
-    (f, g) =>
-      (...args) =>
-        g(f(...args))
-  )
-
-const pipeFn = (...fns: Fn[]): Fn =>
-  fns.reduce(
-    (f, g) =>
-      (...args) =>
-        g(f(...args))
-  )
+function createRun(fns: Fn[], next: StateMapper) {
+  let fn = next
+  for (const f of fns) {
+    fn = f(fn)
+  }
+  return fn
+}
 
 // Run through a pipeline def and split up any paths with open array brackets
 // in the middle. The path after the brackets will be iterated along with the
@@ -67,11 +61,12 @@ export default function pipe(
       .map((fn) => fn(options))
 
     return (next) => {
-      const run = pipeFn(...fns)(next)
-      const runRev = composeFn(...fns)(next)
+      const runFwd = createRun(fns, next)
+      const runRev = createRun(Array.from(fns).reverse(), next) // Reverse the order of the operations in rev
+
       return async function doPipe(state) {
         const isRev = xor(state.rev, state.flip)
-        const thisState = isRev ? await runRev(state) : await run(state)
+        const thisState = isRev ? await runRev(state) : await runFwd(state)
         return doReturnContext ? thisState : setValueFromState(state, thisState)
       }
     }

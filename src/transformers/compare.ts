@@ -90,7 +90,7 @@ const transformer: AsyncTransformer<Props> = function compare({
   valuePath,
   not = false,
 }) {
-  match = match ?? value // Allow alias
+  match = match === undefined ? value : match // Allow alias
   matchPath = matchPath ?? valuePath // Allow alias
 
   return (options) => {

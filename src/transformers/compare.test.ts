@@ -35,6 +35,19 @@ test('should return true when object has match value at path', async (t) => {
   t.true(ret)
 })
 
+test('should return true when matching null', async (t) => {
+  const match = null
+  const path = 'meta.role'
+  const data = { name: 'John F.', meta: { role: null } }
+
+  const ret = await compare({ path, operator: '=', match })(options)(
+    data,
+    state
+  )
+
+  t.true(ret)
+})
+
 test('should return true when object has match value at path in reverse', async (t) => {
   const match = 'admin'
   const path = 'meta.role'

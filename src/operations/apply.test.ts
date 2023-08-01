@@ -134,25 +134,15 @@ test('should run pipeline on undefined', async (t) => {
 })
 
 test('should throw when given an unknown pipeline id', (t) => {
-  const state = {
-    context: [],
-    value: { title: 'Entry 1' },
-  }
-
-  const error = t.throws(() => apply('unknown')(options)(noopNext)(state))
+  const error = t.throws(() => apply('unknown')(options))
 
   t.true(error instanceof Error)
   t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
 })
 
 test('should throw when not given a pipeline id', (t) => {
-  const state = {
-    context: [],
-    value: { title: 'Entry 1' },
-  }
-
   const error = t.throws(
-    () => apply(undefined as any)(options)(noopNext)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
+    () => apply(undefined as any)(options) // eslint-disable-line @typescript-eslint/no-explicit-any
   )
 
   t.true(error instanceof Error)

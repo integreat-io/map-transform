@@ -4,14 +4,14 @@ import { noopNext } from '../utils/stateHelpers.js'
 
 const extractPipeline = (pipelineId: string | symbol, { pipelines }: Options) =>
   (typeof pipelineId === 'string' || typeof pipelineId === 'symbol') &&
-  pipelines
+    pipelines
     ? pipelines[pipelineId] // eslint-disable-line security/detect-object-injection
     : undefined
 
 const removeFlip = ({ flip, ...state }: State) => state
 
 export default function apply(pipelineId: string | symbol): Operation {
-  return (options) => (next) => {
+  return (options) => {
     const pipeline = extractPipeline(pipelineId, options)
 
     if (!pipeline) {
@@ -24,7 +24,7 @@ export default function apply(pipelineId: string | symbol): Operation {
     const fn = pipeline
       ? defToOperation(pipeline, options)(options)(noopNext)
       : undefined
-    return async (state) => {
+    return (next) => async (state) => {
       const nextState = await next(state)
       return fn ? fn(removeFlip(nextState)) : nextState
     }

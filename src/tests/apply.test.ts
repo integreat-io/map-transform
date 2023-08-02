@@ -373,12 +373,8 @@ test('should throw when applying an unknown pipeline id', (t) => {
     },
     apply('unknown'),
   ]
-  const data = {
-    content: { heading: 'The heading' },
-    meta: { hits: '45' },
-  }
 
-  const error = t.throws(() => mapTransform(def, options)(data))
+  const error = t.throws(() => mapTransform(def, options))
 
   t.true(error instanceof Error)
   t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
@@ -392,12 +388,8 @@ test('should throw when applying an unknown pipeline id as Symbol', (t) => {
     },
     apply(Symbol.for('unknown')),
   ]
-  const data = {
-    content: { heading: 'The heading' },
-    meta: { hits: '45' },
-  }
 
-  const error = t.throws(() => mapTransform(def, options)(data))
+  const error = t.throws(() => mapTransform(def, options))
 
   t.true(error instanceof Error)
   t.is(
@@ -414,12 +406,8 @@ test('should throw when applying an unknown pipeline as operation object', (t) =
     },
     { $apply: 'unknown' },
   ]
-  const data = {
-    content: { heading: 'The heading' },
-    meta: { hits: '45' },
-  }
 
-  const error = t.throws(() => mapTransform(def, options)(data))
+  const error = t.throws(() => mapTransform(def, options))
 
   t.true(error instanceof Error)
   t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")

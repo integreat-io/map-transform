@@ -72,8 +72,12 @@ export interface StateMapper {
   (state: State): Promise<State>
 }
 
+export interface NextStateMapper {
+  (next: StateMapper): StateMapper
+}
+
 export interface Operation {
-  (options: Options): (next: StateMapper) => StateMapper
+  (options: Options): NextStateMapper
 }
 
 // Transformer types

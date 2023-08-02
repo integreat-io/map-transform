@@ -714,17 +714,14 @@ test('should apply transform from an operation object with Symbol as key', async
   t.deepEqual(ret, expected)
 })
 
-test('should throw when transform is given an unknown transformer id', async (t) => {
+test('should throw when transform is given an unknown transformer id', (t) => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: 'unknown' }],
     },
   ]
-  const data = {
-    content: { heading: 'The heading' },
-  }
 
-  const error = await t.throwsAsync(mapTransform(def, { transformers })(data))
+  const error = t.throws(() => mapTransform(def, { transformers }))
 
   t.true(error instanceof Error)
   t.is(
@@ -733,17 +730,14 @@ test('should throw when transform is given an unknown transformer id', async (t)
   )
 })
 
-test('should throw when transform is given an unknown transformer id symbol', async (t) => {
+test('should throw when transform is given an unknown transformer id symbol', (t) => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: Symbol.for('unknown') }],
     },
   ]
-  const data = {
-    content: { heading: 'The heading' },
-  }
 
-  const error = await t.throwsAsync(mapTransform(def, { transformers })(data))
+  const error = t.throws(() => mapTransform(def, { transformers }))
 
   t.true(error instanceof Error)
   t.is(
@@ -752,7 +746,7 @@ test('should throw when transform is given an unknown transformer id symbol', as
   )
 })
 
-test('should throw when transform operation is missing a transformer id', async (t) => {
+test('should throw when transform operation is missing a transformer id', (t) => {
   const def = [
     'content',
     {
@@ -760,11 +754,8 @@ test('should throw when transform operation is missing a transformer id', async 
       title: ['heading', { $transform: null }], // No transformer id
     },
   ] as unknown as TransformDefinition
-  const data = {
-    content: [{ heading: 'The heading' }, { heading: 'The other' }],
-  }
 
-  const error = await t.throwsAsync(mapTransform(def, { transformers })(data))
+  const error = t.throws(() => mapTransform(def, { transformers }))
 
   t.true(error instanceof Error)
   t.is(
@@ -781,11 +772,8 @@ test('should throw when transform operation has invalid transformer id', async (
       title: ['heading', { $transform: { id: 13 } }], // Just something invalid
     },
   ] as unknown as TransformDefinition
-  const data = {
-    content: [{ heading: 'The heading' }, { heading: 'The other' }],
-  }
 
-  const error = await t.throwsAsync(mapTransform(def, { transformers })(data))
+  const error = t.throws(() => mapTransform(def, { transformers }))
 
   t.true(error instanceof Error)
   t.is(

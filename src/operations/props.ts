@@ -11,6 +11,7 @@ import type {
   Options,
   TransformDefinition,
   StateMapper,
+  NextStateMapper,
 } from '../types.js'
 import {
   getStateValue,
@@ -54,9 +55,9 @@ function isWrongDirection(direction: unknown, options: Options) {
   }
 }
 
-function runOperationWithOriginalValue({ value }: State, options: Options) {
-  return async (state: State, fn: Operation) => {
-    const nextState = await fn(options)(noopNext)(setStateValue(state, value))
+function runOperationWithOriginalValue({ value }: State) {
+  return async (state: State, fn: NextStateMapper) => {
+    const nextState = await fn(noopNext)(setStateValue(state, value))
 
     const target = state.target
     const nextValue = getStateValue(nextState)
@@ -103,7 +104,7 @@ const createSetPipeline = (options: Options) =>
   function createSetPipeline([prop, pipeline]: [
     string,
     TransformDefinition
-  ]): Operation {
+  ]): NextStateMapper {
     // Adjust sub map object
     if (isTransformObject(pipeline)) {
       pipeline = {
@@ -118,7 +119,9 @@ const createSetPipeline = (options: Options) =>
 
     // Prepare the operations and return as an operation
     const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
-    return onlyRev ? divide(plug(), operations) : pipe(operations)
+    return onlyRev
+      ? divide(plug(), operations)(options)
+      : pipe(operations)(options)
   }
 
 function modifyWithGivenPath(
@@ -138,14 +141,14 @@ function modifyWithGivenPath(
 const runOperations =
   (
     modifyFn: (state: State, nextState: State) => Promise<State>,
-    operations: Operation[],
+    operations: NextStateMapper[],
     options: Options
   ) =>
   async (state: State) => {
     if (isNonvalueState(state, options.nonvalues)) {
       return state
     } else {
-      const run = runOperationWithOriginalValue(state, options)
+      const run = runOperationWithOriginalValue(state)
       let nextState: State = state
       for (const operation of operations) {
         nextState = await run(nextState, operation)
@@ -173,16 +176,15 @@ export default function props(def: TransformObject): Operation {
 
   return (options) => {
     // Prepare one operation for each prop
-    const operations = Object.entries(def)
+    const nextStateMappers = Object.entries(def)
       .filter(isRegularProp)
       .map(createSetPipeline(options))
+    const modifyFn = modifyWithGivenPath(modifyPath, options, noopNext)
+    const run = runOperations(modifyFn, nextStateMappers, options)
+    const isWrongDirectionFn = isWrongDirection(def.$direction, options)
 
     // Return operation
     return (next) => {
-      const modifyFn = modifyWithGivenPath(modifyPath, options, noopNext)
-      const run = runOperations(modifyFn, operations, options)
-      const isWrongDirectionFn = isWrongDirection(def.$direction, options)
-
       return async function doMutate(state) {
         const nextState = await next(state)
         if (

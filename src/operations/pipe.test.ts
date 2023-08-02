@@ -551,3 +551,12 @@ test('should do nothing when no pipeline', async (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should throw on unknown pipeline', (t) => {
+  const def = ['data', { $apply: 'unknown' }]
+
+  const error = t.throws(() => pipe(def)(options))
+
+  t.true(error instanceof Error)
+  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+})

@@ -412,3 +412,52 @@ test('should throw when applying an unknown pipeline as operation object', (t) =
   t.true(error instanceof Error)
   t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
 })
+
+test('should throw when applying an unknown pipeline in a provided pipeline', (t) => {
+  const def = [
+    {
+      title: 'content.heading',
+      viewCount: 'meta.hits',
+    },
+    { $apply: 'ourPipeline' },
+  ]
+  const ourPipeline = [{ $apply: 'unknownInPipeline' }]
+  const options = { pipelines: { ourPipeline } }
+
+  const error = t.throws(() => mapTransform(def, options))
+
+  t.true(error instanceof Error)
+  t.is(
+    error?.message,
+    "Failed to apply pipeline 'unknownInPipeline'. Unknown pipeline"
+  )
+})
+
+test('should throw when applying an unknown pipeline inside an operation', (t) => {
+  const def = [
+    {
+      title: 'content.heading',
+      viewCount: 'meta.hits',
+    },
+    fwd({ $apply: 'unknown' }),
+  ]
+
+  const error = t.throws(() => mapTransform(def, options))
+
+  t.true(error instanceof Error)
+  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+})
+
+test('should throw when applying an unknown pipeline inside a transform object', (t) => {
+  const def = [
+    {
+      title: ['content.heading', { $apply: 'unknown' }],
+      viewCount: 'meta.hits',
+    },
+  ]
+
+  const error = t.throws(() => mapTransform(def, options))
+
+  t.true(error instanceof Error)
+  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+})

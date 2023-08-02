@@ -1272,3 +1272,15 @@ test('should use reverse alias', async (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should throw on unknown pipeline in an $apply operation', (t) => {
+  const def = {
+    title: { $apply: 'unknown' },
+    viewCount: 'meta.hits',
+  }
+
+  const error = t.throws(() => props(def)(options)(noopNext))
+
+  t.true(error instanceof Error)
+  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+})

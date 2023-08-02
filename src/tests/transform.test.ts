@@ -615,11 +615,13 @@ test('should support $value shorthand', async (t) => {
   const def = [
     {
       title: ['content.heading', { $value: 'Default title' }],
+      views: ['meta.views', { $value: 0 }],
     },
   ]
   const data = {}
   const expected = {
     title: 'Default title',
+    views: 0,
   }
 
   const ret = await mapTransform(def, { transformers })(data)

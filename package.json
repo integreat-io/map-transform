@@ -26,13 +26,14 @@
     }
   },
   "scripts": {
-    "test": "npm run lint && npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.cjs",
+    "test": "c8 --reporter=text-summary ava --config ./ava-dist.config.cjs",
     "test:watch": "npm run dev",
     "dev": "ava --watch",
     "build": "tsc",
     "prepublish": "npm run build",
     "coverage": "c8 report",
-    "lint": "eslint --ext .ts src"
+    "lint": "eslint --ext .ts src",
+    "verify": "npm run lint && npm run build && npm test"
   },
   "repository": {
     "type": "git",

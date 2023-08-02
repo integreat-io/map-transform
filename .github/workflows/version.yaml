@@ -1,0 +1,86 @@
+name: 'Version'
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-range:
+        description: 'Semantic Version Range'
+        required: true
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+          - rc
+      is-pre-release:
+        description: 'Is Pre-release'
+        required: true
+        type: boolean
+
+jobs:
+  create-pr:
+    name: Create PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Validate Git Ref Type is branch
+        if: ${{ github.ref_type != 'branch' }}
+        run: echo "Release is only allowed on branches, not tags. Exiting." && exit 1
+      - name: Validate Git Ref is main for None Pre Release
+        if: ${{ inputs.is-pre-release == false && github.ref != 'refs/heads/main' }}
+        run: echo "Non Pre Release is only allowed on main branch. Exiting." && exit 1
+      - name: Validate Input Semantic Version Type for None Pre Release
+        if: ${{ inputs.is-pre-release == false && inputs.version-range != 'major' && inputs.version-range != 'minor' && inputs.version-range != 'patch' }}
+        run: echo "Input Semantic Version Type must be one of major, minor and patch for non pre release. Exiting." && exit 1
+      - name: Validate Input Semantic Version Type for Pre Release
+        if: ${{ inputs.is-pre-release == true && inputs.version-range != 'major' && inputs.version-range != 'minor' && inputs.version-range != 'patch' && inputs.version-range != 'rc' }}
+        run: echo "Input Semantic Version Type must be one of major, minor, patch and rc for pre release. Exiting." && exit 1
+      - name: Git Checkout
+        uses: actions/checkout@v3
+      - name: Git Config
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          git config push.autoSetupRemote "true"
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+      - name: NPM Version
+        # Possible outputs:
+        # - For pre release with major, minor or patch bump: npm version pre{major|minor|patch} --preid rc
+        # - For pre release without major, minor or patch bump: npm version prerelease --preid rc
+        # - For non pre release: npm version {major|minor|patch}
+        run: npm version ${{ inputs.is-pre-release == true && 'pre' || '' }}${{ inputs.is-pre-release == true && inputs.version-range == 'rc' && 'release' || inputs.version-range }} ${{ inputs.is-pre-release == true && '--preid rc' || '' }} -m "v%s"
+      - name: Set Release Version Output
+        id: set-release-version-output
+        shell: bash
+        run: |
+          release_tag="$(git describe --abbrev=0 --tags)"
+          release_version="${release_tag:1}"
+          echo "release_version=$release_version" >> $GITHUB_OUTPUT
+      - name: Push Release Branch to GitHub
+        run: |
+          git checkout -b github-actions-bot/release-${{ steps.set-release-version-output.outputs.release_version }}
+          git push
+      - name: Create GitHub Release Label
+        run: |
+          gh label create \
+            "release" \
+            --color "0052CC" \
+            --description "Pull requests that creates a new release" \
+            --force
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Create GitHub Release PR
+        run: |
+          gh pr create \
+            --base "${{ github.ref_name }}" \
+            --title "Release ${{ steps.set-release-version-output.outputs.release_version }}" \
+            --body "Created by GitHub Actions Bot" \
+            --label "release" \
+            --reviewer "${{ github.actor }}"
+        env:
+          GH_TOKEN: ${{ github.token }}

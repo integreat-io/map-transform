@@ -11,7 +11,7 @@ import {
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
-import type { Path, Operation, State, StateMapper } from '../types.js'
+import type { Path, Operation, State, StateMapper, Options } from '../types.js'
 import xor from '../utils/xor.js'
 
 const adjustIsSet = (isSet: boolean, { rev = false, flip = false }: State) =>
@@ -118,6 +118,13 @@ function getSetParentOrRoot(path: string, isSet: boolean): Operation {
   }
 }
 
+function doModifyGetValue(value: unknown, state: State, options: Options) {
+  const { modifyGetValue } = options
+  return typeof modifyGetValue === 'function'
+    ? modifyGetValue(value, state, options)
+    : value
+}
+
 function getSet(isSet = false) {
   return (path: string | number): Operation => {
     if (typeof path === 'string' && path[0] === '^') {
@@ -168,13 +175,14 @@ function getSet(isSet = false) {
           // Go backwards
           const nextState = await next(state)
           const thisValue = getSetFn(getStateValue(nextState), false)
+          const modifiedValue = doModifyGetValue(thisValue, nextState, options)
 
           const value =
-            state.noDefaults && isNonvalue(thisValue, options.nonvalues)
+            state.noDefaults && isNonvalue(modifiedValue, options.nonvalues)
               ? undefined
               : isArr
-              ? ensureArray(thisValue, options.nonvalues)
-              : thisValue
+              ? ensureArray(modifiedValue, options.nonvalues)
+              : modifiedValue
 
           return setStateValue(
             nextState,

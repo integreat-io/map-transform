@@ -1,6 +1,8 @@
 import test from 'ava'
 import pipe from './pipe.js'
 import { noopNext } from '../utils/stateHelpers.js'
+import { isObject } from '../utils/is.js'
+import { State, Options } from '../types.js'
 
 import { get, set } from './getSet.js'
 
@@ -603,6 +605,24 @@ test('should clear context when getting root', async (t) => {
 
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply modifyGetValue to value from get', async (t) => {
+  const modifyGetValue = (value: unknown, _state: State, _options: Options) =>
+    isObject(value) && value.$value ? value.$value : value // A simplified implementation
+  const path = 'name'
+  const value = { name: { $value: 'Bohm' } }
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    context: [{ name: { $value: 'Bohm' } }],
+    value: 'Bohm',
+  }
+
+  const fn = get(path)[0] // Note: `get()` returns an array, but we'll run the first operation directly as there will be only one
+  const ret = await fn({ ...options, modifyGetValue })(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

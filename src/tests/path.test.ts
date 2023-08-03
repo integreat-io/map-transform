@@ -13,6 +13,7 @@ import mapTransform, {
   transformers,
 } from '../index.js'
 const { value } = transformers
+import type { Options, State } from '../types.js'
 
 // Tests
 
@@ -1045,6 +1046,29 @@ test('should map with parent through several iterations', async (t) => {
   }
 
   const ret = await mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply modifyGetValue to value from path', async (t) => {
+  const modifyGetValue = (value: unknown, _state: State, _options: Options) =>
+    isObject(value) && value.$value ? value.$value : value // A simplified implementation
+  const def = [
+    'content.article',
+    {
+      title: 'content.heading',
+    },
+  ]
+  const data = {
+    content: {
+      article: {
+        content: { heading: { $value: 'Heading 1' } },
+      },
+    },
+  }
+  const expected = { title: 'Heading 1' }
+
+  const ret = await mapTransform(def, { modifyGetValue })(data)
 
   t.deepEqual(ret, expected)
 })

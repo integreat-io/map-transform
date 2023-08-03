@@ -42,6 +42,7 @@ export interface Options {
   modifyOperationObject?: (
     operation: Record<string, unknown>
   ) => Record<string, unknown>
+  modifyGetValue?: (value: unknown, state: State, options: Options) => unknown
 }
 
 // Data mapper types

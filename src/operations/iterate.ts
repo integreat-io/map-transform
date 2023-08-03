@@ -50,10 +50,10 @@ export default function iterate(def: TransformDefinition): Operation {
       setStateValue(await next(state), undefined)
   }
   return (options) => {
-    const fn = defToOperation(def, options)
-    const runIteration = iterateState(fn(options)(noopNext))
-    return (next) =>
-      async function doIterate(state) {
+    const fn = defToOperation(def, options)(options)
+    return (next) => {
+      const runIteration = iterateState(fn(noopNext))
+      return async function doIterate(state) {
         const nextState = await next(state)
 
         return setStateValue(
@@ -61,5 +61,6 @@ export default function iterate(def: TransformDefinition): Operation {
           await runIteration(nextState, getTargetFromState(nextState))
         )
       }
+    }
   }
 }

@@ -124,37 +124,41 @@ const createSetPipeline = (options: Options) =>
       : pipe(operations)(options)
   }
 
-function modifyWithGivenPath(
-  path: string | undefined,
-  options: Options,
-  next: StateMapper
-) {
+function modifyWithGivenPath(path: string | undefined, options: Options) {
   if (path) {
-    const fn = modify(path)(options)(next)
-    return async (state: State, nextState: State) =>
-      await fn(setTargetOnState(state, getStateValue(nextState)))
+    const modifyFn = modify(path)(options)
+    return (next: StateMapper) => {
+      const fn = modifyFn(next)
+      return async (state: State, nextState: State) =>
+        await fn(setTargetOnState(state, getStateValue(nextState)))
+    }
   }
 
-  return async (state: State, _nextState: State) => state
+  return () => async (state: State, _nextState: State) => state
 }
 
 const runOperations =
   (
-    modifyFn: (state: State, nextState: State) => Promise<State>,
+    fn: (
+      next: StateMapper
+    ) => (state: State, nextState: State) => Promise<State>,
     operations: NextStateMapper[],
     options: Options
   ) =>
-  async (state: State) => {
-    if (isNonvalueState(state, options.nonvalues)) {
-      return state
-    } else {
-      const run = runOperationWithOriginalValue(state)
-      let nextState: State = state
-      for (const operation of operations) {
-        nextState = await run(nextState, operation)
-      }
+  (next: StateMapper) => {
+    const modifyFn = fn(next)
+    return async (state: State) => {
+      if (isNonvalueState(state, options.nonvalues)) {
+        return state
+      } else {
+        const run = runOperationWithOriginalValue(state)
+        let nextState: State = state
+        for (const operation of operations) {
+          nextState = await run(nextState, operation)
+        }
 
-      return modifyFn(nextState, state)
+        return modifyFn(nextState, state)
+      }
     }
   }
 
@@ -179,12 +183,13 @@ export default function props(def: TransformObject): Operation {
     const nextStateMappers = Object.entries(def)
       .filter(isRegularProp)
       .map(createSetPipeline(options))
-    const modifyFn = modifyWithGivenPath(modifyPath, options, noopNext)
-    const run = runOperations(modifyFn, nextStateMappers, options)
+    const modifyFn = modifyWithGivenPath(modifyPath, options)
+    const runFn = runOperations(modifyFn, nextStateMappers, options)
     const isWrongDirectionFn = isWrongDirection(def.$direction, options)
 
     // Return operation
     return (next) => {
+      const run = runFn(noopNext)
       return async function doMutate(state) {
         const nextState = await next(state)
         if (

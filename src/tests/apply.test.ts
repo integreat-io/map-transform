@@ -33,12 +33,19 @@ const entryMutation = [
 
 const hitsOnly = { hits: 'meta.hits' }
 
+const recursive = {
+  id: 'key',
+  title: 'heading',
+  comments: ['children[]', { $apply: 'recursive', $iterate: true }],
+}
+
 const pipelines = {
   cast_entry: castEntry,
   getItems,
   [Symbol.for('getItems')]: getItems,
   hitsOnly,
   entry: entryMutation,
+  recursive,
 }
 
 const options = { pipelines }
@@ -358,6 +365,44 @@ test('should apply path pipeline through operaion object with id as Symbol', asy
   }
   const expected = {
     title: 'The heading',
+  }
+
+  const ret = await mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should handle pipelines that applies themselves', async (t) => {
+  const def = [{ $apply: 'recursive' }]
+  const data = {
+    key: 'ent1',
+    heading: 'Entry 1',
+    children: [
+      {
+        key: 'ent1.1',
+        heading: 'Entry 1.1',
+      },
+      {
+        key: 'ent1.2',
+        heading: 'Entry 1.2',
+      },
+    ],
+  }
+  const expected = {
+    id: 'ent1',
+    title: 'Entry 1',
+    comments: [
+      {
+        id: 'ent1.1',
+        title: 'Entry 1.1',
+        comments: [],
+      },
+      {
+        id: 'ent1.2',
+        title: 'Entry 1.2',
+        comments: [],
+      },
+    ],
   }
 
   const ret = await mapTransform(def, options)(data)

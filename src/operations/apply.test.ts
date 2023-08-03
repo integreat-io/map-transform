@@ -1,5 +1,6 @@
 import test from 'ava'
 import { set } from './getSet.js'
+import iterate from './iterate.js'
 import { noopNext } from '../utils/stateHelpers.js'
 
 import apply from './apply.js'
@@ -9,12 +10,16 @@ import apply from './apply.js'
 const extractTitle = ['title']
 const renameTitle = [{ headline: 'title' }, { headline: 'headline' }]
 const setTitle = [set('title')]
+const recursive = [
+  { id: 'key', comments: ['children[]', iterate(apply('recursive'))] },
+]
 
 const options = {
   pipelines: {
     extractTitle,
     renameTitle,
     setTitle,
+    recursive,
   },
 }
 
@@ -129,6 +134,21 @@ test('should run pipeline on undefined', async (t) => {
   }
 
   const ret = await apply('setTitle')(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run recursive pipeline', async (t) => {
+  const state = {
+    context: [],
+    value: { key: 'ent1', children: [{ key: 'ent2' }] },
+  }
+  const expected = {
+    context: [],
+    value: { id: 'ent1', comments: [{ id: 'ent2', comments: [] }] },
+  }
+
+  const ret = await apply('recursive')(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

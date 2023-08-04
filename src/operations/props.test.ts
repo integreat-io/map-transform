@@ -874,7 +874,7 @@ test('should not mutate null value in array when included in nonvalues', async (
   t.deepEqual(ret, expected)
 })
 
-test('should set value to undefined when no map transformer', async (t) => {
+test('should set value to empty object on empty transform object', async (t) => {
   const def = {}
   const state = {
     context: [{ data: { headline: 'The title' } }],
@@ -882,7 +882,39 @@ test('should set value to undefined when no map transformer', async (t) => {
   }
   const expected = {
     context: [{ data: { headline: 'The title' } }],
-    value: undefined,
+    value: {},
+  }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value to empty object on empty, embeded transform object', async (t) => {
+  const def = { content: {} }
+  const state = {
+    context: [{ data: { headline: 'The title' } }],
+    value: { headline: 'The title' },
+  }
+  const expected = {
+    context: [{ data: { headline: 'The title' } }],
+    value: { content: {} },
+  }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set value to empty object on empty transform object within another object', async (t) => {
+  const def = {}
+  const state = {
+    context: [{ data: { headline: 'The title' } }],
+    value: { headline: 'The title' },
+  }
+  const expected = {
+    context: [{ data: { headline: 'The title' } }],
+    value: {},
   }
 
   const ret = await props(def)(options)(noopNext)(state)

@@ -170,11 +170,6 @@ const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
 })
 
 export default function props(def: TransformObject): Operation {
-  if (Object.keys(def).length === 0) {
-    return (_options) => (next) => async (state) =>
-      setStateValue(await next(state), undefined)
-  }
-
   // Prepare path
   const modifyPath = def.$modify === true ? '.' : def.$modify || undefined
 
@@ -183,6 +178,13 @@ export default function props(def: TransformObject): Operation {
     const nextStateMappers = Object.entries(def)
       .filter(isRegularProp)
       .map(createSetPipeline(options))
+
+    // When there's no props on the transform object, return an operation that
+    // simply sets value to an empty object
+    if (nextStateMappers.length === 0) {
+      return (next) => async (state) => setStateValue(await next(state), {}) // TODO: Not sure if we need to call `next()` here
+    }
+
     const modifyFn = modifyWithGivenPath(modifyPath, options)
     const runFn = runOperations(modifyFn, nextStateMappers, options)
     const isWrongDirectionFn = isWrongDirection(def.$direction, options)

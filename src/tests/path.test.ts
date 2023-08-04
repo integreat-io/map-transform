@@ -934,7 +934,7 @@ test('should return data when no mapping def', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when mapping def is empty object', async (t) => {
+test('should return empty object when mapping def is empty object', async (t) => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -943,7 +943,30 @@ test('should return undefined when mapping def is empty object', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.is(ret, undefined)
+  t.deepEqual(ret, {})
+})
+
+test('should set empty transform object to empty object on a path', async (t) => {
+  const def = {
+    'content.article': {},
+  }
+  const data = {
+    content: {
+      article: {
+        content: { heading: 'Heading 1' },
+      },
+      meta: { id: 'ent1' },
+    },
+  }
+  const expected = {
+    content: {
+      article: {},
+    },
+  }
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
 })
 
 test('should try to map even when no data is given', async (t) => {

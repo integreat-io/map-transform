@@ -656,6 +656,38 @@ test('should set with dot path', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set undefined on path', async (t) => {
+  const path = 'data.scientist.name'
+  const value = undefined
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    context: [],
+    value: { data: { scientist: { name: undefined } } },
+  }
+
+  const fn = pipe(set(path))
+  const ret = await fn(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set empty object on path', async (t) => {
+  const path = 'data.scientist.name'
+  const value = {}
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    context: [],
+    value: { data: { scientist: { name: {} } } },
+  }
+
+  const fn = pipe(set(path))
+  const ret = await fn(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set path with array index', async (t) => {
   const path = 'data.scientists[1].name'
   const value = 'Bohm'

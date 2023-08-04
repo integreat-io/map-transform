@@ -707,13 +707,13 @@ test('should return data when no mapping def and reverse mapping', async (t) => 
   t.deepEqual(ret, expected)
 })
 
-test('should return undefined when mapping def is empty', async (t) => {
+test('should return empty object when mapping def is empty', async (t) => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } },
   ]
-  const expected = undefined
+  const expected = {}
 
   const ret = await mapTransform(def)(data, { rev: true })
 

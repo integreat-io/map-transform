@@ -10,7 +10,7 @@ import transformers from './transformers/index.js'
 import iterate from './operations/iterate.js'
 
 export { default as apply } from './operations/apply.js'
-export { default as concat } from './operations/concat.js'
+export { concat, concatRev } from './operations/concat.js'
 export { default as alt } from './operations/alt.js'
 export { fwd, rev, divide } from './operations/directionals.js'
 export { default as filter } from './operations/filter.js'

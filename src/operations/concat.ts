@@ -3,6 +3,7 @@ import {
   setStateValue,
   getStateValue,
   revFromState,
+  flipState,
 } from '../utils/stateHelpers.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -41,6 +42,32 @@ async function setArrayOnFirstOperation(state: State, fns: StateMapper[]) {
   return valueState
 }
 
+function concatPipelines(
+  defs: TransformDefinition[],
+  flip: boolean
+): Operation {
+  return (options) => {
+    const fns = defs.map((def) =>
+      defToOperation(def, options)(options)(noopNext)
+    )
+
+    if (fns.length === 0) {
+      // Always return an empty array (or empty object in rev) when there are no
+      // pipelines.
+      return (next) => async (state) =>
+        setStateValue(await next(state), revFromState(state, flip) ? {} : [])
+    }
+
+    return (next) =>
+      async function doConcat(state) {
+        const nextState = flipState(await next(state), flip)
+        return revFromState(nextState)
+          ? setArrayOnFirstOperation(nextState, fns)
+          : getAndMergeArrays(nextState, fns)
+      }
+  }
+}
+
 /**
  * Extracts arrays from several pipelines and merges them into one array. If
  * a pipeline does not return an array, it will be wrapped in one. `undefined`
@@ -51,25 +78,11 @@ async function setArrayOnFirstOperation(state: State, fns: StateMapper[]) {
  * original object, if we ran this forward and then in reverse, but there is no
  * way of knowing how to split up an array into the "original" arrays.
  */
-export default function concat(...defs: TransformDefinition[]): Operation {
-  return (options) => {
-    const fns = defs.map((def) =>
-      defToOperation(def, options)(options)(noopNext)
-    )
+export function concat(...defs: TransformDefinition[]): Operation {
+  return concatPipelines(defs, false)
+}
 
-    if (fns.length === 0) {
-      // Always return an empty array (or empty object in rev) when there are no
-      // pipelines.
-      return (next) => async (state) =>
-        setStateValue(await next(state), revFromState(state) ? {} : [])
-    }
-
-    return (next) =>
-      async function doConcat(state) {
-        const nextState = await next(state)
-        return revFromState(state)
-          ? setArrayOnFirstOperation(nextState, fns)
-          : getAndMergeArrays(nextState, fns)
-      }
-  }
+// `concatRev` is the exact oposite of `concat`, and will concat in reverse.
+export function concatRev(...defs: TransformDefinition[]): Operation {
+  return concatPipelines(defs, true)
 }

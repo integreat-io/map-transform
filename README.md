@@ -1084,6 +1084,17 @@ const def39asObject = {
 }
 ```
 
+#### `concatRev(pipeline, pipeline, ...)` operation
+
+The `concatRev()` operation is the exact oposite of the `concat()` operation,
+meaning that it will exhibit the same behavior in reverse as `concat()` does
+going forward, and vice versa. See the description of
+[the `concat()` operation](#concatpipeline-pipeline--operation) for more
+details.
+
+Note that `concatRev()` does not have an operation object notation, but will
+honor the [flipped mode](#flipping-a-transform-object).
+
 #### `merge(pipeline, pipeline, ...)` operation
 
 `merge()` will run all given pipelines and deep merge their results. Conflicts

@@ -46,7 +46,7 @@ npm install map-transform
 - Map objects won't be mapped over an array by default. You have to specify
   `$iterate: true`
 - The `alt` operation now accepts any type of pipeline, but not a helper
-  function, and all alternative pipelines must be given as arguments to `alt()`
+  function, and all alternative pipelines must be given as arguments to `alt`
 - The root path prefix is changed from `$` to `^^`
 - The `.rev()` method on `mapTransform()` has been removed, and instead you pass
   in `{ rev: true }` as the second argument to the regular method
@@ -422,7 +422,7 @@ const def6 = [
 custom transformers for this case, but their implementations are not provided.)
 
 **A note on arrays:** In a transform pipeline, the default behavior is to treat
-an array as any other data. The array will be passed on to a `transform()`
+an array as any other data. The array will be passed on to a `transform`
 operation, the entire array will be set on a path, etc. This also means that a
 mapping object will be applied to the entire array if nothing else is specified.
 In the example above, we have set `$iterate: true` on the mapping object, to
@@ -551,7 +551,7 @@ Operations may be used as steps in a transform pipeline.
 
 #### `transform(transformFn, transformFnRev)` operation
 
-The simple beauty of the `transform()` operation, is that it will apply whatever
+The simple beauty of the `transform` operation, is that it will apply whatever
 function (transformer) you provide it with to the data at that point in the
 pipeline. It's up to you to write the function that does the transformation – or
 use one of [the transformers that comes with MapTransform](#transformers).
@@ -559,7 +559,7 @@ use one of [the transformers that comes with MapTransform](#transformers).
 You may supply a second transformer (`transformFnRev`), that will be used when
 [reverse mapping](#reverse-mapping). If you only supplies one transformer, it
 will be used in both directions. You may supply `null` for either of these, to
-make it uni-directional, but it might be clearer to use `fwd()` or `rev()`
+make it uni-directional, but it might be clearer to use `fwd` or `rev`
 operations for this.
 
 The transformers you write for the transform operation are a function that
@@ -754,8 +754,8 @@ value from your transformer will simply mean that it is replaced with
 `undefined`.
 
 The filter operation only accepts one argument, which is applied in both
-directions through the pipeline. You'll have to use `fwd()` or `rev()`
-operations to make it uni-directional.
+directions through the pipeline. You'll have to use `fwd` or `rev` operations to
+make it uni-directional.
 
 Transformers passed to the filter operation should also be pure, but
 could, when it is expected and absolutely necessary, rely on anything outside
@@ -803,14 +803,14 @@ You may also set `$direction: 'fwd'` or `$direction: 'rev'` on the object, to
 have it filter in one direction only.
 
 See
-[the `transform()` operation](#transformtransformfn-transformfnrev-operation)
-for more on how defining as an object works.
+[the `transform` operation](#transformtransformfn-transformfnrev-operation) for
+more on how defining as an object works.
 
 #### `ifelse(conditionFn, truePipeline, falsePipeline)` operation
 
-The `ifelse()` operation will run the `truePipeline` if the `conditionFn`
-results in something truthy, JavaScript style, otherwise it will run the
-`falsePipeline`. See [the `filter()` operation](#filterconditionFn-operation)
+The `ifelse` operation will run the `truePipeline` if the `conditionFn` results
+in something truthy, JavaScript style, otherwise it will run the
+`falsePipeline`. See [the `filter` operation](#filterconditionFn-operation)
 for more on the requirements for the `conditionFn`.
 
 Both `truePipeline` and `falsePipeline` are optional, in case you only need to
@@ -1015,8 +1015,8 @@ order, with the last being run first. The first pipeline is always run, though,
 as it is common practice to let the first be a `get` that acts like a `set` in
 reverse. This may be confusing, but will usually just be naturally when you
 don't think too much about it. See
-[the `get()` and `set()` operations](#getpath-and-setpath-operation) for more on
-how `get` works in reverse.
+[the `get` and `set` operations](#getpath-and-setpath-operation) for more on how
+`get` works in reverse.
 
 `alt` will behave a bit differently when you give only one pipeline: The
 pipeline will be run if the curent value is `undefined`, but skipped otherwise.
@@ -1046,7 +1046,7 @@ direction only.
 
 #### `concat(pipeline, pipeline, ...)` operation
 
-The `concat()` operation will flatten the result of every pipeline it is given
+The `concat` operation will flatten the result of every pipeline it is given
 into one array. A pipeline that does not return an array will simple have its
 return value appended to the array. Even when there's only one pipeline, its
 value will be forced to an array. `undefined` will be filtered away from the
@@ -1086,26 +1086,26 @@ const def39asObject = {
 
 #### `concatRev(pipeline, pipeline, ...)` operation
 
-The `concatRev()` operation is the exact oposite of the `concat()` operation,
-meaning that it will exhibit the same behavior in reverse as `concat()` does
+The `concatRev` operation is the exact oposite of the `concat` operation,
+meaning that it will exhibit the same behavior in reverse as `concat` does
 going forward, and vice versa. See the description of
-[the `concat()` operation](#concatpipeline-pipeline--operation) for more
+[the `concat` operation](#concatpipeline-pipeline--operation) for more
 details.
 
-Note that `concatRev()` does not have an operation object notation, but will
-honor the [flipped mode](#flipping-a-transform-object).
+Note that `concatRev` does not have an operation object notation, but `concat`
+will honor the [flipped mode](#flipping-a-transform-object).
 
 #### `merge(pipeline, pipeline, ...)` operation
 
-`merge()` will run all given pipelines and deep merge their results. Conflicts
-are resolved by prioritizing results from the rightmost of the conflicting
+`merge` will run all given pipelines and deep merge their results. Conflicts are
+resolved by prioritizing results from the rightmost of the conflicting
 pipelines.
 
 > Editors note: We need examples here.
 
 #### `modify(pipeline)` operation
 
-Use the `modify()` operation when you want the pipeline to modify an object,
+Use the `modify` operation when you want the pipeline to modify an object,
 instead of replacing it.
 
 Example:
@@ -1137,7 +1137,7 @@ const response = {
 }
 ```
 
-Had we ran this without the `modify()` operation, the returned object would only
+Had we ran this without the `modify` operation, the returned object would only
 have the `data` prop, as no props from the source data will be set in the target
 data, unless they are "picked up" by dot notation paths.
 
@@ -1169,10 +1169,10 @@ operation is defined as an operation object.
 
 All operations in MapTransform will apply in both directions, although some of
 them may behave a bit different dependending on the direction. If you want an
-operation to only apply in one direction, you need to wrap it in a `fwd()` or
-`rev()` operation. The `fwd()` operation will only apply its pipeline when we're
+operation to only apply in one direction, you need to wrap it in a `fwd` or
+`rev` operation. The `fwd` operation will only apply its pipeline when we're
 going forward, i.e. mapping in the normal direction, and its pipeline will be
-skipped when we're mapping in reverse. The `rev()` operation will only apply its
+skipped when we're mapping in reverse. The `rev` operation will only apply its
 pipeline when we're mapping in reverse.
 
 The value in the pipeline will be untouched when we are encountering an
@@ -1207,15 +1207,15 @@ at the description of
 
 #### `divide(fwdPipeline, revPipeline)` operation
 
-`divide()` is `fwd()` and `rev()` operations combined, where the first argument
-is a pipeline to use when going forward and the second when going in reverse.
+`divide` is `fwd` and `rev` operations combined, where the first argument is a
+pipeline to use when going forward and the second when going in reverse.
 
-See [`fwd()` and `rev()`](#fwdpipeline-and-revpipeline-operation) for more details.
+See [`fwd` and `rev`](#fwdpipeline-and-revpipeline-operation) for more details.
 
 #### `get(path)` and `set(path)` operation
 
-Both the `get()` and `set()` operations accepts a dot notation path to act on.
-The get operation will pull the data at the path from the data currently in the
+Both the `get` and `set` operations accepts a dot notation path to act on. The
+get operation will pull the data at the path from the data currently in the
 pipeline, and replace the value in the pipeline with it. The set operation will
 take what ever's in the pipeline and set it on the given path at a new object.
 
@@ -1318,21 +1318,21 @@ const def16b = divide(root('meta.section'), plug())
 
 #### `plug()` operation
 
-The `plug()` operation simply clears the value in the pipeline - it plugs it.
+The `plug` operation simply clears the value in the pipeline - it plugs it.
 The value will be set to `undefined` regardless of what has happened before that
-point. Any `alt()` operations etc. coming after the plug will still have an
+point. Any `alt` operations etc. coming after the plug will still have an
 effect.
 
 This main use case for this is to clear the value going one way. E.g. if you
 need a value when you map in reverse, but don't want it going forward, plug it
 with `fwd(plug())`. You will also need it in a pipeline where the only operation
-is uni-directional (i.e. using `fwd()` or `rev()`). An empty pipeline (which is
-what a uni-directional pipeline will be in the other direction), will return
-the data you give it, which is usually not what you want in these cases.
-The solution is to plug it in the other direction.
+is uni-directional (i.e. using `fwd` or `rev`). An empty pipeline (which is what
+a uni-directional pipeline will be in the other direction), will return the data
+you give it, which is usually not what you want in these cases. The solution is
+to plug it in the other direction.
 
 You could have accomplished the same with `transform(value(undefined))`, but
-this will not work when `state.noDefaults` is `true`. `plug()` will do its trick
+this will not work when `state.noDefaults` is `true`. `plug` will do its trick
 in all cases.
 
 #### `lookdown({ arrayPath, propPath, matchSeveral })` operation
@@ -1341,6 +1341,9 @@ The `lookdown` operation is the exact oposite of `lookup`, and the name is
 marelly word-play on that. See
 [the `lookup` operation](#lookup-arraypath-proppath-matchseveral-operation)
 for more on how it works, just reverse the directions.
+
+Note that `lookdown` does not have an operation object notation, but `lookup`
+will honor the [flipped mode](#flipping-a-transform-object).
 
 #### `lookup({ arrayPath, propPath, matchSeveral })` operation
 
@@ -1403,8 +1406,8 @@ values in the pipeline.
 
 This is a transformer intended for use with the `filter` operation. You
 pass a dot notation `path` and a `match` value (string, number, boolean, `null`
-or `undefined`) to `compare()`, and it returns a function that you can pass to
-`filter()` for filtering away data that does not not have the value set at the
+or `undefined`) to `compare`, and it returns a function that you can pass to
+`filter` for filtering away data that does not not have the value set at the
 provided path.
 
 As an alternative to `match`, you may specify a `matchPath`, which is a dot
@@ -1524,7 +1527,7 @@ When used outside of an iteration, it always returns `0`.
 
 This is the exact opposite of the `explode` helper, imploding going forward and
 exploding in reverse. See
-[the documentation for `explode()`](#explode-transformer) for how this works.
+[the documentation for `explode`](#explode-transformer) for how this works.
 
 #### `logical({ path, operator })` transformer
 
@@ -1659,8 +1662,8 @@ const def38b = {
 
 #### `not(value)` transformer
 
-`not()` will return `false` when the value in the pipeline is truthy, and `true`
-when value is falsy. This is useful for making the `filter()` operation do the
+`not` will return `false` when the value in the pipeline is truthy, and `true`
+when value is falsy. This is useful for making the `filter` operation do the
 opposite of what the filter transformer implies.
 
 Here we filter _away_ all data where role is set to 'admin':
@@ -1919,13 +1922,13 @@ same goes for flipped transform objects if you want to forward transform.
 
 MapTransform will try its best to map the data to the shape you want, and will
 always set all properties, even though the mapping you defined result in
-`undefined`. You may include `alt()` operations to provide default or fallback
+`undefined`. You may include `alt` operations to provide default or fallback
 values for these cases.
 
 But sometimes, you only want the data that is actually present in the source
 data, without defaults or properties set to `undefined`. You may accomplish this
 by setting `state.noDefaults` to true, either by setting in on the initial state
-given to `mapTransform()()` or by setting the `$noDefaults` flag on a transform
+given to `mapTransform()` or by setting the `$noDefaults` flag on a transform
 object (will set `noDefaults` on the state for everything happening within that
 transform object).
 
@@ -2007,7 +2010,7 @@ versions, and should not be used in custom transformers:
 - `target`: The target object at the current point. When setting on a path, the
   setting will happen on this target.
 
-Note that you may provide the `mapTransform()()` function with an initial state
+Note that you may provide the `mapTransform()` function with an initial state
 object as its second argument. Only `rev`, `noDefaults`, and `target` will be
 passed on from the state object you provide.
 

@@ -20,6 +20,7 @@ export interface Props extends TransformerProps {
   arrayPath: Path
   propPath: Path
   matchSeveral?: boolean
+  flip?: boolean
 }
 
 const FLATTEN_DEPTH = 1
@@ -68,13 +69,14 @@ const matchInArray =
   ) =>
   (state: State) => {
     return async (value: unknown) => {
-      const { value: arr } = await getArray({})(noopNext)(state)
+      const fwdState = goForward(state)
+      const { value: arr } = await getArray({})(noopNext)(goForward(fwdState))
       if (!Array.isArray(arr)) {
         return undefined
       }
       return matchSeveral
-        ? findAllMatches(value, arr, state, getProp)
-        : findOneMatch(value, arr, state, getProp)
+        ? findAllMatches(value, arr, fwdState, getProp)
+        : findOneMatch(value, arr, fwdState, getProp)
     }
   }
 
@@ -90,14 +92,16 @@ const matchInArray =
  * the pipeline. This is considered to be the oposite behavior of the lookup,
  * leading to the match value from the lookup being put back in the pipeline.
  *
- * Note that `flip` will reverse this behavior.
+ * Note that `flip` will reverse this behavior, and the `flip` property and the
+ * state `flip` will "flip each others".
  */
 export default function lookup({
   arrayPath,
   propPath,
   matchSeveral = false,
+  flip = false,
 }: Props): Operation {
-  return (options) => (next) => {
+  return (options) => {
     const getter = defToDataMapper(propPath, options)
     const matchFn = matchInArray(
       defToOperation(arrayPath, options),
@@ -107,13 +111,20 @@ export default function lookup({
     const extractProp = (state: State) => async (value: unknown) =>
       await getter(value, goForward(state))
 
-    return async function doLookup(state) {
-      const nextState = await next(state)
-      const value = getStateValue(nextState)
-      const rev = xor(state.rev, state.flip)
-      const matcher = rev ? extractProp(nextState) : matchFn(nextState)
-      const matches = await mapAny(matcher, value)
-      return setStateValue(nextState, flattenIfArray(matches))
-    }
+    return (next) =>
+      async function doLookup(state) {
+        const nextState = await next(state)
+        const value = getStateValue(nextState)
+        const rev = xor(state.rev, xor(state.flip, flip))
+        const matcher = rev ? extractProp : matchFn
+        const matches = await mapAny(matcher(nextState), value)
+        return setStateValue(nextState, flattenIfArray(matches))
+      }
   }
+}
+
+// `lookdown` is the exact oposite of `lookup`, and will lookup in reverse
+// and extract prop going forward. State `flip` will be flipped too.
+export function lookdown(props: Props): Operation {
+  return lookup({ ...props, flip: !props.flip })
 }

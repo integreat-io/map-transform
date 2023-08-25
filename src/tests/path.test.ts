@@ -5,6 +5,7 @@ import mapTransform, {
   fwd,
   get,
   lookup,
+  lookdown,
   plug,
   rev,
   root,
@@ -504,6 +505,30 @@ test('should map with lookup', async (t) => {
   const expected = {
     title: 'The heading',
     authors: ['User 1', 'User 3'],
+  }
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should treat lookdown as get going forward', async (t) => {
+  const def = {
+    'content.heading': 'title',
+    'content.authors': [
+      'authors[]',
+      lookdown({ arrayPath: '^meta.users[]', propPath: 'id' }),
+    ],
+  }
+  const data = {
+    title: 'The heading',
+    authors: [
+      { id: 'user1', name: 'User 1' },
+      { id: 'user3', name: 'User 3' },
+    ],
+  }
+  const expected = {
+    content: { heading: 'The heading', authors: ['user1', 'user3'] },
   }
 
   const ret = await mapTransform(def)(data)

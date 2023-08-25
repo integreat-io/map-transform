@@ -1302,6 +1302,13 @@ You could have accomplished the same with `transform(value(undefined))`, but
 this will not work when `state.noDefaults` is `true`. `plug()` will do its trick
 in all cases.
 
+#### `lookdown({ arrayPath, propPath, matchSeveral })` operation
+
+The `lookdown` operation is the exact oposite of `lookup`, and the name is
+marelly word-play on that. See
+[the `lookup` operation](#lookup-arraypath-proppath-matchseveral-operation)
+for more on how it works, just reverse the directions.
+
 #### `lookup({ arrayPath, propPath, matchSeveral })` operation
 
 `lookup` will take the value in the pipeline and replace it with the first

@@ -1,11 +1,11 @@
 import test from 'ava'
 import { noopNext } from '../utils/stateHelpers.js'
 
-import lookup from './lookup.js'
+import lookup, { lookdown } from './lookup.js'
 
 // Setup
 
-const props = { arrayPath: '^related.users[]', propPath: 'id' }
+const props = { arrayPath: '^^related.users[]', propPath: 'id' }
 const options = {}
 
 // Tests -- forward
@@ -259,6 +259,50 @@ test('should lookup data in reverse when flipped', async (t) => {
   }
 
   const ret = await lookup(props)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+// Tests -- lookdown
+
+test('lookdown should get lookup prop going forward', async (t) => {
+  const data = { id: 'user2', name: 'User 2' }
+  const state = {
+    context: [],
+    value: data,
+  }
+  const expected = {
+    context: [],
+    value: 'user2',
+  }
+
+  const ret = await lookdown(props)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('lookdown should lookup data in reverse', async (t) => {
+  const data = {
+    content: { author: 'user2' },
+    related: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+      ],
+    },
+  }
+  const state = {
+    context: [data],
+    value: 'user2',
+    rev: true,
+  }
+  const expected = {
+    context: [data],
+    value: { id: 'user2', name: 'User 2' },
+    rev: true,
+  }
+
+  const ret = await lookdown(props)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

@@ -6,6 +6,7 @@ import mapTransform, {
   fwd,
   rev,
   lookup,
+  lookdown,
   transform,
   transformers,
 } from '../index.js'
@@ -546,6 +547,35 @@ test('should run lookup as normal in reverse when flipped', async (t) => {
       { id: 'user1', name: 'User 1' },
       { id: 'user3', name: 'User 3' },
     ],
+  }
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with lookdown', async (t) => {
+  const def = {
+    'content.heading': 'title',
+    'content.authors': [
+      'authors[]',
+      set('name'),
+      lookdown({ arrayPath: '^^meta.users[]', propPath: 'id' }),
+    ],
+  }
+  const data = {
+    content: { heading: 'The heading', authors: ['user1', 'user3'] },
+    meta: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+        { id: 'user3', name: 'User 3' },
+      ],
+    },
+  }
+  const expected = {
+    title: 'The heading',
+    authors: ['User 1', 'User 3'],
   }
 
   const ret = await mapTransform(def)(data, { rev: true })

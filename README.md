@@ -1023,7 +1023,7 @@ pipeline will be run if the curent value is `undefined`, but skipped otherwise.
 This is different from the multi-pipeline behavor, where the first is always run
 and the rest is only run if the previous returns `undefined`.
 
-You may also define an alt operation as an object:
+You may also define an alt operation as an operation object:
 
 ```javascript
 const def11asObject = {
@@ -1048,19 +1048,41 @@ direction only.
 
 The `concat()` operation will flatten the result of every pipeline it is given
 into one array. A pipeline that does not return an array will simple have its
-return value appended to the array.
+return value appended to the array. Even when there's only one pipeline, its
+value will be forced to an array. `undefined` will be filtered away from the
+returned array.
 
-This operation will always return an array, even when it is given only one
-pipeline that does not return an array. Pipelines that does not result in a
-value (i.e. return `undefined`) will be filtered away.
+In reverse, the value (array) will be set on the first pipeline, and the rest of
+the pipelines will be given an empty array. The results of all the pipelines
+will be merged.
+
+If `concat` is not given any pipelines, it will return an empty array going
+forward, and an empty object in reverse. The reason for the empty object is that
+the normal behavior for concat is to get with paths from an object, and with
+no paths, we can't set any props, so an empty object is the best we can do.
+
+> **Note:** This operation is destructive, in that the result from running it
+> forward cannot reproduce the original data when run in reverse. Only the data
+> fetched by the given pipelines will be preserved, and the merged arrays cannot
+> be unmerged.
 
 ```javascript
-{
-  $concat: ['data.users', 'data.admins']
+import { concat } from 'map-transform'
+
+const def39 = {
+  id: 'data.id',
+  users: concat('data.users', 'data.admins'),
 }
 ```
 
-> Editors note: We need more examples here.
+You may also define a concat operation as an operation object:
+
+```javascript
+const def39asObject = {
+  id: 'data.id',
+  users: { $concat: ['data.users', 'data.admins'] },
+}
+```
 
 #### `merge(pipeline, pipeline, ...)` operation
 

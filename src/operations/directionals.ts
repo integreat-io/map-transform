@@ -1,6 +1,6 @@
-import type { TransformDefinition, Operation, Options } from '../types.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
-import xor from '../utils/xor.js'
+import { revFromState } from '../utils/stateHelpers.js'
+import type { TransformDefinition, Operation, Options } from '../types.js'
 
 const applyInDirection =
   (def: TransformDefinition, rev: boolean): Operation =>
@@ -8,7 +8,7 @@ const applyInDirection =
   (next) => {
     const fn = defToOperation(def, options)(options)(next)
     return async (state) =>
-      xor(rev, !state.rev) ? await fn(state) : await next(state)
+      revFromState(state, !rev) ? await fn(state) : await next(state)
   }
 
 export function fwd(def: TransformDefinition): Operation {

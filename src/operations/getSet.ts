@@ -8,14 +8,13 @@ import {
   getLastContext,
   getRootFromState,
   isNonvalue,
+  revFromState,
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
 import type { Path, Operation, State, StateMapper, Options } from '../types.js'
-import xor from '../utils/xor.js'
 
-const adjustIsSet = (isSet: boolean, { rev = false, flip = false }: State) =>
-  xor(isSet, xor(rev, flip))
+const adjustIsSet = (isSet: boolean, state: State) => revFromState(state, isSet) // `isSet` will work as `flip` here
 
 function flatMapAny(fn: (value: unknown, target?: unknown) => unknown) {
   return (value: unknown, target?: unknown) =>

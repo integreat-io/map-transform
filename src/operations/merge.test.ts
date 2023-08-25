@@ -34,7 +34,7 @@ const stateWithArray = {
 
 const options = {}
 
-// Tests
+// Tests -- forward
 
 test('should run pipelines and merge the result', async (t) => {
   const pipelines = [
@@ -193,4 +193,32 @@ test('should run pipelines on null value as default', async (t) => {
   const ret = await merge(...pipelines)(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expected)
+})
+
+// Tests -- reverse
+
+test('should run pipelines and merge the result in reverse', async (t) => {
+  const state = {
+    context: [],
+    value: {
+      title: 'Entry 1',
+      author: 'johnf',
+      sections: ['popular', 'news'],
+    },
+    rev: true,
+  }
+  const pipelines = [
+    ['heading', set('title')],
+    ['createdBy', set('author')],
+    ['tags', set('sections[]')],
+  ]
+  const expectedValue = {
+    heading: 'Entry 1',
+    createdBy: 'johnf',
+    tags: ['popular', 'news'],
+  }
+
+  const ret = await merge(...pipelines)(options)(noopNext)(state)
+
+  t.deepEqual(ret.value, expectedValue)
 })

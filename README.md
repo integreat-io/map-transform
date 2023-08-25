@@ -1312,10 +1312,11 @@ returned. Default is `false`.
 
 In reverse, the `propPath` will simply be used as a get path, getting the prop
 of the objects out of the objects, so to speak. (In the future, MapTransform
-_might_ support setting the items back on the `arrayPath` in reverse.) The
-exception to this rule, is that `lookup` will behave as if in forward mode, when
-it's called in a transform object in
-[flipped mode](#flipping-a-transform-object).
+_might_ support setting the items back on the `arrayPath` in reverse.)
+
+> **Note:** When `lookup` is called within a transform object in
+> [flipped mode](#flipping-a-transform-object), it will behave in the opposite
+> way, looking up in reverse mode and extracting `propPath` going forward.
 
 Example:
 

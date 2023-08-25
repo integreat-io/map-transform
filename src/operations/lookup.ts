@@ -1,3 +1,4 @@
+import mapAny from 'map-any/async.js'
 import type {
   Operation,
   State,
@@ -6,7 +7,11 @@ import type {
   AsyncDataMapperWithState,
   TransformerProps,
 } from '../types.js'
-import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
+import {
+  getStateValue,
+  setStateValue,
+  goForward,
+} from '../utils/stateHelpers.js'
 import { defToDataMapper, defToOperation } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import xor from '../utils/xor.js'
@@ -22,50 +27,71 @@ const FLATTEN_DEPTH = 1
 const flattenIfArray = (data: unknown) =>
   Array.isArray(data) ? data.flat(FLATTEN_DEPTH) : data
 
-const matchPropInArray =
+// Find all matches in array. To support async, we first map over the
+// array and get the value to compare against, then filter against these
+// values.
+async function findAllMatches(
+  value: unknown,
+  arr: unknown[],
+  state: State,
+  getProp: DataMapperWithState | AsyncDataMapperWithState
+) {
+  const results = await Promise.all(
+    arr.map(async (val) => await getProp(val, state))
+  )
+  return arr.filter((_v, index) => results[index] === value) // eslint-disable-line security/detect-object-injection
+}
+
+// Find first match in array. We use a for loop here, as we have to do it
+// asyncronously.
+async function findOneMatch(
+  value: unknown,
+  arr: unknown[],
+  state: State,
+  getProp: DataMapperWithState | AsyncDataMapperWithState
+) {
+  for (const val of arr) {
+    if ((await getProp(val, state)) === value) {
+      return val
+    }
+  }
+  return undefined
+}
+
+// Do the actual lookup. Will retrieve the array from the given state, and then
+// compare to the state value.
+const matchInArray =
   (
+    getArray: Operation,
     getProp: DataMapperWithState | AsyncDataMapperWithState,
     matchSeveral: boolean
   ) =>
-  (arr: unknown[], state: State) =>
-  async (value: unknown) => {
-    if (matchSeveral) {
-      // Find all matches in array. This has to support async, so we first map
-      // over the array and get the value to compare against, then filter
-      // against these values.
-      const results = await Promise.all(
-        arr.map(async (val) => await getProp(val, state))
-      )
-      return arr.filter((_v, index) => results[index] === value) // eslint-disable-line security/detect-object-injection
-    } else {
-      // Find first match in array. We use a for loop here, as we have to do it
-      // asyncronously.
-      for (const val of arr) {
-        if ((await getProp(val, state)) === value) {
-          return val
-        }
-      }
-      return undefined
-    }
-  }
-
-const mapValue = (
-  getArray: Operation,
-  getProp: DataMapperWithState | AsyncDataMapperWithState,
-  matchSeveral: boolean
-) => {
-  const matchInArray = matchPropInArray(getProp, matchSeveral)
-  return async (state: State) => {
-    if (xor(state.rev, state.flip)) {
-      return async (value: unknown) =>
-        await getProp(value, { ...state, rev: false }) // Do a regular get, even though we're in rev
-    } else {
+  (state: State) => {
+    return async (value: unknown) => {
       const { value: arr } = await getArray({})(noopNext)(state)
-      return arr ? matchInArray(arr as unknown[], state) : async () => undefined
+      if (!Array.isArray(arr)) {
+        return undefined
+      }
+      return matchSeveral
+        ? findAllMatches(value, arr, state, getProp)
+        : findOneMatch(value, arr, state, getProp)
     }
   }
-}
 
+/**
+ * Will use the value in the pipeline to lookup objects found in the `arrayPath`
+ * array. Matching is done by comparing the the pipeline value to the value at
+ * `propPath` in each object in the array. If `matchSeveral` is `true`, all
+ * matches will be returned, otherwise only the first match will be returned.
+ * The pipeline value will be replaced by the result of the lookup, or
+ * `undefined`.
+ *
+ * In reverse, `propPath` will be used to extract a value from the object(s) on
+ * the pipeline. This is considered to be the oposite behavior of the lookup,
+ * leading to the match value from the lookup being put back in the pipeline.
+ *
+ * Note that `flip` will reverse this behavior.
+ */
 export default function lookup({
   arrayPath,
   propPath,
@@ -73,19 +99,20 @@ export default function lookup({
 }: Props): Operation {
   return (options) => (next) => {
     const getter = defToDataMapper(propPath, options)
-    const mapValueFn = mapValue(
+    const matchFn = matchInArray(
       defToOperation(arrayPath, options),
       getter,
       matchSeveral
     )
+    const extractProp = (state: State) => async (value: unknown) =>
+      await getter(value, goForward(state))
 
     return async function doLookup(state) {
       const nextState = await next(state)
-      const fn = await mapValueFn(nextState)
       const value = getStateValue(nextState)
-      const matches = Array.isArray(value)
-        ? await Promise.all(value.map(fn))
-        : await fn(value)
+      const rev = xor(state.rev, state.flip)
+      const matcher = rev ? extractProp(nextState) : matchFn(nextState)
+      const matches = await mapAny(matcher, value)
       return setStateValue(nextState, flattenIfArray(matches))
     }
   }

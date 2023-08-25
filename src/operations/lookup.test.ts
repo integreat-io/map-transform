@@ -174,6 +174,26 @@ test('should set value to undefined when no match', async (t) => {
   t.is(ret.value, undefined)
 })
 
+test('should get lookup prop when flipped', async (t) => {
+  const data = { id: 'user2', name: 'User 2' }
+  const state = {
+    context: [],
+    value: data,
+    rev: false,
+    flip: true,
+  }
+  const expected = {
+    context: [],
+    value: 'user2',
+    rev: false,
+    flip: true,
+  }
+
+  const ret = await lookup(props)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- reverse
 
 test('should get lookup prop in reverse', async (t) => {

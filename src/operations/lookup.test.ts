@@ -1,7 +1,7 @@
 import test from 'ava'
 import { noopNext } from '../utils/stateHelpers.js'
 
-import lookup, { lookdown } from './lookup.js'
+import { lookup, lookdown } from './lookup.js'
 
 // Setup
 

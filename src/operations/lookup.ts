@@ -11,10 +11,10 @@ import {
   getStateValue,
   setStateValue,
   goForward,
+  revFromState,
 } from '../utils/stateHelpers.js'
 import { defToDataMapper, defToOperation } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
-import xor from '../utils/xor.js'
 
 export interface Props extends TransformerProps {
   arrayPath: Path
@@ -95,7 +95,7 @@ const matchInArray =
  * Note that `flip` will reverse this behavior, and the `flip` property and the
  * state `flip` will "flip each others".
  */
-export default function lookup({
+export function lookup({
   arrayPath,
   propPath,
   matchSeveral = false,
@@ -115,7 +115,7 @@ export default function lookup({
       async function doLookup(state) {
         const nextState = await next(state)
         const value = getStateValue(nextState)
-        const rev = xor(state.rev, xor(state.flip, flip))
+        const rev = revFromState(state, flip)
         const matcher = rev ? extractProp : matchFn
         const matches = await mapAny(matcher(nextState), value)
         return setStateValue(nextState, flattenIfArray(matches))

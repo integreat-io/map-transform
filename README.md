@@ -1652,6 +1652,15 @@ one object. Merging happens from left to right, so the props of the last object
 will have priority. However, `undefined` values will never overwrite another
 value.
 
+In reverse, the pipeline data will be provided to every pipeline in `path`, as
+there is no way of splitting up the "original" data. In most cases the pipeline
+data will be set on the props they were "originally" fetched and merged from.
+
+> **Note:** This transformer is destructive, in that the result from running it
+> forward cannot reproduce the original data when run in reverse. Only the data
+> fetched by the given pipelines will be preserved, and the merged object cannot
+> be unmerged.
+
 ```javascript
 import mapTransform, { transform, transformers } from 'map-transform'
 const { merge } = transformers
@@ -1677,6 +1686,12 @@ const def38b = {
   data: { $merge: ['original', 'updated', 'final'] },
 }
 ```
+
+#### `mergeRev({path})` transformer
+
+The `mergeRev` transformer has the opposite behavior of the `merge` transformer,
+in that it will do forward what `merge` does in reverse, and vice versa. See
+[the `merge` transformer](#mergepath-transformer) for more details.
 
 #### `not(value)` transformer
 

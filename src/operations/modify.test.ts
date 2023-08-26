@@ -7,19 +7,18 @@ import modify from './modify.js'
 
 const options = {}
 
-// Tests
+// Tests -- forward
 
 test('should fetch data from context with pipeline and merge with value', async (t) => {
   const pipeline = '.'
-  const items = [{ id: 'ent1', $type: 'entry' }]
   const state = {
     context: [],
-    target: { status: 'ok', data: { items } },
-    value: { data: items },
+    target: { status: 'ok', data: [{ id: 'ent1', $type: 'entry' }] },
+    value: { data: { items: [{ id: 'ent1', $type: 'entry' }] } },
   }
   const expected = {
     ...state,
-    value: { status: 'ok', data: items },
+    value: { status: 'ok', data: [{ id: 'ent1', $type: 'entry' }] },
   }
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
@@ -31,30 +30,10 @@ test('should shallow merge objects', async (t) => {
   const pipeline = 'data.personal'
   const state = {
     context: [],
-    target: {
-      data: { personal: { id: '1', name: 'John F.', meta: { viewed: 134 } } },
+    target: { name: 'John', meta: { count: 134 } },
+    value: {
+      data: { personal: { id: '1', name: 'John F.' } },
     },
-    value: { name: 'John', meta: { count: 134 } },
-  }
-  const expected = {
-    ...state,
-    value: { id: '1', name: 'John', meta: { count: 134 } },
-  }
-
-  const ret = await modify(pipeline)(options)(noopNext)(state)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should shallow merge objects in reverse', async (t) => {
-  const pipeline = 'data.personal'
-  const state = {
-    context: [],
-    target: {
-      data: { personal: { id: '1', name: 'John F.', meta: { viewed: 134 } } },
-    },
-    value: { name: 'John', meta: { count: 134 } },
-    rev: true,
   }
   const expected = {
     ...state,
@@ -70,10 +49,10 @@ test('should shallow merge objects flipped and in reverse', async (t) => {
   const pipeline = 'data.personal'
   const state = {
     context: [],
-    target: {
-      data: { personal: { id: '1', name: 'John F.', meta: { viewed: 134 } } },
+    target: { name: 'John', meta: { count: 134 } },
+    value: {
+      data: { personal: { id: '1', name: 'John F.' } },
     },
-    value: { name: 'John', meta: { count: 134 } },
     rev: true,
     flip: true,
   }
@@ -91,10 +70,10 @@ test('should support pipeline more complex than path', async (t) => {
   const pipeline = { id: 'data.personal.id' }
   const state = {
     context: [],
-    target: {
+    target: { data: { name: 'John', meta: { count: 134 } } },
+    value: {
       data: { personal: { id: '1', name: 'John F.', meta: { viewed: 134 } } },
     },
-    value: { data: { name: 'John', meta: { count: 134 } } },
   }
   const expected = {
     ...state,
@@ -113,7 +92,10 @@ test('should not merge when pipeline yields non-object', async (t) => {
     target: { status: 'ok', data: { value: 32 } },
     value: { success: 'true' },
   }
-  const expected = state
+  const expected = {
+    ...state,
+    value: { status: 'ok', data: { value: 32 } },
+  }
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
@@ -127,7 +109,10 @@ test('should not merge when value is a non-object', async (t) => {
     target: { value: 32 },
     value: 16,
   }
-  const expected = state
+  const expected = {
+    ...state,
+    value: { value: 32 },
+  }
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
@@ -159,9 +144,34 @@ test('should return undefined for null when included in nonvalues', async (t) =>
     context: [{ status: 'ok', data: { value } }, { value }],
     value: value,
   }
-  const expected = state
+  const expected = {
+    ...state,
+    value: undefined,
+  }
 
   const ret = await modify(pipeline)(optionsWithNullAsNone)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+// Tests -- reverse
+
+test('should shallow merge objects in reverse', async (t) => {
+  const pipeline = 'data.personal'
+  const state = {
+    context: [],
+    target: { name: 'John', meta: { count: 134 } },
+    value: {
+      data: { personal: { id: '1', name: 'John F.', meta: { viewed: 134 } } },
+    },
+    rev: true,
+  }
+  const expected = {
+    ...state,
+    value: { id: '1', name: 'John', meta: { count: 134 } },
+  }
+
+  const ret = await modify(pipeline)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

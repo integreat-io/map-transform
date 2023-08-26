@@ -1,3 +1,4 @@
+import xor from './xor.js'
 import type { State, InitialState } from '../types.js'
 
 // Context
@@ -86,6 +87,14 @@ export const goForward = (state: State) => ({
   flip: false,
 })
 
+export const flipState = (state: State, flip = true) => ({
+  ...state,
+  flip: xor(state.flip, flip),
+})
+
 export const stopIteration = (state: State) => ({ ...state, iterate: false })
 
 export const noopNext = async (state: State) => state
+
+export const revFromState = (state: State, flip = false) =>
+  flip ? xor(state.rev, !state.flip) : xor(state.rev, state.flip)

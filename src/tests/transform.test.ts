@@ -696,6 +696,39 @@ test('should shallow merge object with $merge', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should shallow merge object with $merge in reverse', async (t) => {
+  const def = {
+    $merge: ['original', 'modified'],
+  }
+  const data = {
+    id: 'ent1',
+    $type: 'entry',
+    title: 'Better title',
+    text: 'And so this happened',
+    tags: ['sports'],
+  }
+  const expected = {
+    original: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Better title',
+      text: 'And so this happened',
+      tags: ['sports'],
+    },
+    modified: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Better title',
+      text: 'And so this happened',
+      tags: ['sports'],
+    },
+  }
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
 test('should apply transform from an operation object with Symbol as key', async (t) => {
   const def = [
     {

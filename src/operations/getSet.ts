@@ -1,5 +1,6 @@
 /* eslint-disable security/detect-object-injection */
 import mapAny from 'map-any'
+import modify from './modify.js'
 import {
   getStateValue,
   setStateValue,
@@ -8,14 +9,13 @@ import {
   getLastContext,
   getRootFromState,
   isNonvalue,
+  revFromState,
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
 import type { Path, Operation, State, StateMapper, Options } from '../types.js'
-import xor from '../utils/xor.js'
 
-const adjustIsSet = (isSet: boolean, { rev = false, flip = false }: State) =>
-  xor(isSet, xor(rev, flip))
+const adjustIsSet = (isSet: boolean, state: State) => revFromState(state, isSet) // `isSet` will work as `flip` here
 
 function flatMapAny(fn: (value: unknown, target?: unknown) => unknown) {
   return (value: unknown, target?: unknown) =>
@@ -118,6 +118,18 @@ function getSetParentOrRoot(path: string, isSet: boolean): Operation {
   }
 }
 
+const modifyOnSet =
+  (isSet: boolean): Operation =>
+  (options) =>
+    function modifyOnSet(next) {
+      const modifyFn = modify('.')(options)(next)
+      return async (state) => {
+        return adjustIsSet(isSet, state)
+          ? await modifyFn(state) // Modify when we're setting
+          : setStateValue(await next(state), undefined) // Return undefined value when we're getting
+      }
+    }
+
 function doModifyGetValue(value: unknown, state: State, options: Options) {
   const { modifyGetValue } = options
   return typeof modifyGetValue === 'function'
@@ -127,8 +139,12 @@ function doModifyGetValue(value: unknown, state: State, options: Options) {
 
 function getSet(isSet = false) {
   return (path: string | number): Operation => {
-    if (typeof path === 'string' && path[0] === '^') {
-      return getSetParentOrRoot(path, isSet)
+    if (typeof path === 'string') {
+      if (path === '$modify') {
+        return modifyOnSet(isSet)
+      } else if (path[0] === '^') {
+        return getSetParentOrRoot(path, isSet)
+      }
     }
 
     const [basePath, isArr, isIndexProp] = preparePath(path)

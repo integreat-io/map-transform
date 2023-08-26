@@ -3,8 +3,7 @@ import iterate from './iterate.js'
 import transform from './transform.js'
 import flatten from '../transformers/flatten.js'
 import { defToOperations } from '../utils/definitionHelpers.js'
-import xor from '../utils/xor.js'
-import { setValueFromState } from '../utils/stateHelpers.js'
+import { setValueFromState, revFromState } from '../utils/stateHelpers.js'
 import type { Pipeline, Operation, StateMapper } from '../types.js'
 
 interface Fn {
@@ -65,8 +64,9 @@ export default function pipe(
       const runRev = createRun(Array.from(fns).reverse(), next) // Reverse the order of the operations in rev
 
       return async function doPipe(state) {
-        const isRev = xor(state.rev, state.flip)
-        const thisState = isRev ? await runRev(state) : await runFwd(state)
+        const thisState = revFromState(state)
+          ? await runRev(state)
+          : await runFwd(state)
         return doReturnContext ? thisState : setValueFromState(state, thisState)
       }
     }

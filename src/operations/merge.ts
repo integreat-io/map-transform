@@ -25,7 +25,7 @@ export function mergeExisting<T, U>(
   return target
 }
 
-function mergeStates(state: State, thisState: State) {
+export function mergeStates(state: State, thisState: State) {
   const target = getStateValue(state)
   const source = getStateValue(thisState)
 

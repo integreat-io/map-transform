@@ -6,7 +6,7 @@ import get from './get.js'
 import index from './indexFn.js'
 import logical from './logical.js'
 import map from './map.js'
-import merge from './merge.js'
+import { merge, mergeRev } from './merge.js'
 import not from './not.js'
 import sort from './sort.js'
 
@@ -21,6 +21,7 @@ export default {
   logical,
   map,
   merge,
+  mergeRev,
   not,
   sort,
   value,

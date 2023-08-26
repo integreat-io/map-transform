@@ -6,6 +6,7 @@ import mapTransform, {
   fwd,
   rev,
   lookup,
+  lookdown,
   transform,
   transformers,
 } from '../index.js'
@@ -369,6 +370,7 @@ test('should reverse map with root array path', async (t) => {
 test('should shallow merge (modify) original object with transformed object in reverse', async (t) => {
   const def = {
     $modify: true,
+    '.': '$modify',
     name: 'title',
   }
   const data = {
@@ -380,6 +382,34 @@ test('should shallow merge (modify) original object with transformed object in r
     name: 'The real title',
     title: 'The real title',
     text: 'This is high quality content for sure',
+  }
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should shallow merge (modify) original object with transformed object from a path in reverse', async (t) => {
+  const def = {
+    article: {
+      $modify: 'article',
+      '.': 'content.$modify',
+      title: 'content.name',
+    },
+  }
+  const data = {
+    article: {
+      title: 'The real title',
+      name: 'Got to go',
+      text: 'This is high quality content for sure',
+    },
+  }
+  const expected = {
+    content: {
+      name: 'The real title',
+      title: 'The real title',
+      text: 'This is high quality content for sure',
+    },
   }
 
   const ret = await mapTransform(def)(data, { rev: true })
@@ -546,6 +576,35 @@ test('should run lookup as normal in reverse when flipped', async (t) => {
       { id: 'user1', name: 'User 1' },
       { id: 'user3', name: 'User 3' },
     ],
+  }
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with lookdown', async (t) => {
+  const def = {
+    'content.heading': 'title',
+    'content.authors': [
+      'authors[]',
+      set('name'),
+      lookdown({ arrayPath: '^^meta.users[]', propPath: 'id' }),
+    ],
+  }
+  const data = {
+    content: { heading: 'The heading', authors: ['user1', 'user3'] },
+    meta: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+        { id: 'user3', name: 'User 3' },
+      ],
+    },
+  }
+  const expected = {
+    title: 'The heading',
+    authors: ['User 1', 'User 3'],
   }
 
   const ret = await mapTransform(def)(data, { rev: true })

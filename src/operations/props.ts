@@ -25,6 +25,7 @@ import type {
   TransformObject,
   Options,
   TransformDefinition,
+  StateMapper,
   NextStateMapper,
 } from '../types.js'
 
@@ -100,8 +101,8 @@ const mergeTargetAndValueOperation: Operation = () => (next) =>
   }
 
 function runOperationWithOriginalValue({ value }: State) {
-  return async (state: State, fn: NextStateMapper) => {
-    const nextState = await fn(noopNext)(setStateValue(state, value))
+  return async (state: State, fn: StateMapper) => {
+    const nextState = await fn(setStateValue(state, value))
 
     // Get the current state target and set the value as the target
     const target = getTargetFromState(state)
@@ -171,14 +172,15 @@ const createSetPipeline = (options: Options) =>
   }
 
 const runOperations =
-  (operations: NextStateMapper[], options: Options) => async (state: State) => {
+  (stateMappers: NextStateMapper[], options: Options) =>
+  async (state: State) => {
     if (isNonvalueState(state, options.nonvalues)) {
       return state
     } else {
       const run = runOperationWithOriginalValue(state)
       let nextState: State = state
-      for (const operation of operations) {
-        nextState = await run(nextState, operation)
+      for (const stateMapper of stateMappers) {
+        nextState = await run(nextState, stateMapper(noopNext)) // We call `noopNext` here to avoid running recursive pipelines more times than the data dictates
       }
 
       return nextState
@@ -195,6 +197,53 @@ const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
 const fixModifyPath = (def: TransformObject) =>
   def.$modify === true ? { ...def, $modify: '.' } : def
 
+const createStateMappers = (def: TransformObject, options: Options) =>
+  Object.entries(def)
+    .filter(isRegularProp)
+    .sort(sortProps)
+    .map(createSetPipeline(options))
+
+// Prepare one operation that will run all the prop pipelines
+function prepareOperation(def: TransformObject): Operation {
+  return (options) => {
+    // Prepare one state mapper for each prop
+    const nextStateMappers = createStateMappers(fixModifyPath(def), options)
+
+    // When there's no props on the transform object, return an operation that
+    // simply sets value to an empty object
+    if (nextStateMappers.length === 0) {
+      return (next) => async (state) => setStateValue(await next(state), {}) // TODO: Not sure if we need to call `next()` here
+    }
+
+    // Prepare operations runner
+    const run = runOperations(nextStateMappers, options)
+    const runWithIterateWhenNeeded =
+      def.$iterate === true ? iterate(() => () => run)(options)(noopNext) : run
+
+    return (next) => {
+      return async function doMutate(state) {
+        const nextState = await next(state)
+
+        // Don't touch state if its value is a nonvalue
+        if (isNonvalueState(nextState, options.nonvalues)) {
+          return nextState
+        }
+
+        // Don't pass on iteration to props
+        const propsState = stopIteration(
+          setStateProps(nextState, def.$noDefaults, def.$flip)
+        )
+
+        // Run the props operations
+        const thisState = await runWithIterateWhenNeeded(propsState)
+
+        // Set the value, but keep the target
+        return setValueFromState(nextState, thisState)
+      }
+    }
+  }
+}
+
 /**
  * Maps to an object by running the object values as pipelines and setting the
  * resulting values with the keys as paths – going forward. Will work in reverse
@@ -205,42 +254,6 @@ const fixModifyPath = (def: TransformObject) =>
  * Supports $modify paths, $iterate, $noDefaults, $flip, and $direction.
  */
 export default function props(def: TransformObject): Operation {
-  const operation: Operation = (options) => {
-    // Prepare one operation for each prop
-    const nextStateMappers = Object.entries(fixModifyPath(def))
-      .filter(isRegularProp)
-      .sort(sortProps)
-      .map(createSetPipeline(options))
-
-    // When there's no props on the transform object, return an operation that
-    // simply sets value to an empty object
-    if (nextStateMappers.length === 0) {
-      return (next) => async (state) => setStateValue(await next(state), {}) // TODO: Not sure if we need to call `next()` here
-    }
-
-    const run = runOperations(nextStateMappers, options)
-
-    // Return operation
-    return (next) => {
-      return async function doMutate(state) {
-        const nextState = await next(state)
-        if (isNonvalueState(nextState, options.nonvalues)) {
-          return nextState
-        }
-
-        const propsState = stopIteration(
-          setStateProps(nextState, def.$noDefaults, def.$flip)
-        ) // Don't pass on iteration to props
-        const thisState =
-          def.$iterate === true
-            ? await iterate(() => () => run)(options)(noopNext)(propsState)
-            : await run(propsState)
-
-        return setValueFromState(nextState, thisState)
-      }
-    }
-  }
-
-  // Wrap operation in a directional operation, if a $direction is specified
-  return wrapInDirectional(operation, def.$direction)
+  const operation = prepareOperation(def)
+  return wrapInDirectional(operation, def.$direction) // Wrap operation in a directional operation, if a $direction is specified
 }

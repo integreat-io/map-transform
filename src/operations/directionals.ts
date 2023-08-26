@@ -3,12 +3,12 @@ import { revFromState } from '../utils/stateHelpers.js'
 import type { TransformDefinition, Operation, Options } from '../types.js'
 
 const applyInDirection =
-  (def: TransformDefinition, rev: boolean): Operation =>
+  (def: TransformDefinition, isRev: boolean): Operation =>
   (options: Options) =>
   (next) => {
     const fn = defToOperation(def, options)(options)(next)
     return async (state) =>
-      revFromState(state, !rev) ? await fn(state) : await next(state)
+      revFromState(state, !isRev) ? await fn(state) : await next(state)
   }
 
 export function fwd(def: TransformDefinition): Operation {
@@ -27,6 +27,6 @@ export function divide(
     const fwdFn = defToOperation(fwdDef, options)(options)(next)
     const revFn = defToOperation(revDef, options)(options)(next)
     return async (state) =>
-      state.rev ? await revFn(state) : await fwdFn(state)
+      revFromState(state) ? await revFn(state) : await fwdFn(state)
   }
 }

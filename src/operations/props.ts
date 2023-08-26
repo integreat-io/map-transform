@@ -41,16 +41,22 @@ function isPathWithModify(pipeline: unknown) {
   )
 }
 
+// Keep props that don't start with a $ and have a transform definition as
+// value. We'll also keep props with a `$modify` path, unless it also have a
+// `$modify` path in the pipeline, in which case it won't do anything anyway, so
+// we remove it.
 function isRegularProp(
   entry: [string, unknown]
 ): entry is [string, TransformDefinition] {
   const [prop, pipeline] = entry
   return (
-    (prop[0] !== '$' || isPathWithModify(prop)) && // We'll keep $modify, as it is handled in `set`
+    (prop[0] !== '$' ||
+      (isPathWithModify(prop) && !isPathWithModify(pipeline))) &&
     isTransformDefinition(pipeline)
   )
 }
 
+// Sort props and pipelines with a $modify path last
 function sortProps(
   [aProp, aPipeline]: [string, unknown],
   [bProp, bPipeline]: [string, unknown]
@@ -60,6 +66,8 @@ function sortProps(
   return Number(aIsModify) - Number(bIsModify) // Sort any $modify path last
 }
 
+// Return `true` if a direction is specified, and we're not going in that
+// direction.
 function isWrongDirection(direction: unknown, options: Options) {
   if (
     direction === 'rev' ||
@@ -147,10 +155,10 @@ const createSetPipeline = (options: Options) =>
     // Prepare the operations and return as an operation
     const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
     return onlyRev
-      ? divide(plug(), operations)(options)
+      ? divide(plug(), operations)(options) // Plug going forward
       : onlyFwd
-      ? divide(operations, plug())(options)
-      : pipe(operations)(options)
+      ? divide(operations, plug())(options) // Plug going in reverse
+      : pipe(operations)(options) // Run in both directions
   }
 
 const runOperations =

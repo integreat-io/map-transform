@@ -399,6 +399,27 @@ test('should not treat prop starting with $modify as $modify', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should skip prop with modify in both directions', async (t) => {
+  const def = {
+    $modify: 'content.$modify',
+    id: transform(value('ent1')),
+    title: get('headline'),
+    headline: '^^params.source',
+  }
+  const expected = {
+    context: [{ data, params: { source: 'news1' } }, data],
+    value: {
+      id: 'ent1',
+      title: 'Entry 1',
+      headline: 'news1',
+    },
+  }
+
+  const ret = await props(def)(options)(noopNext)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should iterate when $iterate is true', async (t) => {
   const def = {
     $iterate: true,
@@ -1219,6 +1240,31 @@ test('should skip forward $modify in reverse', async (t) => {
     rev: true,
   }
   const expectedValue = { headline: 'The title' }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should skip prop with $modify in both directions in reverse', async (t) => {
+  const def = {
+    'content.$modify': '$modify',
+    content: {
+      title: 'headline',
+    },
+  }
+  const state = {
+    context: [{ params: { source: 'news1' } }],
+    value: {
+      content: {
+        title: 'The title',
+      },
+    },
+    rev: true,
+  }
+  const expectedValue = {
+    headline: 'The title',
+  }
 
   const ret = await props(def)(options)(noopNext)(state)
 

@@ -5,7 +5,11 @@ import type {
   DataMapperWithOptions,
   AsyncDataMapperWithOptions,
 } from '../types.js'
-import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
+import {
+  getStateValue,
+  setStateValue,
+  revFromState,
+} from '../utils/stateHelpers.js'
 
 function callTransformFn(
   fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
@@ -34,7 +38,7 @@ export default function transform(
 
     return (next) => async (state) => {
       const nextState = await next(state)
-      return state.rev
+      return revFromState(state)
         ? await revTransform(nextState)
         : await fwdTransform(nextState)
     }

@@ -97,6 +97,25 @@ test('should not mind reverse transform going forward', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should run reverse transform going forward when flip is true', async (t) => {
+  const state = {
+    context: [{ title: 'Entry 1' }],
+    value: 'Entry 1',
+    rev: false,
+    flip: true,
+  }
+  const expected = {
+    context: [{ title: 'Entry 1' }],
+    value: 'entry 1',
+    rev: false,
+    flip: true,
+  }
+
+  const ret = await transform(upper, lower)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should pass state to transform function', async (t) => {
   const fn = sinon.stub().returnsArg(0)
   const state = {

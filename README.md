@@ -1162,6 +1162,24 @@ const def34c = {
 }
 ```
 
+The `$modify` flag may also be set on a path:
+
+```javascript
+const def34d = {
+  'content.$modify': 'response',
+  'content.data': 'response.data.deeply.placed.items',
+}
+```
+
+This is the way to set it for reverse direction:
+
+```javascript
+const def34e = {
+  response: '$modify',
+  'response.data.deeply.placed.items': 'data',
+}
+```
+
 Note that setting a path like this, is only available when the `modify`
 operation is defined as an operation object.
 

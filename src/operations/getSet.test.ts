@@ -144,6 +144,21 @@ test('should return a flattened array', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not get from $modify', async (t) => {
+  const path = 'data.scientist.$modify'
+  const value = { data: { scientist: { name: 'Bohm' } } }
+  const state = stateFromValue(value)
+  const expected = {
+    ...state,
+    value: undefined,
+  }
+
+  const fn = pipe(get(path)) // Note: `get()` returns an array and needs to be run through pipe
+  const ret = await fn(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not touch escaped brackets', async (t) => {
   const path = 'data.scientists\\[].name'
   const value = { data: { 'scientists[]': { name: 'Bohr' } } }
@@ -1128,6 +1143,26 @@ test('should set array index on target', async (t) => {
   }
 
   const fn = set(path)[0]
+  const ret = await fn(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge with target', async (t) => {
+  const path = 'data.personal.$modify'
+  const value = { id: 'wrong', name: 'Bohm', published: true }
+  const state = {
+    ...stateFromValue(value),
+    target: {
+      data: { personal: { id: 1 } },
+    },
+  }
+  const expected = {
+    ...state,
+    value: { data: { personal: { id: 1, name: 'Bohm', published: true } } },
+  }
+
+  const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)

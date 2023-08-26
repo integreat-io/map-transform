@@ -370,6 +370,7 @@ test('should reverse map with root array path', async (t) => {
 test('should shallow merge (modify) original object with transformed object in reverse', async (t) => {
   const def = {
     $modify: true,
+    '.': '$modify',
     name: 'title',
   }
   const data = {
@@ -381,6 +382,34 @@ test('should shallow merge (modify) original object with transformed object in r
     name: 'The real title',
     title: 'The real title',
     text: 'This is high quality content for sure',
+  }
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should shallow merge (modify) original object with transformed object from a path in reverse', async (t) => {
+  const def = {
+    article: {
+      $modify: 'article',
+      '.': 'content.$modify',
+      title: 'content.name',
+    },
+  }
+  const data = {
+    article: {
+      title: 'The real title',
+      name: 'Got to go',
+      text: 'This is high quality content for sure',
+    },
+  }
+  const expected = {
+    content: {
+      name: 'The real title',
+      title: 'The real title',
+      text: 'This is high quality content for sure',
+    },
   }
 
   const ret = await mapTransform(def)(data, { rev: true })

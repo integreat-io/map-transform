@@ -874,6 +874,7 @@ test('should shallow merge (modify) original object with transformed object', as
   const def = {
     article: {
       $modify: 'content',
+      '.': 'article.$modify',
       title: 'name',
     },
   }

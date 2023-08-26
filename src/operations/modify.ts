@@ -14,20 +14,14 @@ export default function modify(def: TransformDefinition): Operation {
     const runFn = defToOperation(def, options)
     return (next) => async (state) => {
       const nextState = await next(state)
-      const contextState = setStateValue(
-        nextState,
-        getTargetFromState(nextState)
-      )
-      const thisState = await runFn(options)(noopNext)(goForward(contextState))
+      const thisState = await runFn(options)(noopNext)(goForward(nextState))
 
-      const thisValue = getStateValue(thisState)
-      const nextValue = getStateValue(nextState)
+      const target = getTargetFromState(nextState)
+      const value = getStateValue(thisState)
 
       return setStateValue(
         nextState,
-        isObject(nextValue) && isObject(thisValue)
-          ? { ...thisValue, ...nextValue }
-          : nextValue
+        isObject(target) && isObject(value) ? { ...value, ...target } : target
       )
     }
   }

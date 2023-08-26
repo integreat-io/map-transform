@@ -226,6 +226,25 @@ test('should shallow merge original object and transformed object', async (t) =>
   t.deepEqual(ret, expected)
 })
 
+test('should skip rev $modify going forward', async (t) => {
+  const def = {
+    '.': '$modify',
+    id: transform(value('ent1')),
+    title: 'headline',
+  }
+  const expected = {
+    context: [{ data, params: { source: 'news1' } }, data],
+    value: {
+      id: 'ent1',
+      title: 'Entry 1',
+    },
+  }
+
+  const ret = await props(def)(options)(noopNext)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should shallow merge a path from original object and transformed object', async (t) => {
   const def = {
     $modify: 'response',
@@ -240,6 +259,30 @@ test('should shallow merge a path from original object and transformed object', 
     value: {
       status: 'ok',
       data: [],
+    },
+  }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should shallow merge with $modify on a path', async (t) => {
+  const def = {
+    'content.$modify': 'response',
+    'content.data': 'response.data.items',
+  }
+  const state = {
+    context: [],
+    value: { type: 'GET', response: { status: 'ok', data: { items: [] } } },
+  }
+  const expected = {
+    context: [],
+    value: {
+      content: {
+        status: 'ok',
+        data: [],
+      },
     },
   }
 
@@ -333,6 +376,27 @@ test('should modify on several levels', async (t) => {
   const ret = await props(def)(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+test('should not treat prop starting with $modify as $modify', async (t) => {
+  const def = {
+    $modifySomething: true,
+    id: transform(value('ent1')),
+    title: get('headline'),
+    headline: '^^params.source',
+  }
+  const expected = {
+    context: [{ data, params: { source: 'news1' } }, data],
+    value: {
+      id: 'ent1',
+      title: 'Entry 1',
+      headline: 'news1',
+    },
+  }
+
+  const ret = await props(def)(options)(noopNext)(stateWithObject)
+
+  t.deepEqual(ret, expected)
 })
 
 test('should iterate when $iterate is true', async (t) => {
@@ -1080,6 +1144,85 @@ test('should set slashed properties in reverse', async (t) => {
   const ret = await props(def)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
+})
+
+test('should support $modify in reverse', async (t) => {
+  const def = {
+    '.': '$modify',
+    content: {
+      title: 'headline',
+    },
+  }
+  const state = {
+    context: [{ params: { source: 'news1' } }],
+    value: {
+      content: {
+        title: 'The title',
+      },
+    },
+    rev: true,
+  }
+  const expectedValue = {
+    headline: 'The title',
+    content: {
+      title: 'The title',
+    },
+  }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should support $modify in a pipeline in reverse', async (t) => {
+  const def = {
+    '.': ['$modify'],
+    content: {
+      title: 'headline',
+    },
+  }
+  const state = {
+    context: [{ params: { source: 'news1' } }],
+    value: {
+      content: {
+        title: 'The title',
+      },
+    },
+    rev: true,
+  }
+  const expectedValue = {
+    headline: 'The title',
+    content: {
+      title: 'The title',
+    },
+  }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
+test('should skip forward $modify in reverse', async (t) => {
+  const def = {
+    $modify: true, // This should do nothing in reverse
+    content: {
+      title: 'headline',
+    },
+  }
+  const state = {
+    context: [{ params: { source: 'news1' } }],
+    value: {
+      content: {
+        title: 'The title',
+      },
+    },
+    rev: true,
+  }
+  const expectedValue = { headline: 'The title' }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret.value, expectedValue)
 })
 
 test('should iterate in reverse', async (t) => {

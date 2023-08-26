@@ -1,5 +1,4 @@
 import iterate from './iterate.js'
-import modify from './modify.js'
 import pipe from './pipe.js'
 import { set } from './getSet.js'
 import { divide } from './directionals.js'
@@ -10,7 +9,6 @@ import type {
   TransformObject,
   Options,
   TransformDefinition,
-  StateMapper,
   NextStateMapper,
 } from '../types.js'
 import {
@@ -29,11 +27,37 @@ import {
 import { noopNext } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 
+function isPathWithModify(pipeline: unknown) {
+  if (Array.isArray(pipeline)) {
+    return pipeline.some(isPathWithModify)
+  } else if (typeof pipeline !== 'string') {
+    return false
+  }
+  const index = pipeline.indexOf('$modify')
+  return (
+    index > -1 && // We have a $modify
+    (index === 0 || pipeline[index - 1] === '.') && // It's either the first char, or preceded by a dot
+    (pipeline.length === index + 7 || pipeline[index + 7] === '.') // It's either the last char, or followed by a dot
+  )
+}
+
 function isRegularProp(
   entry: [string, unknown]
 ): entry is [string, TransformDefinition] {
   const [prop, pipeline] = entry
-  return prop[0] !== '$' && isTransformDefinition(pipeline)
+  return (
+    (prop[0] !== '$' || isPathWithModify(prop)) && // We'll keep $modify, as it is handled in `set`
+    isTransformDefinition(pipeline)
+  )
+}
+
+function sortProps(
+  [aProp, aPipeline]: [string, unknown],
+  [bProp, bPipeline]: [string, unknown]
+) {
+  const aIsModify = isPathWithModify(aProp) || isPathWithModify(aPipeline)
+  const bIsModify = isPathWithModify(bProp) || isPathWithModify(bPipeline)
+  return Number(aIsModify) - Number(bIsModify) // Sort any $modify path last
 }
 
 function isWrongDirection(direction: unknown, options: Options) {
@@ -59,6 +83,7 @@ function runOperationWithOriginalValue({ value }: State) {
   return async (state: State, fn: NextStateMapper) => {
     const nextState = await fn(noopNext)(setStateValue(state, value))
 
+    // Get the current state target and set the value as the target
     const target = state.target
     const nextValue = getStateValue(nextState)
     const thisState = setTargetOnState(nextState, nextValue)
@@ -115,50 +140,31 @@ const createSetPipeline = (options: Options) =>
 
     // Handle slashed props
     const unslashedProp = removeSlash(prop)
-    const onlyRev = prop !== unslashedProp // If these are different, we have removed a slash. Run in rev only
+    const isSlashed = prop !== unslashedProp // If these are different, we have removed a slash
+    const onlyFwd = isPathWithModify(unslashedProp)
+    const onlyRev = isSlashed || isPathWithModify(pipeline)
 
     // Prepare the operations and return as an operation
     const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
     return onlyRev
       ? divide(plug(), operations)(options)
+      : onlyFwd
+      ? divide(operations, plug())(options)
       : pipe(operations)(options)
   }
 
-function modifyWithGivenPath(path: string | undefined, options: Options) {
-  if (path) {
-    const modifyFn = modify(path)(options)
-    return (next: StateMapper) => {
-      const fn = modifyFn(next)
-      return async (state: State, nextState: State) =>
-        await fn(setTargetOnState(state, getStateValue(nextState)))
-    }
-  }
-
-  return () => async (state: State, _nextState: State) => state
-}
-
 const runOperations =
-  (
-    fn: (
-      next: StateMapper
-    ) => (state: State, nextState: State) => Promise<State>,
-    operations: NextStateMapper[],
-    options: Options
-  ) =>
-  (next: StateMapper) => {
-    const modifyFn = fn(next)
-    return async (state: State) => {
-      if (isNonvalueState(state, options.nonvalues)) {
-        return state
-      } else {
-        const run = runOperationWithOriginalValue(state)
-        let nextState: State = state
-        for (const operation of operations) {
-          nextState = await run(nextState, operation)
-        }
-
-        return modifyFn(nextState, state)
+  (operations: NextStateMapper[], options: Options) => async (state: State) => {
+    if (isNonvalueState(state, options.nonvalues)) {
+      return state
+    } else {
+      const run = runOperationWithOriginalValue(state)
+      let nextState: State = state
+      for (const operation of operations) {
+        nextState = await run(nextState, operation)
       }
+
+      return nextState
     }
   }
 
@@ -169,14 +175,15 @@ const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
   target: undefined,
 })
 
-export default function props(def: TransformObject): Operation {
-  // Prepare path
-  const modifyPath = def.$modify === true ? '.' : def.$modify || undefined
+const fixModifyPath = (def: TransformObject) =>
+  def.$modify === true ? { ...def, $modify: '.' } : def
 
+export default function props(def: TransformObject): Operation {
   return (options) => {
     // Prepare one operation for each prop
-    const nextStateMappers = Object.entries(def)
+    const nextStateMappers = Object.entries(fixModifyPath(def))
       .filter(isRegularProp)
+      .sort(sortProps)
       .map(createSetPipeline(options))
 
     // When there's no props on the transform object, return an operation that
@@ -185,13 +192,11 @@ export default function props(def: TransformObject): Operation {
       return (next) => async (state) => setStateValue(await next(state), {}) // TODO: Not sure if we need to call `next()` here
     }
 
-    const modifyFn = modifyWithGivenPath(modifyPath, options)
-    const runFn = runOperations(modifyFn, nextStateMappers, options)
+    const run = runOperations(nextStateMappers, options)
     const isWrongDirectionFn = isWrongDirection(def.$direction, options)
 
     // Return operation
     return (next) => {
-      const run = runFn(noopNext)
       return async function doMutate(state) {
         const nextState = await next(state)
         if (

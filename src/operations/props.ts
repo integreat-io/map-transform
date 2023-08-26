@@ -1,7 +1,7 @@
 import iterate from './iterate.js'
 import pipe from './pipe.js'
 import { set } from './getSet.js'
-import { divide } from './directionals.js'
+import { divide, fwd, rev } from './directionals.js'
 import plug from './plug.js'
 import type {
   Operation,
@@ -66,24 +66,24 @@ function sortProps(
   return Number(aIsModify) - Number(bIsModify) // Sort any $modify path last
 }
 
-// Return `true` if a direction is specified, and we're not going in that
-// direction.
-function isWrongDirection(direction: unknown, options: Options) {
-  if (
-    direction === 'rev' ||
-    (options.revAlias && direction === options.revAlias)
-  ) {
-    // Only run fwd
-    return (rev = false) => !rev
-  } else if (
-    direction === 'fwd' ||
-    (options.fwdAlias && direction === options.fwdAlias)
-  ) {
-    // Only run rev
-    return (rev = false) => rev
-  } else {
-    // Run both
-    return () => false
+const checkDirection = (
+  requiredDirection: unknown,
+  directionKeyword: string,
+  directionAlias?: string
+) =>
+  requiredDirection === directionKeyword ||
+  (directionAlias && requiredDirection === directionAlias)
+
+// Wraps the given operation in `fwd` or `rev` if a direction is specified.
+function wrapInDirectional(operation: Operation, direction: unknown) {
+  return (options: Options) => {
+    if (checkDirection(direction, 'rev', options.revAlias)) {
+      return rev(operation)(options) // Only in reverse
+    } else if (checkDirection(direction, 'fwd', options.fwdAlias)) {
+      return fwd(operation)(options) // Only going forward
+    } else {
+      return operation(options) // Run in both directions
+    }
   }
 }
 
@@ -186,8 +186,17 @@ const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
 const fixModifyPath = (def: TransformObject) =>
   def.$modify === true ? { ...def, $modify: '.' } : def
 
+/**
+ * Maps to an object by running the object values as pipelines and setting the
+ * resulting values with the keys as paths – going forward. Will work in reverse
+ * too, as each prop and pipeline are merged into one pipeline, with the key
+ * path in a `set` operation at the end. So when running in reverse, the `set`
+ * will `get` and vice versa.
+ *
+ * Supports $modify paths, $iterate, $noDefaults, $flip, and $direction.
+ */
 export default function props(def: TransformObject): Operation {
-  return (options) => {
+  const operation: Operation = (options) => {
     // Prepare one operation for each prop
     const nextStateMappers = Object.entries(fixModifyPath(def))
       .filter(isRegularProp)
@@ -201,16 +210,12 @@ export default function props(def: TransformObject): Operation {
     }
 
     const run = runOperations(nextStateMappers, options)
-    const isWrongDirectionFn = isWrongDirection(def.$direction, options)
 
     // Return operation
     return (next) => {
       return async function doMutate(state) {
         const nextState = await next(state)
-        if (
-          isNonvalueState(nextState, options.nonvalues) ||
-          isWrongDirectionFn(nextState.rev)
-        ) {
+        if (isNonvalueState(nextState, options.nonvalues)) {
           return nextState
         }
 
@@ -226,4 +231,7 @@ export default function props(def: TransformObject): Operation {
       }
     }
   }
+
+  // Wrap operation in a directional operation, if a $direction is specified
+  return wrapInDirectional(operation, def.$direction)
 }

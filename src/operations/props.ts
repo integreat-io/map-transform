@@ -3,17 +3,10 @@ import pipe from './pipe.js'
 import { set } from './getSet.js'
 import { divide, fwd, rev } from './directionals.js'
 import plug from './plug.js'
-import type {
-  Operation,
-  State,
-  TransformObject,
-  Options,
-  TransformDefinition,
-  NextStateMapper,
-} from '../types.js'
 import {
   getStateValue,
   setStateValue,
+  getTargetFromState,
   setTargetOnState,
   setValueFromState,
   isNonvalueState,
@@ -26,6 +19,14 @@ import {
 } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
+import type {
+  Operation,
+  State,
+  TransformObject,
+  Options,
+  TransformDefinition,
+  NextStateMapper,
+} from '../types.js'
 
 function isPathWithModify(pipeline: unknown) {
   if (Array.isArray(pipeline)) {
@@ -87,22 +88,27 @@ function wrapInDirectional(operation: Operation, direction: unknown) {
   }
 }
 
+// Merge target and state if they are both objects
+const mergeTargetAndValueOperation: Operation = () => (next) =>
+  async function mergeTargetAndValue(state) {
+    const nextState = await next(state)
+    const target = getTargetFromState(nextState)
+    const value = getStateValue(nextState)
+    return isObject(target) && isObject(value)
+      ? setStateValue(nextState, { ...target, ...value })
+      : nextState
+  }
+
 function runOperationWithOriginalValue({ value }: State) {
   return async (state: State, fn: NextStateMapper) => {
     const nextState = await fn(noopNext)(setStateValue(state, value))
 
     // Get the current state target and set the value as the target
-    const target = state.target
+    const target = getTargetFromState(state)
     const nextValue = getStateValue(nextState)
     const thisState = setTargetOnState(nextState, nextValue)
 
-    if (isObject(target) && isObject(nextValue)) {
-      // TODO: This is a hack for making several sub objects work in reverse.
-      // It's not clear to me why this is needed, and there is probably
-      // something wrong somewhere else, that should be fixed instead
-      const thisValue = { ...target, ...nextValue }
-      return setStateValue(thisState, thisValue)
-    } else if (isObject(target)) {
+    if (isObject(target) && !isObject(nextValue)) {
       // If the pipeline returns a non-object value, but the target is an
       // object, we return the target. The reason behind this is that we're
       // building an object here, and when a pipeline returns a non-object, it's
@@ -140,10 +146,13 @@ const createSetPipeline = (options: Options) =>
   ]): NextStateMapper {
     // Adjust sub map object
     if (isTransformObject(pipeline)) {
-      pipeline = {
-        ...pipeline,
-        $iterate: pipeline.$iterate || isArr(prop),
-      }
+      pipeline = [
+        rev(mergeTargetAndValueOperation), // This will make sure the result of this pipeline is merged with the target in reverse
+        {
+          ...pipeline,
+          $iterate: pipeline.$iterate || isArr(prop),
+        },
+      ]
     }
 
     // Handle slashed props

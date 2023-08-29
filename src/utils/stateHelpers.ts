@@ -3,17 +3,23 @@ import type { State, InitialState } from '../types.js'
 
 // Context
 
-export const pushContext = (state: State, value: unknown) => ({
-  ...state,
-  context: [...state.context, value],
-})
-
 export const getLastContext = (state: State) =>
   state.context[state.context.length - 1]
 
 export const removeLastContext = (state: State) => ({
   ...state,
   context: state.context.slice(0, -1),
+})
+
+export const pushContext = (state: State, value: unknown) => ({
+  ...state,
+  context: [...state.context, value],
+})
+
+export const popContext = (state: State) => ({
+  ...state,
+  context: state.context.slice(0, -1),
+  value: state.context[state.context.length - 1],
 })
 
 // Root
@@ -50,13 +56,9 @@ export const getStateValue = (state: State): unknown => state.value
 
 export const setValueFromState = (
   state: State,
-  { value, context }: State,
-  shouldSetContext = false
-): State => ({
-  ...state,
-  value,
-  context: shouldSetContext ? context : state.context,
-})
+  { value }: State,
+  shouldPushContext = false
+): State => setStateValue(state, value, shouldPushContext)
 
 export const isNonvalue = (
   value: unknown,

@@ -3,12 +3,12 @@ import { revFromState } from '../utils/stateHelpers.js'
 import type { TransformDefinition, Operation, Options } from '../types.js'
 
 const applyInDirection =
-  (def: TransformDefinition, isRev: boolean): Operation =>
+  (def: TransformDefinition, shouldRunRev: boolean): Operation =>
   (options: Options) =>
   (next) => {
     const fn = defToOperation(def, options)(options)(next)
     return async (state) =>
-      revFromState(state, !isRev) ? await fn(state) : await next(state)
+      revFromState(state) === shouldRunRev ? await fn(state) : await next(state)
   }
 
 export function fwd(def: TransformDefinition): Operation {

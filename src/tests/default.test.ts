@@ -378,29 +378,26 @@ test('should apply default value through iteration of operation object', async (
 // and when the $value is skipped due to $direction, it simply returns this
 // value untouched. This results in the original value being returned instead of
 // the undefined from the first path
-test.failing(
-  'should apply default value from an operation object going forward only',
-  async (t) => {
-    const def = {
-      title: {
-        $alt: [
-          'content.heading',
-          { $value: 'Default heading', $direction: 'fwd' },
-        ],
-      },
-    }
-    const dataFwd = { content: {} }
-    const expectedFwd = { title: 'Default heading' }
-    const dataRev = { content: {} }
-    const expectedRev = undefined
-
-    const retFwd = await mapTransform(def)(dataFwd)
-    const retRev = await mapTransform(def)(dataRev, { rev: true })
-
-    t.deepEqual(retFwd, expectedFwd)
-    t.deepEqual(retRev, expectedRev)
+test('should apply default value from an operation object going forward only', async (t) => {
+  const def = {
+    title: {
+      $alt: [
+        'content.heading',
+        { $value: 'Default heading', $direction: 'fwd' },
+      ],
+    },
   }
-)
+  const dataFwd = { content: {} }
+  const expectedFwd = { title: 'Default heading' }
+  const dataRev = { content: {} }
+  const expectedRev = { content: { heading: undefined } }
+
+  const retFwd = await mapTransform(def)(dataFwd)
+  const retRev = await mapTransform(def)(dataRev, { rev: true })
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
 
 test('should preserve context during alt paths', async (t) => {
   const def = [
@@ -450,29 +447,26 @@ test('should preserve context during alt paths on top level object', async (t) =
 // and when the $value is skipped due to $direction, it simply returns this
 // value untouched. This results in the original value being returned instead of
 // the undefined from the first path
-test.failing(
-  'should apply default value from an operation object going in reverse only',
-  async (t) => {
-    const def = {
-      title: {
-        $alt: [
-          'content.heading',
-          { $value: 'Default heading', $direction: 'rev' },
-        ],
-      },
-    }
-    const dataFwd = { content: {} }
-    const expectedFwd = undefined
-    const dataRev = { content: {} }
-    const expectedRev = { content: { heading: 'Default heading' } }
-
-    const retFwd = await mapTransform(def)(dataFwd)
-    const retRev = await mapTransform(def)(dataRev, { rev: true })
-
-    t.deepEqual(retFwd, expectedFwd)
-    t.deepEqual(retRev, expectedRev)
+test('should apply default value from an operation object going in reverse only', async (t) => {
+  const def = {
+    title: {
+      $alt: [
+        'content.heading',
+        { $value: 'Default heading', $direction: 'rev' },
+      ],
+    },
   }
-)
+  const dataFwd = { content: {} }
+  const expectedFwd = { title: undefined }
+  const dataRev = { content: {} }
+  const expectedRev = { content: { heading: 'Default heading' } }
+
+  const retFwd = await mapTransform(def)(dataFwd)
+  const retRev = await mapTransform(def)(dataRev, { rev: true })
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
 
 test('should apply default in iterated deep structure', async (t) => {
   const def = [

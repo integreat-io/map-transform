@@ -60,7 +60,19 @@ test('should not return default value when noDefaults is true', async (t) => {
   t.is(ret, undefined)
 })
 
-test('should return value given without object', async (t) => {
+test('should override pipeline value with undefined when noDefaults is true', async (t) => {
+  const data = { title: 'Title 1' }
+  const stateWithNoDefaults = { ...state, value: data, noDefaults: true }
+
+  const ret = await value({ value: 'The default' })(options)(
+    data,
+    stateWithNoDefaults
+  )
+
+  t.is(ret, undefined)
+})
+
+test('should accept a non-object value provided as first argument instead of props', async (t) => {
   const data = undefined
 
   const ret = await value('The default')(options)(data, state)

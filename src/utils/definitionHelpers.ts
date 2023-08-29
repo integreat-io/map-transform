@@ -226,7 +226,7 @@ export const defToOperations = (
   def: TransformDefinition | undefined,
   options: Options
 ): Operation[] | Operation =>
-  Array.isArray(def)
+  isPipeline(def)
     ? def.flatMap((def) => defToOperations(def, options))
     : isObject(def)
     ? operationFromObject(def, options)
@@ -240,7 +240,7 @@ export function defToOperation(
   def: TransformDefinition | undefined,
   options: Options
 ): Operation {
-  const operations = Array.isArray(def) ? def : defToOperations(def, options)
+  const operations = isPipeline(def) ? def : defToOperations(def, options)
   return Array.isArray(operations) ? pipe(operations) : operations
 }
 

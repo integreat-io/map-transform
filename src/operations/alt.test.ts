@@ -2,6 +2,7 @@ import test from 'ava'
 import { get } from './getSet.js'
 import iterate from './iterate.js'
 import pipe from './pipe.js'
+import { rev } from './directionals.js'
 import transform from './transform.js'
 import { value } from '../transformers/value.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -76,6 +77,23 @@ test('should yield alt value from a dot path', async (t) => {
   const expected = {
     context: [],
     value: '12345',
+  }
+
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should plug alternative pipelines with directionals', async (t) => {
+  const def1 = get('name')
+  const def2 = rev(get('id'))
+  const state = {
+    context: [],
+    value: { id: 'johnf' },
+  }
+  const expected = {
+    context: [],
+    value: undefined,
   }
 
   const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)

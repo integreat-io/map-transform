@@ -37,20 +37,28 @@ const isUntouched = (afterState: State, beforeState: State) =>
 // untouched, even though it is not wrapped in a directional, but again, what
 // would be the use of having a pipeline that just returns the state untouched
 // in an alt operation?
-async function runAltOperation(operation: StateMapper, state: State) {
-  const afterState = await operation(state)
+async function runAltPipeline(pipeline: StateMapper, state: State) {
+  const afterState = await pipeline(state)
   return isUntouched(afterState, state)
     ? setStateValue(afterState, undefined)
     : afterState
 }
 
-function createOneAltOperation(
+// Prepare the pipeline and return an operation that will run it if the state
+// value is a nonvalue or if this is the first of several alt pipelines.
+//
+// The way we push and pop context might seem a bit strange, but the logic is
+// that if the first alt pipeline returns a nonvalue, the pushed context makes
+// the original value available to the following pipelines. Also, if all return
+// nonvalues, it is correct that we have moved one level down and need to go up
+// again to get the value from before the alt operation.
+function createOneAltPipeline(
   def: TransformDefinition,
   index: number,
   hasOnlyOneAlt: boolean
 ): Operation {
   return (options) => {
-    const operation = pipeIfArray(defToOperations(def, options))(options)(
+    const pipeline = pipeIfArray(defToOperations(def, options))(options)(
       noopNext
     )
     const isFirst = !hasOnlyOneAlt && index === 0
@@ -68,10 +76,10 @@ function createOneAltOperation(
       const beforeState = isFirst ? nextState : popContext(nextState)
 
       // Run operation and set value if it is not a nonvalue
-      const afterState = await runAltOperation(operation, beforeState)
+      const afterState = await runAltPipeline(pipeline, beforeState)
       return isNonvalueState(afterState, nonvalues)
-        ? setValueFromState(nextState, afterState, isFirst) // We push the context for the first alt operation
-        : afterState
+        ? setValueFromState(nextState, afterState, isFirst) // We got a non-value, so set it on the original state
+        : afterState // We got a value, so return it
     }
   }
 }
@@ -86,6 +94,6 @@ function createOneAltOperation(
 export default function alt(...defs: TransformDefinition[]): Operation[] {
   const hasOnlyOneAlt = defs.length === 1
   return defs.map((def, index) =>
-    createOneAltOperation(def, index, hasOnlyOneAlt)
+    createOneAltPipeline(def, index, hasOnlyOneAlt)
   )
 }

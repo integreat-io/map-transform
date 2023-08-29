@@ -111,16 +111,35 @@ test('should not polute context from unyielding pipeline', async (t) => {
     value: data,
   }
   const expected = {
-    context: [{ data }],
+    context: [{ data }, data],
     value: 'Entry 1',
   }
 
-  const ret = await pipe(alt(def1, def2, def3))(options)(noopNext)(state)
+  const ret = await pipe(alt(def1, def2, def3), true)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should treat path as an pipeline', async (t) => {
+test('should return correct context from yielding pipeline', async (t) => {
+  const def1 = get('title')
+  const def2 = get('content.heading')
+  const def3 = get('headline')
+  const data = { user: 'johnf', content: { heading: 'The heading' } }
+  const state = {
+    context: [{ data }],
+    value: data,
+  }
+  const expected = {
+    context: [{ data }, data, data.content],
+    value: 'The heading',
+  }
+
+  const ret = await pipe(alt(def2, def1, def3), true)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should treat path as a pipeline', async (t) => {
   const def1 = get('name')
   const def2 = 'id'
   const state = {

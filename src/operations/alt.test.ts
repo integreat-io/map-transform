@@ -2,6 +2,7 @@ import test from 'ava'
 import { get } from './getSet.js'
 import iterate from './iterate.js'
 import pipe from './pipe.js'
+import { rev } from './directionals.js'
 import transform from './transform.js'
 import { value } from '../transformers/value.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -83,6 +84,23 @@ test('should yield alt value from a dot path', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should plug alternative pipelines with directionals', async (t) => {
+  const def1 = get('name')
+  const def2 = rev(get('id'))
+  const state = {
+    context: [],
+    value: { id: 'johnf' },
+  }
+  const expected = {
+    context: [],
+    value: undefined,
+  }
+
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not polute context from unyielding pipeline', async (t) => {
   const def1 = get('title')
   const def2 = get('content.heading')
@@ -93,16 +111,35 @@ test('should not polute context from unyielding pipeline', async (t) => {
     value: data,
   }
   const expected = {
-    context: [{ data }],
+    context: [{ data }, data],
     value: 'Entry 1',
   }
 
-  const ret = await pipe(alt(def1, def2, def3))(options)(noopNext)(state)
+  const ret = await pipe(alt(def1, def2, def3), true)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should treat path as an pipeline', async (t) => {
+test('should return correct context from yielding pipeline', async (t) => {
+  const def1 = get('title')
+  const def2 = get('content.heading')
+  const def3 = get('headline')
+  const data = { user: 'johnf', content: { heading: 'The heading' } }
+  const state = {
+    context: [{ data }],
+    value: data,
+  }
+  const expected = {
+    context: [{ data }, data, data.content],
+    value: 'The heading',
+  }
+
+  const ret = await pipe(alt(def2, def1, def3), true)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should treat path as a pipeline', async (t) => {
   const def1 = get('name')
   const def2 = 'id'
   const state = {

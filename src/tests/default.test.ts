@@ -374,33 +374,26 @@ test('should apply default value through iteration of operation object', async (
   t.deepEqual(ret, expected)
 })
 
-// The problem here is that every pipeline given to $alt gets the original value,
-// and when the $value is skipped due to $direction, it simply returns this
-// value untouched. This results in the original value being returned instead of
-// the undefined from the first path
-test.failing(
-  'should apply default value from an operation object going forward only',
-  async (t) => {
-    const def = {
-      title: {
-        $alt: [
-          'content.heading',
-          { $value: 'Default heading', $direction: 'fwd' },
-        ],
-      },
-    }
-    const dataFwd = { content: {} }
-    const expectedFwd = { title: 'Default heading' }
-    const dataRev = { content: {} }
-    const expectedRev = undefined
-
-    const retFwd = await mapTransform(def)(dataFwd)
-    const retRev = await mapTransform(def)(dataRev, { rev: true })
-
-    t.deepEqual(retFwd, expectedFwd)
-    t.deepEqual(retRev, expectedRev)
+test('should apply default value from an operation object going forward only', async (t) => {
+  const def = {
+    title: {
+      $alt: [
+        'content.heading',
+        { $value: 'Default heading', $direction: 'fwd' },
+      ],
+    },
   }
-)
+  const dataFwd = { content: {} }
+  const expectedFwd = { title: 'Default heading' }
+  const dataRev = { content: {} }
+  const expectedRev = { content: { heading: undefined } }
+
+  const retFwd = await mapTransform(def)(dataFwd)
+  const retRev = await mapTransform(def)(dataRev, { rev: true })
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
 
 test('should preserve context during alt paths', async (t) => {
   const def = [
@@ -424,7 +417,7 @@ test('should preserve context during alt paths', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should preserve context during alt paths on top level object', async (t) => {
+test('should preserve context during alt paths when not in a root pipeline', async (t) => {
   const def = {
     'ids[]': ['response', { $alt: ['items', 'entries'] }, '^^.id'], // This path doesn't make sense, but does the job of testing the context
   }
@@ -446,33 +439,152 @@ test('should preserve context during alt paths on top level object', async (t) =
   t.deepEqual(ret, expected)
 })
 
-// The problem here is that every pipeline given to $alt gets the original value,
-// and when the $value is skipped due to $direction, it simply returns this
-// value untouched. This results in the original value being returned instead of
-// the undefined from the first path
-test.failing(
-  'should apply default value from an operation object going in reverse only',
-  async (t) => {
-    const def = {
-      title: {
-        $alt: [
-          'content.heading',
-          { $value: 'Default heading', $direction: 'rev' },
-        ],
-      },
-    }
-    const dataFwd = { content: {} }
-    const expectedFwd = undefined
-    const dataRev = { content: {} }
-    const expectedRev = { content: { heading: 'Default heading' } }
-
-    const retFwd = await mapTransform(def)(dataFwd)
-    const retRev = await mapTransform(def)(dataRev, { rev: true })
-
-    t.deepEqual(retFwd, expectedFwd)
-    t.deepEqual(retRev, expectedRev)
+test('should provide correct context for parent during alt paths', async (t) => {
+  const def = [
+    'items[]',
+    {
+      $iterate: true,
+      article: [
+        { $alt: ['content', 'original'] },
+        { id: '^.id', title: 'title', note: 'text' },
+      ],
+    },
+  ]
+  const data = {
+    items: [
+      { id: '12345', content: { title: 'Entry 12345', text: 'Awesome text' } },
+      { id: '12346', original: { title: 'Entry 12346', text: 'Marvelous' } },
+    ],
   }
-)
+  const expected = [
+    { article: { id: '12345', title: 'Entry 12345', note: 'Awesome text' } },
+    { article: { id: '12346', title: 'Entry 12346', note: 'Marvelous' } },
+  ]
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should provide correct context for parent during alt paths with different number of levels', async (t) => {
+  const def = [
+    'items[]',
+    {
+      $iterate: true,
+      article: [
+        { $alt: ['content', 'original.content'] },
+        { id: '^.id', title: 'title', note: 'text' },
+      ],
+    },
+  ]
+  const data = {
+    items: [
+      { id: '12345', content: { title: 'Entry 12345', text: 'Awesome text' } },
+      {
+        original: {
+          id: '12346',
+          content: { title: 'Entry 12346', text: 'Marvelous' },
+        },
+      },
+    ],
+  }
+  const expected = [
+    { article: { id: '12345', title: 'Entry 12345', note: 'Awesome text' } },
+    { article: { id: '12346', title: 'Entry 12346', note: 'Marvelous' } },
+  ]
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should provide correct context for parent when all alt pipelines return undefined', async (t) => {
+  const def = [
+    'items[]',
+    {
+      $iterate: true,
+      title: [
+        { $alt: ['original.heading', 'content.title', 'content.headline'] },
+        '^.id', // The reason for this odd looking use of parent, is that the $alt operation will push the context to the pipeline when getting `undefined`, so we need to go up again one level to get the id
+      ],
+    },
+  ]
+  const data = {
+    items: [{ id: '12345' }, { id: '12346' }],
+  }
+  const expected = [{ title: '12345' }, { title: '12346' }]
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should provide correct context for parent during alt paths that moves us further down', async (t) => {
+  const def = [
+    'items[]',
+    {
+      $iterate: true,
+      title: [{ $alt: ['content', 'original.content'] }, 'article', '^.id'],
+    },
+  ]
+  const data = {
+    items: [
+      { content: { id: '12345', article: { title: 'The title' } } },
+      {
+        original: {
+          content: { id: '12346', article: { heading: 'The heading' } },
+        },
+      },
+    ],
+  }
+  const expected = [{ title: '12345' }, { title: '12346' }]
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should provide correct context for parent during alt with only one pipeline', async (t) => {
+  const def = [
+    'items[]',
+    {
+      $iterate: true,
+      title: ['title', { $alt: ['heading'] }, '^.id'], // This path doesn't make sense, but does the job of testing the context
+    },
+  ]
+  const data = {
+    items: [
+      { id: '12345', title: 'The title' },
+      { id: '12346', heading: 'The heading' },
+    ],
+  }
+  const expected = [{ title: '12345' }, { title: '12346' }]
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply default value from an operation object going in reverse only', async (t) => {
+  const def = {
+    title: {
+      $alt: [
+        'content.heading',
+        { $value: 'Default heading', $direction: 'rev' },
+      ],
+    },
+  }
+  const dataFwd = { content: {} }
+  const expectedFwd = { title: undefined }
+  const dataRev = { content: {} }
+  const expectedRev = { content: { heading: 'Default heading' } }
+
+  const retFwd = await mapTransform(def)(dataFwd)
+  const retRev = await mapTransform(def)(dataRev, { rev: true })
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
 
 test('should apply default in iterated deep structure', async (t) => {
   const def = [

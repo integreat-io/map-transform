@@ -1,6 +1,4 @@
 import type {
-  State,
-  Options,
   Operation,
   DataMapperWithOptions,
   AsyncDataMapperWithOptions,
@@ -10,15 +8,6 @@ import {
   setStateValue,
   revFromState,
 } from '../utils/stateHelpers.js'
-
-function callTransformFn(
-  fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
-  options: Options
-) {
-  const fnWithOptions = fn(options)
-  return async (state: State) =>
-    setStateValue(state, await fnWithOptions(getStateValue(state), state))
-}
 
 export default function transform(
   fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
@@ -30,17 +19,15 @@ export default function transform(
         'Transform operation was called without a valid transformer function'
       )
     }
-    const fwdTransform = callTransformFn(fn, options)
-    const revTransform =
-      typeof revFn === 'function'
-        ? callTransformFn(revFn, options)
-        : fwdTransform
+    const fwdPipeline = fn(options)
+    const revPipeline =
+      typeof revFn === 'function' ? revFn(options) : fwdPipeline
 
     return (next) => async (state) => {
       const nextState = await next(state)
-      return revFromState(state)
-        ? await revTransform(nextState)
-        : await fwdTransform(nextState)
+      const fn = revFromState(nextState) ? revPipeline : fwdPipeline
+      const value = await fn(getStateValue(nextState), nextState)
+      return setStateValue(nextState, value)
     }
   }
 }

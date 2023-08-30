@@ -82,15 +82,22 @@ const checkDirection = (
   requiredDirection === directionKeyword ||
   (directionAlias && requiredDirection === directionAlias)
 
+const resolveDirection = (direction: unknown, options: Options) =>
+  checkDirection(direction, 'rev', options.revAlias)
+    ? true
+    : checkDirection(direction, 'fwd', options.fwdAlias)
+    ? false
+    : undefined
+
 // Wraps the given operation in `fwd` or `rev` if a direction is specified.
 function wrapInDirectional(operation: Operation, direction: unknown) {
   return (options: Options) => {
-    if (checkDirection(direction, 'rev', options.revAlias)) {
-      return rev(operation)(options) // Only in reverse
-    } else if (checkDirection(direction, 'fwd', options.fwdAlias)) {
-      return fwd(operation)(options) // Only going forward
-    } else {
+    const isRev = resolveDirection(direction, options)
+    if (isRev === undefined) {
       return operation(options) // Run in both directions
+    } else {
+      const wrapOp = isRev ? rev : fwd
+      return wrapOp(operation)(options)
     }
   }
 }
@@ -154,9 +161,9 @@ function createDirectionalOperation(
   if (onlyRev && onlyFwd) {
     return undefined // Don't run anything when both directions are disabled
   } else if (onlyRev) {
-    return divide(plug(), pipeline) // Plug going forward
+    return divide(plug(), pipeline, true) // Plug going forward -- unless flipped
   } else if (onlyFwd) {
-    return divide(pipeline, plug()) // Plug going in reverse
+    return divide(pipeline, plug(), true) // Plug going in reverse -- unless flipped
   } else {
     return pipe(pipeline) // Run in both directions
   }

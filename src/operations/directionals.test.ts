@@ -39,6 +39,21 @@ test('should apply function when not rev', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should apply function when rev is not specified', async (t) => {
+  const state = {
+    context: [{ title: 'Entry 1' }],
+    value: 'Entry 1',
+  }
+  const expected = {
+    context: [{ title: 'Entry 1' }],
+    value: 'ENTRY 1',
+  }
+
+  const ret = await fwd(upper)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not apply function when rev', async (t) => {
   const state = {
     context: [{ title: 'Entry 1' }],
@@ -56,17 +71,17 @@ test('should not apply function when rev', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply function when rev and flip', async (t) => {
+test('should apply function when not rev and flip', async (t) => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: true,
-    flip: true,
+    rev: false,
+    flip: true, // Should not affect direction
   }
   const expected = {
     context: [{ title: 'Entry 1' }],
     value: 'ENTRY 1',
-    rev: true,
+    rev: false,
     flip: true,
   }
 
@@ -142,17 +157,17 @@ test('should not apply function when fwd', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply function when not rev and flip', async (t) => {
+test('should apply function when rev even with flip', async (t) => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
-    rev: false,
-    flip: true,
+    rev: true,
+    flip: true, // Should not affect direction
   }
   const expected = {
     context: [{ title: 'Entry 1' }],
     value: 'ENTRY 1',
-    rev: false,
+    rev: true,
     flip: true,
   }
 
@@ -210,12 +225,32 @@ test('should apply second function when rev', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply first function when rev and flip', async (t) => {
+test('should apply first function when not rev even with flip', async (t) => {
+  const state = {
+    context: [{ title: 'Entry 1' }],
+    value: 'Entry 1',
+    rev: false,
+    flip: true, // Should not affect direction
+  }
+  const expected = {
+    context: [{ title: 'Entry 1' }],
+    value: 'ENTRY 1',
+    rev: false,
+    flip: true,
+  }
+
+  const ret = await divide(upper, noop)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should honor flip when told to', async (t) => {
+  const honorFlip = true
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
     rev: true,
-    flip: true,
+    flip: true, // Should be honored
   }
   const expected = {
     context: [{ title: 'Entry 1' }],
@@ -224,7 +259,7 @@ test('should apply first function when rev and flip', async (t) => {
     flip: true,
   }
 
-  const ret = await divide(upper, noop)(options)(noopNext)(state)
+  const ret = await divide(upper, noop, honorFlip)(options)(noopNext)(state)
 
   t.deepEqual(ret, expected)
 })

@@ -472,6 +472,25 @@ test('should only use transform going in reverse', async (t) => {
   t.deepEqual(retRev, expectedRev)
 })
 
+test('should only use transform going in reverse when flipped', async (t) => {
+  const def = {
+    $flip: true,
+    content: [
+      'title',
+      { $transform: 'fixed', value: "I'm always here", $direction: 'rev' },
+    ],
+  }
+  const data = { title: 'The heading' }
+  const expectedFwd = { title: undefined }
+  const expectedRev = { content: "I'm always here" }
+
+  const retFwd = await mapTransform(def, { transformers })(data)
+  const retRev = await mapTransform(def, { transformers })(data, { rev: true })
+
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
+
 test('should provide index when iterating', async (t) => {
   const def = [
     'content',

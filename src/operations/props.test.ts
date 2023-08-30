@@ -245,6 +245,34 @@ test('should skip rev $modify going forward', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should support reverse $modify going forward when flipped', async (t) => {
+  const def = {
+    $flip: true,
+    '.': '$modify',
+    content: {
+      title: 'headline',
+    },
+  }
+  const state = {
+    context: [{ params: { source: 'news1' } }],
+    value: {
+      content: {
+        title: 'The title',
+      },
+    },
+  }
+  const expectedValue = {
+    headline: 'The title',
+    content: {
+      title: 'The title',
+    },
+  }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret.value, expectedValue)
+})
+
 test('should skip both direction $modify going forward', async (t) => {
   const def = {
     $modify: 'content.$modify',
@@ -1264,6 +1292,33 @@ test('should skip forward $modify in reverse', async (t) => {
   const ret = await props(def)(options)(noopNext)(state)
 
   t.deepEqual(ret.value, expectedValue)
+})
+
+test('should shallow merge original object and transformed object in reverse when flipped', async (t) => {
+  const def = {
+    $modify: true,
+    $flip: true,
+    id: transform(value('ent1')),
+    title: get('headline'),
+    headline: '^^params.source',
+  }
+  const expected = {
+    context: [{ data, params: { source: 'news1' } }, data],
+    value: {
+      id: 'ent1',
+      title: 'Entry 1',
+      headline: 'news1',
+      user: 'johnf',
+    },
+    rev: true,
+  }
+
+  const ret = await props(def)(options)(noopNext)({
+    ...stateWithObject,
+    rev: true,
+  })
+
+  t.deepEqual(ret, expected)
 })
 
 test('should skip prop with $modify in both directions in reverse', async (t) => {

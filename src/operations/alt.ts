@@ -4,6 +4,8 @@ import {
   popContext,
   isNonvalueState,
   setStateValue,
+  markAsUntouched,
+  isUntouched,
 } from '../utils/stateHelpers.js'
 import { defToOperations } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -19,12 +21,6 @@ import type {
 const pipeIfArray = (def: Operation | Operation[]) =>
   Array.isArray(def) ? pipe(def, true) : def
 
-// Check if the state value of the afterState is the same as the beforeState.
-// We do a strict comparison here, and not a deep equal, as the `fwd` and `rev`
-// operations returns the state untouched when it is skipped.
-const isUntouched = (afterState: State, beforeState: State) =>
-  beforeState.value === afterState.value
-
 // Run the pipeline and return the value. If the state value has not been
 // changed by the alt pipeline, we set it to undefined to correct the case where
 // the alt pipeline is wrapped in `fwd` or `rev`, as these will simply return
@@ -38,8 +34,8 @@ const isUntouched = (afterState: State, beforeState: State) =>
 // would be the use of having a pipeline that just returns the state untouched
 // in an alt operation?
 async function runAltPipeline(pipeline: StateMapper, state: State) {
-  const afterState = await pipeline(state)
-  return isUntouched(afterState, state)
+  const afterState = await pipeline(markAsUntouched(state))
+  return isUntouched(afterState)
     ? setStateValue(afterState, undefined)
     : afterState
 }

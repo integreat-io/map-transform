@@ -41,7 +41,7 @@ export function setTargetOnState(state: State, target: unknown): State {
 // State value
 
 export const setStateValue = (
-  state: State,
+  { untouched, ...state }: State, // Clear untouched every time we set a value
   value: unknown,
   shouldPushContext = false
 ): State =>
@@ -69,6 +69,10 @@ export const isNonvalueState = (
   state: State,
   nonvalues: unknown[] = [undefined]
 ) => isNonvalue(state.value, nonvalues)
+
+export const markAsUntouched = (state: State) => ({ ...state, untouched: true })
+export const clearUntouched = ({ untouched, ...state }: State) => state
+export const isUntouched = ({ untouched }: State) => !!untouched
 
 // State
 

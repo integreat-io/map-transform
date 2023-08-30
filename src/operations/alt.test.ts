@@ -101,6 +101,23 @@ test('should plug alternative pipelines with directionals', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not plug alternative pipelines when we get with path dot', async (t) => {
+  const def1 = get('name')
+  const def2 = get('.')
+  const state = {
+    context: [],
+    value: { id: 'johnf' },
+  }
+  const expected = {
+    context: [],
+    value: { id: 'johnf' },
+  }
+
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not polute context from unyielding pipeline', async (t) => {
   const def1 = get('title')
   const def2 = get('content.heading')

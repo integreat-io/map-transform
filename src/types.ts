@@ -24,6 +24,7 @@ export interface State extends InitialState {
   arr?: boolean
   iterate?: boolean
   index?: number
+  untouched?: boolean
 }
 
 // MapTransform options type

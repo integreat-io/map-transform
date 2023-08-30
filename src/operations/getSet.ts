@@ -10,6 +10,7 @@ import {
   getRootFromState,
   isNonvalue,
   revFromState,
+  clearUntouched,
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
@@ -251,7 +252,8 @@ function splitUpArrayAndParentNotation(path: string) {
 function pathToNextOperations(path: Path, isSet = false): Operation[] {
   if (!path || path === '.') {
     return [
-      () => (next: StateMapper) => async (state: State) => await next(state),
+      () => (next: StateMapper) => async (state: State) =>
+        clearUntouched(await next(state)), // We don't change the value, but we still need to clear untouched
     ]
   }
 

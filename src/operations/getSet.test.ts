@@ -366,6 +366,19 @@ test('should not return empty array when noDefaults is true', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should clear untouched flag when getting', async (t) => {
+  const path = 'name'
+  const value = { name: 'Bohm' }
+  const state = { ...stateFromValue(value) }
+  const stateWithUntouched = { ...state, untouched: true }
+  const expected = { ...state, context: [{ name: 'Bohm' }], value: 'Bohm' }
+
+  const fn = get(path)[0] // Note: `get()` returns an array, but we'll run the first operation directly as there will be only one
+  const ret = await fn(options)(noopNext)(stateWithUntouched)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- get path with parent
 
 test('should get path with parent', async (t) => {

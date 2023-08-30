@@ -232,29 +232,41 @@ test('should allow colons in paths', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should allow escaped brackets in target paths', async (t) => {
+test('should allow escaped chars in target paths', async (t) => {
   const def = [
     {
       'created\\[gt]': 'payload.updatedAfter',
+      '\\$modify': { $value: true },
+      'data.\\$value': 'payload.value',
     },
   ]
-  const data = { payload: { updatedAfter: new Date('2022-05-01T00:18:14Z') } }
-  const expected = { 'created[gt]': new Date('2022-05-01T00:18:14Z') }
+  const data = {
+    payload: { updatedAfter: new Date('2022-05-01T00:18:14Z'), value: 3 },
+  }
+  const expected = {
+    'created[gt]': new Date('2022-05-01T00:18:14Z'),
+    data: { $value: 3 },
+    $modify: true,
+  }
 
   const ret = await mapTransform(def)(data)
 
   t.deepEqual(ret, expected)
 })
 
-test('should allow escaped brackets in source paths', async (t) => {
+test('should allow escaped chars in source paths', async (t) => {
   const def = [
     {
       'payload.updatedAfter': 'created\\[gt]',
+      'payload.type': 'data.\\$type',
     },
   ]
-  const data = { 'created[gt]': new Date('2022-05-01T00:18:14Z') }
+  const data = {
+    'created[gt]': new Date('2022-05-01T00:18:14Z'),
+    data: { id: 'ent1', $type: 'entry' },
+  }
   const expected = {
-    payload: { updatedAfter: new Date('2022-05-01T00:18:14Z') },
+    payload: { updatedAfter: new Date('2022-05-01T00:18:14Z'), type: 'entry' },
   }
 
   const ret = await mapTransform(def)(data)

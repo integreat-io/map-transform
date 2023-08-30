@@ -803,7 +803,7 @@ test('should flip and mutate object', async (t) => {
   const def = {
     $flip: true,
     entry: {
-      // id: transform(value('ent1'), // TODO: How to use value in reverse?
+      '/1': ['item.id', transform(value('ent1'))],
       headline: ['item.attributes.title', transform(threeLetters)],
       unknown: 'item.attributes.age',
       user: 'item.relationships.author',
@@ -817,7 +817,7 @@ test('should flip and mutate object', async (t) => {
     ...stateWithObject,
     value: {
       item: {
-        // id: 'ent1',
+        id: 'ent1',
         attributes: {
           title: 'Ent',
           age: undefined,

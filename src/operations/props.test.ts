@@ -245,6 +245,26 @@ test('should skip rev $modify going forward', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should skip both direction $modify going forward', async (t) => {
+  const def = {
+    $modify: 'content.$modify',
+    title: 'content.headline',
+  }
+  const data = { content: { headline: 'Entry 1', user: 'johnf' } }
+  const state = {
+    context: [],
+    value: data,
+  }
+  const expected = {
+    context: [],
+    value: { title: 'Entry 1' },
+  }
+
+  const ret = await props(def)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should shallow merge a path from original object and transformed object', async (t) => {
   const def = {
     $modify: 'response',

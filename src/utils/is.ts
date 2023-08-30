@@ -8,3 +8,9 @@ export const isPath = (value: unknown): value is Path =>
 
 export const isArrayPath = (value: unknown): value is Path =>
   isPath(value) && value.endsWith('[]')
+
+export const isNullOrUndefined = (value: unknown): value is null | undefined =>
+  value === null || value === undefined
+
+export const isNotNullOrUndefined = <T>(value: T): value is NonNullable<T> =>
+  !isNullOrUndefined(value)

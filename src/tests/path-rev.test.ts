@@ -95,6 +95,22 @@ test('should disregard a prop pipeline without get in reverse', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should support defining get only-pipelines for reverse', async (t) => {
+  const def = {
+    title: 'content.heading',
+    '/1': ['meta', transform(value({ value: { tags: ['news'] } }))], // We must wrap the value object in a props object
+  }
+  const data = { title: 'New article' }
+  const expected = {
+    content: { heading: 'New article' },
+    meta: { tags: ['news'] },
+  }
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
 test('should reverse map array of objects', async (t) => {
   const def = {
     $iterate: true,

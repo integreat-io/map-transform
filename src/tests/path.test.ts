@@ -603,6 +603,22 @@ test('should set all props from source object and override some', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should disregard pipeline with no get', async (t) => {
+  const def = {
+    title: 'content.heading',
+    '/1': ['meta', { $value: { tags: ['news'] } }], // We're setting an object here, as that would replace the target object
+  }
+  const data = {
+    content: { heading: 'New article' },
+    meta: { tags: ['news'] },
+  }
+  const expected = { title: 'New article' }
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should spread array to mapping objects', async (t) => {
   const def = [
     'ids[]',

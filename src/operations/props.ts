@@ -18,7 +18,7 @@ import {
   defToOperation,
 } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
-import { isObject } from '../utils/is.js'
+import { isObject, isNotNullOrUndefined } from '../utils/is.js'
 import type {
   Operation,
   State,
@@ -141,10 +141,9 @@ function removeSlash(prop: string) {
 }
 
 const createSetPipeline = (options: Options) =>
-  function createSetPipeline([prop, pipeline]: [
-    string,
-    TransformDefinition
-  ]): NextStateMapper {
+  function createSetPipeline([prop, pipeline]: [string, TransformDefinition]):
+    | NextStateMapper
+    | undefined {
     // Adjust sub map object
     if (isTransformObject(pipeline)) {
       pipeline = [
@@ -164,7 +163,9 @@ const createSetPipeline = (options: Options) =>
 
     // Prepare the operations and return as an operation
     const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
-    return onlyRev
+    return onlyRev && onlyFwd
+      ? undefined // Don't run anything when both directions are disabled
+      : onlyRev
       ? divide(plug(), operations)(options) // Plug going forward
       : onlyFwd
       ? divide(operations, plug())(options) // Plug going in reverse
@@ -202,6 +203,7 @@ const createStateMappers = (def: TransformObject, options: Options) =>
     .filter(isRegularProp)
     .sort(sortProps)
     .map(createSetPipeline(options))
+    .filter(isNotNullOrUndefined)
 
 // Prepare one operation that will run all the prop pipelines
 function prepareOperation(def: TransformObject): Operation {

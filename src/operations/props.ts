@@ -27,20 +27,26 @@ import type {
   TransformDefinition,
   StateMapper,
   NextStateMapper,
+  Pipeline,
 } from '../types.js'
+
+function pathHasModify(path: string) {
+  const index = path.indexOf('$modify')
+  return (
+    index > -1 && // We have a $modify
+    (index === 0 || path[index - 1] === '.') && // It's either the first char, or preceded by a dot
+    (path.length === index + 7 || path[index + 7] === '.') // It's either the last char, or followed by a dot
+  )
+}
 
 function isPathWithModify(pipeline: unknown) {
   if (Array.isArray(pipeline)) {
     return pipeline.some(isPathWithModify)
   } else if (typeof pipeline !== 'string') {
     return false
+  } else {
+    return pathHasModify(pipeline)
   }
-  const index = pipeline.indexOf('$modify')
-  return (
-    index > -1 && // We have a $modify
-    (index === 0 || pipeline[index - 1] === '.') && // It's either the first char, or preceded by a dot
-    (pipeline.length === index + 7 || pipeline[index + 7] === '.') // It's either the last char, or followed by a dot
-  )
 }
 
 // Keep props that don't start with a $ and have a transform definition as
@@ -140,9 +146,25 @@ function removeSlash(prop: string) {
   return prop
 }
 
+function createDirectionalOperation(
+  pipeline: Pipeline,
+  onlyFwd: boolean,
+  onlyRev: boolean
+) {
+  if (onlyRev && onlyFwd) {
+    return undefined // Don't run anything when both directions are disabled
+  } else if (onlyRev) {
+    return divide(plug(), pipeline) // Plug going forward
+  } else if (onlyFwd) {
+    return divide(pipeline, plug()) // Plug going in reverse
+  } else {
+    return pipe(pipeline) // Run in both directions
+  }
+}
+
 const createSetPipeline = (options: Options) =>
   function createSetPipeline([prop, pipeline]: [string, TransformDefinition]):
-    | NextStateMapper
+    | Operation
     | undefined {
     // Adjust sub map object
     if (isTransformObject(pipeline)) {
@@ -163,13 +185,7 @@ const createSetPipeline = (options: Options) =>
 
     // Prepare the operations and return as an operation
     const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
-    return onlyRev && onlyFwd
-      ? undefined // Don't run anything when both directions are disabled
-      : onlyRev
-      ? divide(plug(), operations)(options) // Plug going forward
-      : onlyFwd
-      ? divide(operations, plug())(options) // Plug going in reverse
-      : pipe(operations)(options) // Run in both directions
+    return createDirectionalOperation(operations, onlyFwd, onlyRev)
   }
 
 const runOperations =
@@ -183,7 +199,6 @@ const runOperations =
       for (const stateMapper of stateMappers) {
         nextState = await run(nextState, stateMapper(noopNext)) // We call `noopNext` here to avoid running recursive pipelines more times than the data dictates
       }
-
       return nextState
     }
   }
@@ -204,6 +219,7 @@ const createStateMappers = (def: TransformObject, options: Options) =>
     .sort(sortProps)
     .map(createSetPipeline(options))
     .filter(isNotNullOrUndefined)
+    .map((fn) => fn(options))
 
 // Prepare one operation that will run all the prop pipelines
 function prepareOperation(def: TransformObject): Operation {

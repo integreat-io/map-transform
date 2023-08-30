@@ -31,52 +31,42 @@ const flattenIfArray = (data: unknown) =>
 // Find all matches in array. To support async, we first map over the
 // array and get the value to compare against, then filter against these
 // values.
-async function findAllMatches(
-  value: unknown,
-  arr: unknown[],
-  state: State,
+const findAllMatches = (
   getProp: DataMapperWithState | AsyncDataMapperWithState
-) {
-  const results = await Promise.all(
-    arr.map(async (val) => await getProp(val, state))
-  )
-  return arr.filter((_v, index) => results[index] === value) // eslint-disable-line security/detect-object-injection
-}
+) =>
+  async function findAllMatches(value: unknown, arr: unknown[], state: State) {
+    const results = await Promise.all(
+      arr.map(async (val) => await getProp(val, state))
+    )
+    return arr.filter((_v, index) => results[index] === value) // eslint-disable-line security/detect-object-injection
+  }
 
 // Find first match in array. We use a for loop here, as we have to do it
 // asyncronously.
-async function findOneMatch(
-  value: unknown,
-  arr: unknown[],
-  state: State,
+const findOneMatch = (
   getProp: DataMapperWithState | AsyncDataMapperWithState
-) {
-  for (const val of arr) {
-    if ((await getProp(val, state)) === value) {
-      return val
+) =>
+  async function findOneMatch(value: unknown, arr: unknown[], state: State) {
+    for (const val of arr) {
+      if ((await getProp(val, state)) === value) {
+        return val
+      }
     }
+    return undefined
   }
-  return undefined
+
+interface MatchFn {
+  (value: unknown, arr: unknown[], state: State): Promise<unknown>
 }
 
 // Do the actual lookup. Will retrieve the array from the given state, and then
 // compare to the state value.
 const matchInArray =
-  (
-    getArray: Operation,
-    getProp: DataMapperWithState | AsyncDataMapperWithState,
-    matchSeveral: boolean
-  ) =>
-  (state: State) => {
+  (getArray: Operation, match: MatchFn) => (state: State) => {
     return async (value: unknown) => {
       const fwdState = goForward(state)
       const { value: arr } = await getArray({})(noopNext)(goForward(fwdState))
-      if (!Array.isArray(arr)) {
-        return undefined
-      }
-      return matchSeveral
-        ? findAllMatches(value, arr, fwdState, getProp)
-        : findOneMatch(value, arr, fwdState, getProp)
+      return Array.isArray(arr) ? match(value, arr, fwdState) : undefined
     }
   }
 
@@ -105,8 +95,7 @@ export function lookup({
     const getter = defToDataMapper(propPath, options)
     const matchFn = matchInArray(
       defToOperation(arrayPath, options),
-      getter,
-      matchSeveral
+      matchSeveral ? findAllMatches(getter) : findOneMatch(getter)
     )
     const extractProp = (state: State) => async (value: unknown) =>
       await getter(value, goForward(state))

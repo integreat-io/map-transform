@@ -1,3 +1,13 @@
+const createTransformWithPath = (
+  $transform: string,
+  path: unknown,
+  operator?: string
+) => ({
+  $transform,
+  path,
+  ...(operator && { operator }),
+})
+
 const createValueTransform = ({
   $value,
   ...rest
@@ -9,22 +19,17 @@ const createValueTransform = ({
 
 const createAndTransform = ({ $and, ...rest }: Record<string, unknown>) => ({
   ...rest,
-  $transform: 'logical',
-  path: $and,
-  operator: 'AND',
+  ...createTransformWithPath('logical', $and, 'AND'),
 })
 
 const createOrTransform = ({ $or, ...rest }: Record<string, unknown>) => ({
   ...rest,
-  $transform: 'logical',
-  path: $or,
-  operator: 'OR',
+  ...createTransformWithPath('logical', $or, 'OR'),
 })
 
 const createNotTransform = ({ $not, ...rest }: Record<string, unknown>) => ({
   ...rest,
-  $transform: 'not',
-  path: $not,
+  ...createTransformWithPath('not', $not),
 })
 
 const createMergeTransform = ({
@@ -32,8 +37,7 @@ const createMergeTransform = ({
   ...rest
 }: Record<string, unknown>) => ({
   ...rest,
-  $transform: 'merge',
-  path: $merge,
+  ...createTransformWithPath('merge', $merge),
 })
 
 export default function modifyOperationObject(

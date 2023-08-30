@@ -16,18 +16,22 @@ export interface Props extends TransformerProps {
 
 type SortValue = [unknown, unknown]
 
+const compareNumbers = (a: number, b: number, direction: number) =>
+  (a - b) * direction
+
+const compareStrings = (a: string, b: string, direction: number) =>
+  a === b ? 0 : a > b ? direction : -1 * direction
+
 const compare = (direction: number) =>
   function compare([a]: SortValue, [b]: SortValue) {
     if (typeof a === 'number' && typeof b === 'number') {
-      return (a - b) * direction
+      return compareNumbers(a, b, direction)
     } else if (a instanceof Date && b instanceof Date) {
-      return (a.getTime() - b.getTime()) * direction
+      return compareNumbers(a.getTime(), b.getTime(), direction)
     } else if (a === undefined || a === null || b === undefined || b === null) {
       return a === undefined || a === null ? 1 : -1
     } else {
-      const strA = String(a)
-      const strB = String(b)
-      return strA === strB ? 0 : strA > strB ? 1 * direction : -1 * direction
+      return compareStrings(String(a), String(b), direction)
     }
   }
 

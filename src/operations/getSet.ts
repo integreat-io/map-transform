@@ -24,6 +24,22 @@ function flatMapAny(fn: (value: unknown, target?: unknown) => unknown) {
       : fn(value, target)
 }
 
+function handleArrayPath(path: string): [string | number, boolean, boolean] {
+  if (path.endsWith('][')) {
+    // This is an index notation
+    return [path.slice(0, path.length - 2), false, true /* isIndexProp */]
+  }
+  const pos = path.indexOf('[')
+  if (path[pos - 1] === '\\') {
+    // We have an escaped [, return the path with the backslash removed
+    return [path.replace('\\[', '['), false, false]
+  } else {
+    // This is an array notation if the next char is ]
+    const isArr = path[pos + 1] === ']'
+    return [path.slice(0, pos), isArr, false]
+  }
+}
+
 // Get rid of some special characters in the path and return the clean path and
 // some flags to indicate if we're dealing with an array or index notation
 function preparePath(
@@ -32,19 +48,7 @@ function preparePath(
   if (typeof path === 'string') {
     if (path.includes('[')) {
       // We have an array notation
-      if (path.endsWith('][')) {
-        // This is an index notation
-        return [path.slice(0, path.length - 2), false, true /* isIndexProp */]
-      }
-      const pos = path.indexOf('[')
-      if (path[pos - 1] === '\\') {
-        // We have an escaped [, return the path with the backslash removed
-        return [path.replace('\\[', '['), false, false]
-      } else {
-        // This is an array notation if the next char is ]
-        const isArr = path[pos + 1] === ']'
-        return [path.slice(0, pos), isArr, false]
-      }
+      return handleArrayPath(path)
     } else if (path.startsWith('\\$')) {
       // This is an escaped $, remove the backslash and return the path with $
       return [path.slice(1), false, false]
@@ -210,23 +214,35 @@ function getSet(isSet = false) {
   }
 }
 
+function resolveArrayNotation(path: string, pos: number) {
+  const index = Number.parseInt(path.slice(pos + 1), 10)
+  if (!Number.isNaN(index)) {
+    const basePath = path.slice(0, pos).trim()
+    return basePath ? [`${basePath}][`, index] : [index] // `][` is our crazy notation for an index prop
+  } else {
+    return path.trim()
+  }
+}
+
+function resolveParentNotation(path: string) {
+  if (path.startsWith('^^') && path.length > 2) {
+    return ['^^', path.slice(2).trim()]
+  } else if (path.length > 1 && path !== '^^') {
+    return ['^^', path.slice(1).trim()]
+  } else {
+    return path.trim()
+  }
+}
+
 function splitUpArrayAndParentNotation(path: string) {
   const pos = path.indexOf('[')
   if (pos > -1 && path[pos - 1] !== '\\') {
-    const index = Number.parseInt(path.slice(pos + 1), 10)
-    if (!Number.isNaN(index)) {
-      const basePath = path.slice(0, pos).trim()
-      return basePath ? [`${basePath}][`, index] : [index] // `][` is our crazy notation for an index prop
-    }
-    // Fall through to returning the path as is it's not an index notation
+    return resolveArrayNotation(path, pos)
   } else if (path.startsWith('^')) {
-    if (path.startsWith('^^') && path.length > 2) {
-      return ['^^', path.slice(2).trim()]
-    } else if (path.length > 1 && path !== '^^') {
-      return ['^^', path.slice(1).trim()]
-    }
+    return resolveParentNotation(path)
+  } else {
+    return path.trim()
   }
-  return path.trim()
 }
 
 // Prepare a get or set path, depending on isSet. It's essentially the same,

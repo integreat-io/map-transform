@@ -50,33 +50,36 @@ const compareIn = (value: unknown, match: unknown) =>
 
 const exists = (value: unknown) => value !== undefined
 
+function getGtLtComparer(operator: '>' | '>=' | '<' | '<=') {
+  switch (operator) {
+    case '>':
+      return (value: number, match: number) => value > match
+    case '>=':
+      return (value: number, match: number) => value >= match
+    case '<':
+      return (value: number, match: number) => value < match
+    case '<=':
+      return (value: number, match: number) => value <= match
+  }
+}
+
 function createComparer(operator: string) {
   switch (operator) {
     case '=':
       return compareEqual
     case '!=':
       return not(compareEqual)
-    case '>':
-      return compareArrayOrValueNumeric(
-        (value: number, match: number) => value > match
-      )
-    case '>=':
-      return compareArrayOrValueNumeric(
-        (value: number, match: number) => value >= match
-      )
-    case '<':
-      return compareArrayOrValueNumeric(
-        (value: number, match: number) => value < match
-      )
-    case '<=':
-      return compareArrayOrValueNumeric(
-        (value: number, match: number) => value <= match
-      )
     case 'in':
       return compareIn
     case 'exists':
       return exists
+    case '>':
+    case '>=':
+    case '<':
+    case '<=':
+      return compareArrayOrValueNumeric(getGtLtComparer(operator))
     default:
+      // Any other operator will always return false
       return (_value: unknown, _match: unknown) => false
   }
 }

@@ -1,5 +1,6 @@
-import type { Transformer } from '../types.js'
 import { isObject } from '../utils/is.js'
+import { revFromState } from '../utils/stateHelpers.js'
+import type { Transformer } from '../types.js'
 
 export interface KeyValue {
   key: string | number
@@ -53,14 +54,10 @@ function doExplode(data: unknown): unknown[] | undefined {
   }
 }
 
-const explode: Transformer = function explode() {
-  return () => async (data, state) =>
-    state.rev ? doImplode(data) : doExplode(data)
+function explodeOrImplode(isImplode: boolean): Transformer {
+  return () => () => async (data, state) =>
+    revFromState(state, isImplode) ? doImplode(data) : doExplode(data)
 }
 
-const implode: Transformer = function implode() {
-  return () => async (data, state) =>
-    state.rev ? doExplode(data) : doImplode(data)
-}
-
-export { explode, implode }
+export const explode: Transformer = explodeOrImplode(false)
+export const implode: Transformer = explodeOrImplode(true)

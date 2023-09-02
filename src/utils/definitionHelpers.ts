@@ -61,6 +61,10 @@ export const isOperationType = <T extends OperationObject>(
   prop: string
 ): def is T => (def as object).hasOwnProperty(prop)
 
+const pipeIfArray = (
+  operations: Operation | Operation[] | Pipeline
+): Operation => (Array.isArray(operations) ? pipe(operations) : operations)
+
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isTransformObject = (def: unknown): def is TransformObject =>
   isObject(def) && !isOperationObject(def)
@@ -72,23 +76,35 @@ export const isTransformDefinition = (
 ): def is TransformDefinition =>
   isPath(def) || isObject(def) || isPipeline(def) || isOperation(def)
 
+const wrapInNoDefaults =
+  (fn: Operation): Operation =>
+  (options) =>
+  (next) => {
+    const stateMapper = fn(options)(next)
+    return async (state: State) => {
+      const stateWithNoDefaults = { ...state, noDefaults: true }
+      return stateMapper(stateWithNoDefaults)
+    }
+  }
+
 function wrapFromDefinition(
-  fn: Operation | Operation[],
+  ops: Operation | Operation[],
   def: OperationObject
 ): Operation {
-  const fnIterated = def.$iterate === true ? iterate(fn) : fn
+  const opsWithNoDefaults =
+    def.$noDefaults === true ? wrapInNoDefaults(pipeIfArray(ops)) : ops
+  const fn =
+    def.$iterate === true ? iterate(opsWithNoDefaults) : opsWithNoDefaults
   return (options) => {
     const dir = def.$direction
     if (typeof dir === 'string') {
       if (dir === 'rev' || dir === options.revAlias) {
-        return rev(fnIterated)(options)
+        return rev(fn)(options)
       } else if (dir === 'fwd' || dir === options.fwdAlias) {
-        return fwd(fnIterated)(options)
+        return fwd(fn)(options)
       }
     }
-    return Array.isArray(fnIterated)
-      ? pipe(fnIterated, true)(options)
-      : fnIterated(options)
+    return Array.isArray(fn) ? pipe(fn, true)(options) : fn(options)
   }
 }
 
@@ -241,7 +257,7 @@ export function defToOperation(
   options: Options
 ): Operation {
   const operations = isPipeline(def) ? def : defToOperations(def, options)
-  return Array.isArray(operations) ? pipe(operations) : operations
+  return pipeIfArray(operations)
 }
 
 export function operationToDataMapper(

@@ -232,7 +232,7 @@ test('should not set missing data when $noDefaults is true', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not set missing prop to undefined in array', async (t) => {
+test('should not set prop to undefined in array when $noDefaults is true', async (t) => {
   const def = {
     $iterate: true,
     $noDefaults: true,
@@ -242,6 +242,39 @@ test('should not set missing prop to undefined in array', async (t) => {
   const expected = [undefined, { title: 'From data' }]
 
   const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not force nonvalue to empty array when $noDefaults is true', async (t) => {
+  const def = {
+    $iterate: true,
+    $noDefaults: true,
+    id: 'id',
+    items: 'content[]',
+  }
+  const options = { nonvalues: [undefined, null] }
+  const data = { id: 'ent1', content: null }
+  const expected = { id: 'ent1' }
+
+  const ret = await mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not force nonvalue to empty array when $noDefaults is true - flipped', async (t) => {
+  const def = {
+    $iterate: true,
+    $flip: true,
+    $noDefaults: true,
+    id: 'id',
+    content: 'items[]',
+  }
+  const options = { nonvalues: [undefined, null] }
+  const data = { id: 'ent1', content: null }
+  const expected = { id: 'ent1' }
+
+  const ret = await mapTransform(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -260,6 +293,35 @@ test('should not use default values on rev', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not force nonvalue to empty array when $noDefaults is true in reverse', async (t) => {
+  const def = {
+    $iterate: true,
+    $noDefaults: true,
+    id: 'id',
+    items: 'content[]',
+  }
+  const options = { nonvalues: [undefined, null] }
+  const data = { id: 'ent1', items: null }
+  const expected = { id: 'ent1' }
+
+  const ret = await mapTransform(def, options)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not force nonvalue to empty array when $noDefaults is true and applied from a pipeline', async (t) => {
+  const def = { $apply: 'entry', $noDefaults: true }
+  const pipelines = {
+    entry: { $iterate: true, id: 'id', items: 'content[]' },
+  }
+  const options = { nonvalues: [undefined, null], pipelines }
+  const data = { id: 'ent1', content: null }
+  const expected = { id: 'ent1' }
+
+  const ret = await mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
 test('should not use default values when noDefault is provided on initial state', async (t) => {
   const noDefaults = true
   const def = {

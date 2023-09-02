@@ -683,6 +683,23 @@ test('should treat one path given to $concat as an array of one', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should concat arrays with $concatRev in reverse', async (t) => {
+  const def = [
+    {
+      $concatRev: ['users', 'admins'],
+    },
+    '>org',
+  ]
+  const data = {
+    org: { users: ['johnf', 'maryk'], admins: ['theboss'] },
+  }
+  const expected = ['johnf', 'maryk', 'theboss']
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
 test('should shallow merge object with $merge', async (t) => {
   const def = {
     $merge: ['original', 'modified'],

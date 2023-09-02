@@ -628,6 +628,34 @@ test('should map with lookdown', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with lookdown as transform object', async (t) => {
+  const def = {
+    'content.heading': 'title',
+    'content.authors[]': [
+      'authors',
+      ['>name', { $lookdown: '^^.meta.users[]', path: 'id' }],
+    ],
+  }
+  const data = {
+    content: { heading: 'The heading', authors: ['user1', 'user3'] },
+    meta: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+        { id: 'user3', name: 'User 3' },
+      ],
+    },
+  }
+  const expected = {
+    title: 'The heading',
+    authors: ['User 1', 'User 3'],
+  }
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return map data as is when no mapping', async (t) => {
   const def = ['content']
   const data = {

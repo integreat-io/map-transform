@@ -133,8 +133,17 @@ export interface ConcatOperation extends TransformerProps {
   $concat: TransformDefinition[]
 }
 
+export interface ConcatRevOperation extends TransformerProps {
+  $concatRev: TransformDefinition[]
+}
+
 export interface LookupOperation extends TransformerProps {
   $lookup: Path
+  path: Path
+}
+
+export interface LookdownOperation extends TransformerProps {
+  $lookdown: Path
   path: Path
 }
 
@@ -145,7 +154,9 @@ export type OperationObject =
   | ApplyOperation
   | AltOperation
   | ConcatOperation
+  | ConcatRevOperation
   | LookupOperation
+  | LookdownOperation
 
 export type Pipeline = (
   | TransformObject

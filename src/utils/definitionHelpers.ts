@@ -11,8 +11,8 @@ import ifelse from '../operations/ifelse.js'
 import apply from '../operations/apply.js'
 import alt from '../operations/alt.js'
 import { fwd, rev } from '../operations/directionals.js'
-import { concat } from '../operations/concat.js'
-import { lookup, Props as LookupProps } from '../operations/lookup.js'
+import { concat, concatRev } from '../operations/concat.js'
+import { lookup, lookdown, Props as LookupProps } from '../operations/lookup.js'
 import pipe from '../operations/pipe.js'
 import { unescapeValue } from './escape.js'
 import { ensureArray } from './array.js'
@@ -29,7 +29,9 @@ import type {
   ApplyOperation,
   AltOperation,
   ConcatOperation,
+  ConcatRevOperation,
   LookupOperation,
+  LookdownOperation,
   Options,
   DataMapperWithState,
   DataMapperWithOptions,
@@ -192,19 +194,20 @@ function createApplyOperation(
   return wrapFromDefinition(operationFn(pipelineId), def)
 }
 
-function createPipelineOperation(
+function createConcatOperation(
   operationFn: (...fn: TransformDefinition[]) => Operation,
-  def: ConcatOperation
+  pipeline: TransformDefinition[]
 ) {
-  const pipelines = ensureArray(def.$concat)
+  const pipelines = ensureArray(pipeline)
   return operationFn(...pipelines)
 }
 
 function createLookupOperation(
   operationFn: (props: LookupProps) => Operation,
-  def: LookupOperation
+  def: LookupOperation | LookdownOperation,
+  arrayPath: string
 ) {
-  const { $lookup: arrayPath, path: propPath, ...props } = def
+  const { path: propPath, ...props } = def
   return wrapFromDefinition(operationFn({ ...props, arrayPath, propPath }), def)
 }
 
@@ -226,9 +229,13 @@ function operationFromObject(
     } else if (isOperationType<AltOperation>(def, '$alt')) {
       return createAltOperation(alt, def)
     } else if (isOperationType<ConcatOperation>(def, '$concat')) {
-      return createPipelineOperation(concat, def)
+      return createConcatOperation(concat, def.$concat)
+    } else if (isOperationType<ConcatRevOperation>(def, '$concatRev')) {
+      return createConcatOperation(concatRev, def.$concatRev)
     } else if (isOperationType<LookupOperation>(def, '$lookup')) {
-      return createLookupOperation(lookup, def)
+      return createLookupOperation(lookup, def, def.$lookup)
+    } else if (isOperationType<LookdownOperation>(def, '$lookdown')) {
+      return createLookupOperation(lookdown, def, def.$lookdown)
     } else {
       // Not a known operation
       return () => () => async (value) => value

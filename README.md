@@ -1095,6 +1095,8 @@ details.
 Note that `concatRev` does not have an operation object notation, but `concat`
 will honor the [flipped mode](#flipping-a-transform-object).
 
+`concatRev` is also available as an operation object with `$concatRev`.
+
 #### `merge(pipeline, pipeline, ...)` operation
 
 `merge` will run all given pipelines and deep merge their results. Conflicts are
@@ -1362,6 +1364,8 @@ for more on how it works, just reverse the directions.
 
 Note that `lookdown` does not have an operation object notation, but `lookup`
 will honor the [flipped mode](#flipping-a-transform-object).
+
+`lookdown` is also available as an operation object with `$lookdown`.
 
 #### `lookup({ arrayPath, propPath, matchSeveral })` operation
 

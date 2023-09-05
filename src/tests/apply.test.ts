@@ -439,7 +439,7 @@ test('should throw when applying an unknown pipeline id as Symbol', (t) => {
   t.true(error instanceof Error)
   t.is(
     error?.message,
-    "Failed to apply pipeline 'Symbol(unknown)'. Unknown pipeline"
+    "Failed to apply pipeline 'Symbol(unknown)'. Unknown pipeline",
   )
 })
 
@@ -474,7 +474,7 @@ test('should throw when applying an unknown pipeline in a provided pipeline', (t
   t.true(error instanceof Error)
   t.is(
     error?.message,
-    "Failed to apply pipeline 'unknownInPipeline'. Unknown pipeline"
+    "Failed to apply pipeline 'unknownInPipeline'. Unknown pipeline",
   )
 })
 

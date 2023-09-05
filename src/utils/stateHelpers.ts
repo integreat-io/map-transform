@@ -43,9 +43,9 @@ export function setTargetOnState(state: State, target: unknown): State {
 export const setStateValue = (
   { untouched, ...state }: State, // Clear untouched every time we set a value
   value: unknown,
-  shouldPushContext = false
+  shouldPushContext = false,
 ): State =>
-  shouldPushContext && state.value !== undefined
+  shouldPushContext
     ? {
         ...pushContext(state, state.value),
         value,
@@ -57,17 +57,17 @@ export const getStateValue = (state: State): unknown => state.value
 export const setValueFromState = (
   state: State,
   { value }: State,
-  shouldPushContext = false
+  shouldPushContext = false,
 ): State => setStateValue(state, value, shouldPushContext)
 
 export const isNonvalue = (
   value: unknown,
-  nonvalues: unknown[] = [undefined]
+  nonvalues: unknown[] = [undefined],
 ) => nonvalues.includes(value)
 
 export const isNonvalueState = (
   state: State,
-  nonvalues: unknown[] = [undefined]
+  nonvalues: unknown[] = [undefined],
 ) => isNonvalue(state.value, nonvalues)
 
 export const markAsUntouched = (state: State) => ({ ...state, untouched: true })
@@ -78,7 +78,7 @@ export const isUntouched = ({ untouched }: State) => !!untouched
 
 export const populateState = (
   data: unknown,
-  { rev = false, noDefaults = false, target = undefined }: InitialState
+  { rev = false, noDefaults = false, target = undefined }: InitialState,
 ): State => ({
   context: [],
   value: data,

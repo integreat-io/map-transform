@@ -1143,6 +1143,25 @@ test('should map with parent through several iterations', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should map with parent when parents yielded undefined', async (t) => {
+  const def = {
+    status: ['response.data.invoices', '^.^.status'], // A contrived example, but it tests the parent path
+  }
+  const data = {
+    response: {
+      status: 'ok',
+      data: {},
+    },
+  }
+  const expected = {
+    status: 'ok',
+  }
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should apply modifyGetValue to value from path', async (t) => {
   const modifyGetValue = (value: unknown, _state: State, _options: Options) =>
     isObject(value) && value.$value ? value.$value : value // A simplified implementation

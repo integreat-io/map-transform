@@ -164,7 +164,7 @@ test('should use directional default value - forward', async (t) => {
       alt(
         'content.heading',
         fwd(transform(value('Default heading'))),
-        rev(transform(value('Wrong way')))
+        rev(transform(value('Wrong way'))),
       ),
     ],
   }
@@ -183,7 +183,7 @@ test('should use directional default value - reverse', async (t) => {
       alt(
         'content.heading',
         fwd(transform(value('Wrong way'))),
-        rev(transform(value('Default heading')))
+        rev(transform(value('Default heading'))),
       ),
     ],
   }
@@ -359,6 +359,16 @@ test('should apply default value from an operation object', async (t) => {
   ]
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should stay on the right context level when using $alt after a path that doesn not exist', async (t) => {
+  const def = ['content', { $alt: ['$value', '.'] }]
+  const data = { other: 'Do not include' }
+  const expected = undefined
 
   const ret = await mapTransform(def)(data)
 

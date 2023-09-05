@@ -156,6 +156,23 @@ test('should return correct context from yielding pipeline', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should stay on the right context level when value is undefined', async (t) => {
+  const def1 = get('name')
+  const def2 = get('id')
+  const state = {
+    context: [{ id: 'johnf' }],
+    value: undefined,
+  }
+  const expected = {
+    context: [{ id: 'johnf' }],
+    value: undefined,
+  }
+
+  const ret = await pipe(alt(def1, def2))(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should treat path as a pipeline', async (t) => {
   const def1 = get('name')
   const def2 = 'id'
@@ -232,7 +249,7 @@ test('should support nonvalues from options', async (t) => {
   const expectedValue = 'johnf'
 
   const ret = await pipe(alt(def1, def2))(optionsWithNullAsNoValue)(noopNext)(
-    state
+    state,
   )
 
   t.deepEqual(ret.value, expectedValue)

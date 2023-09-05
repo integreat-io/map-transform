@@ -9,24 +9,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should fetch data from context with pipeline and merge with value', async (t) => {
-  const pipeline = '.'
-  const state = {
-    context: [],
-    target: { status: 'ok', data: [{ id: 'ent1', $type: 'entry' }] },
-    value: { data: { items: [{ id: 'ent1', $type: 'entry' }] } },
-  }
-  const expected = {
-    ...state,
-    value: { status: 'ok', data: [{ id: 'ent1', $type: 'entry' }] },
-  }
-
-  const ret = await modify(pipeline)(options)(noopNext)(state)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should shallow merge objects', async (t) => {
+test('should shallow merge object from pipeline with target', async (t) => {
   const pipeline = 'data.personal'
   const state = {
     context: [],
@@ -95,6 +78,25 @@ test('should not merge when pipeline yields non-object', async (t) => {
   const expected = {
     ...state,
     value: { status: 'ok', data: { value: 32 } },
+  }
+
+  const ret = await modify(pipeline)(options)(noopNext)(state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use value when target is undefined', async (t) => {
+  const pipeline = 'data.personal'
+  const state = {
+    context: [],
+    target: undefined,
+    value: {
+      data: { personal: { id: '1', name: 'John F.' } },
+    },
+  }
+  const expected = {
+    ...state,
+    value: { id: '1', name: 'John F.' },
   }
 
   const ret = await modify(pipeline)(options)(noopNext)(state)

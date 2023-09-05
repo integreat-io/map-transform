@@ -21,7 +21,11 @@ export default function modify(def: TransformDefinition): Operation {
 
       return setStateValue(
         nextState,
-        isObject(target) && isObject(value) ? { ...value, ...target } : target
+        isObject(target) && isObject(value)
+          ? { ...value, ...target }
+          : isObject(value)
+          ? value
+          : target,
       )
     }
   }

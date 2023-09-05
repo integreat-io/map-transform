@@ -468,6 +468,20 @@ test('should skip prop with modify in both directions', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should return object untouched when there is no other prop than $modify', async (t) => {
+  const def = {
+    $modify: true,
+  }
+  const expected = {
+    context: [{ data, params: { source: 'news1' } }, data],
+    value: data[0],
+  }
+
+  const ret = await props(def)(options)(noopNext)(stateWithObject)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should iterate when $iterate is true', async (t) => {
   const def = {
     $iterate: true,

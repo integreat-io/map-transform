@@ -685,6 +685,22 @@ test('should map with root operation', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should modify object even when it has no other props', async (t) => {
+  const def = [
+    {
+      id: 'key',
+      title: 'heading',
+    },
+    { $modify: true },
+  ]
+  const data = { key: 'ent1', heading: 'The heading' }
+  const expected = { id: 'ent1', title: 'The heading' }
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should provide root in $if condition', async (t) => {
   const def = {
     $modify: true,

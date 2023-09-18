@@ -56,6 +56,6 @@
     "@types/deep-freeze": "^0.1.2",
     "@types/sinon": "^10.0.16",
     "deep-freeze": "0.0.1",
-    "sinon": "^15.2.0"
+    "sinon": "^16.0.0"
   }
 }

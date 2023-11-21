@@ -1,8 +1,7 @@
 import mapAny from 'map-any'
-import type { TransformerProps, Path, AsyncTransformer } from '../types.js'
+import { pathGetter } from '../operations/getSet.js'
+import type { TransformerProps, Transformer, Path } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
-import { defToDataMapper } from '../utils/definitionHelpers.js'
-import { goForward } from '../utils/stateHelpers.js'
 
 interface Comparer {
   (value: unknown, match: unknown): boolean
@@ -36,11 +35,11 @@ const isNumeric = (value: unknown): value is number => typeof value === 'number'
 const compareArrayOrValueNumeric = (comparer: NumericComparer) =>
   compareArrayOrValue(
     (value: unknown, match: unknown) =>
-      isNumeric(value) && isNumeric(match) && comparer(value, match)
+      isNumeric(value) && isNumeric(match) && comparer(value, match),
   )
 
 const compareEqual = compareArrayOrValue(
-  (value: unknown, match: unknown) => value === match
+  (value: unknown, match: unknown) => value === match,
 )
 
 const compareIn = (value: unknown, match: unknown) =>
@@ -84,7 +83,7 @@ function createComparer(operator: string) {
   }
 }
 
-const transformer: AsyncTransformer<Props> = function compare({
+const transformer: Transformer<Props> = function compare({
   path = '.',
   operator = '=',
   match,
@@ -96,19 +95,16 @@ const transformer: AsyncTransformer<Props> = function compare({
   match = match === undefined ? value : match // Allow alias
   matchPath = matchPath ?? valuePath // Allow alias
 
-  return (options) => {
-    const getValue = defToDataMapper(path, options)
+  return () => {
+    const getValue = pathGetter(path)
     const realMatchValue = mapAny(unescapeValue, match)
-    const getMatch =
-      typeof matchPath === 'string'
-        ? defToDataMapper(matchPath, options)
-        : async () => realMatchValue
     const comparer = createComparer(operator)
+    const getMatch =
+      typeof matchPath === 'string' ? pathGetter(matchPath) : undefined
 
-    return async (data, state) => {
-      const fwdState = goForward(state)
-      const value = await getValue(data, fwdState)
-      const match = await getMatch(data, fwdState)
+    return (data, state) => {
+      const value = getValue(data, state)
+      const match = getMatch ? getMatch(data, state) : realMatchValue
       const result = comparer(value, match)
       return not ? !result : result
     }

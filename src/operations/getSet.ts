@@ -292,7 +292,7 @@ const getByPart =
  * Get a value from the given value / state using a path.
  */
 export function pathGetter(
-  path?: string,
+  path?: string | null,
 ): (value: unknown, state: State) => unknown {
   if (!path || path === '.') {
     return (value) => value

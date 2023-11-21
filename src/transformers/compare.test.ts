@@ -1,4 +1,5 @@
 import test from 'ava'
+import { get } from '../operations/getSet.js'
 
 import compare from './compare.js'
 
@@ -384,6 +385,19 @@ test('should return true when comparison is false and `not` is set', (t) => {
   const data = { name: 'John F.', meta: { role: 'viewer' } }
 
   const ret = compare({ path, operator: '=', match, not: true })(options)(
+    data,
+    state,
+  )
+
+  t.true(ret)
+})
+
+test('should support pipeline as path', async (t) => {
+  const match = 'admin'
+  const path = [get('meta.role')]
+  const data = { name: 'John F.', meta: { role: 'admin' } }
+
+  const ret = await compare({ path, operator: '=', match })(options)(
     data,
     state,
   )

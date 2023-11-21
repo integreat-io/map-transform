@@ -1,6 +1,15 @@
 import mapAny from 'map-any'
 import { pathGetter } from '../operations/getSet.js'
-import type { TransformerProps, Transformer, Path } from '../types.js'
+import { defToDataMapper } from '../utils/definitionHelpers.js'
+import { goForward } from '../utils/stateHelpers.js'
+import xor from '../utils/xor.js'
+import type {
+  TransformerProps,
+  Transformer,
+  AsyncTransformer,
+  Path,
+  TransformDefinition,
+} from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
 
 interface Comparer {
@@ -12,7 +21,7 @@ interface NumericComparer {
 }
 
 export interface Props extends TransformerProps {
-  path?: Path
+  path?: Path | TransformDefinition
   operator?: string
   match?: unknown
   matchPath?: Path
@@ -83,32 +92,43 @@ function createComparer(operator: string) {
   }
 }
 
-const transformer: Transformer<Props> = function compare({
-  path = '.',
-  operator = '=',
-  match,
-  value,
-  matchPath,
-  valuePath,
-  not = false,
-}) {
-  match = match === undefined ? value : match // Allow alias
-  matchPath = matchPath ?? valuePath // Allow alias
+const transformer: Transformer<Props> | AsyncTransformer<Props> =
+  function compare({
+    path = '.',
+    operator = '=',
+    match,
+    value,
+    matchPath,
+    valuePath,
+    not = false,
+  }) {
+    match = match === undefined ? value : match // Allow alias
+    matchPath = matchPath ?? valuePath // Allow alias
 
-  return () => {
-    const getValue = pathGetter(path)
-    const realMatchValue = mapAny(unescapeValue, match)
-    const comparer = createComparer(operator)
-    const getMatch =
-      typeof matchPath === 'string' ? pathGetter(matchPath) : undefined
+    return (options) => {
+      const realMatchValue = mapAny(unescapeValue, match)
+      const comparer = createComparer(operator)
+      const getMatch =
+        typeof matchPath === 'string'
+          ? pathGetter(matchPath)
+          : () => realMatchValue
 
-    return (data, state) => {
-      const value = getValue(data, state)
-      const match = getMatch ? getMatch(data, state) : realMatchValue
-      const result = comparer(value, match)
-      return not ? !result : result
+      if (typeof path === 'string' || !path) {
+        const getValue = pathGetter(path)
+        return (data, state) => {
+          const value = getValue(data, state)
+          const match = getMatch(data, state)
+          return xor(comparer(value, match), not)
+        }
+      } else {
+        const getValue = defToDataMapper(path, options)
+        return async (data, state) => {
+          const value = await getValue(data, goForward(state))
+          const match = getMatch(data, state)
+          return xor(comparer(value, match), not)
+        }
+      }
     }
   }
-}
 
 export default transformer

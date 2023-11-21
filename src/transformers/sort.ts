@@ -1,13 +1,11 @@
+import { pathGetter } from '../operations/getSet.js'
 import type {
   Path,
   State,
   DataMapperWithState,
-  AsyncDataMapperWithState,
   TransformerProps,
-  AsyncTransformer,
+  Transformer,
 } from '../types.js'
-import { defToDataMapper } from '../utils/definitionHelpers.js'
-import { goForward } from '../utils/stateHelpers.js'
 
 export interface Props extends TransformerProps {
   asc?: boolean
@@ -35,35 +33,27 @@ const compare = (direction: number) =>
     }
   }
 
-function fetchSortValue(
-  getFn: DataMapperWithState | AsyncDataMapperWithState,
-  state: State
-) {
-  return async function fetchSortValue(item: unknown): Promise<SortValue> {
-    const sortBy = await getFn(item, state)
+function fetchSortValue(getFn: DataMapperWithState, state: State) {
+  return function fetchSortValue(item: unknown): SortValue {
+    const sortBy = getFn(item, state)
     return [sortBy, item]
   }
 }
 
-const transformer: AsyncTransformer<Props> = function sort(props) {
-  return (options) => {
-    const direction = props?.asc === false ? -1 : 1
-    const getFn = props?.path
-      ? defToDataMapper(props.path, options)
-      : async (value: unknown) => value
+const transformer: Transformer<Props> = function sort(props) {
+  return () => {
+    const { path, asc } = props || {}
+    const direction = asc === false ? -1 : 1
+    const getFn = path ? pathGetter(path) : (value: unknown) => value
 
-    return async (data, state) => {
+    return (data, state) => {
       if (!Array.isArray(data) || data.length < 2) {
         // We don't need to sort one or no item
         return data
       }
 
-      const fwdState = goForward(state)
-
       // We first fetch value to sort by for each item ...
-      const sortArray: SortValue[] = await Promise.all(
-        data.map<Promise<SortValue>>(fetchSortValue(getFn, fwdState))
-      )
+      const sortArray = data.map(fetchSortValue(getFn, state))
       /// ... and then sort the array and returns the original items
       return sortArray.sort(compare(direction)).map(([_, item]) => item)
     }

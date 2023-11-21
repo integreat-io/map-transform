@@ -1,5 +1,5 @@
-import type { TransformerProps, AsyncTransformer } from '../types.js'
-import { defToDataMapper } from '../utils/definitionHelpers.js'
+import { pathGetter } from '../operations/getSet.js'
+import type { TransformerProps, Transformer } from '../types.js'
 
 export interface Props extends TransformerProps {
   path?: string
@@ -8,11 +8,11 @@ export interface Props extends TransformerProps {
 const extractPath = (path: Props | string) =>
   typeof path === 'string' ? path : path.path
 
-const transformer: AsyncTransformer<Props | string> = function get(props) {
-  return (options) => {
+const transformer: Transformer<Props | string> = function get(props) {
+  return () => {
     const path = extractPath(props) || '.'
-    const mapper = defToDataMapper(path, options)
-    return async (data, state) => await mapper(data, state)
+    const mapper = pathGetter(path)
+    return (data, state) => mapper(data, state)
   }
 }
 

@@ -1,5 +1,5 @@
 import mapAny from 'map-any/async.js'
-import { getProperty } from 'dot-prop'
+import { pathGetter } from '../operations/getSet.js'
 import type { Operation, State, Path, TransformerProps } from '../types.js'
 import {
   getStateValue,
@@ -18,11 +18,11 @@ export interface Props extends TransformerProps {
 }
 
 interface GetPropFn {
-  (val: unknown): unknown
+  (val: unknown, state: State): unknown
 }
 
 interface MatchFn {
-  (value: unknown, arr: unknown[], getProp: GetPropFn): unknown
+  (value: unknown, state: State, arr: unknown[], getProp: GetPropFn): unknown
 }
 
 const FLATTEN_DEPTH = 1
@@ -33,13 +33,13 @@ const flattenIfArray = (data: unknown) =>
 // Find all matches in array. To support async, we first map over the
 // array and get the value to compare against, then filter against these
 // values.
-const findAllMatches = (value: unknown, arr: unknown[], getProp: GetPropFn) =>
-  arr.filter((val) => getProp(val) === value)
+const findAllMatches: MatchFn = (value, state, arr, getProp) =>
+  arr.filter((val) => getProp(val, state) === value)
 
 // Find first match in array. We use a for loop here, as we have to do it
 // asyncronously.
-const findOneMatch = (value: unknown, arr: unknown[], getProp: GetPropFn) =>
-  arr.find((val) => getProp(val) === value)
+const findOneMatch: MatchFn = (value, state, arr, getProp) =>
+  arr.find((val) => getProp(val, state) === value)
 
 // Do the actual lookup. Will retrieve the array from the given state, and then
 // compare to the state value.
@@ -49,12 +49,9 @@ const matchInArray =
     const getFn = getArray({})(noopNext)
     return async (value: unknown) => {
       const { value: arr } = await getFn(goForward(state))
-      return Array.isArray(arr) ? match(value, arr, getProp) : undefined
+      return Array.isArray(arr) ? match(value, state, arr, getProp) : undefined
     }
   }
-
-const createGetter = (propPath: Path) => (obj: unknown) =>
-  getProperty(obj, propPath)
 
 /**
  * Will use the value in the pipeline to lookup objects found in the `arrayPath`
@@ -78,13 +75,14 @@ export function lookup({
   flip = false,
 }: Props): Operation {
   return (options) => {
-    const getter = createGetter(propPath)
+    const getter = pathGetter(propPath)
     const matchFn = matchInArray(
       defToOperation(arrayPath, options),
       matchSeveral ? findAllMatches : findOneMatch,
       getter,
     )
-    const extractProp = () => async (value: unknown) => getter(value)
+    const extractProp = (state: State) => async (value: unknown) =>
+      getter(value, state)
 
     return (next) =>
       async function doLookup(state) {

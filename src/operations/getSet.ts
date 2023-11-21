@@ -44,7 +44,7 @@ function handleArrayPath(path: string): [string | number, boolean, boolean] {
 // Get rid of some special characters in the path and return the clean path and
 // some flags to indicate if we're dealing with an array or index notation
 function preparePath(
-  path: string | number
+  path: string | number,
 ): [string | number, boolean, boolean] {
   if (typeof path === 'string') {
     if (path.includes('[')) {
@@ -67,7 +67,7 @@ function getSetProp(path: string) {
   }
 
   const getFn = flatMapAny((value) =>
-    isObject(value) ? value[path] : undefined
+    isObject(value) ? value[path] : undefined,
   )
   const setFn = (value: unknown, target?: unknown) =>
     isObject(target) ? { ...target, [path]: value } : { [path]: value }
@@ -168,8 +168,8 @@ function getSet(isSet = false) {
           const nextState = await next(
             setTargetOnState(
               { ...state, iterate: state.iterate || isArr },
-              nextTarget
-            )
+              nextTarget,
+            ),
           )
 
           // Now it's our turn. Set the state value - and iterate if necessary
@@ -208,7 +208,7 @@ function getSet(isSet = false) {
           return setStateValue(
             nextState,
             value,
-            true // Push to context
+            true, // Push to context
           )
         }
       }
@@ -273,6 +273,48 @@ function pathToNextOperations(path: Path, isSet = false): Operation[] {
   }
 
   return operations
+}
+
+const getByPart =
+  (part: string | number, isArr: boolean) => (value: unknown) => {
+    if (typeof part === 'string') {
+      if (isObject(value)) {
+        const nextvalue = value[part]
+        return isArr ? ensureArray(nextvalue) : nextvalue
+      }
+    } else if (typeof part === 'number' && Array.isArray(value)) {
+      return value[calculateIndex(part, value)]
+    }
+    return isArr ? [] : undefined
+  }
+
+/**
+ * Get a value from the given value / state using a path.
+ */
+export function pathGetter(
+  path?: string,
+): (value: unknown, state: State) => unknown {
+  if (!path || path === '.') {
+    return (value) => value
+  }
+
+  const parts = path.split('.').flatMap(splitUpArrayAndParentNotation)
+
+  return function getFromPath(value, startState) {
+    let data = value
+    let state = startState
+    for (const rawPart of parts) {
+      const [part, isArr] = preparePath(rawPart)
+      if (typeof part === 'string' && part[0] === '^') {
+        state = part[1] === '^' ? getRoot(state) : getParent(state)
+        data = state.value
+      } else {
+        const getFn = getByPart(part, isArr)
+        data = typeof part === 'number' ? getFn(data) : flatMapAny(getFn)(data)
+      }
+    }
+    return data
+  }
 }
 
 /**

@@ -1,19 +1,13 @@
 import mapAny from 'map-any/async.js'
-import type {
-  Operation,
-  State,
-  Path,
-  DataMapperWithState,
-  AsyncDataMapperWithState,
-  TransformerProps,
-} from '../types.js'
+import { getProperty } from 'dot-prop'
+import type { Operation, State, Path, TransformerProps } from '../types.js'
 import {
   getStateValue,
   setStateValue,
   goForward,
   revFromState,
 } from '../utils/stateHelpers.js'
-import { defToDataMapper, defToOperation } from '../utils/definitionHelpers.js'
+import { defToOperation } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 
 export interface Props extends TransformerProps {
@@ -21,6 +15,14 @@ export interface Props extends TransformerProps {
   propPath: Path
   matchSeveral?: boolean
   flip?: boolean
+}
+
+interface GetPropFn {
+  (val: unknown): unknown
+}
+
+interface MatchFn {
+  (value: unknown, arr: unknown[], getProp: GetPropFn): unknown
 }
 
 const FLATTEN_DEPTH = 1
@@ -31,44 +33,28 @@ const flattenIfArray = (data: unknown) =>
 // Find all matches in array. To support async, we first map over the
 // array and get the value to compare against, then filter against these
 // values.
-const findAllMatches = (
-  getProp: DataMapperWithState | AsyncDataMapperWithState
-) =>
-  async function findAllMatches(value: unknown, arr: unknown[], state: State) {
-    const results = await Promise.all(
-      arr.map(async (val) => await getProp(val, state))
-    )
-    return arr.filter((_v, index) => results[index] === value) // eslint-disable-line security/detect-object-injection
-  }
+const findAllMatches = (value: unknown, arr: unknown[], getProp: GetPropFn) =>
+  arr.filter((val) => getProp(val) === value)
 
 // Find first match in array. We use a for loop here, as we have to do it
 // asyncronously.
-const findOneMatch = (
-  getProp: DataMapperWithState | AsyncDataMapperWithState
-) =>
-  async function findOneMatch(value: unknown, arr: unknown[], state: State) {
-    for (const val of arr) {
-      if ((await getProp(val, state)) === value) {
-        return val
-      }
-    }
-    return undefined
-  }
-
-interface MatchFn {
-  (value: unknown, arr: unknown[], state: State): Promise<unknown>
-}
+const findOneMatch = (value: unknown, arr: unknown[], getProp: GetPropFn) =>
+  arr.find((val) => getProp(val) === value)
 
 // Do the actual lookup. Will retrieve the array from the given state, and then
 // compare to the state value.
 const matchInArray =
-  (getArray: Operation, match: MatchFn) => (state: State) => {
+  (getArray: Operation, match: MatchFn, getProp: GetPropFn) =>
+  (state: State) => {
+    const getFn = getArray({})(noopNext)
     return async (value: unknown) => {
-      const fwdState = goForward(state)
-      const { value: arr } = await getArray({})(noopNext)(goForward(fwdState))
-      return Array.isArray(arr) ? match(value, arr, fwdState) : undefined
+      const { value: arr } = await getFn(goForward(state))
+      return Array.isArray(arr) ? match(value, arr, getProp) : undefined
     }
   }
+
+const createGetter = (propPath: Path) => (obj: unknown) =>
+  getProperty(obj, propPath)
 
 /**
  * Will use the value in the pipeline to lookup objects found in the `arrayPath`
@@ -92,13 +78,13 @@ export function lookup({
   flip = false,
 }: Props): Operation {
   return (options) => {
-    const getter = defToDataMapper(propPath, options)
+    const getter = createGetter(propPath)
     const matchFn = matchInArray(
       defToOperation(arrayPath, options),
-      matchSeveral ? findAllMatches(getter) : findOneMatch(getter)
+      matchSeveral ? findAllMatches : findOneMatch,
+      getter,
     )
-    const extractProp = (state: State) => async (value: unknown) =>
-      await getter(value, goForward(state))
+    const extractProp = () => async (value: unknown) => getter(value)
 
     return (next) =>
       async function doLookup(state) {

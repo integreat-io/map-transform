@@ -1,12 +1,30 @@
-import test from 'ava'
+import ava, { TestFn } from 'ava'
 import { noopNext } from '../utils/stateHelpers.js'
 
 import { lookup, lookdown } from './lookup.js'
 
 // Setup
 
+interface AvaContext {
+  start: number
+}
+
+const test = ava as TestFn<AvaContext>
+
 const props = { arrayPath: '^^related.users[]', propPath: 'id' }
 const options = {}
+
+test.before((t) => {
+  const start = Date.now()
+  t.context.start = start
+})
+
+test.after((t) => {
+  const end = Date.now()
+  const start = t.context.start
+  const duration = end - start
+  console.log(`### lookup.test.ts took ${duration} ms`) // 4-5 ms
+})
 
 // Tests -- forward
 

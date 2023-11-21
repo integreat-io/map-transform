@@ -60,11 +60,11 @@ const isOperationObject = (def: unknown): def is OperationObject =>
 
 export const isOperationType = <T extends OperationObject>(
   def: TransformObject | OperationObject,
-  prop: string
+  prop: string,
 ): def is T => (def as object).hasOwnProperty(prop)
 
 const pipeIfArray = (
-  operations: Operation | Operation[] | Pipeline
+  operations: Operation | Operation[] | Pipeline,
 ): Operation => (Array.isArray(operations) ? pipe(operations) : operations)
 
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
@@ -74,7 +74,7 @@ export const isPipeline = (def: unknown): def is Pipeline => Array.isArray(def)
 export const isOperation = (def: unknown): def is Operation =>
   typeof def === 'function'
 export const isTransformDefinition = (
-  def: unknown
+  def: unknown,
 ): def is TransformDefinition =>
   isPath(def) || isObject(def) || isPipeline(def) || isOperation(def)
 
@@ -91,7 +91,7 @@ const wrapInNoDefaults =
 
 function wrapFromDefinition(
   ops: Operation | Operation[],
-  def: OperationObject
+  def: OperationObject,
 ): Operation {
   const opsWithNoDefaults =
     def.$noDefaults === true ? wrapInNoDefaults(pipeIfArray(ops)) : ops
@@ -116,18 +116,18 @@ const humanizeOperatorName = (operatorProp: string) =>
 const createOperation =
   <U extends OperationObject>(
     operationFn: (
-      fn: DataMapperWithOptions | AsyncDataMapperWithOptions
+      fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
     ) => Operation,
     fnProp: string,
-    def: U
+    def: U,
   ): Operation =>
   (options) => {
     const { [fnProp]: fnId, ...props } = def
     if (typeof fnId !== 'string' && typeof fnId !== 'symbol') {
       throw new Error(
         `${humanizeOperatorName(
-          fnProp
-        )} operator was given no transformer id or an invalid transformer id`
+          fnProp,
+        )} operator was given no transformer id or an invalid transformer id`,
       )
     }
 
@@ -136,8 +136,8 @@ const createOperation =
     if (typeof fn !== 'function') {
       throw new Error(
         `${humanizeOperatorName(
-          fnProp
-        )} operator was given the unknown transformer id '${String(fnId)}'`
+          fnProp,
+        )} operator was given the unknown transformer id '${String(fnId)}'`,
       )
     }
 
@@ -160,14 +160,14 @@ const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
 const createAltOperation =
   (
     operationFn: (...defs: TransformDefinition[]) => Operation[],
-    def: AltOperation
+    def: AltOperation,
   ): Operation | Operation[] =>
   (options) => {
     const { $alt: defs, $undefined: nonvalues } = def
     return Array.isArray(defs)
       ? wrapFromDefinition(
           operationFn(...defs),
-          def
+          def,
         )(setNoneValuesOnOptions(options, nonvalues))
       : passStateThroughNext
   }
@@ -182,13 +182,13 @@ const createIfOperation =
     } = def
     return wrapFromDefinition(
       ifelse(conditionPipeline, thenPipeline, elsePipeline),
-      def
+      def,
     )(options)
   }
 
 function createApplyOperation(
   operationFn: (pipelineId: string | symbol) => Operation,
-  def: ApplyOperation
+  def: ApplyOperation,
 ) {
   const pipelineId = def.$apply
   return wrapFromDefinition(operationFn(pipelineId), def)
@@ -196,7 +196,7 @@ function createApplyOperation(
 
 function createConcatOperation(
   operationFn: (...fn: TransformDefinition[]) => Operation,
-  pipeline: TransformDefinition[]
+  pipeline: TransformDefinition[],
 ) {
   const pipelines = ensureArray(pipeline)
   return operationFn(...pipelines)
@@ -205,7 +205,7 @@ function createConcatOperation(
 function createLookupOperation(
   operationFn: (props: LookupProps) => Operation,
   def: LookupOperation | LookdownOperation,
-  arrayPath: string
+  arrayPath: string,
 ) {
   const { path: propPath, ...props } = def
   return wrapFromDefinition(operationFn({ ...props, arrayPath, propPath }), def)
@@ -213,7 +213,7 @@ function createLookupOperation(
 
 function operationFromObject(
   defRaw: OperationObject | TransformObject,
-  options: Options
+  options: Options,
 ): Operation | Operation[] {
   const def = modifyOperationObject(defRaw, options.modifyOperationObject)
 
@@ -247,7 +247,7 @@ function operationFromObject(
 
 export const defToOperations = (
   def: TransformDefinition | undefined,
-  options: Options
+  options: Options,
 ): Operation[] | Operation =>
   isPipeline(def)
     ? def.flatMap((def) => defToOperations(def, options))
@@ -261,7 +261,7 @@ export const defToOperations = (
 
 export function defToOperation(
   def: TransformDefinition | undefined,
-  options: Options
+  options: Options,
 ): Operation {
   const operations = isPipeline(def) ? def : defToOperations(def, options)
   return pipeIfArray(operations)
@@ -269,7 +269,7 @@ export function defToOperation(
 
 export function operationToDataMapper(
   operation: Operation,
-  options: Options
+  options: Options,
 ): DataMapperWithState | AsyncDataMapperWithState {
   const fn = operation(options)(noopNext)
   return async (value, state) =>
@@ -278,7 +278,7 @@ export function operationToDataMapper(
 
 export function defToDataMapper(
   def?: TransformDefinition,
-  options: Options = {}
+  options: Options = {},
 ): DataMapperWithState | AsyncDataMapperWithState {
   return operationToDataMapper(defToOperation(def, options), options)
 }

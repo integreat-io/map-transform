@@ -54,10 +54,10 @@
     "map-any": "^1.0.0"
   },
   "devDependencies": {
-    "@integreat/ts-dev-setup": "^5.0.0",
-    "@types/deep-freeze": "^0.1.2",
-    "@types/sinon": "^10.0.16",
+    "@integreat/ts-dev-setup": "^5.0.3",
+    "@types/deep-freeze": "^0.1.5",
+    "@types/sinon": "^17.0.2",
     "deep-freeze": "0.0.1",
-    "sinon": "^16.0.0"
+    "sinon": "^17.0.1"
   }
 }

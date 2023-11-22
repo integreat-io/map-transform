@@ -15,33 +15,40 @@ import { defToOperation } from '../utils/definitionHelpers.js'
 import { indexOfIfArray } from '../utils/array.js'
 import { noopNext } from '../utils/stateHelpers.js'
 
+const runIterationStep = async (
+  fn: StateMapper,
+  state: State,
+  value: unknown,
+  index: number,
+  target: unknown,
+) =>
+  getStateValue(
+    await fn(
+      setTargetOnState(
+        { ...state, index, value },
+        indexOfIfArray(target, index),
+      ),
+    ),
+  )
+
 export const iterateState =
   (fn: StateMapper) => async (state: State, target: unknown) => {
-    const value = getStateValue(state)
-    if (Array.isArray(value)) {
-      const nextState = pushContext(state, value)
-      return Promise.all(
-        value.map(async (item, index) =>
-          getStateValue(
-            await fn(
-              setTargetOnState(
-                { ...nextState, index, value: item },
-                indexOfIfArray(target, index)
-              )
-            )
-          )
-        )
-      )
-    } else {
-      return getStateValue(
-        await fn(
-          setTargetOnState(
-            { ...state, index: 0, value },
-            indexOfIfArray(target, 0)
-          )
-        )
+    const values = getStateValue(state)
+
+    if (!Array.isArray(values)) {
+      // This is not an array, so we just run the mapper function on the value
+      return await runIterationStep(fn, state, values, 0, target)
+    }
+
+    const nextState = pushContext(state, values)
+    const nextValue: unknown[] = []
+    for (const [index, value] of values.entries()) {
+      // Iterate through the values and run the mapper function on each value
+      nextValue.push(
+        await runIterationStep(fn, nextState, value, index, target),
       )
     }
+    return nextValue
   }
 
 export default function iterate(def: TransformDefinition): Operation {
@@ -58,7 +65,7 @@ export default function iterate(def: TransformDefinition): Operation {
 
         return setStateValue(
           nextState,
-          await runIteration(nextState, getTargetFromState(nextState))
+          await runIteration(nextState, getTargetFromState(nextState)),
         )
       }
     }

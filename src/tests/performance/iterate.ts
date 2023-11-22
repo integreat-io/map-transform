@@ -10,19 +10,13 @@ interface Item {
 
 // Tests
 
-test('should filter with compare', async (t) => {
+test('should do a lookup', async (t) => {
   const def = [
     'items',
     {
       $iterate: true,
       $modify: true,
-      customerName: [
-        // It would have been better to use a lookup here, but this works for performance testing
-        { customers: '^^.customers', customerId: 'customerId' },
-        'customers',
-        { $filter: 'compare', path: 'id', matchPath: '^.customerId' },
-        '[0].name',
-      ],
+      customerName: '^^.customers[0].name', // Setting the first customer's name on all items
     },
   ]
   const data = items
@@ -34,7 +28,7 @@ test('should filter with compare', async (t) => {
   const end = Date.now()
   t.is(ret.length, 10000)
   t.is(ret[0].customerId, '2')
-  t.is(ret[0].customerName, 'Customer 2')
+  t.is(ret[0].customerName, 'Customer 1')
 
-  console.log(`### Compare with match path took ${end - start} ms`)
+  console.log(`### Iterate took ${end - start} ms`)
 })

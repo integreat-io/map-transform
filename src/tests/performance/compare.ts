@@ -32,9 +32,9 @@ test('should filter with compare', async (t) => {
   const ret = (await fn(data)) as Item[]
 
   const end = Date.now()
-  t.is(ret.length, 5000)
+  t.is(ret.length, 10000)
   t.is(ret[0].customerId, '2')
   t.is(ret[0].customerName, 'Customer 2')
 
-  console.log(`### Lookup took ${end - start} ms`)
+  console.log(`### Compare took ${end - start} ms`)
 })

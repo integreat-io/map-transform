@@ -16,7 +16,7 @@ export interface Props extends TransformerProps {
 // Sort entries with value === undefined before other entries, to make sure that values are not overwritten by `undefined`
 const undefinedFirst = (
   [_a, a]: [string, unknown],
-  [_b, b]: [string, unknown]
+  [_b, b]: [string, unknown],
 ) => (b === undefined && a !== undefined ? 1 : a === undefined ? -1 : 0)
 
 // Merge objects, either from an array of paths that points to objects (or
@@ -25,21 +25,24 @@ const undefinedFirst = (
 // skipped.
 function mergeTransformer(
   { path }: Props,
-  flip: boolean
+  flip: boolean,
 ): AsyncDataMapperWithOptions {
   return (options) => {
     const getFns = ensureArray(path).map((path) =>
-      defToDataMapper(path, options)
+      defToDataMapper(path, options),
     )
 
     return async function mergePipelines(data, state) {
-      const values = (
-        await Promise.all(getFns.map((fn) => fn(data, flipState(state, flip))))
-      )
-        .flat()
-        .filter(isObject)
+      const values = []
+      for (const fn of getFns) {
+        values.push(await fn(data, flipState(state, flip)))
+      }
       return Object.fromEntries(
-        values.flatMap(Object.entries).sort(undefinedFirst)
+        values
+          .flat()
+          .filter(isObject)
+          .flatMap(Object.entries)
+          .sort(undefinedFirst),
       )
     }
   }
@@ -60,7 +63,7 @@ export const merge: AsyncTransformer<Props> = function merge(props: Props) {
  * the given pipelines.
  */
 export const mergeRev: AsyncTransformer<Props> = function mergeRev(
-  props: Props
+  props: Props,
 ) {
   return mergeTransformer(props, true)
 }

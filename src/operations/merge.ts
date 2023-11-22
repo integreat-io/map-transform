@@ -10,7 +10,7 @@ import { isObject } from '../utils/is.js'
 
 export function mergeExisting<T, U>(
   target: T[],
-  source: U[]
+  source: U[],
 ): U | (U | T | (U & T))[] {
   if (Array.isArray(target)) {
     const arr = source.slice()
@@ -44,7 +44,7 @@ export default function merge(...defs: TransformDefinition[]): Operation {
       return async (state) => setStateValue(await next(state), undefined)
     }
     const pipelines = defs.map((def) =>
-      defToOperation(def, options)(options)(next)
+      defToOperation(def, options)(options)(next),
     )
 
     return async function (state) {
@@ -52,9 +52,10 @@ export default function merge(...defs: TransformDefinition[]): Operation {
       if (isNonvalueState(nextState, options.nonvalues)) {
         return setStateValue(nextState, undefined)
       } else {
-        const states = await Promise.all(
-          pipelines.map((pipeline) => pipeline(nextState))
-        )
+        const states = []
+        for (const pipeline of pipelines) {
+          states.push(await pipeline(nextState))
+        }
         return states.reduce(mergeStates)
       }
     }

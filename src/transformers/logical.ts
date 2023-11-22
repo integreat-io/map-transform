@@ -15,6 +15,7 @@ const getLogicalFn = (operator: Operator) =>
     ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)
     : (a: unknown, b: unknown) => Boolean(a) && Boolean(b)
 
+// TODO: Should handle pipelines, not just paths
 const transformer: AsyncTransformer<Props> = function logical({
   path = '.',
   operator = 'AND',
@@ -35,7 +36,10 @@ const transformer: AsyncTransformer<Props> = function logical({
         }
         return obj
       } else {
-        const values = await Promise.all(getFns.map((fn) => fn(data, state)))
+        const values = []
+        for (const getFn of getFns) {
+          values.push(await getFn(data, state))
+        }
         return values.reduce(logicalOp)
       }
     }

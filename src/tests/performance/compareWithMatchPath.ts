@@ -10,7 +10,7 @@ interface Item {
 
 // Tests
 
-test('should filter with compare', async (t) => {
+test('should filter with compare with match path', async (t) => {
   const def = [
     'items',
     {

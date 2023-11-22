@@ -3,20 +3,21 @@ import mapTransform from '../../index.js'
 import items from '../data/items.js'
 
 interface Item {
-  id: string
-  customerId: string
-  customerName?: string
+  key: string
+  name: string
+  customer: string
 }
 
 // Tests
 
-test('should iterate over items', async (t) => {
+test('should transform with transform object', async (t) => {
   const def = [
     'items',
     {
       $iterate: true,
-      $modify: true,
-      customerName: '^^.customers[0].name', // Setting the first customer's name on all items
+      key: 'id',
+      name: 'title',
+      customer: 'customerId',
     },
   ]
   const data = items
@@ -27,8 +28,9 @@ test('should iterate over items', async (t) => {
 
   const end = Date.now()
   t.is(ret.length, 10000)
-  t.is(ret[0].customerId, '2')
-  t.is(ret[0].customerName, 'Customer 1')
+  t.is(ret[0].key, '1')
+  t.is(ret[0].name, 'Item 1')
+  t.is(ret[0].customer, '2')
 
-  console.log(`### Iterate took ${end - start} ms`)
+  console.log(`### Props took ${end - start} ms`) // 77 ms
 })

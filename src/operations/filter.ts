@@ -11,16 +11,21 @@ import { getStateValue, setStateValue } from '../utils/stateHelpers.js'
 // Filters an array with the provided filter function, or returns the single
 // value if it passes the filter.
 async function filterValue(
-  value: unknown,
+  values: unknown,
   filterFn: DataMapperWithState | AsyncDataMapperWithState,
-  state: State
+  state: State,
 ) {
-  if (Array.isArray(value)) {
-    const results = await Promise.all(value.map((val) => filterFn(val, state)))
-    return value.filter((_v, index) => results[index]) // eslint-disable-line security/detect-object-injection
+  if (Array.isArray(values)) {
+    const results = []
+    for (const value of values) {
+      if (await filterFn(value, state)) {
+        results.push(value)
+      }
+    }
+    return results
   } else {
-    const result = await filterFn(value, state)
-    return result ? value : undefined
+    const result = await filterFn(values, state)
+    return result ? values : undefined
   }
 }
 
@@ -29,7 +34,7 @@ async function filterValue(
  * single values with that filter function.
  */
 export default function filter(
-  fn: DataMapperWithOptions | AsyncDataMapperWithOptions
+  fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
 ): Operation {
   return (options) => (next) => {
     if (typeof fn !== 'function') {
@@ -41,7 +46,7 @@ export default function filter(
       const nextState = await next(state)
       return setStateValue(
         nextState,
-        await filterValue(getStateValue(nextState), fnWithOptions, nextState)
+        await filterValue(getStateValue(nextState), fnWithOptions, nextState),
       )
     }
   }

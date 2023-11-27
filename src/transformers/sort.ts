@@ -43,6 +43,12 @@ function fetchSortValue(getFn: DataMapperWithState, state: State) {
 const transformer: Transformer<Props> = function sort(props) {
   return () => {
     const { path, asc } = props || {}
+    if (typeof path !== 'string' && path !== undefined) {
+      throw new TypeError(
+        "The 'sort' transformer does not allow `path` to be a pipeline",
+      )
+    }
+
     const direction = asc === false ? -1 : 1
     const getFn = path ? pathGetter(path) : (value: unknown) => value
 

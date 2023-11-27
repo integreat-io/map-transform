@@ -96,3 +96,16 @@ test('should support root in path', (t) => {
 
   t.is(ret, expected)
 })
+
+test('should throw when path is a pipeline', (t) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const path = ['meta.user', { $transform: 'string' }] as any
+
+  const error = t.throws(() => get({ path })(options)(data, state))
+
+  t.true(error instanceof TypeError)
+  t.is(
+    error?.message,
+    "The 'get' transformer does not allow `path` to be a pipeline",
+  )
+})

@@ -1371,6 +1371,7 @@ will honor the [flipped mode](#flipping-a-transform-object).
 
 `lookup` will take the value in the pipeline and replace it with the first
 object in the `arrayPath` array that has a value in `propPath` matching it.
+`arrayPath` may be a pipeline, but `propPath` can only be a dot notation path.
 
 When `matchSeveral` is `true`, all matches – not only the first – will be
 returned. Default is `false`.
@@ -1736,7 +1737,9 @@ const def21b = [
 The `sort` transformer will sort the array at the given `path`, in the direction
 given by `asc`. The default direction is ascending (`asc` is `true` by default).
 
-When no `path` is given, the sort is performed on the array in pipeline.
+When no `path` is given, the sort is performed on the array in pipeline. Note
+that `path` needs to be a dot notation path when specified, it cannot be a full
+pipeline.
 
 Example:
 

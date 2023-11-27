@@ -194,6 +194,35 @@ test('should get lookup prop when flipped', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should throw when prop path is a pipeline', async (t) => {
+  const props = {
+    arrayPath: '^^related.users[]',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    propPath: ['id', { $transform: 'string' }] as any,
+  }
+  const data = {
+    content: { author: 'user2' },
+    related: {
+      users: [
+        { id: 'user1', name: 'User 1' },
+        { id: 'user2', name: 'User 2' },
+      ],
+    },
+  }
+  const state = {
+    context: [data],
+    value: 'user2',
+  }
+
+  const error = t.throws(() => lookup(props)(options)(noopNext)(state))
+
+  t.true(error instanceof TypeError)
+  t.is(
+    error?.message,
+    "The 'lookup' operation does not allow `path` (the prop path) to be a pipeline",
+  )
+})
+
 // Tests -- reverse
 
 test('should get lookup prop in reverse', async (t) => {

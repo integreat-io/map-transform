@@ -75,6 +75,12 @@ export function lookup({
   flip = false,
 }: Props): Operation {
   return (options) => {
+    if (typeof propPath !== 'string' && propPath !== undefined) {
+      throw new TypeError(
+        "The 'lookup' operation does not allow `path` (the prop path) to be a pipeline",
+      )
+    }
+
     const getter = pathGetter(propPath)
     const matchFn = matchInArray(
       defToOperation(arrayPath, options),

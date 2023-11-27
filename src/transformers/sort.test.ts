@@ -153,3 +153,17 @@ test('should sort with path in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should throw when path is a pipeline', (t) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const path = ['value', { $transform: 'string' }] as any
+  const data = [{ value: 5 }, { value: 3 }, { value: 15 }]
+
+  const error = t.throws(() => sort({ asc: true, path })(options)(data, state))
+
+  t.true(error instanceof TypeError)
+  t.is(
+    error?.message,
+    "The 'sort' transformer does not allow `path` to be a pipeline",
+  )
+})

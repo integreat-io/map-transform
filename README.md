@@ -1425,6 +1425,96 @@ The following transformers may be applied to the value in a pipeline with the
 with the [`filter` operation](#filterconditionFn-operation) to filter away
 values in the pipeline.
 
+#### `bucket({ path, buckets })` transformer
+
+The `bucket` transformer will split an array out in buckets based on filter
+pipelines, i.e. pipelines that will return truthy for the items that belong in
+a certain bucket.
+
+The buckets are defined in an array on the `buckets` property, with one object
+per bucket. The object has a `key` property that will be the key of the bucket
+on the target object. It also has a `pipelines` array, which is a pipeline that
+will return truthy for the items that belong in the bucket.
+
+You may also specify a `path` to the array that will be sorted into buckets.
+
+Each item is tested against the bucket pipelines in the order the buckets are
+defined, and will be placed in the first bucket that matches. You may have
+a bucket without a pipeline, which will serve as a catch-all bucket, and should
+therefore be placed last.
+
+When a bucket is run in reverse, the items in the buckets will be merged into
+one array. The order of the items will be the same as the order of the buckets
+and not the order of the items in the original array.
+
+```javascript
+const def40 = bucket({
+  path: 'users[]',
+  buckets: [
+    {
+      key: 'admin',
+      pipeline: { $transform: 'compare', path: 'role', match: 'admin' },
+    },
+    {
+      key: 'editor',
+      pipeline: { $transform: 'compare', path: 'role', match: 'editor' },
+    },
+    {
+      key: 'users',
+    },
+  ],
+})
+
+const data = {
+  users: [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user2', name: 'User 3' },
+    { id: 'user3', name: 'User 4', role: 'admin' },
+    { id: 'user3', name: 'User 5' },
+    { id: 'user3', name: 'User 6', role: 'editor' },
+  ],
+}
+const mapper = mapTransform(def40)
+const mappedData = await mapper(data)
+// --> {
+//   admin: [
+//     { id: 'user3', name: 'User 4', role: 'admin' },
+//   ],
+//   editor: [
+//     { id: 'user1', name: 'User 1', role: 'editor' },
+//     { id: 'user3', name: 'User 6', role: 'editor' },
+//   ],
+//   users: [
+//     { id: 'user2', name: 'User 2', role: undefined },
+//     { id: 'user2', name: 'User 3' },
+//     { id: 'user3', name: 'User 5' },
+//   ]
+// }
+```
+
+You may also define this as an operation object:
+
+```javascript
+const def40b = {
+  $transform: 'bucket',
+  path: 'users[]',
+  buckets: [
+    {
+      key: 'admin',
+      pipeline: { $transform: 'compare', path: 'role', match: 'admin' },
+    },
+    {
+      key: 'editor',
+      pipeline: { $transform: 'compare', path: 'role', match: 'editor' },
+    },
+    {
+      key: 'users',
+    },
+  ],
+}
+```
+
 #### `compare({ path, operator, match, matchPath, not })` transformer
 
 This is a transformer intended for use with the `filter` operation. You

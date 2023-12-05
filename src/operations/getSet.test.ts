@@ -4,7 +4,7 @@ import { noopNext } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { State, Options } from '../types.js'
 
-import { get, set, pathGetter } from './getSet.js'
+import { get, set, pathGetter, pathSetter } from './getSet.js'
 
 // Setup
 
@@ -1519,4 +1519,266 @@ test('pathGetter should support obsolete root notation with one carret', async (
   const ret = await pathGetter(path)(value, state)
 
   t.is(ret, expected)
+})
+
+// Tests -- pathSetter
+
+test('pathSetter should set with simple path', (t) => {
+  const path = 'name'
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = { name: 'Bohm' }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set with dot path', (t) => {
+  const path = 'data.scientist.name'
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = { data: { scientist: { name: 'Bohm' } } }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set undefined on path', (t) => {
+  const path = 'data.scientist.name'
+  const value = undefined
+  const state = stateFromValue(value)
+  const expected = { data: { scientist: { name: undefined } } }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set empty object on path', (t) => {
+  const path = 'data.scientist.name'
+  const value = {}
+  const state = stateFromValue(value)
+  const expected = { data: { scientist: { name: {} } } }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set path with array index', (t) => {
+  const path = 'data.scientists[1].name'
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = { data: { scientists: [undefined, { name: 'Bohm' }] } }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set path with several array indeces', (t) => {
+  const path = 'data[0].scientists[1].name'
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = { data: [{ scientists: [undefined, { name: 'Bohm' }] }] }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set array index as root', (t) => {
+  const path = '[1].name'
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = [undefined, { name: 'Bohm' }]
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set path with negative array index', (t) => {
+  const path = 'data.scientists[-1].name'
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = { data: { scientists: [{ name: 'Bohm' }] } }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should ensure an array where array notation is used', (t) => {
+  const path = 'data.scientists[].name'
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = { data: { scientists: [{ name: 'Bohm' }] } }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should iterate array at array notation', (t) => {
+  const path = 'data.scientists[].names.last'
+  const value = ['Bohr', 'Bohm']
+  const state = stateFromValue(value)
+  const expected = {
+    data: {
+      scientists: [{ names: { last: 'Bohr' } }, { names: { last: 'Bohm' } }],
+    },
+  }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set path with several arrays', (t) => {
+  const path = 'data[].scientists[].name'
+  const value = ['Bohr', 'Bohm']
+  const state = stateFromValue(value)
+  const expected = {
+    data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }],
+  }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set array for path without array notation', (t) => {
+  const path = 'data.scientists'
+  const value = [{ name: 'Bohm' }]
+  const state = stateFromValue(value)
+  const expected = { data: { scientists: [{ name: 'Bohm' }] } }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set simple path in root array', (t) => {
+  const path = '[].name'
+  const value = ['Bohr', 'Bohm']
+  const state = stateFromValue(value)
+  const expected = [{ name: 'Bohr' }, { name: 'Bohm' }]
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set with escaped brackets', (t) => {
+  const path = 'data.scientists\\[].name'
+  const value = 'Bohr'
+  const state = stateFromValue(value)
+  const expected = { data: { 'scientists[]': { name: 'Bohr' } } }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set with escaped $', (t) => {
+  const path = '\\$type'
+  const value = 'scientist'
+  const state = stateFromValue(value)
+  const expected = { $type: 'scientist' }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should set null value', (t) => {
+  const path = 'scientists[].name'
+  const value = null
+  const state = stateFromValue(value)
+  const expected = { scientists: [{ name: null }] }
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should not set undefined when state.noDefaults is true', (t) => {
+  const path = 'name'
+  const value = undefined
+  const state = stateFromValue(value, false, true) // noDefaults = true
+  const expected = undefined
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should not nonvalue when state.noDefaults is true', (t) => {
+  const nonvalues = [null, undefined]
+  const path = 'name'
+  const value = undefined
+  const state = stateFromValue(value, false, true) // noDefaults = true
+  const expected = undefined
+
+  const ret = pathSetter(path, nonvalues)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should return value for dot path', (t) => {
+  const path = '.'
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = 'Bohm'
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should return value when path is empty string', (t) => {
+  const path = ''
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = 'Bohm'
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should return value when no path is given', (t) => {
+  const path = undefined
+  const value = 'Bohm'
+  const state = stateFromValue(value)
+  const expected = 'Bohm'
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should not set when parent path', (t) => {
+  const path = '^.meta.field'
+  const value = 'physics'
+  const state = stateFromValue(value)
+  const expected = undefined
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('pathSetter should not set with root path', (t) => {
+  const path = '^^.page'
+  const value = 0
+  const state = stateFromValue(value)
+  const expected = undefined
+
+  const ret = pathSetter(path)(value, state)
+
+  t.deepEqual(ret, expected)
 })

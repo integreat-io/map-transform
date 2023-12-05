@@ -14,7 +14,14 @@ import {
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
-import type { Path, Operation, State, StateMapper, Options } from '../types.js'
+import type {
+  Path,
+  Operation,
+  State,
+  StateMapper,
+  DataMapperWithState,
+  Options,
+} from '../types.js'
 
 const adjustIsSet = (isSet: boolean, state: State) => revFromState(state, isSet) // `isSet` will work as `flip` here
 
@@ -279,8 +286,8 @@ const getByPart =
   (part: string | number, isArr: boolean) => (value: unknown) => {
     if (typeof part === 'string') {
       if (isObject(value)) {
-        const nextvalue = value[part]
-        return isArr ? ensureArray(nextvalue) : nextvalue
+        const nextValue = value[part]
+        return isArr ? ensureArray(nextValue) : nextValue
       }
     } else if (typeof part === 'number' && Array.isArray(value)) {
       return value[calculateIndex(part, value)]
@@ -288,12 +295,40 @@ const getByPart =
     return isArr ? [] : undefined
   }
 
+const setOnObject = (part: string) => (value: unknown) =>
+  part ? { [part]: value } : value
+
+const setByPart =
+  (part: string | number, isArr: boolean, doIterate: boolean) =>
+  (value: unknown) => {
+    const data = isArr ? ensureArray(value) : value
+    if (typeof part === 'number') {
+      const arr = []
+      const index = part < 0 ? 0 : part // Negative index will always be 0
+      arr[index] = data
+      return arr
+    } else {
+      return doIterate
+        ? mapAny(setOnObject(part), data)
+        : setOnObject(part)(data)
+    }
+  }
+
+function getDoIterateFromLastPart(
+  parts: [string | number, boolean, boolean][],
+) {
+  if (parts.length === 0) {
+    return false
+  }
+
+  const lastPart = parts[parts.length - 1]
+  return lastPart[1] || lastPart[2]
+}
+
 /**
- * Get a value from the given value / state using a path.
+ * Get a value at the given path.
  */
-export function pathGetter(
-  path?: string | null,
-): (value: unknown, state: State) => unknown {
+export function pathGetter(path?: string | null): DataMapperWithState {
   if (!path || path === '.') {
     return (value) => value
   }
@@ -312,6 +347,46 @@ export function pathGetter(
         const getFn = getByPart(part, isArr)
         data = typeof part === 'number' ? getFn(data) : flatMapAny(getFn)(data)
       }
+    }
+    return data
+  }
+}
+
+/**
+ * Set a value to the given path.
+ */
+export function pathSetter(
+  path?: string | null,
+  nonvalues: unknown[] = [undefined],
+): DataMapperWithState {
+  if (typeof path !== 'string' || path === '' || path === '.') {
+    return (value) => value // Just return the value
+  } else if (path[0] === '^') {
+    return () => undefined // We won't set on parent or root
+  }
+
+  const parts = path
+    .split('.')
+    .flatMap(splitUpArrayAndParentNotation)
+    .map(preparePath)
+    .reduce<[string | number, boolean, boolean][]>(
+      (parts, [part, isArr]) => [
+        ...parts,
+        [part, isArr, isArr ? false : getDoIterateFromLastPart(parts)],
+      ],
+      [],
+    )
+  parts.reverse()
+
+  return function setToPath(value, state) {
+    if (state.noDefaults && isNonvalue(value, nonvalues)) {
+      return undefined
+    }
+
+    let data = value
+    for (const [part, isArr, doIterate] of parts) {
+      const setFn = setByPart(part, isArr, doIterate)
+      data = setFn(data)
     }
     return data
   }

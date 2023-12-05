@@ -295,6 +295,28 @@ const getByPart =
     return isArr ? [] : undefined
   }
 
+function prepareGetFn([part, isArr]: [string | number, boolean, boolean]): (
+  value: unknown,
+  state: State,
+) => [unknown, State | undefined] {
+  if (typeof part === 'string' && part[0] === '^') {
+    // This part is a parent or a root, so we'll return the value and the next state
+    const isRoot = part[1] === '^'
+    return (_value, state) => {
+      const nextState = isRoot ? getRoot(state) : getParent(state)
+      return [nextState.value, nextState]
+    }
+  } else if (typeof part === 'number') {
+    // This is an index part
+    const fn = getByPart(part, isArr)
+    return (value) => [fn(value), undefined]
+  } else {
+    // This is a regular part
+    const fn = flatMapAny(getByPart(part, isArr))
+    return (value) => [fn(value), undefined]
+  }
+}
+
 const setOnObject = (part: string) => (value: unknown) =>
   part ? { [part]: value } : value
 
@@ -325,6 +347,14 @@ function getDoIterateFromLastPart(
   return lastPart[1] || lastPart[2]
 }
 
+const setDoIterateOnParts = (
+  parts: [string | number, boolean, boolean][],
+  [part, isArr]: [string | number, boolean, boolean],
+): [string | number, boolean, boolean][] => [
+  ...parts,
+  [part, isArr, isArr ? false : getDoIterateFromLastPart(parts)],
+]
+
 /**
  * Get a value at the given path.
  */
@@ -333,20 +363,17 @@ export function pathGetter(path?: string | null): DataMapperWithState {
     return (value) => value
   }
 
-  const parts = path.split('.').flatMap(splitUpArrayAndParentNotation)
+  const parts = path
+    .split('.')
+    .flatMap(splitUpArrayAndParentNotation)
+    .map(preparePath)
+    .map(prepareGetFn)
 
   return function getFromPath(value, startState) {
     let data = value
     let state = startState
-    for (const rawPart of parts) {
-      const [part, isArr] = preparePath(rawPart)
-      if (typeof part === 'string' && part[0] === '^') {
-        state = part[1] === '^' ? getRoot(state) : getParent(state)
-        data = state.value
-      } else {
-        const getFn = getByPart(part, isArr)
-        data = typeof part === 'number' ? getFn(data) : flatMapAny(getFn)(data)
-      }
+    for (const partOrGetFn of parts) {
+      ;[data, state = state] = partOrGetFn(data, state)
     }
     return data
   }
@@ -365,30 +392,21 @@ export function pathSetter(
     return () => undefined // We won't set on parent or root
   }
 
-  const parts = path
+  const setFns = path
     .split('.')
     .flatMap(splitUpArrayAndParentNotation)
     .map(preparePath)
-    .reduce<[string | number, boolean, boolean][]>(
-      (parts, [part, isArr]) => [
-        ...parts,
-        [part, isArr, isArr ? false : getDoIterateFromLastPart(parts)],
-      ],
-      [],
-    )
-  parts.reverse()
+    .reduce(setDoIterateOnParts, [])
+    .map(([part, isArr, doIterate]) => setByPart(part, isArr, doIterate))
 
   return function setToPath(value, state) {
     if (state.noDefaults && isNonvalue(value, nonvalues)) {
+      // We should not set a nonvalue, and this is a nonvalue, so return `undefined`
       return undefined
+    } else {
+      // Set on path by running the parts in reverse order (from the innermost to the outermost)
+      return setFns.reduceRight((value, setFn) => setFn(value), value)
     }
-
-    let data = value
-    for (const [part, isArr, doIterate] of parts) {
-      const setFn = setByPart(part, isArr, doIterate)
-      data = setFn(data)
-    }
-    return data
   }
 }
 

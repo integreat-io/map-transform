@@ -1225,51 +1225,51 @@ test('should set on array path in reverse', async (t) => {
 
 // Tests -- pathGetter
 
-test('pathGetter should return simple get function', async (t) => {
+test('pathGetter should return simple get function', (t) => {
   const path = 'name'
   const value = { name: 'Bohm' }
   const state = stateFromValue(value)
   const expected = 'Bohm'
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.is(ret, expected)
 })
 
-test('pathGetter should get dot path', async (t) => {
+test('pathGetter should get dot path', (t) => {
   const path = 'data.scientist.name'
   const value = { data: { scientist: { name: 'Bohm' } } }
   const state = stateFromValue(value)
   const expected = 'Bohm'
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.is(ret, expected)
 })
 
-test('pathGetter should return value when dot path', async (t) => {
+test('pathGetter should return value when dot path', (t) => {
   const path = '.'
   const value = { name: 'Bohm' }
   const state = stateFromValue(value)
   const expected = { name: 'Bohm' }
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should get path with array index', async (t) => {
+test('pathGetter should get path with array index', (t) => {
   const path = 'data.scientists[1].name'
   const value = { data: { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] } }
   const state = stateFromValue(value)
   const expected = 'Bohm'
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should get path with negative array index', async (t) => {
+test('pathGetter should get path with negative array index', (t) => {
   const path = 'data.scientists[-1].name'
   const value = {
     data: {
@@ -1279,45 +1279,45 @@ test('pathGetter should get path with negative array index', async (t) => {
   const state = stateFromValue(value)
   const expected = 'Planck'
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should return value when no path', async (t) => {
+test('pathGetter should return value when no path', (t) => {
   const path = undefined
   const value = { name: 'Bohm' }
   const state = stateFromValue(value)
   const expected = { name: 'Bohm' }
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should get path with several array indeces', async (t) => {
+test('pathGetter should get path with several array indeces', (t) => {
   const path = 'data[0].scientists[1].name'
   const value = { data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }] }
   const state = stateFromValue(value)
   const expected = 'Bohm'
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should get with array index as first part', async (t) => {
+test('pathGetter should get with array index as first part', (t) => {
   const path = '[1].name'
   const value = [{ name: 'Bohr' }, { name: 'Bohm' }]
   const state = stateFromValue(value)
   const expected = 'Bohm'
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should handle array notation in path', async (t) => {
+test('pathGetter should handle array notation in path', (t) => {
   const path = 'data.scientists[].names.last'
   const value = {
     data: {
@@ -1327,100 +1327,100 @@ test('pathGetter should handle array notation in path', async (t) => {
   const state = stateFromValue(value)
   const expected = ['Bohr', 'Bohm']
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should force array', async (t) => {
+test('pathGetter should force array', (t) => {
   const path = 'data.scientists[].name'
   const value = { data: { scientists: { name: 'Bohm' } } }
   const state = stateFromValue(value)
   const expected = ['Bohm']
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should return a flattened array', async (t) => {
+test('pathGetter should return a flattened array', (t) => {
   const path = 'data[].scientists[].name'
   const value = { data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }] }
   const state = stateFromValue(value)
   const expected = ['Bohr', 'Bohm']
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should get path starting with escaped $', async (t) => {
+test('pathGetter should get path starting with escaped $', (t) => {
   const path = '\\$type'
   const value = { id: '1', $type: 'scientist', name: 'Bohm' }
   const state = stateFromValue(value)
   const expected = 'scientist'
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should return undefined when object is null', async (t) => {
+test('pathGetter should return undefined when object is null', (t) => {
   const path = 'name'
   const value = null
   const state = stateFromValue(value)
   const expected = undefined
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.is(ret, expected)
 })
 
-test('pathGetter should return empty array with null when value is null and expecting array', async (t) => {
+test('pathGetter should return empty array with null when value is null and expecting array', (t) => {
   const path = 'data.scientists[].name'
   const value = { data: { scientists: { name: null } } }
   const state = stateFromValue(value)
   const expected = [null]
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should return undefined when path does not match data', async (t) => {
+test('pathGetter should return undefined when path does not match data', (t) => {
   const path = 'data.unknown.scientists[1].name'
   const value = { data: { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] } }
   const state = stateFromValue(value)
   const expected = undefined
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.is(ret, expected)
 })
 
-test('pathGetter should return empty array when path does not match, but expecting array', async (t) => {
+test('pathGetter should return empty array when path does not match, but expecting array', (t) => {
   const path = 'data.unknown.scientists[].name'
   const value = { data: { scientists: { name: 'Bohm' } } }
   const state = stateFromValue(value)
   const expected: unknown[] = []
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should return empty array for missing array', async (t) => {
+test('pathGetter should return empty array for missing array', (t) => {
   const path = 'articles[]'
   const value = {}
   const state = stateFromValue(value)
   const expected: unknown[] = []
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should get path with parent', async (t) => {
+test('pathGetter should get path with parent', (t) => {
   const path = '^.meta.field'
   const value = { name: 'Bohm' }
   const state = {
@@ -1434,12 +1434,12 @@ test('pathGetter should get path with parent', async (t) => {
   }
   const expected = 'physics'
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.is(ret, expected)
 })
 
-test('pathGetter should get path with several parents', async (t) => {
+test('pathGetter should get path with several parents', (t) => {
   const path = '^.^.page'
   const value = { name: 'Bohm' }
   const state = {
@@ -1454,12 +1454,12 @@ test('pathGetter should get path with several parents', async (t) => {
   }
   const expected = 0
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.is(ret, expected)
 })
 
-test('pathGetter should get path with parents from array index', async (t) => {
+test('pathGetter should get path with parents from array index', (t) => {
   const path = '^.^.^.^.page'
   const value = { name: 'Bohm' }
   const state = {
@@ -1476,12 +1476,12 @@ test('pathGetter should get path with parents from array index', async (t) => {
   }
   const expected = 0
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.is(ret, expected)
 })
 
-test('pathGetter should get path with root from context', async (t) => {
+test('pathGetter should get path with root from context', (t) => {
   const path = '^^.page'
   const value = { name: 'Bohm' }
   const state = {
@@ -1496,12 +1496,12 @@ test('pathGetter should get path with root from context', async (t) => {
   }
   const expected = 0
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('pathGetter should support obsolete root notation with one carret', async (t) => {
+test('pathGetter should support obsolete root notation with one carret', (t) => {
   const path = '^page'
   const value = { name: 'Bohm' }
   const state = {
@@ -1516,7 +1516,7 @@ test('pathGetter should support obsolete root notation with one carret', async (
   }
   const expected = 0
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   t.is(ret, expected)
 })

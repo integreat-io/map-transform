@@ -1723,7 +1723,7 @@ test('pathSetter should not nonvalue when state.noDefaults is true', (t) => {
   const state = stateFromValue(value, false, true) // noDefaults = true
   const expected = undefined
 
-  const ret = pathSetter(path, nonvalues)(value, state)
+  const ret = pathSetter(path, { nonvalues })(value, state)
 
   t.deepEqual(ret, expected)
 })

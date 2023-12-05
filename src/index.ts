@@ -14,7 +14,7 @@ export { concat, concatRev } from './operations/concat.js'
 export { default as alt } from './operations/alt.js'
 export { fwd, rev, divide } from './operations/directionals.js'
 export { default as filter } from './operations/filter.js'
-export { get, set } from './operations/getSet.js'
+export { get, set, pathGetter, pathSetter } from './operations/getSet.js'
 export { default as ifelse } from './operations/ifelse.js'
 export { lookup, lookdown } from './operations/lookup.js'
 export { default as merge } from './operations/merge.js'
@@ -40,7 +40,7 @@ const mergeOptions = (options: Options) => ({
  */
 export default function mapTransform(
   def: TransformDefinition,
-  options: Options = {}
+  options: Options = {},
 ): DataMapper<InitialState> {
   const completeOptions = mergeOptions(options)
   const stateMapper = defToOperation(def, options)(completeOptions)(noopNext)

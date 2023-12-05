@@ -358,7 +358,10 @@ const setDoIterateOnParts = (
 /**
  * Get a value at the given path.
  */
-export function pathGetter(path?: string | null): DataMapperWithState {
+export function pathGetter(
+  path?: string | null,
+  _options: Options = {},
+): DataMapperWithState {
   if (!path || path === '.') {
     return (value) => value
   }
@@ -384,7 +387,7 @@ export function pathGetter(path?: string | null): DataMapperWithState {
  */
 export function pathSetter(
   path?: string | null,
-  nonvalues: unknown[] = [undefined],
+  options: Options = {},
 ): DataMapperWithState {
   if (typeof path !== 'string' || path === '' || path === '.') {
     return (value) => value // Just return the value
@@ -400,7 +403,7 @@ export function pathSetter(
     .map(([part, isArr, doIterate]) => setByPart(part, isArr, doIterate))
 
   return function setToPath(value, state) {
-    if (state.noDefaults && isNonvalue(value, nonvalues)) {
+    if (state.noDefaults && isNonvalue(value, options.nonvalues)) {
       // We should not set a nonvalue, and this is a nonvalue, so return `undefined`
       return undefined
     } else {

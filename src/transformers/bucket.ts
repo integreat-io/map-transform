@@ -78,7 +78,7 @@ const transformer: AsyncTransformer<Props> = function bucket({
 }) {
   return (options) => {
     const getFn = pathGetter(path)
-    const setFn = pathSetter(path, options.nonvalues)
+    const setFn = pathSetter(path, options)
     const pipelines: PipelineWithKey[] = buckets
       .filter(({ key }) => typeof key === 'string')
       .map((bucket) => [

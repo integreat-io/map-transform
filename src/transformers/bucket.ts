@@ -1,6 +1,6 @@
-import { pathGetter } from '../operations/getSet.js'
+import { pathGetter, pathSetter } from '../operations/getSet.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
-import { isNonvalue } from '../utils/stateHelpers.js'
+import { revFromState, isNonvalue } from '../utils/stateHelpers.js'
 import { ensureArray } from '../utils/array.js'
 import { isObject } from '../utils/is.js'
 import type {
@@ -78,7 +78,7 @@ const transformer: AsyncTransformer<Props> = function bucket({
 }) {
   return (options) => {
     const getFn = pathGetter(path)
-    // const setFn = pathSetter(path)
+    const setFn = pathSetter(path, options.nonvalues)
     const pipelines: PipelineWithKey[] = buckets
       .filter(({ key }) => typeof key === 'string')
       .map((bucket) => [
@@ -90,8 +90,11 @@ const transformer: AsyncTransformer<Props> = function bucket({
     const keys = buckets.map(({ key }) => key)
 
     return async (data, state) => {
-      if (state.rev) {
-        return extractArrayFromBuckets(data, keys, options.nonvalues)
+      if (revFromState(state)) {
+        return setFn(
+          extractArrayFromBuckets(data, keys, options.nonvalues),
+          state,
+        )
       } else {
         return sortIntoBuckets(getFn, pipelines, data, state)
       }

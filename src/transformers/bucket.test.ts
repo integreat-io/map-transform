@@ -184,6 +184,36 @@ test('should skip buckets without key', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should merge bucket arrays into one array when going forward and flipped', async (t) => {
+  const stateFlipped = { ...state, flip: true }
+  const data = {
+    // We've moved arround the order of the buckets
+    users: [
+      { id: 'user2', name: 'User 2', role: undefined },
+      { id: 'user3', name: 'User 3' },
+    ],
+    editor: [{ id: 'user1', name: 'User 1', role: 'editor' }],
+  }
+  const buckets = [
+    {
+      key: 'editor',
+      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+    },
+    {
+      key: 'users',
+    },
+  ]
+  const expected = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user3', name: 'User 3' },
+  ]
+
+  const ret = await bucket({ buckets })(options)(data, stateFlipped)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- rev
 
 test('should merge bucket arrays into one array in the order of the defined buckets', async (t) => {
@@ -262,7 +292,7 @@ test('should skip buckets that are not defined', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should merge bucket arrays into one array on path', async (t) => {
+test('should merge bucket arrays into one array on path', async (t) => {
   const data = {
     admin: [{ id: 'user4', name: 'User 4', role: 'admin' }],
     editor: [
@@ -373,6 +403,35 @@ test('should return empty array when we have no buckets object', async (t) => {
   const expected: unknown[] = []
 
   const ret = await bucket({ buckets })(options)(data, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should sort array into buckets in rev when flipped', async (t) => {
+  const stateRevFlipped = { ...stateRev, flip: true }
+  const data = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user3', name: 'User 3' },
+  ]
+  const buckets = [
+    {
+      key: 'editor',
+      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+    },
+    {
+      key: 'users',
+    },
+  ]
+  const expected = {
+    editor: [{ id: 'user1', name: 'User 1', role: 'editor' }],
+    users: [
+      { id: 'user2', name: 'User 2', role: undefined },
+      { id: 'user3', name: 'User 3' },
+    ],
+  }
+
+  const ret = await bucket({ buckets })(options)(data, stateRevFlipped)
 
   t.deepEqual(ret, expected)
 })

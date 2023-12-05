@@ -1445,7 +1445,8 @@ therefore be placed last.
 
 When a bucket is run in reverse, the items in the buckets will be merged into
 one array. The order of the items will be the same as the order of the buckets
-and not the order of the items in the original array.
+and not the order of the items in the original array. When a path is given, the
+array will be set on this path.
 
 ```javascript
 const def40 = bucket({

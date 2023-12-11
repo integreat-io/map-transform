@@ -22,7 +22,7 @@ export interface Bucket {
 
 export interface Props extends TransformerProps {
   path?: Path
-  buckets: Bucket[]
+  buckets?: Bucket[]
 }
 
 function addToBucket(
@@ -74,7 +74,7 @@ const extractArrayFromBuckets = (
 
 const transformer: AsyncTransformer<Props> = function bucket({
   path = '.',
-  buckets,
+  buckets = [],
 }) {
   return (options) => {
     const getFn = pathGetter(path)

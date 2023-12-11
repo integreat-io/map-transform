@@ -1,4 +1,5 @@
 import { value, fixed } from './value.js'
+import bucket from './bucket.js'
 import compare from './compare.js'
 import { explode, implode } from './explode.js'
 import flatten from './flatten.js'
@@ -11,6 +12,7 @@ import not from './not.js'
 import sort from './sort.js'
 
 export default {
+  bucket,
   compare,
   explode,
   fixed,

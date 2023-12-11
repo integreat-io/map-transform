@@ -2,7 +2,7 @@ import test from 'ava'
 import transform from '../operations/transform.js'
 import compare from './compare.js'
 
-import bucket from './bucket.js'
+import bucket, { Bucket } from './bucket.js'
 
 // Setup
 
@@ -214,6 +214,23 @@ test('should merge bucket arrays into one array when going forward and flipped',
   t.deepEqual(ret, expected)
 })
 
+test('should return an empty object when no buckets are defined', async (t) => {
+  const data = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user3', name: 'User 3' },
+    { id: 'user4', name: 'User 4', role: 'admin' },
+    { id: 'user5', name: 'User 5' },
+    { id: 'user6', name: 'User 6', role: 'editor' },
+  ]
+  const buckets: Bucket[] = []
+  const expected = {}
+
+  const ret = await bucket({ buckets })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- rev
 
 test('should merge bucket arrays into one array in the order of the defined buckets', async (t) => {
@@ -400,6 +417,27 @@ test('should return empty array when we have no buckets object', async (t) => {
       key: 'users',
     },
   ]
+  const expected: unknown[] = []
+
+  const ret = await bucket({ buckets })(options)(data, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return empty array when no buckets are defined', async (t) => {
+  const data = {
+    users: [
+      { id: 'user2', name: 'User 2', role: undefined },
+      { id: 'user3', name: 'User 3' },
+      { id: 'user5', name: 'User 5' },
+    ],
+    admin: [{ id: 'user4', name: 'User 4', role: 'admin' }],
+    editor: [
+      { id: 'user1', name: 'User 1', role: 'editor' },
+      { id: 'user6', name: 'User 6', role: 'editor' },
+    ],
+  }
+  const buckets: Bucket[] = []
   const expected: unknown[] = []
 
   const ret = await bucket({ buckets })(options)(data, stateRev)

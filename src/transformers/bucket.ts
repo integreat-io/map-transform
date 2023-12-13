@@ -11,12 +11,15 @@ import type {
   TransformDefinition,
   Path,
   State,
+  Options,
 } from '../types.js'
 
 type PipelineWithKey = [DataMapperWithState | AsyncDataMapperWithState, string]
 
 export interface Bucket {
   key: string
+  size?: number
+  condition?: TransformDefinition
   pipeline?: TransformDefinition
 }
 
@@ -60,6 +63,24 @@ async function sortIntoBuckets(
   return Object.fromEntries(retBucket.entries())
 }
 
+function shouldGoInBucket(
+  options: Options,
+  condition?: TransformDefinition,
+  size?: number,
+): AsyncDataMapperWithState {
+  let inBucket = 0
+  const mapper = condition ? defToDataMapper(condition, options) : undefined
+  return async function considerItemForBucket(item, state) {
+    if (size === undefined || inBucket < size) {
+      if (!mapper || (await mapper(item, state))) {
+        inBucket++
+        return true
+      }
+    }
+    return false
+  }
+}
+
 const extractArrayFromBuckets = (
   buckets: unknown,
   keys: string[],
@@ -82,9 +103,11 @@ const transformer: AsyncTransformer<Props> = function bucket({
     const pipelines: PipelineWithKey[] = buckets
       .filter(({ key }) => typeof key === 'string')
       .map((bucket) => [
-        bucket.pipeline
-          ? defToDataMapper(bucket.pipeline, options)
-          : () => true, // Prepare pipeline. If no pipeline, always return true
+        shouldGoInBucket(
+          options,
+          bucket.condition ?? bucket.pipeline, // Keep `pipeline` as an alias of `condition` for backwards compatibility. TODO: Remove in v2
+          bucket.size,
+        ),
         bucket.key,
       ])
     const keys = buckets.map(({ key }) => key)

@@ -1427,21 +1427,24 @@ values in the pipeline.
 
 #### `bucket({ path, buckets })` transformer
 
-The `bucket` transformer will split an array out in buckets based on filter
-pipelines, i.e. pipelines that will return truthy for the items that belong in
-a certain bucket.
+The `bucket` transformer will split an array out in buckets based on condition
+pipelines (pipelines that will return truthy for the items that belong in
+a certain bucket) or by size (how many items from the array to put in a bucket).
 
 The buckets are defined in an array on the `buckets` property, with one object
 per bucket. The object has a `key` property that will be the key of the bucket
-on the target object. It also has a `pipelines` array, which is a pipeline that
-will return truthy for the items that belong in the bucket.
+on the target object. When distributing based on condition pipelines, you set a
+`condition` property to a pipeline that will return truthy for the items that
+belong in the bucket. When distributing based on size, you set `size` to the
+number of items you want to put in this bucket. You may also combine `condition`
+and `size`, to get the provided number of items matching the condition.
 
 You may also specify a `path` to the array that will be sorted into buckets.
 
-Each item is tested against the bucket pipelines in the order the buckets are
+Each item is tested against the bucket condition in the order the buckets are
 defined, and will be placed in the first bucket that matches. You may have
-a bucket without a pipeline, which will serve as a catch-all bucket, and should
-therefore be placed last.
+a bucket without a condition or size, which will serve as a catch-all bucket,
+and should therefore be placed last.
 
 When a bucket is run in reverse, the items in the buckets will be merged into
 one array. The order of the items will be the same as the order of the buckets
@@ -1454,11 +1457,11 @@ const def40 = bucket({
   buckets: [
     {
       key: 'admin',
-      pipeline: { $transform: 'compare', path: 'role', match: 'admin' },
+      condition: { $transform: 'compare', path: 'role', match: 'admin' },
     },
     {
       key: 'editor',
-      pipeline: { $transform: 'compare', path: 'role', match: 'editor' },
+      condition: { $transform: 'compare', path: 'role', match: 'editor' },
     },
     {
       key: 'users',
@@ -1494,6 +1497,23 @@ const mappedData = await mapper(data)
 // }
 ```
 
+Or by size:
+
+```javascript
+const def41 = bucket({
+  buckets: [{ key: 'top3', size: 3 }, { key: 'theOthers' }],
+})
+
+const data = ['user1', 'user2', 'user3', 'user4', 'user5', 'user6', 'user7']
+
+const mapper = mapTransform(def41)
+const mappedData = await mapper(data)
+// --> {
+//   top3: ['user1', 'user2', 'user3'],
+//   theOthers: ['user4', 'user5', 'user6', 'user7']
+// }
+```
+
 You may also define this as an operation object:
 
 ```javascript
@@ -1503,16 +1523,21 @@ const def40b = {
   buckets: [
     {
       key: 'admin',
-      pipeline: { $transform: 'compare', path: 'role', match: 'admin' },
+      condition: { $transform: 'compare', path: 'role', match: 'admin' },
     },
     {
       key: 'editor',
-      pipeline: { $transform: 'compare', path: 'role', match: 'editor' },
+      condition: { $transform: 'compare', path: 'role', match: 'editor' },
     },
     {
       key: 'users',
     },
   ],
+}
+
+const def41b = {
+  $transform: 'buckets',
+  buckets: [{ key: 'top3', size: 3 }, { key: 'theOthers' }],
 }
 ```
 

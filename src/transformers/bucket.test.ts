@@ -23,7 +23,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should sort array into buckets', async (t) => {
+test('should sort array into buckets based on condition', async (t) => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -35,11 +35,11 @@ test('should sort array into buckets', async (t) => {
   const buckets = [
     {
       key: 'admin',
-      pipeline: transform(compare({ path: 'role', match: 'admin' })),
+      condition: transform(compare({ path: 'role', match: 'admin' })),
     },
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -74,11 +74,11 @@ test('should not set empty bucket', async (t) => {
   const buckets = [
     {
       key: 'admin',
-      pipeline: transform(compare({ path: 'role', match: 'admin' })),
+      condition: transform(compare({ path: 'role', match: 'admin' })),
     },
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -115,7 +115,7 @@ test('should get array from path', async (t) => {
   const buckets = [
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -134,12 +134,81 @@ test('should get array from path', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should sort array into buckets based on size', async (t) => {
+  const data = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user3', name: 'User 3' },
+    { id: 'user4', name: 'User 4', role: 'admin' },
+    { id: 'user5', name: 'User 5' },
+    { id: 'user6', name: 'User 6', role: 'editor' },
+  ]
+  const buckets = [{ key: 'first2', size: 2 }, { key: 'theRest' }]
+  const expected = {
+    first2: [
+      { id: 'user1', name: 'User 1', role: 'editor' },
+      { id: 'user2', name: 'User 2', role: undefined },
+    ],
+    theRest: [
+      { id: 'user3', name: 'User 3' },
+      { id: 'user4', name: 'User 4', role: 'admin' },
+      { id: 'user5', name: 'User 5' },
+      { id: 'user6', name: 'User 6', role: 'editor' },
+    ],
+  }
+
+  const ret = await bucket({ buckets })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should sort array into buckets based on condition and sizes', async (t) => {
+  const data = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: 'editor' },
+    { id: 'user3', name: 'User 3' },
+    { id: 'user4', name: 'User 4', role: 'editor' },
+    { id: 'user5', name: 'User 5' },
+    { id: 'user6', name: 'User 6', role: 'editor' },
+  ]
+  const buckets = [
+    {
+      key: 'firstEditor',
+      condition: transform(compare({ path: 'role', match: 'editor' })),
+      size: 1,
+    },
+    {
+      key: 'editors',
+      condition: transform(compare({ path: 'role', match: 'editor' })),
+    },
+    {
+      key: 'users',
+    },
+  ]
+  const expected = {
+    firstEditor: [{ id: 'user1', name: 'User 1', role: 'editor' }],
+    editors: [
+      { id: 'user2', name: 'User 2', role: 'editor' },
+      { id: 'user4', name: 'User 4', role: 'editor' },
+      { id: 'user6', name: 'User 6', role: 'editor' },
+    ],
+    users: [
+      { id: 'user3', name: 'User 3' },
+      { id: 'user5', name: 'User 5' },
+    ],
+  }
+
+  const ret = await bucket({ buckets })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should treat single object as array', async (t) => {
   const data = { id: 'user2', name: 'User 2' }
   const buckets = [
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -163,10 +232,12 @@ test('should skip buckets without key', async (t) => {
   const buckets = [
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    { pipeline: transform(compare({ path: 'role', match: 'unknown' })) } as any,
+
+    {
+      condition: transform(compare({ path: 'role', match: 'unknown' })),
+    } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     {
       key: 'users',
     },
@@ -197,7 +268,7 @@ test('should merge bucket arrays into one array when going forward and flipped',
   const buckets = [
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -250,11 +321,11 @@ test('should merge bucket arrays into one array in the order of the defined buck
   const buckets = [
     {
       key: 'admin',
-      pipeline: transform(compare({ path: 'role', match: 'admin' })),
+      condition: transform(compare({ path: 'role', match: 'admin' })),
     },
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -287,11 +358,11 @@ test('should skip buckets that are not defined', async (t) => {
   const buckets = [
     {
       key: 'admin',
-      pipeline: transform(compare({ path: 'role', match: 'admin' })),
+      condition: transform(compare({ path: 'role', match: 'admin' })),
     },
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -326,11 +397,11 @@ test('should merge bucket arrays into one array on path', async (t) => {
   const buckets = [
     {
       key: 'admin',
-      pipeline: transform(compare({ path: 'role', match: 'admin' })),
+      condition: transform(compare({ path: 'role', match: 'admin' })),
     },
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -366,11 +437,11 @@ test('should merge bucket values into one array even with non-arrays', async (t)
   const buckets = [
     {
       key: 'admin',
-      pipeline: transform(compare({ path: 'role', match: 'admin' })),
+      condition: transform(compare({ path: 'role', match: 'admin' })),
     },
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -393,7 +464,7 @@ test('should return empty array when no buckets', async (t) => {
   const buckets = [
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -411,7 +482,7 @@ test('should return empty array when we have no buckets object', async (t) => {
   const buckets = [
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -455,7 +526,7 @@ test('should sort array into buckets in rev when flipped', async (t) => {
   const buckets = [
     {
       key: 'editor',
-      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+      condition: transform(compare({ path: 'role', match: 'editor' })),
     },
     {
       key: 'users',
@@ -470,6 +541,46 @@ test('should sort array into buckets in rev when flipped', async (t) => {
   }
 
   const ret = await bucket({ buckets })(options)(data, stateRevFlipped)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support pipeline as an alias of condition (but will be removed in next major version)', async (t) => {
+  const data = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user3', name: 'User 3' },
+    { id: 'user4', name: 'User 4', role: 'admin' },
+    { id: 'user5', name: 'User 5' },
+    { id: 'user6', name: 'User 6', role: 'editor' },
+  ]
+  const buckets = [
+    {
+      key: 'admin',
+      pipeline: transform(compare({ path: 'role', match: 'admin' })),
+    },
+    {
+      key: 'editor',
+      pipeline: transform(compare({ path: 'role', match: 'editor' })),
+    },
+    {
+      key: 'users',
+    },
+  ]
+  const expected = {
+    admin: [{ id: 'user4', name: 'User 4', role: 'admin' }],
+    editor: [
+      { id: 'user1', name: 'User 1', role: 'editor' },
+      { id: 'user6', name: 'User 6', role: 'editor' },
+    ],
+    users: [
+      { id: 'user2', name: 'User 2', role: undefined },
+      { id: 'user3', name: 'User 3' },
+      { id: 'user5', name: 'User 5' },
+    ],
+  }
+
+  const ret = await bucket({ buckets })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })

@@ -70,6 +70,19 @@ test('should force values to boolean -- going forward', async (t) => {
   t.true(ret)
 })
 
+test('should do a logical OR on the given paths -- using the root', async (t) => {
+  const stateWithRoot = { ...state, context: [{ acceptAll: true }] }
+  const path = ['^^.acceptAll', 'visible', 'meta.published', 'public']
+  const data = { visible: false, meta: { published: false }, public: false }
+
+  const ret = await logical({ path, operator: 'OR' })(options)(
+    data,
+    stateWithRoot,
+  )
+
+  t.true(ret)
+})
+
 // Tests -- reverse
 
 test('should set all paths to the given boolean value', async (t) => {

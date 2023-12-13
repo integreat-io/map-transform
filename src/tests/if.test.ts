@@ -258,6 +258,36 @@ test('should support $or - matching', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should support $or - matching with root', async (t) => {
+  const def = [
+    'content',
+    {
+      $if: {
+        $or: [
+          { $transform: 'compare', path: 'section', match: 'news' },
+          { $transform: 'compare', path: '^^.acceptAll', match: true },
+        ],
+      },
+      then: { title: 'heading' },
+      else: { title: 'title' },
+    },
+  ]
+  const data = {
+    acceptAll: true,
+    content: {
+      heading: 'The heading',
+      title: 'The title',
+      section: 'news',
+      archived: false,
+    },
+  }
+  const expected = { title: 'The heading' }
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should support $or - not matching', async (t) => {
   const def = [
     'content',

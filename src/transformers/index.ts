@@ -9,6 +9,7 @@ import logical from './logical.js'
 import map from './map.js'
 import { merge, mergeRev } from './merge.js'
 import not from './not.js'
+import project from './project.js'
 import sort from './sort.js'
 
 export default {
@@ -25,6 +26,7 @@ export default {
   merge,
   mergeRev,
   not,
+  project,
   sort,
   value,
 }

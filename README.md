@@ -1452,7 +1452,7 @@ and not the order of the items in the original array. When a path is given, the
 array will be set on this path.
 
 ```javascript
-const def40 = bucket({
+const def40 = transform(bucket({
   path: 'users[]',
   buckets: [
     {
@@ -1467,7 +1467,7 @@ const def40 = bucket({
       key: 'users',
     },
   ],
-})
+}))
 
 const data = {
   users: [
@@ -1500,9 +1500,9 @@ const mappedData = await mapper(data)
 Or by size:
 
 ```javascript
-const def41 = bucket({
+const def41 = transform(bucket({
   buckets: [{ key: 'top3', size: 3 }, { key: 'theOthers' }],
-})
+}))
 
 const data = ['user1', 'user2', 'user3', 'user4', 'user5', 'user6', 'user7']
 
@@ -1846,6 +1846,46 @@ const def21b = [
   },
   { $filter: 'compare', path: 'role', not: true, match: 'admin' },
 ]
+```
+
+#### `project({include, exclude})` transformer
+
+Will return an object with only the props specified in `include` or none of the
+props in `exclude`. Both `include` and `exclude` may be array of strings, and
+they should not be used in combination. If both are provided, `include` will be
+used.
+
+When given an array of object, each object will be projected. When given
+anything that is not an object, undefined will be returned.
+
+As we cannot bring back the removed props when mapping in reverse, this
+transformer will pass on the object data as is in reverse.
+
+```javascript
+import { transform, transformers } from 'map-transform'
+const { project } = transformers
+
+const def42 = transform(project({ include: ['id', 'name'] }))
+
+const data = {
+  id: 'ent1',
+  name: 'Entry 1',
+  text: 'Do not include',
+  created: new Date('2023-12-01T00:00:00Z'),
+}
+
+const mapper = mapTransform(def42)
+const mappedData = await mapper(data)
+// --> {
+//   id: 'ent1',
+//   name: 'Entry 1',
+// }
+```
+
+You may also define this as an operation object:
+
+```javascript
+const def42b = { $transform: 'project', include: ['id', 'name'] }
 ```
 
 #### `sort({asc, path})` transformer

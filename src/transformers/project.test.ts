@@ -67,6 +67,116 @@ test('should use include when exclude is also specified', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should use keys from includePath', (t) => {
+  const data = {
+    id: 'ent1',
+    title: 'Entry 1',
+    $type: 'entry',
+    author: { id: 'johnf' },
+    meta: {
+      keys: ['id', 'title'],
+    },
+  }
+  const includePath = 'meta.keys'
+  const expected = { id: 'ent1', title: 'Entry 1' }
+
+  const ret = project({ includePath })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should leave object untouched when no keys in includePath', (t) => {
+  const data = {
+    id: 'ent1',
+    title: 'Entry 1',
+    $type: 'entry',
+    author: { id: 'johnf' },
+    meta: {
+      // No keys
+    },
+  }
+  const includePath = 'meta.keys'
+  const expected = data
+
+  const ret = project({ includePath })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use include keys as fall-back for includePath', (t) => {
+  const data = {
+    id: 'ent1',
+    title: 'Entry 1',
+    $type: 'entry',
+    author: { id: 'johnf' },
+    meta: {
+      // No keys
+    },
+  }
+  const includePath = 'meta.keys'
+  const include = ['id', 'title']
+  const expected = { id: 'ent1', title: 'Entry 1' }
+
+  const ret = project({ includePath, include })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use keys from excludePath', (t) => {
+  const data = {
+    id: 'ent1',
+    title: 'Entry 1',
+    $type: 'entry',
+    author: { id: 'johnf' },
+    meta: {
+      keys: ['$type', 'title', 'meta'],
+    },
+  }
+  const excludePath = 'meta.keys'
+  const expected = { id: 'ent1', author: { id: 'johnf' } }
+
+  const ret = project({ excludePath })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should leave object untouched when no keys in excludePath', (t) => {
+  const data = {
+    id: 'ent1',
+    title: 'Entry 1',
+    $type: 'entry',
+    author: { id: 'johnf' },
+    meta: {
+      // No keys
+    },
+  }
+  const excludePath = 'meta.keys'
+  const expected = data
+
+  const ret = project({ excludePath })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use exclude keys as fall-back for excludePath', (t) => {
+  const data = {
+    id: 'ent1',
+    title: 'Entry 1',
+    $type: 'entry',
+    author: { id: 'johnf' },
+    meta: {
+      // No keys
+    },
+  }
+  const excludePath = 'meta.keys'
+  const exclude = ['$type', 'title', 'meta']
+  const expected = { id: 'ent1', author: { id: 'johnf' } }
+
+  const ret = project({ excludePath, exclude })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return object as is when neither include nor exclude are defined', (t) => {
   const data = {
     id: 'ent1',

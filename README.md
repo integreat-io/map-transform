@@ -1855,6 +1855,12 @@ props in `exclude`. Both `include` and `exclude` may be array of strings, and
 they should not be used in combination. If both are provided, `include` will be
 used.
 
+You may also specify an `includePath` or `excludePath`. These are dot notation
+paths to arrays of strings, and will be used instead of `include` or `exclude`.
+If `include` or `exclude` are also provided, they will be used as default
+values when the corresponding path yields no value. Note that "no value" here
+means `undefined`, and we don't support custom nonvalues here yet.
+
 When given an array of object, each object will be projected. When given
 anything that is not an object, undefined will be returned.
 

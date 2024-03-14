@@ -1425,11 +1425,14 @@ The following transformers may be applied to the value in a pipeline with the
 with the [`filter` operation](#filterconditionFn-operation) to filter away
 values in the pipeline.
 
-#### `bucket({ path, buckets })` transformer
+#### `bucket({ path, buckets, groupByPath })` transformer
 
 The `bucket` transformer will split an array out in buckets based on condition
 pipelines (pipelines that will return truthy for the items that belong in
 a certain bucket) or by size (how many items from the array to put in a bucket).
+There's also an alternative way of using `groupByPath` (see below).
+
+You may specify a `path` to the array that will be sorted into buckets.
 
 The buckets are defined in an array on the `buckets` property, with one object
 per bucket. The object has a `key` property that will be the key of the bucket
@@ -1439,12 +1442,22 @@ belong in the bucket. When distributing based on size, you set `size` to the
 number of items you want to put in this bucket. You may also combine `condition`
 and `size`, to get the provided number of items matching the condition.
 
-You may also specify a `path` to the array that will be sorted into buckets.
-
 Each item is tested against the bucket condition in the order the buckets are
 defined, and will be placed in the first bucket that matches. You may have
 a bucket without a condition or size, which will serve as a catch-all bucket,
 and should therefore be placed last.
+
+As an alternative to specifying `buckets`, you may provide a path or a pipeline
+in `groupByPath`. The transformer will then fetch the value from that path or
+pipeline for every item in the array, and use it as keys for buckets. Every item
+with the same value returned from `groupByPath` will be grouped together. You
+may for example set `groupByPath: 'category'` to get an object with all
+available categories as keys, and items with a certain category grouped in an
+array on the category property.
+
+The value returned from the `groupByPath` pipeline will be forced to a string.
+When the value from an item is a non-value, the item will not be put in any
+group.
 
 When a bucket is run in reverse, the items in the buckets will be merged into
 one array. The order of the items will be the same as the order of the buckets

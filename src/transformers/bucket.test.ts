@@ -1,6 +1,7 @@
 import test from 'ava'
 import transform from '../operations/transform.js'
 import compare from './compare.js'
+import { value } from './value.js'
 
 import bucket, { Bucket } from './bucket.js'
 
@@ -19,7 +20,7 @@ const stateRev = {
   value: {},
 }
 
-const options = {}
+const options = { nonvalues: [undefined, null, ''], transformers: { value } }
 
 // Tests -- forward
 
@@ -285,7 +286,82 @@ test('should merge bucket arrays into one array when going forward and flipped',
   t.deepEqual(ret, expected)
 })
 
-test('should return an empty object when no buckets are defined', async (t) => {
+test('should sort array into buckets based on groupByPath', async (t) => {
+  const data = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user3', name: 'User 3' },
+    { id: 'user4', name: 'User 4', role: 'admin' },
+    { id: 'user5', name: 'User 5', role: '' }, // Empty string is a non-value
+    { id: 'user6', name: 'User 6', role: 'editor' },
+  ]
+  const groupByPath = 'role'
+  const expected = {
+    editor: [
+      { id: 'user1', name: 'User 1', role: 'editor' },
+      { id: 'user6', name: 'User 6', role: 'editor' },
+    ],
+    admin: [{ id: 'user4', name: 'User 4', role: 'admin' }],
+  }
+
+  const ret = await bucket({ groupByPath })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should force values from groupByPath to string', async (t) => {
+  const data = [
+    { id: 'user1', name: 'User 1', role: 1 },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user3', name: 'User 3', role: {} },
+    { id: 'user4', name: 'User 4', role: 2 },
+    { id: 'user5', name: 'User 5', role: '' }, // Empty string is a non-value
+    { id: 'user6', name: 'User 6', role: 1 },
+  ]
+  const groupByPath = 'role'
+  const expected = {
+    '1': [
+      { id: 'user1', name: 'User 1', role: 1 },
+      { id: 'user6', name: 'User 6', role: 1 },
+    ],
+    '[object Object]': [{ id: 'user3', name: 'User 3', role: {} }], // The object is forced string. Probably not what we wanted, but it's the best we can do
+    '2': [{ id: 'user4', name: 'User 4', role: 2 }],
+  }
+
+  const ret = await bucket({ groupByPath })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should sort array into buckets based on a pipeline', async (t) => {
+  const data = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user2', name: 'User 2', role: undefined },
+    { id: 'user3', name: 'User 3' },
+    { id: 'user4', name: 'User 4', role: 'admin' },
+    { id: 'user5', name: 'User 5', role: '' }, // Empty string is a non-value
+    { id: 'user6', name: 'User 6', role: 'editor' },
+  ]
+  const groupByPath = { $alt: ['role', { $value: 'user' }] }
+  const expected = {
+    editor: [
+      { id: 'user1', name: 'User 1', role: 'editor' },
+      { id: 'user6', name: 'User 6', role: 'editor' },
+    ],
+    user: [
+      { id: 'user2', name: 'User 2', role: undefined },
+      { id: 'user3', name: 'User 3' },
+      { id: 'user5', name: 'User 5', role: '' },
+    ],
+    admin: [{ id: 'user4', name: 'User 4', role: 'admin' }],
+  }
+
+  const ret = await bucket({ groupByPath })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return an empty object when no buckets or groupByPath are defined', async (t) => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -455,6 +531,26 @@ test('should merge bucket values into one array even with non-arrays', async (t)
   ]
 
   const ret = await bucket({ buckets })(options)(data, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge buckets based on groupByPath into on array in reverse', async (t) => {
+  const data = {
+    editor: [
+      { id: 'user1', name: 'User 1', role: 'editor' },
+      { id: 'user6', name: 'User 6', role: 'editor' },
+    ],
+    admin: [{ id: 'user4', name: 'User 4', role: 'admin' }],
+  }
+  const groupByPath = 'role'
+  const expected = [
+    { id: 'user1', name: 'User 1', role: 'editor' },
+    { id: 'user6', name: 'User 6', role: 'editor' },
+    { id: 'user4', name: 'User 4', role: 'admin' },
+  ]
+
+  const ret = await bucket({ groupByPath })(options)(data, stateRev)
 
   t.deepEqual(ret, expected)
 })

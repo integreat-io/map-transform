@@ -26,6 +26,7 @@ export interface Bucket {
 export interface Props extends TransformerProps {
   path?: Path
   buckets?: Bucket[]
+  groupByPath?: TransformDefinition
 }
 
 function addToBucket(
@@ -44,18 +45,29 @@ function addToBucket(
 async function sortIntoBuckets(
   getFn: DataMapperWithState | AsyncDataMapperWithState,
   pipelines: PipelineWithKey[],
+  getGroupFn: DataMapperWithState | AsyncDataMapperWithState | undefined,
   data: unknown,
   state: State,
+  nonvalues?: unknown[],
 ) {
   const arr = ensureArray(getFn(data, state))
   const retBucket = new Map<string, unknown[]>()
 
-  for (const value of arr) {
-    for (const [pipeline, key] of pipelines) {
-      const result = await pipeline(value, state)
-      if (result) {
-        addToBucket(value, retBucket, key)
-        break
+  if (pipelines.length > 0) {
+    for (const value of arr) {
+      for (const [pipeline, key] of pipelines) {
+        const result = await pipeline(value, state)
+        if (result) {
+          addToBucket(value, retBucket, key)
+          break
+        }
+      }
+    }
+  } else if (getGroupFn) {
+    for (const value of arr) {
+      const key = await getGroupFn(value, state)
+      if (!isNonvalue(key, nonvalues)) {
+        addToBucket(value, retBucket, String(key))
       }
     }
   }
@@ -83,23 +95,41 @@ function shouldGoInBucket(
 
 const extractArrayFromBuckets = (
   buckets: unknown,
-  keys: string[],
+  keys?: string[],
   nonvalues?: unknown[],
 ) =>
   isObject(buckets)
-    ? keys
+    ? (keys || Object.keys(buckets))
         // eslint-disable-next-line security/detect-object-injection
         .flatMap((key) => buckets[key])
         .filter((key) => !isNonvalue(key, nonvalues))
     : []
 
+const prepareGroupByPathFn = (
+  pipeline: TransformDefinition | undefined,
+  options: Options,
+) =>
+  typeof pipeline === 'string'
+    ? pathGetter(pipeline)
+    : pipeline === undefined
+      ? undefined
+      : defToDataMapper(pipeline, options)
+
+// Return keys from buckets. If there's no buckets and we havev a group fn,
+// return `undefined` to signal that we want whatever keys are in the data
+const extractBucketKeys = (buckets: Bucket[], hasGroupFn: boolean) =>
+  buckets.length === 0 && hasGroupFn ? undefined : buckets.map(({ key }) => key)
+
 const transformer: AsyncTransformer<Props> = function bucket({
   path = '.',
   buckets = [],
+  groupByPath,
 }) {
   return (options) => {
     const getFn = pathGetter(path)
     const setFn = pathSetter(path, options)
+    const getGroupByPathFn = prepareGroupByPathFn(groupByPath, options)
+
     const pipelines: PipelineWithKey[] = buckets
       .filter(({ key }) => typeof key === 'string')
       .map((bucket) => [
@@ -110,7 +140,7 @@ const transformer: AsyncTransformer<Props> = function bucket({
         ),
         bucket.key,
       ])
-    const keys = buckets.map(({ key }) => key)
+    const keys = extractBucketKeys(buckets, !!getGroupByPathFn)
 
     return async (data, state) => {
       if (revFromState(state)) {
@@ -119,7 +149,14 @@ const transformer: AsyncTransformer<Props> = function bucket({
           state,
         )
       } else {
-        return sortIntoBuckets(getFn, pipelines, data, state)
+        return sortIntoBuckets(
+          getFn,
+          pipelines,
+          getGroupByPathFn,
+          data,
+          state,
+          options.nonvalues,
+        )
       }
     }
   }

@@ -6,6 +6,7 @@
     "moduleResolution": "node16",
     "moduleDetection": "force",
     "declaration": true,
+    "resolveJsonModule": false,
     "sourceMap": true,
     "noEmitOnError": false,
     "strict": true,
@@ -23,8 +24,5 @@
     },
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
-  "ts-node": {
-    "transpileOnly": true
-  }
+  "include": ["src/**/*"]
 }

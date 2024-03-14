@@ -3,6 +3,7 @@ logs
 *.log
 *.dump
 .nyc_output
+.tsimp
 coverage
 npm-debug.log.*
 

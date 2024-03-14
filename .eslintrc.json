@@ -7,7 +7,7 @@
     "plugin:@typescript-eslint/recommended",
     "prettier",
     "plugin:promise/recommended",
-    "plugin:security/recommended"
+    "plugin:security/recommended-legacy"
   ],
   "globals": {
     "Atomics": "readonly",
@@ -35,7 +35,7 @@
   },
   "overrides": [
     {
-      "files": ["*.test.ts","*.test.js"],
+      "files": ["*.test.ts", "*.test.js"],
       "rules": {
         "node/no-extraneous-import": "off"
       }

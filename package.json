@@ -26,10 +26,10 @@
     }
   },
   "scripts": {
-    "test": "npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.cjs",
+    "test": "npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.js",
     "test:watch": "npm run dev",
     "dev": "ava --watch",
-    "perf": "ava --watch --config ./ava-perf.config.cjs",
+    "perf": "ava --watch --config ./ava-perf.config.js",
     "build": "tsc",
     "prepublish": "npm run build",
     "coverage": "c8 report",
@@ -53,8 +53,9 @@
     "map-any": "^1.0.0"
   },
   "devDependencies": {
-    "@integreat/ts-dev-setup": "^5.0.4",
+    "@integreat/ts-dev-setup": "^6.0.1",
     "@types/deep-freeze": "^0.1.5",
+    "@types/node": "^20.11.27",
     "@types/sinon": "^17.0.3",
     "deep-freeze": "0.0.1",
     "sinon": "^17.0.1"

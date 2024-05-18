@@ -70,12 +70,7 @@ const transformer: Transformer<Props> = function bucket({
   // arrays of objects. Any non-object will replaced by `undefined`.
   return () => (data, state) =>
     mapAny(
-      (data) =>
-        isObject(data)
-          ? state.rev
-            ? data
-            : projectFn(data, state)
-          : undefined,
+      (data) => (isObject(data) ? projectFn(data, state) : undefined),
       data,
     )
 }

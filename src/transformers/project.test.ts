@@ -305,8 +305,13 @@ test('should return undefined for non-objects for neither include nor exclude', 
 
 // Tests -- reverse
 
-test('should not touch objects in reverse -- include', (t) => {
-  const data = { id: 'ent1', title: 'Entry 1' }
+test('should do include in reverse', (t) => {
+  const data = {
+    id: 'ent1',
+    title: 'Entry 1',
+    $type: 'entry',
+    author: { id: 'johnf' },
+  }
   const include = ['id', 'title']
   const expected = { id: 'ent1', title: 'Entry 1' }
 
@@ -315,54 +320,17 @@ test('should not touch objects in reverse -- include', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not touch objects in reverse -- exclude', (t) => {
-  const data = { id: 'ent1', title: 'Entry 1' }
-  const include = ['$type', 'author']
-  const expected = { id: 'ent1', title: 'Entry 1' }
+test('should do exclude in reverse', (t) => {
+  const data = {
+    id: 'ent1',
+    title: 'Entry 1',
+    $type: 'entry',
+    author: { id: 'johnf' },
+  }
+  const exclude = ['$type', 'title']
+  const expected = { id: 'ent1', author: { id: 'johnf' } }
 
-  const ret = project({ include })(options)(data, stateRev)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should not touch objects in reverse -- neither', (t) => {
-  const data = { id: 'ent1', title: 'Entry 1' }
-  const expected = { id: 'ent1', title: 'Entry 1' }
-
-  const ret = project({})(options)(data, stateRev)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should not touch objects in array in reverse -- include', (t) => {
-  const data = [{ id: 'ent1', title: 'Entry 1' }, { id: 'ent2' }]
-  const include = ['id', 'title']
-  const expected = [{ id: 'ent1', title: 'Entry 1' }, { id: 'ent2' }]
-
-  const ret = project({ include })(options)(data, stateRev)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should not touch objects in array in reverse -- exclude', (t) => {
-  const data = [{ id: 'ent1', title: 'Entry 1' }, { id: 'ent2' }]
-  const include = ['$type', 'author']
-  const expected = [{ id: 'ent1', title: 'Entry 1' }, { id: 'ent2' }]
-
-  const ret = project({ include })(options)(data, stateRev)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should not touch objects in array in reverse -- neither', (t) => {
-  const data = [
-    { id: 'ent1', title: 'Entry 1' },
-    { id: 'ent2' },
-    'Do not include',
-  ]
-  const expected = [{ id: 'ent1', title: 'Entry 1' }, { id: 'ent2' }, undefined]
-
-  const ret = project({})(options)(data, stateRev)
+  const ret = project({ exclude })(options)(data, stateRev)
 
   t.deepEqual(ret, expected)
 })

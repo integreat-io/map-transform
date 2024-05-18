@@ -120,6 +120,7 @@ test('should match several matches when `matchSeveral` is true', async (t) => {
 })
 
 test('should force the value at array path to an array', async (t) => {
+  const props = { arrayPath: '^^related.users', propPath: 'id' } // No array brackets in path
   const data = {
     content: { author: 'user2' },
     related: {

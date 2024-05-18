@@ -9,6 +9,7 @@ import {
 } from '../utils/stateHelpers.js'
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
+import { isObject } from '../utils/is.js'
 
 export interface Props extends TransformerProps {
   arrayPath: Path
@@ -49,7 +50,13 @@ const matchInArray =
     const getFn = getArray({})(noopNext)
     return async (value: unknown) => {
       const { value: arr } = await getFn(goForward(state))
-      return Array.isArray(arr) ? match(value, state, arr, getProp) : undefined
+      if (Array.isArray(arr)) {
+        return match(value, state, arr, getProp)
+      } else if (isObject(arr)) {
+        return match(value, state, [arr], getProp)
+      } else {
+        return undefined
+      }
     }
   }
 

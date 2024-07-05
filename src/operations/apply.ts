@@ -4,7 +4,7 @@ import type {
   State,
   TransformDefinition,
 } from '../types.js'
-import { defToOperation } from '../utils/definitionHelpers.js'
+import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 
 // TODO: use a Map instead of an object, and prepare the pipelines when the
@@ -19,7 +19,7 @@ const getPipeline = (pipelineId: string | symbol, { pipelines }: Options) =>
 function setPipeline(
   id: string | symbol,
   operation: Operation,
-  options: Options
+  options: Options,
 ) {
   if (options.pipelines) {
     options.pipelines[id] = operation // eslint-disable-line security/detect-object-injection
@@ -35,12 +35,12 @@ const removeFlip = ({ flip, ...state }: State) => state
 function prepareAndSetPipeline(
   pipelineId: string | symbol,
   pipeline: TransformDefinition,
-  options: Options
+  options: Options,
 ) {
   if (typeof pipeline !== 'function' && pipeline) {
     setPipeline(pipelineId, () => () => noopNext, options) // Set an empty operation to tell any `apply()` calls further down, that we are taking care of this pipeline
-    const operation = defToOperation(pipeline, options)(options)
-    setPipeline(pipelineId, () => operation, options) // Set the actual operation
+    const nextStateMapper = defToNextStateMapper(pipeline, options)
+    setPipeline(pipelineId, () => nextStateMapper, options) // Set the actual operation
   }
 }
 

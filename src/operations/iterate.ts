@@ -11,7 +11,7 @@ import {
   getTargetFromState,
   setTargetOnState,
 } from '../utils/stateHelpers.js'
-import { defToOperation } from '../utils/definitionHelpers.js'
+import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { indexOfIfArray } from '../utils/array.js'
 import { noopNext } from '../utils/stateHelpers.js'
 
@@ -57,7 +57,7 @@ export default function iterate(def: TransformDefinition): Operation {
       setStateValue(await next(state), undefined)
   }
   return (options) => {
-    const fn = defToOperation(def, options)(options)
+    const fn = defToNextStateMapper(def, options)
     return (next) => {
       const runIteration = iterateState(fn(noopNext))
       return async function doIterate(state) {

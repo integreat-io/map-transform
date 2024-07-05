@@ -5,7 +5,7 @@ import {
   revFromState,
   flipState,
 } from '../utils/stateHelpers.js'
-import { defToOperation } from '../utils/definitionHelpers.js'
+import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import type {
   Operation,
@@ -27,7 +27,7 @@ async function getAndMergeArrays(state: State, fns: StateMapper[]) {
   }
   return setStateValue(
     state,
-    nextValue.filter((val) => val !== undefined)
+    nextValue.filter((val) => val !== undefined),
   )
 }
 
@@ -44,12 +44,10 @@ async function setArrayOnFirstOperation(state: State, fns: StateMapper[]) {
 
 function concatPipelines(
   defs: TransformDefinition[],
-  flip: boolean
+  flip: boolean,
 ): Operation {
   return (options) => {
-    const fns = defs.map((def) =>
-      defToOperation(def, options)(options)(noopNext)
-    )
+    const fns = defs.map((def) => defToNextStateMapper(def, options)(noopNext))
 
     if (fns.length === 0) {
       // Always return an empty array (or empty object in rev) when there are no

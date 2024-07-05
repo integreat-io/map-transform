@@ -5,16 +5,16 @@ import {
   getTargetFromState,
   goForward,
 } from '../utils/stateHelpers.js'
-import { defToOperation } from '../utils/definitionHelpers.js'
+import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
 import { noopNext } from '../utils/stateHelpers.js'
 
 export default function modify(def: TransformDefinition): Operation {
   return (options) => {
-    const runFn = defToOperation(def, options)
+    const runFn = defToNextStateMapper(def, options)(noopNext)
     return (next) => async (state) => {
       const nextState = await next(state)
-      const thisState = await runFn(options)(noopNext)(goForward(nextState))
+      const thisState = await runFn(goForward(nextState))
 
       const target = getTargetFromState(nextState)
       const value = getStateValue(thisState)
@@ -24,8 +24,8 @@ export default function modify(def: TransformDefinition): Operation {
         isObject(target) && isObject(value)
           ? { ...value, ...target }
           : isObject(value)
-          ? value
-          : target,
+            ? value
+            : target,
       )
     }
   }

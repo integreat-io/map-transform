@@ -18,6 +18,7 @@ import { unescapeValue } from './escape.js'
 import { ensureArray } from './array.js'
 import type {
   Operation,
+  NextStateMapper,
   TransformDefinition,
   TransformObject,
   Path,
@@ -247,19 +248,47 @@ function operationFromObject(
   }
 }
 
-export const defToOperations = (
+export function defToOperations(
   def: TransformDefinition | undefined,
   options: Options,
-): Operation[] | Operation =>
-  isPipeline(def)
-    ? def.flatMap((def) => defToOperations(def, options))
-    : isObject(def)
-      ? operationFromObject(def, options.modifyOperationObject)
-      : isPath(def)
-        ? get(def)
-        : isOperation(def)
-          ? def
-          : () => () => async (value) => value
+): Operation[] | Operation {
+  if (isPipeline(def)) {
+    return def.flatMap((def) => defToOperations(def, options))
+  } else if (isObject(def)) {
+    return operationFromObject(def, options.modifyOperationObject)
+  } else if (isPath(def)) {
+    return get(def)
+  } else if (isOperation(def)) {
+    return def
+  } else {
+    return () => () => async (value) => value
+  }
+}
+
+const callOptions = (operations: Operation | Operation[], options: Options) =>
+  Array.isArray(operations)
+    ? operations.map((op) => op(options))
+    : operations(options)
+
+export function defToNextStateMappers(
+  def: TransformDefinition | undefined,
+  options: Options,
+): NextStateMapper[] | NextStateMapper {
+  if (isPipeline(def)) {
+    return def.flatMap((def) => defToNextStateMappers(def, options))
+  } else if (isObject(def)) {
+    return callOptions(
+      operationFromObject(def, options.modifyOperationObject),
+      options,
+    )
+  } else if (isPath(def)) {
+    return get(def).map((op) => op(options))
+  } else if (isOperation(def)) {
+    return def(options)
+  } else {
+    return () => async (value) => value
+  }
+}
 
 export function defToOperation(
   def: TransformDefinition | undefined,
@@ -269,11 +298,17 @@ export function defToOperation(
   return pipeIfArray(operations)
 }
 
-export function operationToDataMapper(
-  operation: Operation,
+export function defToNextStateMapper(
+  def: TransformDefinition | undefined,
   options: Options,
+): NextStateMapper {
+  return defToOperation(def, options)(options)
+}
+
+function createDataMapper(
+  nextStateMapper: NextStateMapper,
 ): DataMapperWithState | AsyncDataMapperWithState {
-  const fn = operation(options)(noopNext)
+  const fn = nextStateMapper(noopNext)
   return async (value, state) =>
     getStateValue(await fn(setStateValue(state, value)))
 }
@@ -282,5 +317,5 @@ export function defToDataMapper(
   def?: TransformDefinition,
   options: Options = {},
 ): DataMapperWithState | AsyncDataMapperWithState {
-  return operationToDataMapper(defToOperation(def, options), options)
+  return createDataMapper(defToNextStateMapper(def, options))
 }

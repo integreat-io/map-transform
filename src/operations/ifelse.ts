@@ -1,47 +1,44 @@
-import type { DataMapper, TransformDefinition, Operation } from '../types.js'
 import {
   getStateValue,
   setStateValue,
   goForward,
 } from '../utils/stateHelpers.js'
-import { defToOperation } from '../utils/definitionHelpers.js'
+import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
+import type {
+  DataMapper,
+  TransformDefinition,
+  Operation,
+  StateMapper,
+} from '../types.js'
 
-function runCondition(conditionDef: DataMapper): Operation {
-  return () => (next) => async (state) => {
-    const nextState = await next(state)
-    return setStateValue(
-      nextState,
-      await conditionDef(getStateValue(nextState), nextState)
-    )
+function runCondition(conditionDef: DataMapper): StateMapper {
+  return async (state) => {
+    return setStateValue(state, await conditionDef(getStateValue(state), state))
   }
 }
 
 export default function (
   conditionDef?: DataMapper | TransformDefinition,
   trueDef?: TransformDefinition,
-  falseDef?: TransformDefinition
+  falseDef?: TransformDefinition,
 ): Operation {
   return (options) => {
-    const falseFn = defToOperation(falseDef, options)
     if (!conditionDef) {
-      return falseFn(options)
+      return defToNextStateMapper(falseDef, options)
     }
-    const conditionFn: Operation =
+    const conditionFn: StateMapper =
       typeof conditionDef === 'function'
         ? runCondition(conditionDef as DataMapper) // We know to expect a datamapper here
-        : defToOperation(conditionDef, options)
-    const trueFn = defToOperation(trueDef, options)
+        : defToNextStateMapper(conditionDef, options)(noopNext)
+    const falseFn = defToNextStateMapper(falseDef, options)(noopNext)
+    const trueFn = defToNextStateMapper(trueDef, options)(noopNext)
 
     return (next) => {
-      const runCondition = conditionFn(options)(noopNext)
-      const runTrue = trueFn(options)(noopNext)
-      const runFalse = falseFn(options)(noopNext)
-
       return async (state) => {
         const nextState = await next(state)
-        const bool = getStateValue(await runCondition(goForward(nextState)))
-        return bool ? await runTrue(nextState) : await runFalse(nextState)
+        const bool = getStateValue(await conditionFn(goForward(nextState)))
+        return bool ? await trueFn(nextState) : await falseFn(nextState)
       }
     }
   }

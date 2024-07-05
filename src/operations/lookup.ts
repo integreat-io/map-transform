@@ -6,7 +6,7 @@ import {
   goForward,
   revFromState,
 } from '../utils/stateHelpers.js'
-import { defToOperation } from '../utils/definitionHelpers.js'
+import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import type {
@@ -96,7 +96,7 @@ export function lookup({
 
     const getter = pathGetter(propPath)
     const matchFn = matchInArray(
-      defToOperation(arrayPath, options)(options),
+      defToNextStateMapper(arrayPath, options),
       matchSeveral ? findAllMatches : findOneMatch,
       getter,
     )

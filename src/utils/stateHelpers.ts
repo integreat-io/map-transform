@@ -97,14 +97,17 @@ export const populateState = (
   noDefaults,
 })
 
-export const goForward = (state: State) =>
-  state.rev || state.flip
-    ? {
-        ...state,
-        rev: false,
-        flip: false,
-      }
-    : state
+export function goForward(state: State) {
+  if (state.rev || state.flip) {
+    return {
+      ...state,
+      rev: false,
+      flip: false,
+    }
+  } else {
+    return state
+  }
+}
 
 export const flipState = (state: State, flip = true) => ({
   ...state,

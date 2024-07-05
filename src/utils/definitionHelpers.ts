@@ -213,9 +213,11 @@ function createLookupOperation(
 
 function operationFromObject(
   defRaw: OperationObject | TransformObject,
-  options: Options,
+  customModifyOpFn?: (
+    operation: Record<string, unknown>,
+  ) => Record<string, unknown>,
 ): Operation | Operation[] {
-  const def = modifyOperationObject(defRaw, options.modifyOperationObject)
+  const def = modifyOperationObject(defRaw, customModifyOpFn)
 
   if (isOperationObject(def)) {
     if (isOperationType<TransformOperation>(def, '$transform')) {
@@ -252,12 +254,12 @@ export const defToOperations = (
   isPipeline(def)
     ? def.flatMap((def) => defToOperations(def, options))
     : isObject(def)
-    ? operationFromObject(def, options)
-    : isPath(def)
-    ? get(def)
-    : isOperation(def)
-    ? def
-    : () => () => async (value) => value
+      ? operationFromObject(def, options.modifyOperationObject)
+      : isPath(def)
+        ? get(def)
+        : isOperation(def)
+          ? def
+          : () => () => async (value) => value
 
 export function defToOperation(
   def: TransformDefinition | undefined,

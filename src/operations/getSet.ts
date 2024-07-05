@@ -11,6 +11,7 @@ import {
   isNonvalue,
   revFromState,
   clearUntouched,
+  setIterate,
 } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
@@ -24,13 +25,6 @@ import type {
 } from '../types.js'
 
 const adjustIsSet = (isSet: boolean, state: State) => revFromState(state, isSet) // `isSet` will work as `flip` here
-
-function flatMapAny(fn: (value: unknown, target?: unknown) => unknown) {
-  return (value: unknown, target?: unknown) =>
-    Array.isArray(value)
-      ? value.flatMap((value) => fn(value, target))
-      : fn(value, target)
-}
 
 function handleArrayPath(path: string): [string | number, boolean, boolean] {
   if (path.endsWith('][')) {
@@ -67,41 +61,33 @@ function preparePath(
   return [path, false, false]
 }
 
-function getSetProp(path: string) {
-  if (path === '') {
-    // We have an empty path, return the value as is
-    return (value: unknown) => value
-  }
-
-  const getFn = flatMapAny((value) =>
-    isObject(value) ? value[path] : undefined,
-  )
-  const setFn = (value: unknown, target?: unknown) =>
-    isObject(target) ? { ...target, [path]: value } : { [path]: value }
-
-  return (value: unknown, isSet: boolean, target?: unknown) => {
-    if (isSet) {
-      return setFn(value, target)
-    } else {
-      return getFn(value)
-    }
-  }
-}
-
 const calculateIndex = (index: number, arr: unknown[]) =>
   index >= 0 ? index : arr.length + index
 
-function getSetIndex(index: number) {
-  return (value: unknown, isSet: boolean, target?: unknown) => {
-    if (isSet) {
-      const arr = Array.isArray(target) ? [...target] : []
-      arr[calculateIndex(index, arr)] = value
-      return arr
-    } else {
-      return Array.isArray(value)
-        ? value[calculateIndex(index, value)]
-        : undefined
-    }
+const getFn = (value: unknown, path: Path) =>
+  isObject(value) ? value[path] : undefined
+
+function getValue(value: unknown, path: string | number) {
+  if (typeof path === 'number') {
+    return Array.isArray(value) ? value[calculateIndex(path, value)] : undefined
+  } else if (path === '') {
+    return value
+  } else {
+    return Array.isArray(value)
+      ? value.flatMap((value) => getFn(value, path))
+      : getFn(value, path)
+  }
+}
+
+function setValue(value: unknown, path: string | number, target?: unknown) {
+  if (typeof path === 'number') {
+    const arr = Array.isArray(target) ? [...target] : []
+    arr[calculateIndex(path, arr)] = value
+    return arr
+  } else if (path === '') {
+    return value
+  } else {
+    return isObject(target) ? { ...target, [path]: value } : { [path]: value }
   }
 }
 
@@ -149,6 +135,70 @@ function doModifyGetValue(value: unknown, state: State, options: Options) {
     : value
 }
 
+const createDoGetSet = (
+  options: Options,
+  next: StateMapper,
+  path: Path | number,
+  isSet: boolean,
+  isArr: boolean,
+  isIndexProp: boolean,
+) =>
+  async function doGetSet(state: State) {
+    if (adjustIsSet(isSet, state)) {
+      // Set
+      // We'll go backwards first. Start by preparing target for the next set
+      const target = getTargetFromState(state)
+      const nextTarget = getValue(target, path)
+
+      // Invoke the "previous" path part with the right target, iterate if array
+      const nextState = await next(
+        setTargetOnState(
+          isArr && !state.iterate ? setIterate(state) : state,
+          nextTarget,
+        ),
+      )
+
+      // Now it's our turn. Set the state value -- and iterate if necessary
+      const setIt = (value: unknown, index?: number) =>
+        setValue(value, path, indexOfIfArray(target, index))
+
+      const nextValue = getStateValue(nextState)
+      if (state.noDefaults && isNonvalue(nextValue, options.nonvalues)) {
+        return setStateValue(state, target)
+      }
+      const value = isArr
+        ? ensureArray(nextValue, options.nonvalues)
+        : nextValue
+
+      const thisValue =
+        nextState.iterate && !isArr && !isIndexProp
+          ? mapAny(setIt, value)
+          : setIt(value)
+
+      // Return the value
+      return setStateValue(state, thisValue)
+    } else {
+      // Get
+      // Go backwards
+      const nextState = await next(state)
+      const thisValue = getValue(getStateValue(nextState), path)
+      const modifiedValue = doModifyGetValue(thisValue, nextState, options)
+
+      const value =
+        state.noDefaults && isNonvalue(modifiedValue, options.nonvalues)
+          ? undefined
+          : isArr
+            ? ensureArray(modifiedValue, options.nonvalues)
+            : modifiedValue
+
+      return setStateValue(
+        nextState,
+        value,
+        true, // Push to context
+      )
+    }
+  }
+
 function getSet(isSet = false) {
   return (path: string | number): Operation => {
     if (typeof path === 'string') {
@@ -160,65 +210,8 @@ function getSet(isSet = false) {
     }
 
     const [basePath, isArr, isIndexProp] = preparePath(path)
-    const isIndex = typeof basePath === 'number'
-    const getSetFn = isIndex ? getSetIndex(basePath) : getSetProp(basePath)
-
     return (options) => (next) =>
-      async function doGetSet(state) {
-        if (adjustIsSet(isSet, state)) {
-          // Set
-          // We'll go backwards first. Start by preparing target for the next set
-          const target = getTargetFromState(state)
-          const nextTarget = getSetFn(target, false)
-
-          // Invoke the "previous" path part with the right target, iterate if array
-          const nextState = await next(
-            setTargetOnState(
-              { ...state, iterate: state.iterate || isArr },
-              nextTarget,
-            ),
-          )
-
-          // Now it's our turn. Set the state value - and iterate if necessary
-          const setIt = (value: unknown, index?: number) =>
-            getSetFn(value, true, indexOfIfArray(target, index))
-
-          const nextValue = getStateValue(nextState)
-          if (state.noDefaults && isNonvalue(nextValue, options.nonvalues)) {
-            return setStateValue(state, target)
-          }
-          const value = isArr
-            ? ensureArray(nextValue, options.nonvalues)
-            : nextValue
-
-          const thisValue =
-            nextState.iterate && !isArr && !isIndexProp
-              ? mapAny(setIt, value)
-              : setIt(value)
-
-          // Return the value
-          return setStateValue(state, thisValue)
-        } else {
-          // Get
-          // Go backwards
-          const nextState = await next(state)
-          const thisValue = getSetFn(getStateValue(nextState), false)
-          const modifiedValue = doModifyGetValue(thisValue, nextState, options)
-
-          const value =
-            state.noDefaults && isNonvalue(modifiedValue, options.nonvalues)
-              ? undefined
-              : isArr
-              ? ensureArray(modifiedValue, options.nonvalues)
-              : modifiedValue
-
-          return setStateValue(
-            nextState,
-            value,
-            true, // Push to context
-          )
-        }
-      }
+      createDoGetSet(options, next, basePath, isSet, isArr, isIndexProp)
   }
 }
 
@@ -306,14 +299,18 @@ function prepareGetFn([part, isArr]: [string | number, boolean, boolean]): (
       const nextState = isRoot ? getRoot(state) : getParent(state)
       return [nextState.value, nextState]
     }
-  } else if (typeof part === 'number') {
-    // This is an index part
-    const fn = getByPart(part, isArr)
-    return (value) => [fn(value), undefined]
   } else {
-    // This is a regular part
-    const fn = flatMapAny(getByPart(part, isArr))
-    return (value) => [fn(value), undefined]
+    const fn = getByPart(part, isArr)
+
+    if (typeof part === 'number') {
+      // This is an index part
+      return (value) => [fn(value), undefined]
+    } else {
+      // This is a prop part
+      const flatFn = (value: unknown) =>
+        Array.isArray(value) ? value.flatMap(fn) : fn(value)
+      return (value) => [flatFn(value), undefined]
+    }
   }
 }
 

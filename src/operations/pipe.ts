@@ -4,7 +4,13 @@ import transform from './transform.js'
 import flatten from '../transformers/flatten.js'
 import { defToNextStateMappers } from '../utils/definitionHelpers.js'
 import { setValueFromState, revFromState } from '../utils/stateHelpers.js'
-import type { Pipeline, Operation, StateMapper, State } from '../types.js'
+import type {
+  Pipeline,
+  Operation,
+  StateMapper,
+  State,
+  NextStateMapper,
+} from '../types.js'
 
 interface Fn {
   (next: StateMapper): StateMapper
@@ -52,6 +58,22 @@ function createPipeFn(
   }
 }
 
+export function pipeNext(
+  fns: NextStateMapper[],
+  doReturnContext = false,
+): NextStateMapper {
+  if (fns.length === 0) {
+    return () => async (state) => state // TODO: Should we call next here?
+  }
+
+  return (next) => {
+    const runFwd = fns.reduce(chain, next)
+    const runRev = fns.reduceRight(chain, next)
+
+    return createPipeFn(runFwd, runRev, doReturnContext)
+  }
+}
+
 export default function pipe(
   defs?: Pipeline,
   doReturnContext = false,
@@ -65,11 +87,6 @@ export default function pipe(
       .flat()
       .flatMap((def) => defToNextStateMappers(def, options))
 
-    return (next) => {
-      const runFwd = fns.reduce(chain, next)
-      const runRev = fns.reduceRight(chain, next)
-
-      return createPipeFn(runFwd, runRev, doReturnContext)
-    }
+    return pipeNext(fns, doReturnContext)
   }
 }

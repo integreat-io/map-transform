@@ -1,4 +1,4 @@
-import pipe from './pipe.js'
+import { pipeNext } from './pipe.js'
 import {
   setValueFromState,
   popContext,
@@ -7,9 +7,10 @@ import {
   markAsUntouched,
   isUntouched,
 } from '../utils/stateHelpers.js'
-import { defToOperations } from '../utils/definitionHelpers.js'
+import { defToNextStateMappers } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import type {
+  NextStateMapper,
   Operation,
   State,
   StateMapper,
@@ -18,8 +19,8 @@ import type {
 
 // We run an array of operations through a pipe here when necessary, and specify
 // that the pipe should return context
-const pipeIfArray = (def: Operation | Operation[]) =>
-  Array.isArray(def) ? pipe(def, true) : def
+const pipeIfArray = (def: NextStateMapper | NextStateMapper[]) =>
+  Array.isArray(def) ? pipeNext(def, true) : def
 
 // Run the pipeline and return the value. If the state value has not been
 // changed by the alt pipeline, we set it to undefined to correct the case where
@@ -51,12 +52,10 @@ async function runAltPipeline(pipeline: StateMapper, state: State) {
 function createOneAltPipeline(
   def: TransformDefinition,
   index: number,
-  hasOnlyOneAlt: boolean
+  hasOnlyOneAlt: boolean,
 ): Operation {
   return (options) => {
-    const pipeline = pipeIfArray(defToOperations(def, options))(options)(
-      noopNext
-    )
+    const pipeline = pipeIfArray(defToNextStateMappers(def, options))(noopNext)
     const isFirst = !hasOnlyOneAlt && index === 0
     const { nonvalues } = options
 
@@ -90,6 +89,6 @@ function createOneAltPipeline(
 export default function alt(...defs: TransformDefinition[]): Operation[] {
   const hasOnlyOneAlt = defs.length === 1
   return defs.map((def, index) =>
-    createOneAltPipeline(def, index, hasOnlyOneAlt)
+    createOneAltPipeline(def, index, hasOnlyOneAlt),
   )
 }

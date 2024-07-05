@@ -199,7 +199,7 @@ const createSetPipeline = (options: Options) =>
     // be flattened out with the `set`, to avoid destroying iteration logic.
     const operations = [
       () => defToNextStateMapper(pipeline, options), // We have to return from a function since the pipeline expects an operation
-      set(unslashedProp),
+      ...set(unslashedProp),
     ]
     return createDirectionalOperation(operations, onlyFwd, onlyRev)(options)
   }

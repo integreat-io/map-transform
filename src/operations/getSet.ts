@@ -102,7 +102,7 @@ function getRoot(state: State) {
   return { ...state, context: [], value: nextValue }
 }
 
-function getSetParentOrRoot(path: string, isSet: boolean): Operation {
+export function getSetParentOrRoot(path: string, isSet: boolean): Operation {
   const getFn = path[1] === '^' ? getRoot : getParent
   return () => (next) => async (state) => {
     const nextState = await next(state)

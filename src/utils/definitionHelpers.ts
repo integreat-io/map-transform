@@ -13,7 +13,7 @@ import alt from '../operations/alt.js'
 import { fwd, rev } from '../operations/directionals.js'
 import { concat, concatRev } from '../operations/concat.js'
 import { lookup, lookdown, Props as LookupProps } from '../operations/lookup.js'
-import pipe from '../operations/pipe.js'
+import pipe, { pipeNext } from '../operations/pipe.js'
 import { unescapeValue } from './escape.js'
 import { ensureArray } from './array.js'
 import type {
@@ -254,25 +254,6 @@ function operationFromObject(
   }
 }
 
-// NOTE: We want to replace this function with `defToNextStateMappers` if
-// possible, and are trying to use `defToNextStateMappers` everywhere we can
-export function defToOperations(
-  def: TransformDefinition | undefined,
-  options: Options,
-): Operation[] | Operation {
-  if (isPipeline(def)) {
-    return def.flatMap((def) => defToOperations(def, options))
-  } else if (isObject(def)) {
-    return operationFromObject(def, options.modifyOperationObject)
-  } else if (isPath(def)) {
-    return get(def)
-  } else if (isOperation(def)) {
-    return def
-  } else {
-    return () => () => async (value) => value
-  }
-}
-
 const callOptions = (operations: Operation | Operation[], options: Options) =>
   Array.isArray(operations)
     ? operations.map((op) => op(options))
@@ -290,7 +271,7 @@ export function defToNextStateMappers(
       options,
     )
   } else if (isPath(def)) {
-    return get(def).map((op) => op(options))
+    return get(def).map((op) => op(options)) // Use `getNext` when we have it
   } else if (isOperation(def)) {
     return def(options)
   } else {
@@ -302,8 +283,14 @@ export function defToNextStateMapper(
   def: TransformDefinition | undefined,
   options: Options,
 ): NextStateMapper {
-  const operations = isPipeline(def) ? def : defToOperations(def, options)
-  return pipeIfArray(operations)(options)
+  const nextStateMappers = isPipeline(def)
+    ? pipe(def)(options)
+    : defToNextStateMappers(def, options)
+  if (Array.isArray(nextStateMappers)) {
+    return pipeNext(nextStateMappers)
+  } else {
+    return nextStateMappers
+  }
 }
 
 function createDataMapper(

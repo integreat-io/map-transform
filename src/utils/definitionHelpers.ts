@@ -248,6 +248,8 @@ function operationFromObject(
   }
 }
 
+// NOTE: We want to replace this function with `defToNextStateMappers` if
+// possible, and are trying to use `defToNextStateMappers` everywhere we can
 export function defToOperations(
   def: TransformDefinition | undefined,
   options: Options,
@@ -290,19 +292,12 @@ export function defToNextStateMappers(
   }
 }
 
-export function defToOperation(
-  def: TransformDefinition | undefined,
-  options: Options,
-): Operation {
-  const operations = isPipeline(def) ? def : defToOperations(def, options)
-  return pipeIfArray(operations)
-}
-
 export function defToNextStateMapper(
   def: TransformDefinition | undefined,
   options: Options,
 ): NextStateMapper {
-  return defToOperation(def, options)(options)
+  const operations = isPipeline(def) ? def : defToOperations(def, options)
+  return pipeIfArray(operations)(options)
 }
 
 function createDataMapper(

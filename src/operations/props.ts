@@ -157,9 +157,7 @@ function createDirectionalOperation(
   onlyFwd: boolean,
   onlyRev: boolean,
 ) {
-  if (onlyRev && onlyFwd) {
-    return undefined // Don't run anything when both directions are disabled
-  } else if (onlyRev) {
+  if (onlyRev) {
     return divide(plug(), pipeline, true) // Plug going forward -- unless flipped
   } else if (onlyFwd) {
     return divide(pipeline, plug(), true) // Plug going in reverse -- unless flipped
@@ -191,6 +189,11 @@ const createSetPipeline = (options: Options) =>
     const isSlashed = prop !== unslashedProp // If these are different, we have removed a slash
     const onlyFwd = isPathWithModify(unslashedProp)
     const onlyRev = isSlashed || isPathWithModify(pipeline)
+
+    if (onlyRev && onlyFwd) {
+      // We're going neighter way, so just stop here
+      return undefined
+    }
 
     // Prepare the operations and return as an operation
     const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic

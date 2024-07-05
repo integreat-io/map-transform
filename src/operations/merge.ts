@@ -5,7 +5,7 @@ import {
   setStateValue,
   isNonvalueState,
 } from '../utils/stateHelpers.js'
-import { defToOperation } from '../utils/definitionHelpers.js'
+import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
 
 export function mergeExisting<T, U>(
@@ -32,8 +32,8 @@ export function mergeStates(state: State, thisState: State) {
   const value = !isObject(source)
     ? target
     : !isObject(target)
-    ? source
-    : deepmerge(target, source, { arrayMerge: mergeExisting })
+      ? source
+      : deepmerge(target, source, { arrayMerge: mergeExisting })
 
   return setStateValue(state, value)
 }
@@ -44,7 +44,7 @@ export default function merge(...defs: TransformDefinition[]): Operation {
       return async (state) => setStateValue(await next(state), undefined)
     }
     const pipelines = defs.map((def) =>
-      defToOperation(def, options)(options)(next),
+      defToNextStateMapper(def, options)(next),
     )
 
     return async function (state) {

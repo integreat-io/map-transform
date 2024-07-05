@@ -2,21 +2,15 @@ import { divide, fwd } from './directionals.js'
 import iterate from './iterate.js'
 import transform from './transform.js'
 import flatten from '../transformers/flatten.js'
-import { defToOperations } from '../utils/definitionHelpers.js'
+import { defToNextStateMappers } from '../utils/definitionHelpers.js'
 import { setValueFromState, revFromState } from '../utils/stateHelpers.js'
-import type { Pipeline, Operation, StateMapper } from '../types.js'
+import type { Pipeline, Operation, StateMapper, State } from '../types.js'
 
 interface Fn {
   (next: StateMapper): StateMapper
 }
 
-function createRun(fns: Fn[], next: StateMapper) {
-  let fn = next
-  for (const f of fns) {
-    fn = f(fn)
-  }
-  return fn
-}
+const chain = (next: StateMapper, fn: Fn) => fn(next)
 
 // Run through a pipeline def and split up any paths with open array brackets
 // in the middle. The path after the brackets will be iterated along with the
@@ -33,7 +27,7 @@ function splitArrayPaths(defs: Pipeline) {
         divide(iterate([step.slice(pos + 3), ...defs.slice(index + 1)]), [
           step.slice(pos + 3),
           ...defs.slice(index + 1),
-        ])
+        ]),
       )
       pipeline.push(fwd(transform(flatten({ depth: 1 }))))
       break
@@ -45,9 +39,22 @@ function splitArrayPaths(defs: Pipeline) {
   return pipeline
 }
 
+function createPipeFn(
+  runFwd: StateMapper,
+  runRev: StateMapper,
+  doReturnContext: boolean,
+) {
+  return async function doPipe(state: State) {
+    const thisState = revFromState(state)
+      ? await runRev(state)
+      : await runFwd(state)
+    return doReturnContext ? thisState : setValueFromState(state, thisState)
+  }
+}
+
 export default function pipe(
   defs?: Pipeline,
-  doReturnContext = false
+  doReturnContext = false,
 ): Operation {
   return (options) => {
     if (!Array.isArray(defs) || defs.length === 0) {
@@ -56,19 +63,13 @@ export default function pipe(
 
     const fns = splitArrayPaths(defs)
       .flat()
-      .flatMap((def) => defToOperations(def, options))
-      .map((fn) => fn(options))
+      .flatMap((def) => defToNextStateMappers(def, options))
 
     return (next) => {
-      const runFwd = createRun(fns, next)
-      const runRev = createRun(Array.from(fns).reverse(), next) // Reverse the order of the operations in rev
+      const runFwd = fns.reduce(chain, next)
+      const runRev = fns.reduceRight(chain, next)
 
-      return async function doPipe(state) {
-        const thisState = revFromState(state)
-          ? await runRev(state)
-          : await runFwd(state)
-        return doReturnContext ? thisState : setValueFromState(state, thisState)
-      }
+      return createPipeFn(runFwd, runRev, doReturnContext)
     }
   }
 }

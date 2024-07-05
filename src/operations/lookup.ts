@@ -1,6 +1,5 @@
 import mapAny from 'map-any/async.js'
 import { pathGetter } from '../operations/getSet.js'
-import type { Operation, State, Path, TransformerProps } from '../types.js'
 import {
   getStateValue,
   setStateValue,
@@ -10,6 +9,13 @@ import {
 import { defToOperation } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
+import type {
+  Operation,
+  NextStateMapper,
+  State,
+  Path,
+  TransformerProps,
+} from '../types.js'
 
 export interface Props extends TransformerProps {
   arrayPath: Path
@@ -45,9 +51,9 @@ const findOneMatch: MatchFn = (value, state, arr, getProp) =>
 // Do the actual lookup. Will retrieve the array from the given state, and then
 // compare to the state value.
 const matchInArray =
-  (getArray: Operation, match: MatchFn, getProp: GetPropFn) =>
+  (getArray: NextStateMapper, match: MatchFn, getProp: GetPropFn) =>
   (state: State) => {
-    const getFn = getArray({})(noopNext)
+    const getFn = getArray(noopNext)
     return async (value: unknown) => {
       const { value: arr } = await getFn(goForward(state))
       if (Array.isArray(arr)) {
@@ -90,7 +96,7 @@ export function lookup({
 
     const getter = pathGetter(propPath)
     const matchFn = matchInArray(
-      defToOperation(arrayPath, options),
+      defToOperation(arrayPath, options)(options),
       matchSeveral ? findAllMatches : findOneMatch,
       getter,
     )

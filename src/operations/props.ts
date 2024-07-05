@@ -14,7 +14,7 @@ import {
 import {
   isTransformObject,
   isTransformDefinition,
-  defToOperation,
+  defToNextStateMapper,
 } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import { isObject, isNotNullOrUndefined } from '../utils/is.js'
@@ -195,10 +195,13 @@ const createSetPipeline = (options: Options) =>
       return undefined
     }
 
-    // Prepare the operations and return as an operation
-    const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
-    const operation = createDirectionalOperation(operations, onlyFwd, onlyRev)
-    return operation ? operation(options) : undefined
+    // Prepare the operations and return as an operation. `pipeline` must not
+    // be flattened out with the `set`, to avoid destroying iteration logic.
+    const operations = [
+      () => defToNextStateMapper(pipeline, options), // We have to return from a function since the pipeline expects an operation
+      set(unslashedProp),
+    ]
+    return createDirectionalOperation(operations, onlyFwd, onlyRev)(options)
   }
 
 const runOperations =

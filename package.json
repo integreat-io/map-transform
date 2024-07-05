@@ -48,7 +48,6 @@
   },
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
-    "ajv": "^8.13.0",
     "deepmerge": "^4.3.1",
     "map-any": "^1.0.0"
   },

@@ -70,9 +70,19 @@ export const isNonvalueState = (
   nonvalues: unknown[] = [undefined],
 ) => isNonvalue(state.value, nonvalues)
 
-export const markAsUntouched = (state: State) => ({ ...state, untouched: true })
-export const clearUntouched = ({ untouched, ...state }: State) => state
-export const isUntouched = ({ untouched }: State) => !!untouched
+// NOTE: We mutate the state here to not create too many objects
+export function markAsUntouched(state: State) {
+  state.untouched = true
+  return state
+}
+
+// NOTE: We mutate the state here to not create too many objects
+export function clearUntouched(state: State) {
+  state.untouched = false
+  return state
+}
+
+export const isUntouched = (state: State) => !!state.untouched
 
 // State
 

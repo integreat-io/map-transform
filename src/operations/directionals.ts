@@ -1,6 +1,12 @@
 import { defToNextStateMapper } from '../utils/definitionHelpers.js'
-import type { TransformDefinition, Operation, Options } from '../types.js'
 import { revFromState } from '../utils/stateHelpers.js'
+import type {
+  TransformDefinition,
+  Operation,
+  Options,
+  State,
+  StateMapper,
+} from '../types.js'
 
 const applyInDirection =
   (def: TransformDefinition, shouldRunRev: boolean): Operation =>
@@ -10,6 +16,16 @@ const applyInDirection =
     return async function applyFwdOrRev(state) {
       return !!state.rev === shouldRunRev ? await fn(state) : await next(state)
     }
+  }
+
+const createDivideFn = (
+  fwdFn: StateMapper,
+  revFn: StateMapper,
+  doHonorFlip: boolean,
+) =>
+  async function applyDivide(state: State) {
+    const isRev = doHonorFlip ? revFromState(state) : !!state.rev
+    return isRev ? await revFn(state) : await fwdFn(state)
   }
 
 export function fwd(def: TransformDefinition): Operation {
@@ -23,14 +39,11 @@ export function rev(def: TransformDefinition): Operation {
 export function divide(
   fwdDef: TransformDefinition,
   revDef: TransformDefinition,
-  honorFlip = false,
+  doHonorFlip = false,
 ): Operation {
   return (options) => (next) => {
     const fwdFn = defToNextStateMapper(fwdDef, options)(next)
     const revFn = defToNextStateMapper(revDef, options)(next)
-    return async function applyDivide(state) {
-      const isRev = honorFlip ? revFromState(state) : !!state.rev
-      return isRev ? await revFn(state) : await fwdFn(state)
-    }
+    return createDivideFn(fwdFn, revFn, doHonorFlip)
   }
 }

@@ -1,5 +1,10 @@
 import deepmerge from 'deepmerge'
-import type { Operation, State, TransformDefinition } from '../types.js'
+import type {
+  Operation,
+  State,
+  StateMapper,
+  TransformDefinition,
+} from '../types.js'
 import {
   getStateValue,
   setStateValue,
@@ -38,26 +43,37 @@ export function mergeStates(state: State, thisState: State) {
   return setStateValue(state, value)
 }
 
-export default function merge(...defs: TransformDefinition[]): Operation {
-  return (options) => (next) => {
-    if (defs.length === 0) {
-      return async (state) => setStateValue(await next(state), undefined)
+const createMergeFn = (
+  next: StateMapper,
+  pipelines: StateMapper[],
+  nonvalues?: unknown[],
+) =>
+  async function (state: State) {
+    const nextState = await next(state)
+    if (isNonvalueState(nextState, nonvalues)) {
+      return setStateValue(nextState, undefined)
+    } else {
+      const states = []
+      for (const pipeline of pipelines) {
+        states.push(await pipeline(nextState))
+      }
+      return states.reduce(mergeStates)
     }
+  }
+
+const createSetEmptyFn =
+  () => () => (next: StateMapper) => async (state: State) =>
+    setStateValue(await next(state), undefined)
+
+export default function merge(...defs: TransformDefinition[]): Operation {
+  if (defs.length === 0) {
+    return createSetEmptyFn()
+  }
+  return (options) => (next) => {
     const pipelines = defs.map((def) =>
       defToNextStateMapper(def, options)(next),
     )
 
-    return async function (state) {
-      const nextState = await next(state)
-      if (isNonvalueState(nextState, options.nonvalues)) {
-        return setStateValue(nextState, undefined)
-      } else {
-        const states = []
-        for (const pipeline of pipelines) {
-          states.push(await pipeline(nextState))
-        }
-        return states.reduce(mergeStates)
-      }
-    }
+    return createMergeFn(next, pipelines, options.nonvalues)
   }
 }

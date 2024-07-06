@@ -42,27 +42,36 @@ async function setArrayOnFirstOperation(state: State, fns: StateMapper[]) {
   return valueState
 }
 
+const createConcatFn = (
+  next: StateMapper,
+  fns: StateMapper[],
+  doFlip: boolean,
+) =>
+  async function doConcat(state: State) {
+    const nextState = flipState(await next(state), doFlip)
+    return revFromState(nextState)
+      ? setArrayOnFirstOperation(nextState, fns)
+      : getAndMergeArrays(nextState, fns)
+  }
+
+// Always return an empty array (or empty object in rev) when there are no
+// pipelines.
+const createEmptyFn =
+  (next: StateMapper, doFlip: boolean) => async (state: State) =>
+    setStateValue(await next(state), revFromState(state, doFlip) ? {} : [])
+
 function concatPipelines(
   defs: TransformDefinition[],
-  flip: boolean,
+  doFlip: boolean,
 ): Operation {
   return (options) => {
     const fns = defs.map((def) => defToNextStateMapper(def, options)(noopNext))
 
     if (fns.length === 0) {
-      // Always return an empty array (or empty object in rev) when there are no
-      // pipelines.
-      return (next) => async (state) =>
-        setStateValue(await next(state), revFromState(state, flip) ? {} : [])
+      return (next) => createEmptyFn(next, doFlip)
     }
 
-    return (next) =>
-      async function doConcat(state) {
-        const nextState = flipState(await next(state), flip)
-        return revFromState(nextState)
-          ? setArrayOnFirstOperation(nextState, fns)
-          : getAndMergeArrays(nextState, fns)
-      }
+    return (next) => createConcatFn(next, fns, doFlip)
   }
 }
 

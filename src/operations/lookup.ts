@@ -15,6 +15,7 @@ import type {
   State,
   Path,
   TransformerProps,
+  StateMapper,
 } from '../types.js'
 
 export interface Props extends TransformerProps {
@@ -66,6 +67,21 @@ const matchInArray =
     }
   }
 
+const createLookupFn = (
+  next: StateMapper,
+  matchFn: (state: State) => (value: unknown) => Promise<unknown>,
+  extractProp: (state: State) => (value: unknown) => Promise<unknown>,
+  doFlip: boolean,
+) =>
+  async function doLookup(state: State) {
+    const nextState = await next(state)
+    const value = getStateValue(nextState)
+    const rev = revFromState(state, doFlip)
+    const matcher = rev ? extractProp : matchFn
+    const matches = await mapAny(matcher(nextState), value)
+    return setStateValue(nextState, flattenIfArray(matches))
+  }
+
 /**
  * Will use the value in the pipeline to lookup objects found in the `arrayPath`
  * array. Matching is done by comparing the the pipeline value to the value at
@@ -85,7 +101,7 @@ export function lookup({
   arrayPath,
   propPath,
   matchSeveral = false,
-  flip = false,
+  flip: doFlip = false,
 }: Props): Operation {
   return (options) => {
     if (typeof propPath !== 'string' && propPath !== undefined) {
@@ -103,15 +119,7 @@ export function lookup({
     const extractProp = (state: State) => async (value: unknown) =>
       getter(value, state)
 
-    return (next) =>
-      async function doLookup(state) {
-        const nextState = await next(state)
-        const value = getStateValue(nextState)
-        const rev = revFromState(state, flip)
-        const matcher = rev ? extractProp : matchFn
-        const matches = await mapAny(matcher(nextState), value)
-        return setStateValue(nextState, flattenIfArray(matches))
-      }
+    return (next) => createLookupFn(next, matchFn, extractProp, doFlip)
   }
 }
 

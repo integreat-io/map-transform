@@ -64,10 +64,6 @@ export const isOperationType = <T extends OperationObject>(
   prop: string,
 ): def is T => (def as object).hasOwnProperty(prop)
 
-const pipeIfArray = (
-  operations: Operation | Operation[] | Pipeline,
-): Operation => (Array.isArray(operations) ? pipe(operations) : operations)
-
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isTransformObject = (def: unknown): def is TransformObject =>
   isObject(def) && !isOperationObject(def)
@@ -91,12 +87,12 @@ const wrapInNoDefaults =
   }
 
 function wrapFromDefinition(
-  ops: Operation | Operation[],
+  ops: Operation,
   def: OperationObject,
   options: Options,
 ): NextStateMapper {
   const opsWithNoDefaults =
-    def.$noDefaults === true ? wrapInNoDefaults(pipeIfArray(ops)) : ops
+    def.$noDefaults === true ? wrapInNoDefaults(ops) : ops
   const fn =
     def.$iterate === true ? iterate(opsWithNoDefaults) : opsWithNoDefaults
   const dir = def.$direction
@@ -161,14 +157,13 @@ const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
     : options
 
 const createAltOperation = (
-  operationFn: (...defs: TransformDefinition[]) => Operation[],
   def: AltOperation,
   options: Options,
 ): NextStateMapper | NextStateMapper[] => {
   const { $alt: defs, $undefined: nonvalues } = def
   return Array.isArray(defs)
     ? wrapFromDefinition(
-        operationFn(...defs),
+        pipe(alt(...defs), true),
         def,
         setNoneValuesOnOptions(options, nonvalues),
       )
@@ -187,13 +182,9 @@ function createIfOperation(
   )
 }
 
-function createApplyOperation(
-  operationFn: (pipelineId: string | symbol) => Operation,
-  def: ApplyOperation,
-  options: Options,
-) {
+function createApplyOperation(def: ApplyOperation, options: Options) {
   const pipelineId = def.$apply
-  return wrapFromDefinition(operationFn(pipelineId), def, options)
+  return wrapFromDefinition(apply(pipelineId), def, options)
 }
 
 function createConcatOperation(
@@ -233,9 +224,9 @@ function nextStateMapperFromObject(
     } else if (isOperationType<IfOperation>(def, '$if')) {
       return createIfOperation(def, options)
     } else if (isOperationType<ApplyOperation>(def, '$apply')) {
-      return createApplyOperation(apply, def, options)
+      return createApplyOperation(def, options)
     } else if (isOperationType<AltOperation>(def, '$alt')) {
-      return createAltOperation(alt, def, options)
+      return createAltOperation(def, options)
     } else if (isOperationType<ConcatOperation>(def, '$concat')) {
       return createConcatOperation(concat, def.$concat, options)
     } else if (isOperationType<ConcatRevOperation>(def, '$concatRev')) {

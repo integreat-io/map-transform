@@ -72,8 +72,7 @@ export const isNonvalueState = (
 
 // NOTE: We mutate the state here to not create too many objects
 export function markAsUntouched(state: State) {
-  state.untouched = true
-  return state
+  return { ...state, untouched: true }
 }
 
 // NOTE: We mutate the state here to not create too many objects

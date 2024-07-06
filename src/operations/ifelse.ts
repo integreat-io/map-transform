@@ -1,8 +1,4 @@
-import {
-  getStateValue,
-  setStateValue,
-  goForward,
-} from '../utils/stateHelpers.js'
+import { getStateValue, goForward } from '../utils/stateHelpers.js'
 import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import type {
@@ -10,11 +6,36 @@ import type {
   TransformDefinition,
   Operation,
   StateMapper,
+  State,
 } from '../types.js'
 
-function runCondition(conditionDef: DataMapper): StateMapper {
-  return async (state) => {
-    return setStateValue(state, await conditionDef(getStateValue(state), state))
+async function resolveCondition(
+  conditionFn: StateMapper | DataMapper,
+  conditionIsDataMapper: boolean,
+  state: State,
+): Promise<boolean> {
+  if (conditionIsDataMapper) {
+    return !!(await (conditionFn as DataMapper)(getStateValue(state), state))
+  } else {
+    return !!getStateValue(await (conditionFn as StateMapper)(goForward(state)))
+  }
+}
+
+const createIfElseFn = (
+  next: StateMapper,
+  conditionFn: StateMapper | DataMapper,
+  conditionIsDataMapper: boolean,
+  trueFn: StateMapper,
+  falseFn: StateMapper,
+) => {
+  return async (state: State) => {
+    const nextState = await next(state)
+    const bool = await resolveCondition(
+      conditionFn,
+      conditionIsDataMapper,
+      nextState,
+    )
+    return bool ? await trueFn(nextState) : await falseFn(nextState)
   }
 }
 
@@ -27,19 +48,14 @@ export default function (
     if (!conditionDef) {
       return defToNextStateMapper(falseDef, options)
     }
-    const conditionFn: StateMapper =
-      typeof conditionDef === 'function'
-        ? runCondition(conditionDef as DataMapper) // We know to expect a datamapper here
-        : defToNextStateMapper(conditionDef, options)(noopNext)
-    const falseFn = defToNextStateMapper(falseDef, options)(noopNext)
+    const conditionIsDataMapper = typeof conditionDef === 'function'
+    const conditionFn = conditionIsDataMapper
+      ? (conditionDef as DataMapper) // We know to expect a DataMapper here
+      : defToNextStateMapper(conditionDef, options)(noopNext)
     const trueFn = defToNextStateMapper(trueDef, options)(noopNext)
+    const falseFn = defToNextStateMapper(falseDef, options)(noopNext)
 
-    return (next) => {
-      return async (state) => {
-        const nextState = await next(state)
-        const bool = getStateValue(await conditionFn(goForward(nextState)))
-        return bool ? await trueFn(nextState) : await falseFn(nextState)
-      }
-    }
+    return (next) =>
+      createIfElseFn(next, conditionFn, conditionIsDataMapper, trueFn, falseFn)
   }
 }

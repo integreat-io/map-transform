@@ -1,11 +1,12 @@
+import { defToNextStateMapper } from '../utils/definitionHelpers.js'
+import { noopNext } from '../utils/stateHelpers.js'
 import type {
   Options,
   Operation,
   State,
   TransformDefinition,
+  StateMapper,
 } from '../types.js'
-import { defToNextStateMapper } from '../utils/definitionHelpers.js'
-import { noopNext } from '../utils/stateHelpers.js'
 
 // TODO: use a Map instead of an object, and prepare the pipelines when the
 // options is hande to MapTransform instead of here.
@@ -44,6 +45,12 @@ function prepareAndSetPipeline(
   }
 }
 
+const createApplyFn =
+  (next: StateMapper, fn?: StateMapper) => async (state: State) => {
+    const nextState = await next(state)
+    return fn ? fn(removeFlip(nextState)) : nextState
+  }
+
 export default function apply(pipelineId: string | symbol): Operation {
   return (options) => {
     const pipeline = getPipeline(pipelineId, options)
@@ -70,10 +77,7 @@ export default function apply(pipelineId: string | symbol): Operation {
         setPipeline(pipelineId, () => () => fn, options)
       }
 
-      return async (state) => {
-        const nextState = await next(state)
-        return fn ? fn(removeFlip(nextState)) : nextState
-      }
+      return createApplyFn(next, fn)
     }
   }
 }

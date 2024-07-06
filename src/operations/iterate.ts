@@ -51,23 +51,32 @@ export const iterateState =
     return nextValue
   }
 
+const createIterateFn = (
+  next: StateMapper,
+  runIteration: (state: State, target: unknown) => Promise<unknown>,
+) =>
+  async function doIterate(state: State) {
+    const nextState = await next(state)
+
+    return setStateValue(
+      nextState,
+      await runIteration(nextState, getTargetFromState(nextState)),
+    )
+  }
+
+const createSetEmptyFn =
+  () => () => (next: StateMapper) => async (state: State) =>
+    setStateValue(await next(state), undefined)
+
 export default function iterate(def: TransformDefinition): Operation {
   if (!def || (typeof def === 'object' && Object.keys(def).length === 0)) {
-    return (_options) => (next) => async (state) =>
-      setStateValue(await next(state), undefined)
+    return createSetEmptyFn()
   }
   return (options) => {
     const fn = defToNextStateMapper(def, options)
     return (next) => {
       const runIteration = iterateState(fn(noopNext))
-      return async function doIterate(state) {
-        const nextState = await next(state)
-
-        return setStateValue(
-          nextState,
-          await runIteration(nextState, getTargetFromState(nextState)),
-        )
-      }
+      return createIterateFn(next, runIteration)
     }
   }
 }

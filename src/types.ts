@@ -5,6 +5,8 @@ export type DictionaryValue = string | number | boolean | null | undefined
 export type DictionaryTuple = readonly [DictionaryValue, DictionaryValue]
 export type Dictionary = DictionaryTuple[]
 
+export type Dictionaries = Record<string, Dictionary>
+
 // State type
 
 export interface InitialState {
@@ -29,7 +31,7 @@ export interface Options {
   transformers?: Record<string | symbol, Transformer | AsyncTransformer>
   pipelines?: Record<string | symbol, TransformDefinition>
   neededPipelineIds?: Set<string | symbol>
-  dictionaries?: Record<string, Dictionary>
+  dictionaries?: Dictionaries
   nonvalues?: unknown[]
   fwdAlias?: string
   revAlias?: string

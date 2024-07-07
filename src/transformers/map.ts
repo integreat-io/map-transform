@@ -1,6 +1,7 @@
 import mapAny from 'map-any'
 import { escapeValue, unescapeValue } from '../utils/escape.js'
 import type {
+  Dictionaries,
   Dictionary,
   DictionaryValue,
   TransformerProps,
@@ -41,7 +42,7 @@ function translate(data: unknown, dictionary: Dictionary, rev: boolean) {
 
 function extractDictionary(
   dictionary?: Dictionary | string,
-  dictionaries?: Record<string, Dictionary>,
+  dictionaries?: Dictionaries,
 ) {
   if (typeof dictionary === 'string') {
     return dictionaries && dictionaries[dictionary] // eslint-disable-line security/detect-object-injection

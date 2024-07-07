@@ -5,10 +5,6 @@ export type DictionaryValue = string | number | boolean | null | undefined
 export type DictionaryTuple = readonly [DictionaryValue, DictionaryValue]
 export type Dictionary = DictionaryTuple[]
 
-export interface Dictionaries {
-  [key: string]: Dictionary
-}
-
 // State type
 
 export interface InitialState {

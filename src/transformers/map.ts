@@ -3,7 +3,6 @@ import { escapeValue, unescapeValue } from '../utils/escape.js'
 import type {
   Dictionary,
   DictionaryValue,
-  Dictionaries,
   TransformerProps,
   Transformer,
 } from '../types.js'
@@ -20,7 +19,7 @@ const isSupportedValue = (data: unknown): data is DictionaryValue =>
 function findFirstMatch(
   value: DictionaryValue,
   dictionary: Dictionary,
-  direction: 0 | 1
+  direction: 0 | 1,
 ) {
   // eslint-disable-next-line security/detect-object-injection
   const match = dictionary.find((dict) => dict[direction] === value)
@@ -42,7 +41,7 @@ function translate(data: unknown, dictionary: Dictionary, rev: boolean) {
 
 function extractDictionary(
   dictionary?: Dictionary | string,
-  dictionaries?: Dictionaries
+  dictionaries?: Record<string, Dictionary>,
 ) {
   if (typeof dictionary === 'string') {
     return dictionaries && dictionaries[dictionary] // eslint-disable-line security/detect-object-injection
@@ -59,7 +58,7 @@ const escapeDictionary = (dictionary?: Dictionary): Dictionary | undefined =>
 const transformer: Transformer<Props> = function map(props) {
   return (options) => {
     const dictionary = escapeDictionary(
-      extractDictionary(props.dictionary, options && options.dictionaries)
+      extractDictionary(props.dictionary, options && options.dictionaries),
     )
     if (!dictionary) {
       return () => undefined

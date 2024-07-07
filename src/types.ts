@@ -30,18 +30,15 @@ export interface State extends InitialState {
 // MapTransform options type
 
 export interface Options {
-  transformers?: {
-    [key: string | symbol]: Transformer | AsyncTransformer
-  }
-  pipelines?: {
-    [key: string | symbol]: TransformDefinition
-  }
-  dictionaries?: Dictionaries
+  transformers?: Record<string | symbol, Transformer | AsyncTransformer>
+  pipelines?: Record<string | symbol, TransformDefinition>
+  neededPipelineIds?: Set<string | symbol>
+  dictionaries?: Record<string, Dictionary>
   nonvalues?: unknown[]
   fwdAlias?: string
   revAlias?: string
   modifyOperationObject?: (
-    operation: Record<string, unknown>
+    operation: Record<string, unknown>,
   ) => Record<string, unknown>
   modifyGetValue?: (value: unknown, state: State, options: Options) => unknown
 }

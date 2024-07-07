@@ -26,7 +26,7 @@ const stateWithArray = {
 const threeLetters = () => async (value: unknown) =>
   typeof value === 'string' ? value.slice(0, 3) : value
 
-const options = {}
+const options = { pipelines: {} }
 
 // Tests -- forward
 

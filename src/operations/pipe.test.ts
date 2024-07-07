@@ -14,7 +14,7 @@ const state = {
   value: { data: { name: 'John F.' } },
 }
 
-const options = {}
+const options = { pipelines: {} }
 
 const json = () => async (data: unknown) => JSON.stringify(data)
 

@@ -1,6 +1,7 @@
 import test from 'ava'
 
 import mapTransform, { transform, apply, fwd, rev, filter } from '../index.js'
+import type { Operation } from '../types.js'
 
 // Setup
 
@@ -403,6 +404,29 @@ test('should handle pipelines that applies themselves', async (t) => {
         comments: [],
       },
     ],
+  }
+
+  const ret = await mapTransform(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should remove all unused pipelines before running pipeline', async (t) => {
+  const getPipelineIds: Operation = (options) => (next) => async (state) => {
+    return { ...(await next(state)), value: Object.keys(options.pipelines!) }
+  }
+  const def = {
+    entries: apply('getItems'),
+    pipelines: [getPipelineIds],
+  }
+  const data = {
+    data: {
+      entries: [{ id: 'ent1' }],
+    },
+  }
+  const expected = {
+    entries: [{ id: 'ent1' }],
+    pipelines: ['getItems'], // The ids of the present pipelines, returned by the `getPipelineIds` operation
   }
 
   const ret = await mapTransform(def, options)(data)

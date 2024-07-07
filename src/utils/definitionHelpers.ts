@@ -284,8 +284,8 @@ function createDataMapper(
 }
 
 export function defToDataMapper(
-  def?: TransformDefinition,
-  options: Options = {},
+  def: TransformDefinition | undefined,
+  options: Options,
 ): DataMapperWithState | AsyncDataMapperWithState {
   return createDataMapper(defToNextStateMapper(def, options))
 }

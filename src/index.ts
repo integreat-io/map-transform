@@ -5,6 +5,7 @@ import type {
   InitialState,
 } from './types.js'
 import { defToNextStateMapper } from './utils/definitionHelpers.js'
+import { prepareOptions, preparePipelines } from './utils/prepareOptions.js'
 import { populateState, getStateValue, noopNext } from './utils/stateHelpers.js'
 import transformers from './transformers/index.js'
 import iterate from './operations/iterate.js'
@@ -24,14 +25,6 @@ export { default as root } from './operations/root.js'
 export { default as transform } from './operations/transform.js'
 export { iterate, transformers }
 
-const mergeOptions = (options: Options) => ({
-  ...options,
-  transformers: {
-    ...transformers,
-    ...(options.transformers || {}),
-  },
-})
-
 /**
  * Return a function that will transform data according to the given transform
  * definition, and with the provided options. The returned function will also
@@ -42,8 +35,11 @@ export default function mapTransform(
   def: TransformDefinition,
   options: Options = {},
 ): DataMapper<InitialState> {
-  const completeOptions = mergeOptions(options)
-  const stateMapper = defToNextStateMapper(def, completeOptions)(noopNext)
+  const internalOptions = prepareOptions(options)
+  const stateMapper = defToNextStateMapper(def, internalOptions)(noopNext)
+
+  // Resolve all needed pipelnies and remove the unneeded ones.
+  preparePipelines(internalOptions)
 
   return async function transform(data, initialState) {
     const nextState = await stateMapper(populateState(data, initialState || {}))

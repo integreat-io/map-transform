@@ -83,7 +83,7 @@ const createAltFn = (
 ) =>
   async function runAlt(state: State) {
     const nextState = await next(state)
-    const fn = isFirst ? runAltFirst : runAltRest
+    const fn = isFirst ? runAltFirst : runAltRest // TODO: Do this one step up
     return await fn(nextState, pipeline, nonvalues)
   }
 
@@ -95,10 +95,10 @@ function createOneAltPipeline(
   hasOnlyOneAlt: boolean,
 ): Operation {
   return (options) => {
-    const pipeline = pipeIfArray(defToNextStateMappers(def, options))(noopNext)
+    const nextStateMapper = pipeIfArray(defToNextStateMappers(def, options))
     const isFirst = !hasOnlyOneAlt && index === 0
     return (next: StateMapper) =>
-      createAltFn(next, pipeline, isFirst, options.nonvalues)
+      createAltFn(next, nextStateMapper(noopNext), isFirst, options.nonvalues)
   }
 }
 

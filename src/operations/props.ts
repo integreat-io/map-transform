@@ -205,7 +205,7 @@ const createSetPipeline = (options: Options) =>
   }
 
 const runOperations =
-  (stateMappers: NextStateMapper[], nonvalues?: unknown[]) =>
+  (stateMappers: StateMapper[], nonvalues?: unknown[]) =>
   async (state: State) => {
     if (isNonvalueState(state, nonvalues)) {
       return state
@@ -213,7 +213,7 @@ const runOperations =
       const run = runOperationWithOriginalValue(state)
       let nextState: State = state
       for (const stateMapper of stateMappers) {
-        nextState = await run(nextState, stateMapper(noopNext)) // We call `noopNext` here to avoid running recursive pipelines more times than the data dictates
+        nextState = await run(nextState, stateMapper)
       }
       return nextState
     }
@@ -241,30 +241,29 @@ const createStateMappers = (def: TransformObject, options: Options) =>
     .map(createSetPipeline(options))
     .filter(isNotNullOrUndefined)
 
-function createNextStateMapper(
+function createStateMapper(
+  next: StateMapper,
   run: StateMapper,
   nonvalues?: unknown[],
   noDefaults = false,
   flip = false,
 ) {
-  return (next: StateMapper) => {
-    return async function doMutate(state: State) {
-      const nextState = await next(state)
+  return async function doMutate(state: State) {
+    const nextState = await next(state)
 
-      // Don't touch state if its value is a nonvalue
-      if (isNonvalueState(nextState, nonvalues)) {
-        return nextState
-      }
-
-      // Override some state props and set defaults
-      const propsState = overrideStateProps(nextState, noDefaults, flip)
-
-      // Run the props operations
-      const thisState = await run(propsState)
-
-      // Set the value, but keep the target
-      return setValueFromState(nextState, thisState)
+    // Don't touch state if its value is a nonvalue
+    if (isNonvalueState(nextState, nonvalues)) {
+      return nextState
     }
+
+    // Override some state props and set defaults
+    const propsState = overrideStateProps(nextState, noDefaults, flip)
+
+    // Run the props operations
+    const thisState = await run(propsState)
+
+    // Set the value, but keep the target
+    return setValueFromState(nextState, thisState)
   }
 }
 
@@ -280,17 +279,26 @@ function prepareOperation(def: TransformObject): Operation {
       return (next) => async (state) => setStateValue(await next(state), {}) // TODO: Not sure if we need to call `next()` here
     }
 
-    // Prepare operations runner
-    const run = runOperations(nextStateMappers, options.nonvalues)
-    const runWithIterateWhenNeeded =
-      def.$iterate === true ? iterate(() => () => run)(options)(noopNext) : run
+    return (next) => {
+      // Prepare operations runner. We need to do this inside `next()`, even
+      // though we use `noopNext()` to not kick off the next phase too soon.
+      const run = runOperations(
+        nextStateMappers.map((fn) => fn(noopNext)),
+        options.nonvalues,
+      )
+      const runWithIterateWhenNeeded =
+        def.$iterate === true
+          ? iterate(() => () => run)(options)(noopNext)
+          : run
 
-    return createNextStateMapper(
-      runWithIterateWhenNeeded,
-      options.nonvalues,
-      def.$noDefaults,
-      def.$flip,
-    )
+      return createStateMapper(
+        next,
+        runWithIterateWhenNeeded,
+        options.nonvalues,
+        def.$noDefaults,
+        def.$flip,
+      )
+    }
   }
 }
 

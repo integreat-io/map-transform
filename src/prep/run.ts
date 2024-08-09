@@ -1,3 +1,4 @@
+import unwindTarget from './unwindTarget.js'
 import { isObject } from '../utils/is.js'
 import type { PreppedPipeline } from './index.js'
 
@@ -6,8 +7,16 @@ const getProp = (prop: string, value: unknown) =>
   isObject(value) ? value[prop] : undefined // eslint-disable-line security/detect-object-injection
 
 // Set on a prop
-const setProp = (prop: string, value: unknown, target?: unknown) =>
-  isObject(target) ? (target[prop] = value) : { [prop]: value } // eslint-disable-line security/detect-object-injection
+function setProp(prop: string, value: unknown, target?: unknown) {
+  if (target === undefined) {
+    return { [prop]: value }
+  } else if (isObject(target)) {
+    target[prop] = value // eslint-disable-line security/detect-object-injection
+    return target
+  } else {
+    return undefined
+  }
+}
 
 // Get from an array index
 function getIndex(prop: string, value: unknown) {
@@ -33,13 +42,13 @@ function setIndex(prop: string, value: unknown, target?: unknown) {
 }
 
 // Handle set steps.
-function setStep(step: string, next: unknown) {
+function setStep(step: string, next: unknown, target: unknown) {
   if (step[0] === '[') {
     // Set on an index
-    return setIndex(step.slice(1), next)
+    return setIndex(step.slice(1), next, target)
   } else {
     // Set on a prop
-    return setProp(step, next)
+    return setProp(step, next, target)
   }
 }
 
@@ -58,10 +67,12 @@ function getNextSetArrayIndex(steps: PreppedPipeline, currentIndex: number) {
 export default function runPipeline(
   value: unknown,
   steps: PreppedPipeline,
+  target?: unknown,
   context: unknown[] = [],
 ) {
   let next = value
   let index = 0
+  const targets = unwindTarget(target, steps)
 
   // We go through each step in the pipeline one by one until we're done
   while (index < steps.length) {
@@ -79,7 +90,7 @@ export default function runPipeline(
       switch (step[0]) {
         case '>':
           // Set on the given prop
-          next = setStep(step.slice(1), next)
+          next = setStep(step.slice(1), next, targets.pop())
           break
         case '^':
           // Get the parent value
@@ -97,7 +108,9 @@ export default function runPipeline(
             const iterateIndex = index - 1 // Start the iteration from this step
             index = getNextSetArrayIndex(steps, index) // And continue until a qualified set operation
             next = next.flatMap((item) =>
-              runPipeline(item, steps.slice(iterateIndex, index), [...context]),
+              runPipeline(item, steps.slice(iterateIndex, index), target, [
+                ...context,
+              ]),
             )
           } else {
             // Get from the given prop

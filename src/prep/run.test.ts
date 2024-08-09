@@ -362,7 +362,7 @@ test('should get from root when we are at the root', (t) => {
 
 // Tests -- set path
 
-test('should get and set', (t) => {
+test('should set pipeline', (t) => {
   const pipeline = ['response', 'data', 'item', '>value']
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { value: { id: 'ent1' } }
@@ -372,7 +372,7 @@ test('should get and set', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should get and set with several set paths', (t) => {
+test('should set pipeline with several set paths', (t) => {
   const pipeline = ['response', 'data', 'item', '>value', '>data']
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { data: { value: { id: 'ent1' } } }
@@ -490,3 +490,64 @@ test('should set pipeline with array notation in the middle of a path when itera
 
   t.deepEqual(ret, expected)
 })
+
+// Tests -- set on target
+
+test('should set pipeline on target', (t) => {
+  const pipeline = ['response', 'data', 'item', '>value']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const target = { count: 1 }
+  const expected = { value: { id: 'ent1' }, count: 1 }
+
+  const ret = runPipeline(value, pipeline, target)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set pipeline one level into target', (t) => {
+  const pipeline = ['response', 'data', 'item', 'id', '>id', '>value']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const target = { value: { title: 'Entry 1' } }
+  const expected = { value: { id: 'ent1', title: 'Entry 1' } }
+
+  const ret = runPipeline(value, pipeline, target)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set pipeline several levels into target', (t) => {
+  const pipeline = ['response', 'data', 'item', 'id', '>id', '>value', '>data']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const target = { data: { value: { title: 'Entry 1' }, count: 1 } }
+  const expected = {
+    data: { value: { id: 'ent1', title: 'Entry 1' }, count: 1 },
+  }
+
+  const ret = runPipeline(value, pipeline, target)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set pipeline on target with index', (t) => {
+  const pipeline = ['response', 'data', 'item', '>[1]', '>values']
+  const value = { response: { data: { item: { id: 'ent2' } } } }
+  const target = { count: 1, values: [{ id: 'ent1' }] }
+  const expected = { values: [{ id: 'ent1' }, { id: 'ent2' }], count: 1 }
+
+  const ret = runPipeline(value, pipeline, target)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set pipeline on target with array notation', (t) => {
+  const pipeline = ['response', 'data', 'item', '>[]', '>values']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const target = { count: 0, values: null }
+  const expected = { values: [{ id: 'ent1' }], count: 0 }
+
+  const ret = runPipeline(value, pipeline, target)
+
+  t.deepEqual(ret, expected)
+})
+
+test.todo('should set pipeline on target inside array')

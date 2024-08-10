@@ -174,47 +174,46 @@ test('should set array from pipeline with index notation', (t) => {
 
 // Tests -- get parent
 
-test.skip('should get from parent', (t) => {
+test('should set with parent', (t) => {
   const pipeline = ['response', 'data', 'item', '^', 'count']
-  const value = { response: { data: { item: { id: 'ent1' }, count: 1 } } }
-  const expected = 1
+  const value = 1
+  const expected = { response: { data: { count: 1 } } }
 
-  const ret = runPipeline(value, pipeline)
-
-  t.is(ret, expected)
-})
-
-test.skip('should get from parent several steps up', (t) => {
-  const pipeline = ['response', 'data', 'item', '^', '^', 'count']
-  const value = { response: { data: { item: { id: 'ent1' } }, count: 1 } }
-  const expected = 1
-
-  const ret = runPipeline(value, pipeline)
-
-  t.is(ret, expected)
-})
-
-test.skip('should get from parent after array notation', (t) => {
-  const pipeline = ['response', 'data', '[]', 'item', '^', 'count']
-  const value = { response: { data: { item: { id: 'ent1' }, count: 1 } } }
-  const expected = [1]
-
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, undefined, isRev)
 
   t.deepEqual(ret, expected)
 })
 
-test.skip('should get from parent throught array notation', (t) => {
+test('should set with several parents', (t) => {
+  const pipeline = ['response', 'data', 'item', '^', '^', 'count']
+  const value = 1
+  const expected = { response: { count: 1 } }
+
+  const ret = runPipeline(value, pipeline, undefined, isRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set with parent after array notation', (t) => {
+  const pipeline = ['response', 'data', '[]', 'item', '^', 'count']
+  const value = [1]
+  const expected = { response: { data: [{ count: 1 }] } }
+
+  const ret = runPipeline(value, pipeline, undefined, isRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set with parents throught array notation', (t) => {
   const pipeline = ['response', 'data', '[]', 'item', '^', '^', '^', 'count']
-  const value = {
+  const value = [2, 2]
+  const expected = {
     response: {
-      data: [{ item: { id: 'ent1' } }, { item: { id: 'ent2' } }],
-      count: 2,
+      count: [2, 2], // The reverse of this was a single count, but there is no way we can know to get back to that
     },
   }
-  const expected = [2, 2]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, undefined, isRev)
 
   t.deepEqual(ret, expected)
 })
@@ -222,28 +221,29 @@ test.skip('should get from parent throught array notation', (t) => {
 // TODO: I'm not at all sure this is correct behavior. I'm also not
 // sure we every defined an expected behavior for a parent directly
 // after a set.
-test.skip('should get from parent after set', (t) => {
+test('should set from parent after set', (t) => {
   const pipeline = ['response', 'data', 'item', '>value', '^', 'count']
-  const value = { response: { data: { item: { id: 'ent1' }, count: 1 } } }
-  const expected = 1
+  const value = 1
+  const expected = { response: { data: { item: { count: 1 } } } } // The `item` is set, but the reverse would not get from it ...
 
-  const ret = runPipeline(value, pipeline)
-
-  t.is(ret, expected)
-})
-
-// Tests -- get root
-
-test.skip('should get pipeline with root', (t) => {
-  const pipeline = ['response', 'data', 'item', '^^', 'response']
-  const value = { response: { data: { item: { id: 'ent1' } } } }
-  const expected = { data: { item: { id: 'ent1' } } }
-
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, undefined, isRev)
 
   t.deepEqual(ret, expected)
 })
 
+// Tests -- get root
+
+test('should set pipeline with root in reverse', (t) => {
+  const pipeline = ['response', 'data', 'item', '^^', 'response']
+  const value = { data: { item: { id: 'ent1' } } }
+  const expected = { response: { data: { item: { id: 'ent1' } } } }
+
+  const ret = runPipeline(value, pipeline, undefined, isRev)
+
+  t.deepEqual(ret, expected)
+})
+
+// TODO: Can this be reversed?
 test.skip('should get pipeline with root after array', (t) => {
   const pipeline = ['response', 'data', '[]', 'item', '^^']
   const value = {
@@ -256,22 +256,22 @@ test.skip('should get pipeline with root after array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.skip('should get pipeline with root after parent', (t) => {
+test('should set pipeline with root after parent', (t) => {
   const pipeline = ['response', 'data', 'item', '^', '^^', 'response']
-  const value = { response: { data: { item: { id: 'ent1' } } } }
-  const expected = { data: { item: { id: 'ent1' } } }
+  const value = { data: { item: { id: 'ent1' } } }
+  const expected = { response: { data: { item: { id: 'ent1' } } } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, undefined, isRev)
 
   t.deepEqual(ret, expected)
 })
 
-test.skip('should get from root when we are at the root', (t) => {
+test('should set up to root in reverse', (t) => {
   const pipeline = ['^^', 'response', 'data', 'item']
-  const value = { response: { data: { item: { id: 'ent1' } } } }
-  const expected = { id: 'ent1' }
+  const value = { id: 'ent1' }
+  const expected = { response: { data: { item: { id: 'ent1' } } } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, undefined, isRev)
 
   t.deepEqual(ret, expected)
 })

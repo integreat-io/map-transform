@@ -503,6 +503,45 @@ test('should set pipeline with array notation in the middle of a path when itera
   t.deepEqual(ret, expected)
 })
 
+test('should disregard one set step for each parent notation', (t) => {
+  const pipeline = [
+    'response',
+    'data',
+    'item',
+    '>value',
+    '>^',
+    '>^',
+    '>items',
+    '>content',
+    '>data',
+  ]
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { data: { value: { id: 'ent1' } } }
+
+  const ret = runPipeline(value, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should disregard everything after a set root notation', (t) => {
+  const pipeline = [
+    'response',
+    'data',
+    'item',
+    '>value',
+    '>^^',
+    '>items',
+    '>content',
+    '>data',
+  ]
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { value: { id: 'ent1' } }
+
+  const ret = runPipeline(value, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- set on target
 
 test('should set pipeline on target', (t) => {

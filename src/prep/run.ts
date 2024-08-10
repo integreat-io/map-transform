@@ -41,7 +41,7 @@ function setIndex(prop: string, value: unknown, target?: unknown) {
   return arr
 }
 
-// Handle set steps.
+// Handle a single set step
 function setStep(step: string, next: unknown, target: unknown) {
   if (step[0] === '[') {
     // Set on an index
@@ -52,34 +52,98 @@ function setStep(step: string, next: unknown, target: unknown) {
   }
 }
 
+// Get the index of the next set array step, or get array step if
+// we're in reverse.
+const getNextSetArrayIndex = (
+  pipeline: PreppedPipeline,
+  currentIndex: number,
+  isRev: boolean,
+) => pipeline.indexOf(isRev ? '[]' : '>[]', currentIndex)
+
 // Get the next set operation that is qualified for setting an array.
-// If none exist, return the length of the `steps` array
-function getNextSetArrayIndex(steps: PreppedPipeline, currentIndex: number) {
-  // Get the index of the next set array step
-  let index = steps.indexOf('>[]', currentIndex)
+// If none exist, return the length of the `steps` array. When we're
+// going in reverse, we do thes same, but will be looking for a get
+// step instead.
+function getNextSetArrayOrSetIndex(
+  pipeline: PreppedPipeline,
+  currentIndex: number,
+  isRev: boolean,
+) {
+  let index = getNextSetArrayIndex(pipeline, currentIndex, isRev)
   if (index < 0) {
-    // If there is no set array step, we treat the next set step as an array set
-    index = steps.findIndex((step) => step[0] === '>', currentIndex)
+    // If there is no set array step, we treat the next set step as
+    // an array set, or a get step if we're in reverse.
+    index = pipeline.findIndex(
+      (step) => (step[0] === '>' ? !isRev : isRev), // This is an xor with `isRev`
+      currentIndex,
+    )
   }
-  return index < 0 ? steps.length : index
+  return index < 0 ? pipeline.length : index
 }
 
-export default function runPipeline(
+function itereatePartOfPipeline(
+  fromIndex: number,
+  toIndex: number,
+  value: unknown[],
+  pipeline: PreppedPipeline,
+  target: unknown,
+  isRev: boolean,
+  context: unknown[],
+) {
+  // Hand off to the next level for each of the items in the array
+  return value.flatMap((item) =>
+    runOneLevel(item, pipeline.slice(fromIndex, toIndex), target, isRev, [
+      ...context,
+    ]),
+  )
+}
+
+const extractStep = (step: string): [string, boolean] =>
+  step[0] === '>' ? [step.slice(1), true] : [step, false]
+
+// Run one the pipeline until a point where it needs to hand off to
+// another level (currently because of iteration). Will finish any
+// remainder of the pipeline when the lower levels are done.
+function runOneLevel(
   value: unknown,
-  steps: PreppedPipeline,
-  target?: unknown,
-  context: unknown[] = [],
+  pipeline: PreppedPipeline,
+  target: unknown,
+  isRev: boolean,
+  context: unknown[],
 ) {
   let next = value
   let index = 0
-  const targets = unwindTarget(target, steps)
+  const targets = unwindTarget(target, pipeline, isRev)
 
   // We go through each step in the pipeline one by one until we're done
-  while (index < steps.length) {
-    const step = steps[index++]
-    if (step === '[]' || step === '>[]') {
-      // Ensure that the value is an array
+  while (index < pipeline.length) {
+    const [step, isSet] = extractStep(pipeline[index++])
+
+    if (step === '[]') {
+      // Ensure that the value is an array -- regardless of direction
       next = Array.isArray(next) ? next : [next]
+    } else if (isRev ? !isSet : isSet) {
+      // This is a set step -- or a get step in reverse
+      // TODO: Refactor to reuse get iteration code
+      if (Array.isArray(next)) {
+        const setArrayIndex = getNextSetArrayIndex(pipeline, index, isRev)
+        if (setArrayIndex >= 0) {
+          // Hand off to the next level for each of the items in the array
+          next = itereatePartOfPipeline(
+            index - 1, // Start the iteration from this step ...
+            setArrayIndex,
+            next,
+            pipeline,
+            target,
+            isRev,
+            [...context],
+          )
+          index = setArrayIndex // ... and continue until a qualified set operation
+          continue
+        }
+      }
+
+      next = setStep(step, next, targets.pop())
     } else if (step === '^^') {
       // Get the root from the context -- or the present
       // value when we have no context
@@ -88,10 +152,6 @@ export default function runPipeline(
     } else {
       // Check for functional indication in first char
       switch (step[0]) {
-        case '>':
-          // Set on the given prop
-          next = setStep(step.slice(1), next, targets.pop())
-          break
         case '^':
           // Get the parent value
           next = context.pop()
@@ -103,15 +163,25 @@ export default function runPipeline(
         default:
           // We have a get prop
           context.push(next)
+          // TODO: Refactor to reuse set iteration code
           if (Array.isArray(next)) {
             // The value is an array, so iterate over it
-            const iterateIndex = index - 1 // Start the iteration from this step
-            index = getNextSetArrayIndex(steps, index) // And continue until a qualified set operation
-            next = next.flatMap((item) =>
-              runPipeline(item, steps.slice(iterateIndex, index), target, [
-                ...context,
-              ]),
+            const setArrayIndex = getNextSetArrayOrSetIndex(
+              pipeline,
+              index,
+              isRev,
             )
+            // Hand off to the next level for each of the items in the array
+            next = itereatePartOfPipeline(
+              index - 1, // Start the iteration from this step ...
+              setArrayIndex,
+              next,
+              pipeline,
+              target,
+              isRev,
+              [...context],
+            )
+            index = setArrayIndex // ... and continue until a qualified set operation
           } else {
             // Get from the given prop
             next = getProp(step, next)
@@ -121,4 +191,24 @@ export default function runPipeline(
   }
 
   return next
+}
+
+/**
+ * Applies the given pipeline on a value, and returns the resulting value.
+ * If a `target` is given, any set steps will be attempted on the target, to
+ * modify it with the corresponding values from the pipeline.
+ */
+export default function runPipeline(
+  value: unknown,
+  pipeline: PreppedPipeline,
+  target?: unknown,
+  isRev = false,
+) {
+  return runOneLevel(
+    value,
+    isRev ? [...pipeline].reverse() : pipeline, // Reverse the steps when we're going in reverse
+    target,
+    isRev,
+    [],
+  )
 }

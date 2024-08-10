@@ -491,6 +491,18 @@ test('should set pipeline with array notation in the middle of a path when itera
   t.deepEqual(ret, expected)
 })
 
+test('should set pipeline with array notation in the middle of a path when iteration is not started', (t) => {
+  const pipeline = ['>item', '>[]', '>values']
+  const value = [{ id: 'ent1' }, { id: 'ent2' }]
+  const expected = {
+    values: [{ item: { id: 'ent1' } }, { item: { id: 'ent2' } }],
+  }
+
+  const ret = runPipeline(value, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- set on target
 
 test('should set pipeline on target', (t) => {
@@ -551,3 +563,5 @@ test('should set pipeline on target with array notation', (t) => {
 })
 
 test.todo('should set pipeline on target inside array')
+
+test.todo('should flatten array when setting')

@@ -2,6 +2,10 @@ import test from 'ava'
 
 import unwindTarget from './unwindTarget.js'
 
+// Setup
+
+const isRev = true
+
 // Tests
 
 test('should unwind one level target', (t) => {
@@ -51,7 +55,7 @@ test('should unwind three level target where only two level exists', (t) => {
 test('should unwind three level target where only one level exists', (t) => {
   const pipeline = ['response', '>item', '>data', '>response']
   const target = { response: {} }
-  const expected = [{ response: {} }, {}]
+  const expected = [{ response: {} }, {}, undefined]
 
   const ret = unwindTarget(target, pipeline)
 
@@ -61,7 +65,7 @@ test('should unwind three level target where only one level exists', (t) => {
 test('should unwind three level target where no level exists', (t) => {
   const pipeline = ['response', '>item', '>data', '>response']
   const target = {}
-  const expected = [{}]
+  const expected = [{}, undefined, undefined]
 
   const ret = unwindTarget(target, pipeline)
 
@@ -71,7 +75,7 @@ test('should unwind three level target where no level exists', (t) => {
 test('should unwind three level target with no target', (t) => {
   const pipeline = ['response', '>item', '>data', '>response']
   const target = undefined
-  const expected: unknown[] = []
+  const expected = [undefined, undefined, undefined]
 
   const ret = unwindTarget(target, pipeline)
 
@@ -81,7 +85,7 @@ test('should unwind three level target with no target', (t) => {
 test('should unwind where set paths matches a non-value', (t) => {
   const pipeline = ['response', '>item', '>data', '>response']
   const target = { response: 'No response' }
-  const expected = [{ response: 'No response' }]
+  const expected = [{ response: 'No response' }, undefined, undefined]
 
   const ret = unwindTarget(target, pipeline)
 
@@ -91,7 +95,11 @@ test('should unwind where set paths matches a non-value', (t) => {
 test('should unwind where set paths matches a non-value on the last level', (t) => {
   const pipeline = ['response', '>item', '>data', '>response']
   const target = { response: { data: 'Hello' } }
-  const expected = [{ response: { data: 'Hello' } }, { data: 'Hello' }]
+  const expected = [
+    { response: { data: 'Hello' } },
+    { data: 'Hello' },
+    undefined,
+  ]
 
   const ret = unwindTarget(target, pipeline)
 
@@ -153,12 +161,36 @@ test('should unwind with an array in the middle', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should unwind with array notation', (t) => {
+test('should skip array notation', (t) => {
   const pipeline = ['>id', '>[]', '>values']
   const target = { values: { title: 'Entry 1' } }
-  const expected = [{ values: { title: 'Entry 1' } }, { title: 'Entry 1' }]
+  const expected = [{ values: { title: 'Entry 1' } }]
 
   const ret = unwindTarget(target, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip array notation with array already in data', (t) => {
+  const pipeline = ['>id', '>[]', '>values']
+  const target = { values: [{ title: 'Entry 1' }] }
+  const expected = [{ values: [{ title: 'Entry 1' }] }]
+
+  const ret = unwindTarget(target, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should unwind from get steps in reverse', (t) => {
+  const pipeline = ['>response', 'item', 'data', 'response'] // The order has already been reversed when we get here
+  const target = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = [
+    { response: { data: { item: { id: 'ent1' } } } },
+    { data: { item: { id: 'ent1' } } },
+    { item: { id: 'ent1' } },
+  ]
+
+  const ret = unwindTarget(target, pipeline, isRev)
 
   t.deepEqual(ret, expected)
 })

@@ -42,13 +42,13 @@ function setIndex(prop: string, value: unknown, target?: unknown) {
 }
 
 // Handle a single set step
-function setStep(step: string, next: unknown, target: unknown) {
+function setStep(step: string, value: unknown, target: unknown) {
   if (step[0] === '[') {
     // Set on an index
-    return setIndex(step.slice(1), next, target)
+    return setIndex(step.slice(1), value, target)
   } else {
     // Set on a prop
-    return setProp(step, next, target)
+    return setProp(step, value, target)
   }
 }
 
@@ -81,21 +81,60 @@ function getNextSetArrayOrSetIndex(
   return index < 0 ? pipeline.length : index
 }
 
-function itereatePartOfPipeline(
-  fromIndex: number,
-  toIndex: number,
-  value: unknown[],
+function handlePathStep(
+  value: unknown,
   pipeline: PreppedPipeline,
+  step: string,
+  index: number,
+  targets: unknown[],
   target: unknown,
   isRev: boolean,
   context: unknown[],
-) {
-  // Hand off to the next level for each of the items in the array
-  return value.flatMap((item) =>
-    runOneLevel(item, pipeline.slice(fromIndex, toIndex), target, isRev, [
-      ...context,
-    ]),
-  )
+  isSet: boolean,
+): [unknown, number] {
+  if (!isSet) {
+    switch (step[0]) {
+      case '[':
+        // Get from index
+        context.push(value)
+        return [getIndex(step.slice(1), value), index]
+      case '^':
+        // Get the parent value
+        return [context.pop(), index]
+      default:
+        // Push value to context for get
+        context.push(value)
+    }
+  }
+
+  if (Array.isArray(value)) {
+    // We have an array -- consider if we should iterate
+    const setArrayIndex = isSet
+      ? getNextSetArrayIndex(pipeline, index, isRev) // For set
+      : getNextSetArrayOrSetIndex(pipeline, index, isRev) // For get
+    // We always iterate when getting, and for pipelines with a set
+    // array notation when setting.
+    if (setArrayIndex >= 0) {
+      // Hand off to the next level for each of the items in the array
+      const next = value.flatMap((item) =>
+        runOneLevel(
+          item,
+          pipeline.slice(index - 1, setArrayIndex), // Iteration from this step to a qualified set operation
+          target,
+          isRev,
+          [...context],
+        ),
+      )
+      return [next, setArrayIndex] // Return index of the iteration left off, to continue from there
+    }
+  }
+
+  // We are not iterating, so handle a get or set normally
+  if (isSet) {
+    return [setStep(step, value, targets.pop()), index]
+  } else {
+    return [getProp(step, value), index]
+  }
 }
 
 const extractStep = (step: string): [string, boolean] =>
@@ -122,71 +161,24 @@ function runOneLevel(
     if (step === '[]') {
       // Ensure that the value is an array -- regardless of direction
       next = Array.isArray(next) ? next : [next]
-    } else if (isRev ? !isSet : isSet) {
-      // This is a set step -- or a get step in reverse
-      // TODO: Refactor to reuse get iteration code
-      if (Array.isArray(next)) {
-        const setArrayIndex = getNextSetArrayIndex(pipeline, index, isRev)
-        if (setArrayIndex >= 0) {
-          // Hand off to the next level for each of the items in the array
-          next = itereatePartOfPipeline(
-            index - 1, // Start the iteration from this step ...
-            setArrayIndex,
-            next,
-            pipeline,
-            target,
-            isRev,
-            [...context],
-          )
-          index = setArrayIndex // ... and continue until a qualified set operation
-          continue
-        }
-      }
-
-      next = setStep(step, next, targets.pop())
     } else if (step === '^^') {
       // Get the root from the context -- or the present
       // value when we have no context
       next = context.length === 0 ? next : context[0]
       context = []
     } else {
-      // Check for functional indication in first char
-      switch (step[0]) {
-        case '^':
-          // Get the parent value
-          next = context.pop()
-          break
-        case '[':
-          // Get the index position from an array
-          next = getIndex(step.slice(1), next)
-          break
-        default:
-          // We have a get prop
-          context.push(next)
-          // TODO: Refactor to reuse set iteration code
-          if (Array.isArray(next)) {
-            // The value is an array, so iterate over it
-            const setArrayIndex = getNextSetArrayOrSetIndex(
-              pipeline,
-              index,
-              isRev,
-            )
-            // Hand off to the next level for each of the items in the array
-            next = itereatePartOfPipeline(
-              index - 1, // Start the iteration from this step ...
-              setArrayIndex,
-              next,
-              pipeline,
-              target,
-              isRev,
-              [...context],
-            )
-            index = setArrayIndex // ... and continue until a qualified set operation
-          } else {
-            // Get from the given prop
-            next = getProp(step, next)
-          }
-      }
+      // This is a path step -- handle it for both get and set
+      ;[next, index] = handlePathStep(
+        next,
+        pipeline,
+        step,
+        index,
+        targets,
+        target,
+        isRev,
+        context,
+        isRev ? !isSet : isSet, // isSet
+      )
     }
   }
 

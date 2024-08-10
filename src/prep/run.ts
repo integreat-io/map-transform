@@ -193,6 +193,32 @@ function runOneLevel(
   return next
 }
 
+function adjustPipelineToDirection(pipeline: PreppedPipeline, isRev: boolean) {
+  // Reverse the steps when we're going in reverse
+  const directedPipeline = isRev ? [...pipeline].reverse() : pipeline
+
+  // Adjust pipeline for setting to parent or root
+  const steps = []
+  let skipCount = 0
+  for (const step of directedPipeline) {
+    if (isRev ? step === '^^' : step === '>^^') {
+      // This is a root step -- skip the rest
+      break
+    } else if (isRev ? step === '^' : step === '>^') {
+      // This is a parent step -- count how many to skip after this
+      skipCount++
+    } else if (skipCount > 0) {
+      // This is path step and we're skipping
+      skipCount--
+    } else {
+      // This is a path step -- keep it
+      steps.push(step)
+    }
+  }
+
+  return steps
+}
+
 /**
  * Applies the given pipeline on a value, and returns the resulting value.
  * If a `target` is given, any set steps will be attempted on the target, to
@@ -206,7 +232,7 @@ export default function runPipeline(
 ) {
   return runOneLevel(
     value,
-    isRev ? [...pipeline].reverse() : pipeline, // Reverse the steps when we're going in reverse
+    adjustPipelineToDirection(pipeline, isRev),
     target,
     isRev,
     [],

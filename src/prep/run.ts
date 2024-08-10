@@ -41,17 +41,6 @@ function setIndex(prop: string, value: unknown, target?: unknown) {
   return arr
 }
 
-// Handle a single set step
-function setStep(step: string, value: unknown, target: unknown) {
-  if (step[0] === '[') {
-    // Set on an index
-    return setIndex(step.slice(1), value, target)
-  } else {
-    // Set on a prop
-    return setProp(step, value, target)
-  }
-}
-
 // Get the index of the next set array step, or get array step if
 // we're in reverse.
 const getNextSetArrayIndex = (
@@ -93,18 +82,19 @@ function handlePathStep(
   isSet: boolean,
 ): [unknown, number] {
   if (!isSet) {
-    switch (step[0]) {
-      case '[':
-        // Get from index
-        context.push(value)
-        return [getIndex(step.slice(1), value), index]
-      case '^':
-        // Get the parent value
-        return [context.pop(), index]
-      default:
-        // Push value to context for get
-        context.push(value)
-    }
+    // Push value to context for get
+    context.push(value)
+  }
+
+  if (step[0] === '[') {
+    // This is an index path
+    const stepIndex = step.slice(1)
+    return [
+      isSet
+        ? setIndex(stepIndex, value, targets.pop()) // Set to index
+        : getIndex(stepIndex, value), // Get from index
+      index,
+    ]
   }
 
   if (Array.isArray(value)) {
@@ -130,11 +120,12 @@ function handlePathStep(
   }
 
   // We are not iterating, so handle a get or set normally
-  if (isSet) {
-    return [setStep(step, value, targets.pop()), index]
-  } else {
-    return [getProp(step, value), index]
-  }
+  return [
+    isSet
+      ? setProp(step, value, targets.pop()) // Set to prop
+      : getProp(step, value), // Get from prop
+    index,
+  ]
 }
 
 const extractStep = (step: string): [string, boolean] =>
@@ -161,11 +152,16 @@ function runOneLevel(
     if (step === '[]') {
       // Ensure that the value is an array -- regardless of direction
       next = Array.isArray(next) ? next : [next]
-    } else if (step === '^^') {
-      // Get the root from the context -- or the present
-      // value when we have no context
-      next = context.length === 0 ? next : context[0]
-      context = []
+    } else if (step[0] === '^') {
+      if (step === '^^') {
+        // Get the root from the context -- or the present
+        // value when we have no context
+        next = context.length === 0 ? next : context[0]
+        context = []
+      } else {
+        // Get the parent value
+        next = context.pop()
+      }
     } else {
       // This is a path step -- handle it for both get and set
       ;[next, index] = handlePathStep(

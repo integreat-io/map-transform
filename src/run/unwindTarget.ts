@@ -1,5 +1,5 @@
 import { isObject } from '../utils/is.js'
-import type { PreppedPipeline } from './index.js'
+import type { PreppedPipeline } from '../prep/index.js'
 
 /**
  * Extract the levels of a target object according to the set paths in the

@@ -1,10 +1,10 @@
+import type { PreppedPipeline } from '../run/index.js'
 import type { Path } from '../types.js'
 
 export type Step = Path
 export type Pipeline = Step[]
 export type Def = Step | Pipeline
 export type DataMapper = (value: unknown) => unknown
-export type PreppedPipeline = Path[]
 
 function splitPart(part: string): string[] {
   if (part.startsWith('^^')) {

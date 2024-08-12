@@ -604,3 +604,5 @@ test('should set pipeline on target with array notation', (t) => {
 test.todo('should set pipeline on target inside array')
 
 test.todo('should flatten array when setting')
+
+test.todo('should not set nonvalues')

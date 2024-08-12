@@ -523,6 +523,27 @@ test('should disregard one set step for each parent notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+// TODO: Is this correct?
+test('should apply parent to non-path steps too', (t) => {
+  const pipeline = [
+    'response',
+    'data',
+    'item',
+    '>value',
+    '>^',
+    '>^',
+    { type: 'mutation' as const, pipelines: [['value', '>here']] },
+    '>content',
+    '>data',
+  ]
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { data: { value: { id: 'ent1' } } }
+
+  const ret = runPipeline(value, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should disregard everything after a set root notation', (t) => {
   const pipeline = [
     'response',

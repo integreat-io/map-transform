@@ -76,10 +76,10 @@ function adjustPipelineToDirection(pipeline: PreppedPipeline, isRev: boolean) {
       // This is a parent step -- count how many to skip after this
       skipCount++
     } else if (skipCount > 0) {
-      // This is path step and we're skipping
+      // We're skipping this step
       skipCount--
     } else {
-      // This is a path step -- keep it
+      // We are not skipping steps
       steps.push(step)
     }
   }

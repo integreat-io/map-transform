@@ -1,6 +1,6 @@
 import test from 'ava'
 
-import runPipeline from './run.js'
+import runPipeline from './index.js'
 
 // Tests -- get path
 

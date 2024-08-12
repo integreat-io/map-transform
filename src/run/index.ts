@@ -1,6 +1,6 @@
 import unwindTarget from './unwindTarget.js'
 import { isObject } from '../utils/is.js'
-import type { PreppedPipeline } from './index.js'
+import type { PreppedPipeline } from '../prep/index.js'
 
 // Get from a prop
 const getProp = (prop: string, value: unknown) =>

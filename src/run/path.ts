@@ -1,5 +1,6 @@
 import { isObject } from '../utils/is.js'
 import { runOneLevel, PreppedPipeline } from './index.js'
+import type { State } from '../types.js'
 
 // Get from a prop
 const getProp = (prop: string, value: unknown) =>
@@ -91,10 +92,11 @@ export default function runPathStep(
   step: string,
   index: number,
   targets: unknown[],
-  target: unknown,
-  isRev: boolean,
-  context: unknown[],
+  state: State,
 ): [unknown, number] {
+  const context = state.context
+  const isRev = !!state.rev
+
   // Normalize the path and set the `isSet` flag based on whether we are
   // in reverse or not.
   const [path, isSet] = extractPathStep(step, isRev)
@@ -128,9 +130,7 @@ export default function runPathStep(
         runOneLevel(
           item,
           pipeline.slice(index - 1, setArrayIndex), // Iteration from this step to a qualified set operation
-          target,
-          isRev,
-          [...context],
+          { ...state, context: [...context], value: item },
         ),
       )
       return [next, setArrayIndex] // Return index of the iteration left off, to continue from there

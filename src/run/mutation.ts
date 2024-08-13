@@ -1,4 +1,5 @@
 import runPipeline, { PreppedPipeline } from './index.js'
+import type { State } from '../types.js'
 
 export interface MutationStep {
   type: 'mutation'
@@ -8,10 +9,14 @@ export interface MutationStep {
 export default function runMutationStep(
   value: unknown,
   { pipelines }: MutationStep,
+  state: State,
 ) {
   return pipelines.reduce(
     (target, pipeline) =>
-      runPipeline(value, pipeline, target) as Record<string, unknown>,
+      runPipeline(value, pipeline, { ...state, target }) as Record<
+        string,
+        unknown
+      >,
     {},
   )
 }

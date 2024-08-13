@@ -2,6 +2,10 @@ import test from 'ava'
 
 import runPipeline from './index.js'
 
+// Setup
+
+const state = { rev: false }
+
 // Tests
 
 test('should run mutation object', (t) => {
@@ -17,7 +21,7 @@ test('should run mutation object', (t) => {
   ]
   const expected = { id: 'ent1', title: 'Entry 1' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })

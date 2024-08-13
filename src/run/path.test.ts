@@ -2,6 +2,10 @@ import test from 'ava'
 
 import runPipeline from './index.js'
 
+// Setup
+
+const state = { rev: false }
+
 // Tests -- get path
 
 test('should run simple path pipeline', (t) => {
@@ -9,7 +13,7 @@ test('should run simple path pipeline', (t) => {
   const value = { item: { id: 'ent1' } }
   const expected = { id: 'ent1' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -19,7 +23,7 @@ test('should run pipeline with several paths', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expectedValue = { id: 'ent1' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expectedValue)
 })
@@ -33,7 +37,7 @@ test('should get pipeline with array index', (t) => {
   }
   const expectedValue = { id: 'ent2' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expectedValue)
 })
@@ -43,7 +47,7 @@ test('should get pipeline with array index only', (t) => {
   const value = [{ id: 'ent1' }, { id: 'ent2' }]
   const expectedValue = { id: 'ent2' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expectedValue)
 })
@@ -60,7 +64,7 @@ test('should get pipeline with several array indices', (t) => {
   }
   const expectedValue = { id: 'ent2' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expectedValue)
 })
@@ -74,7 +78,7 @@ test('should get pipeline with several array indices directly after each other',
   }
   const expected = { id: 'ent2' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -86,7 +90,7 @@ test('should get pipeline with negative array index', (t) => {
   }
   const expected = { id: 'ent1' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -98,7 +102,7 @@ test('should return undefined when index in pipeline does not match an item', (t
   }
   const expected = undefined
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.is(ret, expected)
 })
@@ -110,7 +114,7 @@ test('should return undefined when index in pipeline addresses a non-array', (t)
   }
   const expected = undefined
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.is(ret, expected)
 })
@@ -122,7 +126,7 @@ test('should get array from pipeline without array notation', (t) => {
   const value = { response: { data: { items: [{ id: 'ent1' }] } } }
   const expected = [{ id: 'ent1' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -134,7 +138,7 @@ test('should get values within an array without array notation', (t) => {
   }
   const expected = [{ id: 'ent1' }, { id: 'ent2' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -144,7 +148,7 @@ test('should get array from pipeline with array notation', (t) => {
   const value = { response: { data: { items: [{ id: 'ent1' }] } } }
   const expected = [{ id: 'ent1' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -154,7 +158,7 @@ test('should get array from pipeline with array notation even when the path poin
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = [{ id: 'ent1' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -164,7 +168,7 @@ test('should get pipeline with array notation in the middle', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = [{ id: 'ent1' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -174,7 +178,7 @@ test('should get pipeline with several levels after array', (t) => {
   const value = { responses: [{ data: { item: { id: 'ent1' } } }] }
   const expected = [{ id: 'ent1' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -184,7 +188,7 @@ test('should get pipeline with array notion where the array is', (t) => {
   const value = { responses: [{ data: { item: { id: 'ent1' } } }] }
   const expected = [{ id: 'ent1' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -194,7 +198,7 @@ test('should get pipeline with array notion after the actual array', (t) => {
   const value = { responses: [{ data: { item: { id: 'ent1' } } }] }
   const expected = [{ id: 'ent1' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -209,7 +213,7 @@ test('should flatten array when data has several levels of arrays', (t) => {
   }
   const expected = [{ id: 'ent1' }, { id: 'ent2' }, { id: 'ent3' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -224,7 +228,7 @@ test('should flatten array with array brackets in the right places', (t) => {
   }
   const expected = [{ id: 'ent1' }, { id: 'ent2' }, { id: 'ent3' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -236,7 +240,7 @@ test('should flatten array with more array brackets than needed', (t) => {
   }
   const expected = [{ id: 'ent1' }, { id: 'ent2' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -251,7 +255,7 @@ test('should get array from pipeline with index notation', (t) => {
   }
   const expected = [{ id: 'ent3' }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -263,7 +267,7 @@ test('should get from parent', (t) => {
   const value = { response: { data: { item: { id: 'ent1' }, count: 1 } } }
   const expected = 1
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.is(ret, expected)
 })
@@ -273,7 +277,7 @@ test('should get from parent several steps up', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } }, count: 1 } }
   const expected = 1
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.is(ret, expected)
 })
@@ -283,7 +287,7 @@ test('should get from parent after array notation', (t) => {
   const value = { response: { data: { item: { id: 'ent1' }, count: 1 } } }
   const expected = [1]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -298,7 +302,7 @@ test('should get from parent throught array notation', (t) => {
   }
   const expected = [2, 2]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -311,7 +315,7 @@ test('should get from parent after set', (t) => {
   const value = { response: { data: { item: { id: 'ent1' }, count: 1 } } }
   const expected = 1
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.is(ret, expected)
 })
@@ -323,7 +327,7 @@ test('should get pipeline with root', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { data: { item: { id: 'ent1' } } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -335,7 +339,7 @@ test('should get pipeline with root after array', (t) => {
   }
   const expected = [value, value] // It is correct that we get one for every item
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -345,7 +349,7 @@ test('should get pipeline with root after parent', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { data: { item: { id: 'ent1' } } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -355,7 +359,7 @@ test('should get from root when we are at the root', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { id: 'ent1' }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -367,7 +371,7 @@ test('should set pipeline', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { value: { id: 'ent1' } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -377,7 +381,7 @@ test('should set pipeline with several set paths', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { data: { value: { id: 'ent1' } } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -387,7 +391,7 @@ test('should set pipeline with array index', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { values: [{ id: 'ent1' }] }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -397,7 +401,7 @@ test('should set pipeline with array index greater than 0', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { values: [undefined, undefined, { id: 'ent1' }] }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -410,7 +414,7 @@ test('should set pipeline with negative array index', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { values: [{ id: 'ent1' }] }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -422,7 +426,7 @@ test('should set array with pipeline ', (t) => {
   }
   const expected = { values: [{ id: 'ent1' }, { id: 'ent2' }] }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -434,7 +438,7 @@ test('should set array after iteration', (t) => {
   }
   const expected = { values: [{ id: 'ent1' }, { id: 'ent2' }] }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -446,7 +450,7 @@ test('should set pipeline with array notation', (t) => {
   }
   const expected = { values: [{ id: 'ent1' }, { id: 'ent2' }] }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -460,7 +464,7 @@ test('should set pipeline with array notation in the middle of a path', (t) => {
     values: [{ item: { id: 'ent1' } }, { item: { id: 'ent2' } }],
   }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -472,7 +476,7 @@ test('should set pipeline with set iteration', (t) => {
   }
   const expected = [{ value: { id: 'ent1' } }, { value: { id: 'ent2' } }]
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -486,7 +490,7 @@ test('should set pipeline with array notation in the middle of a path when itera
     values: [{ item: { id: 'ent1' } }, { item: { id: 'ent2' } }],
   }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -498,7 +502,7 @@ test('should set pipeline with array notation in the middle of a path when itera
     values: [{ item: { id: 'ent1' } }, { item: { id: 'ent2' } }],
   }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -518,7 +522,7 @@ test('should disregard one set step for each parent notation', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { data: { value: { id: 'ent1' } } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -539,7 +543,7 @@ test('should apply parent to non-path steps too', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { data: { value: { id: 'ent1' } } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -558,7 +562,7 @@ test('should disregard everything after a set root notation', (t) => {
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const expected = { value: { id: 'ent1' } }
 
-  const ret = runPipeline(value, pipeline)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -569,9 +573,10 @@ test('should set pipeline on target', (t) => {
   const pipeline = ['response', 'data', 'item', '>value']
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const target = { count: 1 }
+  const state = { target }
   const expected = { value: { id: 'ent1' }, count: 1 }
 
-  const ret = runPipeline(value, pipeline, target)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -580,9 +585,10 @@ test('should set pipeline one level into target', (t) => {
   const pipeline = ['response', 'data', 'item', 'id', '>id', '>value']
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const target = { value: { title: 'Entry 1' } }
+  const state = { target }
   const expected = { value: { id: 'ent1', title: 'Entry 1' } }
 
-  const ret = runPipeline(value, pipeline, target)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -591,11 +597,12 @@ test('should set pipeline several levels into target', (t) => {
   const pipeline = ['response', 'data', 'item', 'id', '>id', '>value', '>data']
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const target = { data: { value: { title: 'Entry 1' }, count: 1 } }
+  const state = { target }
   const expected = {
     data: { value: { id: 'ent1', title: 'Entry 1' }, count: 1 },
   }
 
-  const ret = runPipeline(value, pipeline, target)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -604,9 +611,10 @@ test('should set pipeline on target with index', (t) => {
   const pipeline = ['response', 'data', 'item', '>[1]', '>values']
   const value = { response: { data: { item: { id: 'ent2' } } } }
   const target = { count: 1, values: [{ id: 'ent1' }] }
+  const state = { target }
   const expected = { values: [{ id: 'ent1' }, { id: 'ent2' }], count: 1 }
 
-  const ret = runPipeline(value, pipeline, target)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
@@ -615,9 +623,10 @@ test('should set pipeline on target with array notation', (t) => {
   const pipeline = ['response', 'data', 'item', '>[]', '>values']
   const value = { response: { data: { item: { id: 'ent1' } } } }
   const target = { count: 0, values: null }
+  const state = { target }
   const expected = { values: [{ id: 'ent1' }], count: 0 }
 
-  const ret = runPipeline(value, pipeline, target)
+  const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })

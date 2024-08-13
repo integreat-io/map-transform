@@ -2,7 +2,7 @@ import runMutation, { MutationStep } from './mutation.js'
 import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
 import { isObject } from '../utils/is.js'
-import type { Path } from '../types.js'
+import type { Path, InitialState, State } from '../types.js'
 
 export type PreppedStep = Path | MutationStep
 export type PreppedPipeline = PreppedStep[]
@@ -15,13 +15,13 @@ export type PreppedPipeline = PreppedStep[]
 export function runOneLevel(
   value: unknown,
   pipeline: PreppedPipeline,
-  target: unknown,
-  isRev: boolean,
-  context: unknown[],
+  state: State,
 ) {
+  const isRev = !!state.rev
+  let context = state.context
+  const targets = unwindTarget(state.target, pipeline, isRev)
   let next = value
   let index = 0
-  const targets = unwindTarget(target, pipeline, isRev)
 
   // We go through each step in the pipeline one by one until we're done
   while (index < pipeline.length) {
@@ -42,19 +42,18 @@ export function runOneLevel(
         }
       } else {
         // This is a path step -- handle it for both get and set
+        const nextState = { ...state, context, value: next }
         ;[next, index] = runPath(
           next,
           pipeline,
           step,
           index,
           targets,
-          target,
-          isRev,
-          context,
+          nextState,
         )
       }
     } else if (isObject(step)) {
-      next = runMutation(next, step)
+      next = runMutation(next, step, state)
     }
   }
 
@@ -95,14 +94,12 @@ function adjustPipelineToDirection(pipeline: PreppedPipeline, isRev: boolean) {
 export default function runPipeline(
   value: unknown,
   pipeline: PreppedPipeline,
-  target?: unknown,
-  isRev = false,
+  initialState: InitialState,
 ) {
+  const state = { ...initialState, context: [], value }
   return runOneLevel(
     value,
-    adjustPipelineToDirection(pipeline, isRev),
-    target,
-    isRev,
-    [],
+    adjustPipelineToDirection(pipeline, !!state.rev),
+    state,
   )
 }

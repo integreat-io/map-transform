@@ -3,7 +3,7 @@ import prepareTransformStep from './transform.js'
 import type { PreppedPipeline, StepProps } from '../run/index.js'
 import type { Options, Path, TransformOperation } from '../types.js'
 
-export type Step = Path | TransformOperation
+export type Step = Path | TransformOperation | Pipeline
 export type Pipeline = Step[]
 export type Def = Step | Pipeline
 export type DataMapper = (value: unknown) => unknown
@@ -40,6 +40,8 @@ const prepareStep = (options: Options) =>
   function prepareStep(step: Step | Pipeline) {
     if (typeof step === 'string') {
       return preparePathStep(step)
+    } else if (Array.isArray(step)) {
+      return prep(step, options)
     } else {
       const [props, operation] = extractStepProps(step, options)
       return { ...prepareTransformStep(operation, options), ...props }

@@ -21,8 +21,6 @@ const lowerIfAlias = () => (options: Options) =>
 
 const options = {
   transformers: { uppercase, upperOrLower, lowerIfAlias },
-  fwdAlias: 'from',
-  revAlias: 'to',
 }
 
 // Tests
@@ -32,66 +30,6 @@ test('should prepare transform operation', (t) => {
     $transform: 'uppercase',
   }
   const expected = [{ type: 'transform', fn: uppercaseFn }]
-
-  const ret = prep(def, options)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should prepare transform operation with iteration', (t) => {
-  const def = {
-    $transform: 'uppercase',
-    $iterate: true,
-  }
-  const expected = [{ type: 'transform', fn: uppercaseFn, it: true }]
-
-  const ret = prep(def, options)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should prepare transform operation with direction fwd', (t) => {
-  const def = {
-    $transform: 'uppercase',
-    $direction: 'fwd',
-  }
-  const expected = [{ type: 'transform', fn: uppercaseFn, dir: 1 }]
-
-  const ret = prep(def, options)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should prepare transform operation with direction rev', (t) => {
-  const def = {
-    $transform: 'uppercase',
-    $direction: 'rev',
-  }
-  const expected = [{ type: 'transform', fn: uppercaseFn, dir: -1 }]
-
-  const ret = prep(def, options)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should prepare transform operation with direction set to fwdAlias', (t) => {
-  const def = {
-    $transform: 'uppercase',
-    $direction: 'from',
-  }
-  const expected = [{ type: 'transform', fn: uppercaseFn, dir: 1 }]
-
-  const ret = prep(def, options)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should prepare transform operation with direction revAlias', (t) => {
-  const def = {
-    $transform: 'uppercase',
-    $direction: 'to',
-  }
-  const expected = [{ type: 'transform', fn: uppercaseFn, dir: -1 }]
 
   const ret = prep(def, options)
 

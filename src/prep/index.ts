@@ -1,55 +1,54 @@
-import type { PreppedPipeline } from '../run/index.js'
-import type { Path } from '../types.js'
+import preparePathStep from './path.js'
+import prepareTransformStep from './transform.js'
+import type { PreppedPipeline, StepProps } from '../run/index.js'
+import type { Options, Path, TransformOperation } from '../types.js'
 
-export type Step = Path
+export type Step = Path | TransformOperation
 export type Pipeline = Step[]
 export type Def = Step | Pipeline
 export type DataMapper = (value: unknown) => unknown
 
-function splitPart(part: string): string[] {
-  if (part.startsWith('^^')) {
-    return [
-      '^^', // Return the root part
-      ...splitPart(part.slice(2)), // Split up the rest of the part if necessary
-    ]
-  } else {
-    const indexOfBracket = part.indexOf('[')
-    if (indexOfBracket >= 0) {
-      const indexOfClosingBracket = part.indexOf(']', indexOfBracket)
-      return [
-        part.slice(0, indexOfBracket), // Any path before the bracket
-        part.slice(indexOfBracket, indexOfClosingBracket + 1), // The array part
-        ...splitPart(part.slice(indexOfClosingBracket + 1)), // Any path after the bracket -- usually more brackets
-      ]
-    } else {
-      return [part]
+function getDir(dir: string | undefined, options: Options) {
+  if (typeof dir === 'string') {
+    if (dir === 'fwd' || dir === options.fwdAlias) {
+      return 1
+    } else if (dir === 'rev' || dir === options.revAlias) {
+      return -1
     }
   }
+  return 0
 }
 
-const removeGetIndicator = (path: Path) =>
-  path[0] === '<' ? path.slice(1) : path
+function extractStepProps(
+  { $iterate, $direction, ...step }: TransformOperation,
+  options: Options,
+): [StepProps, TransformOperation] {
+  const it = !!$iterate
+  const dir = getDir($direction, options)
+  return it || dir
+    ? [
+        {
+          ...(it && { it }),
+          ...(dir && { dir }),
+        },
+        step,
+      ]
+    : [{}, step]
+}
 
-function prepPath(path: Path) {
-  if (path[0] === '>') {
-    return path
-      .slice(1)
-      .split('.')
-      .flatMap(splitPart)
-      .filter(Boolean) // Remove any empty parts
-      .map((part) => `>${part}`)
-      .reverse()
-  } else {
-    return removeGetIndicator(path)
-      .split('.')
-      .flatMap(splitPart)
-      .filter(Boolean) // Remove any empty parts
+const prepareStep = (options: Options) =>
+  function prepareStep(step: Step | Pipeline) {
+    if (typeof step === 'string') {
+      return preparePathStep(step)
+    } else {
+      const [props, operation] = extractStepProps(step, options)
+      return { ...prepareTransformStep(operation, options), ...props }
+    }
   }
-}
 
 const ensurePipeline = (def: Def): Pipeline =>
   Array.isArray(def) ? def : [def]
 
-export default function prep(def: Def): PreppedPipeline {
-  return ensurePipeline(def).flatMap(prepPath)
+export default function prep(def: Def, options: Options): PreppedPipeline {
+  return ensurePipeline(def).flatMap(prepareStep(options))
 }

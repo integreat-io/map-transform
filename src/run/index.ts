@@ -1,11 +1,52 @@
-import runMutation, { MutationStep } from './mutation.js'
+import runMutationStep, { MutationStep } from './mutation.js'
+import runTransformStep, { TransformStep } from './transform.js'
 import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
 import { isObject } from '../utils/is.js'
 import type { Path, InitialState, State } from '../types.js'
 
-export type PreppedStep = Path | MutationStep
+export interface StepProps {
+  it?: boolean
+  dir?: number
+}
+
+export type OperationStep = (MutationStep | TransformStep) & StepProps
+export type PreppedStep = Path | OperationStep
 export type PreppedPipeline = PreppedStep[]
+
+export type RunStep<T extends OperationStep> = (
+  value: unknown,
+  step: T,
+  state: State,
+) => unknown
+
+const isOperationObject = (step: PreppedStep): step is OperationStep =>
+  isObject(step) && typeof step.type === 'string'
+
+const shouldRun = (step: OperationStep, isRev: boolean) =>
+  step.dir && typeof step.dir === 'number'
+    ? step.dir < 0
+      ? isRev
+      : !isRev
+    : true
+
+const shouldIterate = (
+  value: unknown,
+  step: OperationStep,
+): value is unknown[] => !!step.it && Array.isArray(value)
+
+function getOperationForStep<T extends OperationStep>(
+  step: T,
+): RunStep<T> | undefined {
+  switch (step.type) {
+    case 'mutation':
+      return runMutationStep as RunStep<T> // TODO: Make typing work without forcing to RunStep?
+    case 'transform':
+      return runTransformStep as RunStep<T>
+    default:
+      return undefined
+  }
+}
 
 /**
  * Run one the pipeline until a point where it needs to hand off to
@@ -52,8 +93,15 @@ export function runOneLevel(
           nextState,
         )
       }
-    } else if (isObject(step)) {
-      next = runMutation(next, step, state)
+    } else if (isOperationObject(step)) {
+      const op = getOperationForStep(step)
+      if (op && shouldRun(step, isRev)) {
+        // This is an operation step and we are not being stopped by the
+        // direction we are going in -- run it with or without iterating
+        next = shouldIterate(next, step)
+          ? next.map((value) => op(value, step, state))
+          : op(next, step, state)
+      }
     }
   }
 

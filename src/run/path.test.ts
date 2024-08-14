@@ -1,4 +1,5 @@
 import test from 'ava'
+import type { Path } from '../types.js'
 
 import runPipeline from './index.js'
 
@@ -26,6 +27,15 @@ test('should run pipeline with several paths', (t) => {
   const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expectedValue)
+})
+
+test('should run the value untouched with an empty pipeline', (t) => {
+  const pipeline: Path[] = []
+  const value = { item: { id: 'ent1' } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, value)
 })
 
 // Tests -- get array index
@@ -636,3 +646,8 @@ test.todo('should set pipeline on target inside array')
 test.todo('should flatten array when setting')
 
 test.todo('should not set nonvalues')
+
+test.todo('should map missing value to empty array when array notations')
+test.todo(
+  'should support parent through iterations based on mutation prop array notation',
+)

@@ -158,7 +158,7 @@ export type OperationObject =
   | LookdownOperation
 
 export type Pipeline = (
-  | TransformObject
+  | MutationObject
   | Operation
   | OperationObject
   | Path
@@ -170,16 +170,17 @@ export type Pipeline = (
 // We would ideally like to type all keys _not_ starting with $ as
 // `TransformDefinition | undefined | boolean`, but that's not possible as far
 // as I know.
-export interface TransformObject extends Record<string, unknown> {
+export interface MutationObject extends Record<string, unknown> {
   $iterate?: boolean
   $modify?: boolean | Path
   $noDefaults?: boolean
   $flip?: boolean
   $direction?: string
 }
+export type TransformObject = MutationObject
 
 export type TransformDefinition =
-  | TransformObject
+  | MutationObject
   | Operation
   | OperationObject
   | Pipeline

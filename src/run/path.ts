@@ -1,5 +1,6 @@
 import { isObject } from '../utils/is.js'
 import { runOneLevel, PreppedPipeline } from './index.js'
+import { revFromState } from '../utils/stateHelpers.js'
 import type { State } from '../types.js'
 
 // Get from a prop
@@ -95,7 +96,7 @@ export default function runPathStep(
   state: State,
 ): [unknown, number] {
   const context = state.context
-  const isRev = !!state.rev
+  const isRev = revFromState(state)
 
   // Normalize the path and set the `isSet` flag based on whether we are
   // in reverse or not.

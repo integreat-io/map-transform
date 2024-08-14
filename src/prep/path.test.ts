@@ -1,4 +1,5 @@
 import test from 'ava'
+import type { Path } from '../types.js'
 
 import prep from './index.js'
 
@@ -35,7 +36,7 @@ test('should prepare path that is already split up', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should prepare path already in ret', (t) => {
+test('should prepare path already in array', (t) => {
   const def = ['response.data.item']
   const expected = ['response', 'data', 'item']
 
@@ -47,6 +48,15 @@ test('should prepare path already in ret', (t) => {
 test('should prepare path with get indicator', (t) => {
   const def = '<response.data.item'
   const expected = ['response', 'data', 'item']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should prepare dot path as an empty pipeline', (t) => {
+  const def = '.'
+  const expected: Path[] = []
 
   const ret = prep(def, options)
 

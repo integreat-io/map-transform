@@ -3,7 +3,8 @@ import runTransformStep, { TransformStep } from './transform.js'
 import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
 import { isObject } from '../utils/is.js'
-import type { Path, InitialState, State } from '../types.js'
+import { revFromState } from '../utils/stateHelpers.js'
+import type { Path, State } from '../types.js'
 
 export interface StepProps {
   it?: boolean
@@ -48,6 +49,11 @@ function getOperationForStep<T extends OperationStep>(
   }
 }
 
+export const handOffState = (state: State, value: unknown) => ({
+  ...state,
+  value,
+})
+
 /**
  * Run one the pipeline until a point where it needs to hand off to
  * another level (currently because of iteration). Will finish any
@@ -58,8 +64,9 @@ export function runOneLevel(
   pipeline: PreppedPipeline,
   state: State,
 ) {
-  const isRev = !!state.rev
-  let context = state.context
+  // Set the actual rev, based on flip and what not
+  const isRev = revFromState(state)
+
   const targets = unwindTarget(state.target, pipeline, isRev)
   let next = value
   let index = 0
@@ -75,22 +82,21 @@ export function runOneLevel(
         if (step === '^^') {
           // Get the root from the context -- or the present
           // value when we have no context
-          next = context.length === 0 ? next : context[0]
-          context = []
+          next = state.context.length === 0 ? next : state.context[0]
+          state.context = []
         } else {
           // Get the parent value
-          next = context.pop()
+          next = state.context.pop()
         }
       } else {
         // This is a path step -- handle it for both get and set
-        const nextState = { ...state, context, value: next }
         ;[next, index] = runPath(
           next,
           pipeline,
           step,
           index,
           targets,
-          nextState,
+          handOffState(state, next),
         )
       }
     } else if (isOperationObject(step)) {
@@ -98,9 +104,10 @@ export function runOneLevel(
       if (op && shouldRun(step, isRev)) {
         // This is an operation step and we are not being stopped by the
         // direction we are going in -- run it with or without iterating
+        // TODO: Clean up how we pass off state
         next = shouldIterate(next, step)
-          ? next.map((value) => op(value, step, state))
-          : op(next, step, state)
+          ? next.map((value) => op(value, step, handOffState(state, value)))
+          : op(next, step, handOffState(state, next))
       }
     }
   }
@@ -108,7 +115,9 @@ export function runOneLevel(
   return next
 }
 
-function adjustPipelineToDirection(pipeline: PreppedPipeline, isRev: boolean) {
+function adjustPipelineToDirection(pipeline: PreppedPipeline, state: State) {
+  const isRev = revFromState(state)
+
   // Reverse the steps when we're going in reverse
   const directedPipeline = isRev ? [...pipeline].reverse() : pipeline
 
@@ -142,12 +151,21 @@ function adjustPipelineToDirection(pipeline: PreppedPipeline, isRev: boolean) {
 export default function runPipeline(
   value: unknown,
   pipeline: PreppedPipeline,
-  initialState: InitialState,
+  state: Partial<State>,
 ) {
-  const state = { ...initialState, context: [], value }
+  // Clone state to not affect any parent states, ensure that we have a
+  // `context` array, and set the value.
+  const ourState = {
+    ...state,
+    context: Array.isArray(state.context) ? [...state.context] : [],
+    value,
+  }
+
+  // Run the pipeline after first adjusting it according to the direction we're
+  // going in.
   return runOneLevel(
     value,
-    adjustPipelineToDirection(pipeline, !!state.rev),
-    state,
+    adjustPipelineToDirection(pipeline, ourState),
+    ourState,
   )
 }

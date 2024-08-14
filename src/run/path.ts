@@ -1,6 +1,5 @@
 import { isObject } from '../utils/is.js'
 import { runOneLevel, PreppedPipeline } from './index.js'
-import { revFromState } from '../utils/stateHelpers.js'
 import xor from '../utils/xor.js'
 import type { State } from '../types.js'
 
@@ -91,15 +90,27 @@ export default function runPathStep(
   index: number,
   targets: unknown[],
   state: State,
+  isRev: boolean, // We get the actual rev from the pipeline, to not derive it from state for each step
 ): [unknown, number] {
-  const context = state.context
-  const isRev = revFromState(state)
-
   // Normalize the path and set the `isSet` flag based on whether we are
   // in reverse or not.
   const [path, isSet] = extractPathStep(step, isRev)
 
-  if (path === '|') {
+  if (path === '[]') {
+    // Ensure that the value is an array -- regardless of direction
+    return [Array.isArray(value) ? value : [value], index]
+  } else if (path === '^') {
+    // Get the parent value. This is never run in rev, as we remove it from the
+    // pipeline before running it.
+    return [state.context.pop(), index]
+  } else if (path === '^^') {
+    // Get the root from the context -- or the present value when we have no
+    // context. This is never run in rev, as we remove it from the pipeline
+    // before running it.
+    const next = state.context.length === 0 ? value : state.context[0]
+    state.context = []
+    return [next, index]
+  } else if (path === '|') {
     // We have reached a plug step -- skip it if we are setting or return the
     // target and skip the rest of the pipeline if we are getting. What we are
     // really doing here, is skipping a set plug (also called reverse plug)
@@ -111,7 +122,7 @@ export default function runPathStep(
 
   if (!isSet) {
     // Push value to context for get
-    context.push(value)
+    state.context.push(value)
   }
 
   if (path[0] === '[') {
@@ -138,7 +149,7 @@ export default function runPathStep(
         runOneLevel(
           item,
           pipeline.slice(index - 1, setArrayIndex), // Iteration from this step to a qualified set operation
-          { ...state, context: [...context], value: item },
+          { ...state, context: [...state.context], value: item },
         ),
       )
       return [next, setArrayIndex] // Return index of the iteration left off, to continue from there

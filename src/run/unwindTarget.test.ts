@@ -181,8 +181,36 @@ test('should skip array notation with array already in data', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should skip plug when unwinding', (t) => {
+  const pipeline = ['response', '>item', '>data', '>response', '>|']
+  const target = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = [
+    { response: { data: { item: { id: 'ent1' } } } },
+    { data: { item: { id: 'ent1' } } },
+    { item: { id: 'ent1' } },
+  ]
+
+  const ret = unwindTarget(target, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should unwind from get steps in reverse', (t) => {
   const pipeline = ['>response', 'item', 'data', 'response'] // The order has already been reversed when we get here
+  const target = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = [
+    { response: { data: { item: { id: 'ent1' } } } },
+    { data: { item: { id: 'ent1' } } },
+    { item: { id: 'ent1' } },
+  ]
+
+  const ret = unwindTarget(target, pipeline, isRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip plug when unwinding in reverse', (t) => {
+  const pipeline = ['>response', 'item', 'data', 'response', '|'] // The order has already been reversed when we get here
   const target = { response: { data: { item: { id: 'ent1' } } } }
   const expected = [
     { response: { data: { item: { id: 'ent1' } } } },

@@ -56,6 +56,28 @@ test('should prepare mutation object with pipelines', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should forward plug slashed properties', (t) => {
+  const def = {
+    id: 'key',
+    title: 'name',
+    'title/1': 'desc',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['|', 'desc', '>title'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should skip props without a pipeline', (t) => {
   const def = {
     id: 'key',
@@ -336,8 +358,6 @@ test.todo('should support reverse $modify going forward when flipped')
 test.todo('should skip both direction $modify going forward')
 test.todo('should shallow merge with $modify on a path')
 
-test.todo('should support slashed properties')
-test.todo('should set direction fwd on slashed properties')
 test.todo('should plug pipelines with no set in reverse')
 
 test.todo('should pass on $noDefaults flag') // Should we still do this?

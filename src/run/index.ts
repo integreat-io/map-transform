@@ -75,30 +75,16 @@ export function runOneLevel(
   while (index < pipeline.length) {
     const step = pipeline[index++]
     if (typeof step === 'string') {
-      if (step === '[]' || step === '>[]') {
-        // Ensure that the value is an array -- regardless of direction
-        next = Array.isArray(next) ? next : [next]
-      } else if (step[0] === '^') {
-        if (step === '^^') {
-          // Get the root from the context -- or the present
-          // value when we have no context
-          next = state.context.length === 0 ? next : state.context[0]
-          state.context = []
-        } else {
-          // Get the parent value
-          next = state.context.pop()
-        }
-      } else {
-        // This is a path step -- handle it for both get and set
-        ;[next, index] = runPath(
-          next,
-          pipeline,
-          step,
-          index,
-          targets,
-          handOffState(state, next),
-        )
-      }
+      // This is a path step -- handle it for both get and set
+      ;[next, index] = runPath(
+        next,
+        pipeline,
+        step,
+        index,
+        targets,
+        handOffState(state, next),
+        isRev,
+      )
     } else if (isOperationObject(step)) {
       const op = getOperationForStep(step)
       if (op && shouldRun(step, isRev)) {

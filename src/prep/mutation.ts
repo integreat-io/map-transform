@@ -2,7 +2,11 @@ import prepPipeline, { Def } from './index.js'
 import preparePathStep from './path.js'
 import { isNotNullOrUndefined, isObject } from '../utils/is.js'
 import type { MutationStep } from '../run/mutation.js'
-import type { Options, MutationObject } from '../types.js'
+import type { Options, MutationObject, Path } from '../types.js'
+
+const slashedRegex = /\/\d+$/
+const isSlashed = (path: Path) => slashedRegex.test(path)
+const removeSlash = (path: Path) => path.replace(slashedRegex, '')
 
 // Prepare one property by setting the key as the set path at the end of the
 // pipeline. Properties starting with `'$'` or properties withtout pipelines
@@ -13,8 +17,13 @@ function prepProp(setPath: string, pipeline: Def, options: Options) {
     setPath = setPath.slice(1)
   } else if (setPath[0] === '$' || !pipeline) {
     return undefined
-  } else if (setPath.endsWith('[]') && isObject(pipeline)) {
+  }
+  if (setPath.endsWith('[]') && isObject(pipeline)) {
     pipeline = { ...pipeline, $iterate: true }
+  }
+  if (isSlashed(setPath)) {
+    setPath = removeSlash(setPath)
+    pipeline = ['|', pipeline].flat()
   }
   return [...prepPipeline(pipeline, options), ...preparePathStep(`>${setPath}`)]
 }

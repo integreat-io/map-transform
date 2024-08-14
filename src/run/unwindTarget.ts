@@ -4,7 +4,9 @@ import type { PreppedPipeline, PreppedStep } from './index.js'
 const isSetStep =
   (isRev: boolean) =>
   (step: PreppedStep): step is string =>
-    typeof step === 'string' && (step[0] === '>' ? !isRev : isRev)
+    typeof step === 'string' &&
+    (step[0] === '>' ? !isRev : isRev) &&
+    (isRev ? step !== '|' : step !== '>|')
 
 const removeStepPrefix = (path: string) =>
   path[0] === '>' ? path.slice(1) : path

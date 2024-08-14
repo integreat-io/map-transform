@@ -308,6 +308,44 @@ test('should override flip on sub-mutation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should skip pipeline with forward plug', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['|', 'desc', '>title'],
+      ],
+    },
+  ]
+  const expected = { id: 'ent1', title: 'Entry 1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not skip pipeline with forward plug in reverse', (t) => {
+  const value = { id: 'ent1', title: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['|', 'desc', '>title'],
+      ],
+    },
+  ]
+  const expected = { key: 'ent1', name: 'Entry 1', desc: 'Entry 1' }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
 test.todo('should not mutate non-values')
 test.todo('should not mutate non-values in array')
 

@@ -1,4 +1,5 @@
 import test from 'ava'
+import type { Path } from '../types.js'
 
 import runPipeline from './index.js'
 
@@ -21,11 +22,50 @@ test('should run simple path pipeline in reverse', (t) => {
 test('should run pipeline with several paths', (t) => {
   const pipeline = ['response', 'data', 'item']
   const value = { id: 'ent1' }
-  const expectedValue = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { response: { data: { item: { id: 'ent1' } } } }
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expectedValue)
+  t.deepEqual(ret, expected)
+})
+
+test('should return the value untouched with an empty pipeline', (t) => {
+  const pipeline: Path[] = []
+  const value = { item: { id: 'ent1' } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, value)
+})
+
+test('should return undefined when we reach a reverse plug', (t) => {
+  const pipeline = ['response', 'data', 'item', '>|']
+  const value = { id: 'ent1' }
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
+test('should skip a forward plug', (t) => {
+  const pipeline = ['|', 'response', 'data', 'item']
+  const value = { id: 'ent1' }
+  const expected = { response: { data: { item: { id: 'ent1' } } } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip a forward plug and continue the pipeline', (t) => {
+  const pipeline = ['response', '|', 'data', 'item']
+  const value = { id: 'ent1' }
+  const expected = { response: { data: { item: { id: 'ent1' } } } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
 })
 
 // Tests -- set array index
@@ -442,6 +482,18 @@ test('should set pipeline on target with array notation', (t) => {
   const target = { response: { data: { count: 0, items: null } } }
   const state = { target, rev: true }
   const expected = { response: { data: { items: [{ id: 'ent1' }], count: 0 } } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return target when we reach a reverse plug', (t) => {
+  const pipeline = ['response', 'data', 'item', '>|']
+  const value = { id: 'ent1' }
+  const target = { response: { data: { count: 0, items: null } } }
+  const state = { target, rev: true }
+  const expected = { response: { data: { count: 0, items: null } } }
 
   const ret = runPipeline(value, pipeline, state)
 

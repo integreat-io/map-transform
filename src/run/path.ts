@@ -1,6 +1,7 @@
 import { isObject } from '../utils/is.js'
 import { runOneLevel, PreppedPipeline } from './index.js'
 import { revFromState } from '../utils/stateHelpers.js'
+import xor from '../utils/xor.js'
 import type { State } from '../types.js'
 
 // Get from a prop
@@ -65,11 +66,7 @@ function getNextSetArrayOrSetIndex(
     // an array set, or a get step if we're in reverse.
     index = pipeline.findIndex(
       (step) =>
-        typeof step === 'string'
-          ? step[0] === '>' // Do an xor with `isRev`
-            ? !isRev
-            : isRev
-          : false, // Not a path step
+        typeof step === 'string' ? xor(step[0] === '>', isRev) : false, // Not a path step
       currentIndex,
     )
   }
@@ -101,6 +98,16 @@ export default function runPathStep(
   // Normalize the path and set the `isSet` flag based on whether we are
   // in reverse or not.
   const [path, isSet] = extractPathStep(step, isRev)
+
+  if (path === '|') {
+    // We have reached a plug step -- skip it if we are setting or return the
+    // target and skip the rest of the pipeline if we are getting. What we are
+    // really doing here, is skipping a set plug (also called reverse plug)
+    // when we are moving forward and a get plug (also called forward plug)
+    // when we are in reverse, but the `extractPathStep()` has normalized this
+    // for us.
+    return isSet ? [value, index] : [state.target, pipeline.length]
+  }
 
   if (!isSet) {
     // Push value to context for get

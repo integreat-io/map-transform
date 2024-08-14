@@ -63,6 +63,33 @@ test('should prepare dot path as an empty pipeline', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should prepare set dot path as an empty pipeline', (t) => {
+  const def = '>.'
+  const expected: Path[] = []
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should keep forward plug step', (t) => {
+  const def = ['|', 'response.data.item', '>data']
+  const expected = ['|', 'response', 'data', 'item', '>data']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should keep reverse plug step', (t) => {
+  const def = ['response.data.item', '>|']
+  const expected = ['response', 'data', 'item', '>|']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- prepare get index
 
 test('should prepare path with array index', (t) => {

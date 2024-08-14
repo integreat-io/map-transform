@@ -22,20 +22,50 @@ test('should run simple path pipeline', (t) => {
 test('should run pipeline with several paths', (t) => {
   const pipeline = ['response', 'data', 'item']
   const value = { response: { data: { item: { id: 'ent1' } } } }
-  const expectedValue = { id: 'ent1' }
+  const expected = { id: 'ent1' }
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expectedValue)
+  t.deepEqual(ret, expected)
 })
 
-test('should run the value untouched with an empty pipeline', (t) => {
+test('should return the value untouched with an empty pipeline', (t) => {
   const pipeline: Path[] = []
   const value = { item: { id: 'ent1' } }
 
   const ret = runPipeline(value, pipeline, state)
 
   t.is(ret, value)
+})
+
+test('should return undefined when we reach a forward plug', (t) => {
+  const pipeline = ['|', 'response', 'data', 'item']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
+test('should skip a reverse plug', (t) => {
+  const pipeline = ['response', 'data', 'item', '>|']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { id: 'ent1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip a reverse plug and continue the pipeline', (t) => {
+  const pipeline = ['response', '>|', 'data', 'item']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { id: 'ent1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
 })
 
 // Tests -- get array index
@@ -635,6 +665,18 @@ test('should set pipeline on target with array notation', (t) => {
   const target = { count: 0, values: null }
   const state = { target }
   const expected = { values: [{ id: 'ent1' }], count: 0 }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return target when we reach a forward plug', (t) => {
+  const pipeline = ['|', 'response', 'data', 'item']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const target = { count: 0, values: null }
+  const state = { target }
+  const expected = { count: 0, values: null }
 
   const ret = runPipeline(value, pipeline, state)
 

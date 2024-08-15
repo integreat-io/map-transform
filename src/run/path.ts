@@ -42,6 +42,14 @@ function setIndex(prop: string, value: unknown, target?: unknown) {
   return arr
 }
 
+function merge(value: unknown, target: unknown) {
+  if (isObject(value) && isObject(target)) {
+    return { ...target, ...value }
+  } else {
+    return value
+  }
+}
+
 // Get the index of the next set array step, or get array step if
 // we're in reverse.
 const getNextSetArrayIndex = (
@@ -110,6 +118,8 @@ export default function runPathStep(
     const next = state.context.length === 0 ? value : state.context[0]
     state.context = []
     return [next, index]
+  } else if (path === '.') {
+    return isSet ? [merge(value, targets.pop()), index] : [value, index]
   } else if (path === '|') {
     // We have reached a plug step -- skip it if we are setting or return the
     // target and skip the rest of the pipeline if we are getting. What we are

@@ -38,6 +38,26 @@ test('should return the value untouched with an empty pipeline', (t) => {
   t.is(ret, value)
 })
 
+test('should skip get dot steps', (t) => {
+  const pipeline = ['.', 'item', '.']
+  const value = { id: 'ent1' }
+  const expected = { item: { id: 'ent1' } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip set dot steps', (t) => {
+  const pipeline = ['>.', '>item', '>.']
+  const value = { item: { id: 'ent1' } }
+  const expected = { id: 'ent1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return undefined when we reach a reverse plug', (t) => {
   const pipeline = ['response', 'data', 'item', '>|']
   const value = { id: 'ent1' }
@@ -482,6 +502,18 @@ test('should set pipeline on target with array notation', (t) => {
   const target = { response: { data: { count: 0, items: null } } }
   const state = { target, rev: true }
   const expected = { response: { data: { items: [{ id: 'ent1' }], count: 0 } } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge with target when we reach a get dot step', (t) => {
+  const pipeline = ['.', '>data']
+  const value = { data: { id: 'ent1' } }
+  const target = { count: 1 }
+  const state = { target, rev: true }
+  const expected = { id: 'ent1', count: 1 }
 
   const ret = runPipeline(value, pipeline, state)
 

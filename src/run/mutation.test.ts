@@ -52,6 +52,24 @@ test('should keep the order of the pipelines on the target object', (t) => {
   t.deepEqual(keys, expected)
 })
 
+test('should run mutation object with sub-mutations', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        [{ type: 'mutation', pipelines: [['name', '>title']] }, '>attributes'],
+      ],
+    },
+  ]
+  const expected = { id: 'ent1', attributes: { title: 'Entry 1' } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should support parent steps in pipelines', (t) => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
@@ -231,6 +249,28 @@ test('should run mutation object in reverse', (t) => {
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
+      ],
+    },
+  ]
+  const expected = { key: 'ent1', name: 'Entry 1' }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run mutation object with sub-mutations in reverse', (t) => {
+  const value = { id: 'ent1', attributes: { title: 'Entry 1' } }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        [
+          '.', // This is set when prepping, for sub-mutations
+          { type: 'mutation', pipelines: [['name', '>title']] },
+          '>attributes',
+        ],
       ],
     },
   ]

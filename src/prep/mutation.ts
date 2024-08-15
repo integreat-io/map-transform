@@ -3,10 +3,29 @@ import preparePathStep from './path.js'
 import { isNotNullOrUndefined, isObject } from '../utils/is.js'
 import type { MutationStep } from '../run/mutation.js'
 import type { Options, MutationObject, Path } from '../types.js'
+import { PreppedPipeline } from '../run/index.js'
 
 const slashedRegex = /\/\d+$/
 const isSlashed = (path: Path) => slashedRegex.test(path)
 const removeSlash = (path: Path) => path.replace(slashedRegex, '')
+
+// When a pipeline starts with no get step, i.e. the first step is not a path
+// or a mutation object, we either plug it or add a get dot step.
+function addStepWhenNoGetStep(pipeline: PreppedPipeline) {
+  const firstStep = pipeline[0]
+  if (typeof firstStep !== 'string') {
+    if (isObject(firstStep) && firstStep.type === 'mutation') {
+      // We have a mutation object as the first step, so add a get dot step,
+      // will cause a merge with the target when we go in reverse.
+      return ['.', ...pipeline]
+    } else {
+      // We have neighter a path or a mutation object as the first step, so
+      // reverse plug the pipeline to skip it in reverse.
+      return [...pipeline, '>|']
+    }
+  }
+  return pipeline
+}
 
 // Prepare one property by setting the key as the set path at the end of the
 // pipeline. Properties starting with `'$'` or properties withtout pipelines
@@ -25,7 +44,10 @@ function prepProp(setPath: string, pipeline: Def, options: Options) {
     setPath = removeSlash(setPath)
     pipeline = ['|', pipeline].flat()
   }
-  return [...prepPipeline(pipeline, options), ...preparePathStep(`>${setPath}`)]
+  return addStepWhenNoGetStep([
+    ...prepPipeline(pipeline, options),
+    ...preparePathStep(`>${setPath}`),
+  ])
 }
 
 /**

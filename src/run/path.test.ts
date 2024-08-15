@@ -38,6 +38,16 @@ test('should return the value untouched with an empty pipeline', (t) => {
   t.is(ret, value)
 })
 
+test('should skip get dot step', (t) => {
+  const pipeline = ['item', '.']
+  const value = { item: { id: 'ent1' } }
+  const expected = { id: 'ent1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return undefined when we reach a forward plug', (t) => {
   const pipeline = ['|', 'response', 'data', 'item']
   const value = { response: { data: { item: { id: 'ent1' } } } }
@@ -665,6 +675,18 @@ test('should set pipeline on target with array notation', (t) => {
   const target = { count: 0, values: null }
   const state = { target }
   const expected = { values: [{ id: 'ent1' }], count: 0 }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge with target when we reach a set dot step', (t) => {
+  const pipeline = ['response', 'data', 'item', '>.']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const target = { count: 1 }
+  const state = { target }
+  const expected = { id: 'ent1', count: 1 }
 
   const ret = runPipeline(value, pipeline, state)
 

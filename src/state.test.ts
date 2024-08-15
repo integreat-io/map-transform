@@ -10,6 +10,7 @@ test('should create a new empty state', (t) => {
   t.is(state.value, undefined)
   t.deepEqual(state.context, [])
   t.is(state.target, undefined)
+  t.deepEqual(state.nonvalues, [undefined])
   t.is(state.rev, false)
   t.is(state.flip, false)
   t.is(state.noDefaults, false)
@@ -20,6 +21,7 @@ test('should create a new state with prefilled properties', (t) => {
   const target = { item: { id: 'ent1' } }
   const initialState = {
     target,
+    nonvalues: [undefined, null],
     rev: true,
     noDefaults: true,
   }
@@ -29,6 +31,7 @@ test('should create a new state with prefilled properties', (t) => {
   t.is(state.value, undefined)
   t.deepEqual(state.context, [])
   t.deepEqual(state.target, target)
+  t.deepEqual(state.nonvalues, [undefined, null])
   t.is(state.rev, true)
   t.is(state.flip, false)
   t.is(state.noDefaults, true)

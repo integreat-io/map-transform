@@ -1,5 +1,5 @@
 import State from '../state.js'
-import { isObject } from '../utils/is.js'
+import { isObject, isNonvalue } from '../utils/is.js'
 import { runOneLevel, PreppedPipeline } from './index.js'
 import xor from '../utils/xor.js'
 import { ensureArray } from '../utils/array.js'
@@ -9,8 +9,13 @@ const getProp = (prop: string, value: unknown) =>
   isObject(value) ? value[prop] : undefined // eslint-disable-line security/detect-object-injection
 
 // Set on a prop
-function setProp(prop: string, value: unknown, target?: unknown) {
-  if (value === undefined) {
+function setProp(
+  prop: string,
+  value: unknown,
+  target: unknown,
+  nonvalues: unknown[],
+) {
+  if (isNonvalue(value, nonvalues)) {
     return target
   } else if (target === undefined) {
     return { [prop]: value }
@@ -58,10 +63,10 @@ function merge(value: unknown, target: unknown) {
 // Return value as an array. Nonvalues become an empty array, unless
 // `noDefaults` is `true`, in which case we return `undefined`.
 function ensureArrayIfDefaultsAreAllowed(value: unknown, state: State) {
-  if (state.noDefaults && value === undefined) {
+  if (state.noDefaults && isNonvalue(value, state.nonvalues)) {
     return undefined
   } else {
-    return ensureArray(value)
+    return ensureArray(value, state.nonvalues)
   }
 }
 
@@ -185,7 +190,7 @@ export default function runPathStep(
   // We are not iterating, so handle a get or set normally
   return [
     isSet
-      ? setProp(path, value, targets.pop()) // Set to prop
+      ? setProp(path, value, targets.pop(), state.nonvalues) // Set to prop
       : getProp(path, value), // Get from prop
     index,
   ]

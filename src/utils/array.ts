@@ -1,8 +1,8 @@
-import { isNonvalue } from '../utils/stateHelpers.js'
+import { isNonvalue } from '../utils/is.js'
 
 export const ensureArray = <T = unknown>(
   value: T | T[],
-  nonvalues?: unknown[]
+  nonvalues?: unknown[],
 ): T[] =>
   Array.isArray(value) ? value : isNonvalue(value, nonvalues) ? [] : [value]
 

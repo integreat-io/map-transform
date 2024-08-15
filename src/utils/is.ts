@@ -23,3 +23,8 @@ export const isNotNullOrUndefined = <T>(value: T): value is NonNullable<T> =>
 
 export const isNonEmptyArray = <T>(value: unknown): value is T[] =>
   Array.isArray(value) && value.length > 0
+
+export const isNonvalue = (
+  value: unknown,
+  nonvalues: unknown[] = [undefined],
+) => nonvalues.includes(value)

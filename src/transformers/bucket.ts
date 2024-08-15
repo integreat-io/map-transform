@@ -1,8 +1,8 @@
 import { pathGetter, pathSetter } from '../operations/getSet.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
-import { revFromState, isNonvalue } from '../utils/stateHelpers.js'
+import { revFromState } from '../utils/stateHelpers.js'
 import { ensureArray } from '../utils/array.js'
-import { isObject } from '../utils/is.js'
+import { isObject, isNonvalue } from '../utils/is.js'
 import type {
   AsyncTransformer,
   DataMapperWithState,

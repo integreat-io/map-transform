@@ -1,5 +1,5 @@
 import runPipeline, { PreppedPipeline } from './index.js'
-import { isObject } from '../utils/is.js'
+import { isObject, isNonvalue } from '../utils/is.js'
 import type State from '../state.js'
 import type { Path } from '../types.js'
 
@@ -26,6 +26,11 @@ export default function runMutationStep(
   { pipelines, mod: modPipeline, flip, noDefaults }: MutationStep,
   state: State,
 ) {
+  // Don't mutate a non-value
+  if (isNonvalue(value, state.nonvalues)) {
+    return undefined
+  }
+
   // Run every pipeline in turn, with the result of the previous as the target
   // of the next. The first one is given an empty object as target
   const next = pipelines.reduce(

@@ -1,6 +1,7 @@
 import runPipeline, { PreppedPipeline } from './index.js'
 import { isObject } from '../utils/is.js'
-import type { Path, State } from '../types.js'
+import type State from '../state.js'
+import type { Path } from '../types.js'
 
 export interface MutationStep {
   type: 'mutation'
@@ -31,6 +32,7 @@ export default function runMutationStep(
     (target, pipeline) =>
       runPipeline(value, pipeline, {
         ...state,
+        context: state.context, // We need to set the context explicitly, as it is a get prop on the State class
         target,
         flip: overrideFlag(flip, state.flip),
         noDefaults: overrideFlag(noDefaults, state.noDefaults),

@@ -1,3 +1,4 @@
+import State, { InitialState } from '../state.js'
 import runMutationStep, { MutationStep } from './mutation.js'
 import runTransformStep, { TransformStep } from './transform.js'
 import runValueStep, { ValueStep } from './value.js'
@@ -5,7 +6,7 @@ import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
 import { isObject } from '../utils/is.js'
 import { revFromState } from '../utils/stateHelpers.js'
-import type { Path, State } from '../types.js'
+import type { Path } from '../types.js'
 
 export interface StepProps {
   it?: boolean
@@ -22,6 +23,14 @@ export type RunStep<T extends OperationStep> = (
   step: T,
   state: State,
 ) => unknown
+
+export interface PreppedOptions {
+  pipelines: Map<string | symbol, PreppedPipeline>
+  nonvalues?: unknown[]
+  modifyOperationObject: (
+    operation: Record<string, unknown>,
+  ) => Record<string, unknown>
+}
 
 const isOperationObject = (step: PreppedStep): step is OperationStep =>
   isObject(step) && typeof step.type === 'string'
@@ -53,10 +62,10 @@ function getOperationForStep<T extends OperationStep>(
   }
 }
 
-export const handOffState = (state: State, value: unknown) => ({
-  ...state,
-  value,
-})
+function handOffState(state: State, value: unknown) {
+  state.value = value
+  return state
+}
 
 /**
  * Run one the pipeline until a point where it needs to hand off to
@@ -141,21 +150,12 @@ function adjustPipelineToDirection(pipeline: PreppedPipeline, state: State) {
 export default function runPipeline(
   value: unknown,
   pipeline: PreppedPipeline,
-  state: Partial<State>,
+  initialState: InitialState,
 ) {
-  // Clone state to not affect any parent states, ensure that we have a
-  // `context` array, and set the value.
-  const ourState = {
-    ...state,
-    context: Array.isArray(state.context) ? [...state.context] : [],
-    value,
-  }
+  // Create our own state to not affect any parent states.
+  const state = new State(initialState, value)
 
   // Run the pipeline after first adjusting it according to the direction we're
   // going in.
-  return runOneLevel(
-    value,
-    adjustPipelineToDirection(pipeline, ourState),
-    ourState,
-  )
+  return runOneLevel(value, adjustPipelineToDirection(pipeline, state), state)
 }

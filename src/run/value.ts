@@ -1,4 +1,4 @@
-import type { State } from '../types.js'
+import type State from '../state.js'
 
 export interface ValueStep {
   type: 'value'

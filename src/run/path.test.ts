@@ -467,6 +467,17 @@ test('should not set undefined value', (t) => {
   t.is(ret, expected)
 })
 
+test.failing('should not set a non-value', (t) => {
+  const pipeline = ['>value']
+  const value = ''
+  const expected = undefined
+  // TODO: Provide empty string as a nonvalue in the state
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
 test('should set pipeline with array index', (t) => {
   const pipeline = ['response', 'data', 'item', '>[0]', '>values']
   const value = { response: { data: { item: { id: 'ent1' } } } }

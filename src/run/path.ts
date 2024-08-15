@@ -1,8 +1,8 @@
+import State from '../state.js'
 import { isObject } from '../utils/is.js'
 import { runOneLevel, PreppedPipeline } from './index.js'
 import xor from '../utils/xor.js'
 import { ensureArray } from '../utils/array.js'
-import type { State } from '../types.js'
 
 // Get from a prop
 const getProp = (prop: string, value: unknown) =>
@@ -126,13 +126,13 @@ export default function runPathStep(
   } else if (path === '^') {
     // Get the parent value. This is never run in rev, as we remove it from the
     // pipeline before running it.
-    return [state.context.pop(), index]
+    return [state.popContext(), index]
   } else if (path === '^^') {
     // Get the root from the context -- or the present value when we have no
     // context. This is never run in rev, as we remove it from the pipeline
     // before running it.
     const next = state.context.length === 0 ? value : state.context[0]
-    state.context = []
+    state.clearContext()
     return [next, index]
   } else if (path === '.') {
     return isSet ? [merge(value, targets.pop()), index] : [value, index]
@@ -148,7 +148,7 @@ export default function runPathStep(
 
   if (!isSet) {
     // Push value to context for get
-    state.context.push(value)
+    state.pushContext(value)
   }
 
   if (path[0] === '[') {
@@ -175,7 +175,7 @@ export default function runPathStep(
         runOneLevel(
           item,
           pipeline.slice(index - 1, setArrayIndex), // Iteration from this step to a qualified set operation
-          { ...state, context: [...state.context], value: item },
+          new State(state, item),
         ),
       )
       return [next, setArrayIndex] // Return index of the iteration left off, to continue from there

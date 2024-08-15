@@ -1,4 +1,5 @@
-import type { DataMapperWithState, State } from '../types.js'
+import type State from '../state.js'
+import type { DataMapperWithState } from '../types.js'
 
 export interface TransformStep {
   type: 'transform'

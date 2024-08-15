@@ -1,12 +1,14 @@
 import prepareMutationStep from './mutation.js'
 import preparePathStep from './path.js'
 import prepareTransformStep from './transform.js'
-import { isObject, isNotNullOrUndefined } from '../utils/is.js'
+import prepareValueStep from './value.js'
+import { isNotNullOrUndefined } from '../utils/is.js'
 import type { PreppedPipeline, StepProps, OperationStep } from '../run/index.js'
 import type {
   Options,
   Path,
   TransformOperation,
+  ValueOperation,
   MutationObject,
   OperationObject,
 } from '../types.js'
@@ -15,6 +17,13 @@ export type Step = Path | MutationObject | OperationObject | Pipeline
 export type Pipeline = Step[]
 export type Def = Step | Pipeline
 export type DataMapper = (value: unknown) => unknown
+
+type ObjectStep = MutationObject | OperationObject
+
+const isTransformOperation = (step: ObjectStep): step is TransformOperation =>
+  step.hasOwnProperty('$transform')
+const isValueOperation = (step: ObjectStep): step is ValueOperation =>
+  step.hasOwnProperty('$value')
 
 // Convert the direction string into a number where 1 is forward, -1 is
 // reverse, and 0 is no specified direction.
@@ -54,9 +63,6 @@ function extractStepProps(
 const setStepProps = (step?: OperationStep, props?: StepProps) =>
   step && props ? { ...step, ...props } : step
 
-const isTransformOperation = (step: Step): step is TransformOperation =>
-  isObject(step) && !!step.$transform
-
 // Validate and prepare a step. If a step is an array (a sub-pipeline), we
 // prepare it and return it, knowing it will be flattened into the pipeline
 // this step is a part of.
@@ -75,6 +81,9 @@ const prepareStep = (options: Options) =>
       if (isTransformOperation(operation)) {
         // A transform operation
         return setStepProps(prepareTransformStep(operation, options), props)
+      } else if (isValueOperation(operation)) {
+        // A value operation
+        return setStepProps(prepareValueStep(operation), props)
       } else {
         // The step matches none of the known operations, so treat it as
         // a mutation object

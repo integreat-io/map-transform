@@ -58,7 +58,12 @@ function prepProp(setPath: string, pipeline: Def, options: Options) {
  * `true` becomming an empty pipeline.
  */
 export default function prepareMutationStep(
-  { $modify, $flip: flip = false, ...props }: MutationObject,
+  {
+    $modify,
+    $flip: flip = false,
+    $noDefaults: noDefaults,
+    ...props
+  }: MutationObject,
   options: Options,
 ): MutationStep | undefined {
   const pipelines = Object.entries(props)
@@ -79,6 +84,7 @@ export default function prepareMutationStep(
     type: 'mutation',
     ...(flip && { flip }),
     ...(mod && { mod }),
+    ...(typeof noDefaults === 'boolean' ? { noDefaults } : {}),
     pipelines,
   }
 }

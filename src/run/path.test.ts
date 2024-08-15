@@ -203,6 +203,27 @@ test('should get array from pipeline with array notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should return empty array from array notation value is undefined', (t) => {
+  const pipeline = ['[]']
+  const value = undefined
+  const expected: unknown[] = []
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not return empty array from array notation when noDefaults is true', (t) => {
+  const pipeline = ['[]']
+  const value = undefined
+  const state = { noDefaults: true }
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
 test('should get array from pipeline with array notation even when the path points to an object', (t) => {
   const pipeline = ['response', 'data', 'item', '[]']
   const value = { response: { data: { item: { id: 'ent1' } } } }
@@ -436,6 +457,16 @@ test('should set pipeline with several set paths', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not set undefined value', (t) => {
+  const pipeline = ['>value']
+  const value = undefined
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
 test('should set pipeline with array index', (t) => {
   const pipeline = ['response', 'data', 'item', '>[0]', '>values']
   const value = { response: { data: { item: { id: 'ent1' } } } }
@@ -651,6 +682,18 @@ test('should set pipeline several levels into target', (t) => {
   const expected = {
     data: { value: { id: 'ent1', title: 'Entry 1' }, count: 1 },
   }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should retrun target when value is undefined', (t) => {
+  const pipeline = ['>value']
+  const value = undefined
+  const target = { count: 1 }
+  const state = { target }
+  const expected = { count: 1 }
 
   const ret = runPipeline(value, pipeline, state)
 

@@ -6,8 +6,12 @@ export interface MutationStep {
   type: 'mutation'
   flip?: boolean
   mod?: Path[]
+  noDefaults?: boolean
   pipelines: PreppedPipeline[]
 }
+
+const overrideFlag = (our?: boolean, their?: boolean) =>
+  typeof our === 'boolean' ? our : their
 
 /**
  * Run a mutation step, by running each pipeline and combining the results
@@ -18,18 +22,19 @@ export interface MutationStep {
  */
 export default function runMutationStep(
   value: unknown,
-  { pipelines, mod: modPipeline, flip: ourFlip }: MutationStep,
+  { pipelines, mod: modPipeline, flip, noDefaults }: MutationStep,
   state: State,
 ) {
-  const flip = typeof ourFlip === 'boolean' ? ourFlip : state.flip
   // Run every pipeline in turn, with the result of the previous as the target
   // of the next. The first one is given an empty object as target
   const next = pipelines.reduce(
     (target, pipeline) =>
-      runPipeline(value, pipeline, { ...state, target, flip }) as Record<
-        string,
-        unknown
-      >,
+      runPipeline(value, pipeline, {
+        ...state,
+        target,
+        flip: overrideFlag(flip, state.flip),
+        noDefaults: overrideFlag(noDefaults, state.noDefaults),
+      }) as Record<string, unknown>,
     {},
   )
 

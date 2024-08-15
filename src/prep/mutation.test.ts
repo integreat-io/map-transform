@@ -78,6 +78,50 @@ test('should forward plug slashed properties', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should unescape escaped slash', (t) => {
+  const def = {
+    id: 'key',
+    title: 'name',
+    'title\\/1': 'desc',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['desc', '>title/1'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should unescape a slashed property', (t) => {
+  const def = {
+    id: 'key',
+    title: 'name',
+    'title\\/desc/1': 'desc', // Both an escaped slash and a slashed property
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['|', 'desc', '>title/desc'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should plug pipelines with no set in reverse', (t) => {
   const def = {
     id: 'key',

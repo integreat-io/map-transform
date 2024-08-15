@@ -5,7 +5,7 @@ import type { MutationStep } from '../run/mutation.js'
 import type { Options, MutationObject, Path } from '../types.js'
 import { PreppedPipeline } from '../run/index.js'
 
-const slashedRegex = /\/\d+$/
+const slashedRegex = /(?<!\\)\/\d+$/ // Matches /1 at the end, but not if the slash is escaped
 const isSlashed = (path: Path) => slashedRegex.test(path)
 const removeSlash = (path: Path) => path.replace(slashedRegex, '')
 
@@ -40,9 +40,15 @@ function prepProp(setPath: string, pipeline: Def, options: Options) {
   if (setPath.endsWith('[]') && isObject(pipeline)) {
     pipeline = { ...pipeline, $iterate: true }
   }
-  if (isSlashed(setPath)) {
-    setPath = removeSlash(setPath)
-    pipeline = ['|', pipeline].flat()
+  if (setPath.includes('/')) {
+    if (isSlashed(setPath)) {
+      // We have a slashed property. Unslash it and plug the pipeline to only run it in reverse
+      setPath = removeSlash(setPath)
+      pipeline = ['|', pipeline].flat()
+    }
+
+    // Make sure to unescape any slashes -- slashed property or not
+    setPath = setPath.replace(/\\\//g, '/')
   }
   return addStepWhenNoGetStep([
     ...prepPipeline(pipeline, options),

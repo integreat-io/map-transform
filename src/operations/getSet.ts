@@ -8,12 +8,11 @@ import {
   setTargetOnState,
   getLastContext,
   getRootFromState,
-  isNonvalue,
   revFromState,
   clearUntouched,
   setIterate,
 } from '../utils/stateHelpers.js'
-import { isObject } from '../utils/is.js'
+import { isObject, isNonvalue } from '../utils/is.js'
 import { ensureArray, indexOfIfArray } from '../utils/array.js'
 import type {
   Path,

@@ -2,6 +2,7 @@ export interface InitialState {
   value?: unknown
   context?: unknown[]
   target?: unknown
+  nonvalues?: unknown[]
   rev?: boolean
   flip?: boolean
   noDefaults?: boolean
@@ -19,6 +20,7 @@ export default class State {
 
   value: unknown = undefined
   target: unknown = undefined
+  nonvalues: unknown[] = [undefined]
   rev = false
   flip = false
   noDefaults = false
@@ -29,6 +31,7 @@ export default class State {
       this.#context = cloneContext(initialState.context)
       this.value = initialState.value
       this.target = initialState.target
+      this.nonvalues = initialState.nonvalues ?? this.nonvalues
       this.rev = initialState.rev ?? false
       this.flip = initialState.flip ?? false
       this.noDefaults = initialState.noDefaults ?? false

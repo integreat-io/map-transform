@@ -71,6 +71,63 @@ test('should not set undefined values', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not set a non-value', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1', empty: '' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['empty', '>dontSet'],
+      ],
+    },
+  ]
+  const state = { nonvalues: [undefined, ''] }
+  const expected = { id: 'ent1', title: 'Entry 1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not run mutation object on undefined', (t) => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not run mutation object on a non-value', (t) => {
+  const value = ''
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
+  const state = { nonvalues: [undefined, ''] }
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should run mutation object with sub-mutations', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
@@ -176,6 +233,26 @@ test('should iterate mutation object', (t) => {
     { id: 'ent1', title: 'Entry 1' },
     { id: 'ent2', title: 'Entry 2' },
   ]
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not mutate non-values when iterating', (t) => {
+  const value = [undefined, { key: 'ent1', name: 'Entry 1' }, '']
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
+  const state = { nonvalues: [undefined, ''] }
+  const expected = [undefined, { id: 'ent1', title: 'Entry 1' }, undefined]
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -473,6 +550,3 @@ test('should not skip pipeline with forward plug in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should not mutate non-values')
-test.todo('should not mutate non-values in array')

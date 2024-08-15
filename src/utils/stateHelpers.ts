@@ -1,4 +1,5 @@
 import xor from './xor.js'
+import { isNonvalue } from './is.js'
 import type { State, InitialState } from '../types.js'
 
 // Context
@@ -59,11 +60,6 @@ export const setValueFromState = (
   { value }: State,
   shouldPushContext = false,
 ): State => setStateValue(state, value, shouldPushContext)
-
-export const isNonvalue = (
-  value: unknown,
-  nonvalues: unknown[] = [undefined],
-) => nonvalues.includes(value)
 
 export const isNonvalueState = (
   state: State,

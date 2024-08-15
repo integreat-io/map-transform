@@ -213,10 +213,32 @@ test('should return empty array from array notation value is undefined', (t) => 
   t.deepEqual(ret, expected)
 })
 
+test('should return empty array from array notation value is a non-value', (t) => {
+  const pipeline = ['[]']
+  const value = ''
+  const state = { nonvalues: [undefined, ''] }
+  const expected: unknown[] = []
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not return empty array from array notation when noDefaults is true', (t) => {
   const pipeline = ['[]']
   const value = undefined
   const state = { noDefaults: true }
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
+test('should not return empty array from array notation when noDefaults is true and value is a non-value', (t) => {
+  const pipeline = ['[]']
+  const value = ''
+  const state = { noDefaults: true, nonvalues: [undefined, ''] }
   const expected = undefined
 
   const ret = runPipeline(value, pipeline, state)
@@ -467,11 +489,11 @@ test('should not set undefined value', (t) => {
   t.is(ret, expected)
 })
 
-test.failing('should not set a non-value', (t) => {
+test('should not set a non-value', (t) => {
   const pipeline = ['>value']
   const value = ''
+  const state = { nonvalues: [undefined, ''] }
   const expected = undefined
-  // TODO: Provide empty string as a nonvalue in the state
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -699,11 +721,23 @@ test('should set pipeline several levels into target', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should retrun target when value is undefined', (t) => {
+test('should return target when value is undefined', (t) => {
   const pipeline = ['>value']
   const value = undefined
   const target = { count: 1 }
   const state = { target }
+  const expected = { count: 1 }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return target when value is a non-value', (t) => {
+  const pipeline = ['>value']
+  const value = ''
+  const target = { count: 1 }
+  const state = { target, nonvalues: [undefined, ''] }
   const expected = { count: 1 }
 
   const ret = runPipeline(value, pipeline, state)
@@ -760,12 +794,7 @@ test('should return target when we reach a forward plug', (t) => {
 })
 
 test.todo('should set pipeline on target inside array')
-
 test.todo('should flatten array when setting')
-
-test.todo('should not set nonvalues')
-
-test.todo('should map missing value to empty array when array notations')
 test.todo(
   'should support parent through iterations based on mutation prop array notation',
 )

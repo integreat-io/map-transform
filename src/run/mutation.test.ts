@@ -52,6 +52,25 @@ test('should keep the order of the pipelines on the target object', (t) => {
   t.deepEqual(keys, expected)
 })
 
+test('should not set undefined values', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['unknown', '>dontSet'],
+      ],
+    },
+  ]
+  const expected = { id: 'ent1', title: 'Entry 1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should run mutation object with sub-mutations', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
@@ -197,7 +216,7 @@ test('should modify pipeline value with parent step in mod pipeline', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should use modify pipelines on several steps', (t) => {
+test('should use modify pipelines on several levels', (t) => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
     {
@@ -235,6 +254,75 @@ test('should modify pipeline value when mod is an empty pipeline', (t) => {
     },
   ]
   const expected = { key: 'ent1', name: 'Entry 1', slug: 'ENT1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not include value from value operation when noDefaults is true', (t) => {
+  const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      noDefaults: true,
+      pipelines: [
+        ['item', 'key', '>id'],
+        [{ type: 'value', value: true }, '>archived', '>|'],
+        [
+          'item',
+          'props',
+          {
+            type: 'mutation',
+            pipelines: [
+              ['name', '>title'],
+              [{ type: 'value', value: 'news' }, '>section', '>|'],
+            ],
+          },
+          '>props',
+        ],
+      ],
+    },
+  ]
+  const expected = {
+    id: 'ent1',
+    props: { title: 'Entry 1' },
+  }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should override noDefaults in a sub-mutation', (t) => {
+  const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      noDefaults: true,
+      pipelines: [
+        ['item', 'key', '>id'],
+        [{ type: 'value', value: true }, '>archived', '>|'],
+        [
+          'item',
+          'props',
+          {
+            type: 'mutation',
+            noDefaults: false,
+            pipelines: [
+              ['name', '>title'],
+              [{ type: 'value', value: 'news' }, '>section', '>|'],
+            ],
+          },
+          '>props',
+        ],
+      ],
+    },
+  ]
+  const expected = {
+    id: 'ent1',
+    props: { title: 'Entry 1', section: 'news' },
+  }
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -388,11 +476,3 @@ test('should not skip pipeline with forward plug in reverse', (t) => {
 
 test.todo('should not mutate non-values')
 test.todo('should not mutate non-values in array')
-
-test.todo(
-  'should not include values from value operation when $noDefaults is true',
-)
-test.todo(
-  'should not include values in iterations from value transformer when $noDefaults is true',
-)
-test.todo('should not override $noDefaults in state when not set')

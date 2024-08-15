@@ -1,5 +1,6 @@
 import runMutationStep, { MutationStep } from './mutation.js'
 import runTransformStep, { TransformStep } from './transform.js'
+import runValueStep, { ValueStep } from './value.js'
 import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
 import { isObject } from '../utils/is.js'
@@ -11,7 +12,8 @@ export interface StepProps {
   dir?: number
 }
 
-export type OperationStep = (MutationStep | TransformStep) & StepProps
+export type OperationStep = (MutationStep | TransformStep | ValueStep) &
+  StepProps
 export type PreppedStep = Path | OperationStep
 export type PreppedPipeline = PreppedStep[]
 
@@ -44,6 +46,8 @@ function getOperationForStep<T extends OperationStep>(
       return runMutationStep as RunStep<T> // TODO: Make typing work without forcing to RunStep?
     case 'transform':
       return runTransformStep as RunStep<T>
+    case 'value':
+      return runValueStep as RunStep<T>
     default:
       return undefined
   }

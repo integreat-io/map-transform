@@ -108,6 +108,11 @@ export interface FilterOperation extends TransformerProps {
   $direction?: string
 }
 
+export interface ValueOperation extends TransformerProps {
+  $value: unknown
+  $iterate?: boolean
+  $direction?: string
+}
 export interface IfOperation extends TransformerProps {
   $if: TransformDefinition
   $direction?: string
@@ -149,6 +154,7 @@ export interface LookdownOperation extends TransformerProps {
 export type OperationObject =
   | TransformOperation
   | FilterOperation
+  | ValueOperation
   | IfOperation
   | ApplyOperation
   | AltOperation

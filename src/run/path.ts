@@ -1,6 +1,7 @@
 import { isObject } from '../utils/is.js'
 import { runOneLevel, PreppedPipeline } from './index.js'
 import xor from '../utils/xor.js'
+import { ensureArray } from '../utils/array.js'
 import type { State } from '../types.js'
 
 // Get from a prop
@@ -9,7 +10,9 @@ const getProp = (prop: string, value: unknown) =>
 
 // Set on a prop
 function setProp(prop: string, value: unknown, target?: unknown) {
-  if (target === undefined) {
+  if (value === undefined) {
+    return target
+  } else if (target === undefined) {
     return { [prop]: value }
   } else if (isObject(target)) {
     target[prop] = value // eslint-disable-line security/detect-object-injection
@@ -42,11 +45,23 @@ function setIndex(prop: string, value: unknown, target?: unknown) {
   return arr
 }
 
+// Merge the value and the target if they are both objects. If not, return the
+// value.
 function merge(value: unknown, target: unknown) {
   if (isObject(value) && isObject(target)) {
     return { ...target, ...value }
   } else {
     return value
+  }
+}
+
+// Return value as an array. Nonvalues become an empty array, unless
+// `noDefaults` is `true`, in which case we return `undefined`.
+function ensureArrayIfDefaultsAreAllowed(value: unknown, state: State) {
+  if (state.noDefaults && value === undefined) {
+    return undefined
+  } else {
+    return ensureArray(value)
   }
 }
 
@@ -105,8 +120,9 @@ export default function runPathStep(
   const [path, isSet] = extractPathStep(step, isRev)
 
   if (path === '[]') {
-    // Ensure that the value is an array -- regardless of direction
-    return [Array.isArray(value) ? value : [value], index]
+    // Ensure that the value is an array -- regardless of direction. We won't
+    // turn nonvalues into empty arrays when `noDefaults` is `true`, though.
+    return [ensureArrayIfDefaultsAreAllowed(value, state), index]
   } else if (path === '^') {
     // Get the parent value. This is never run in rev, as we remove it from the
     // pipeline before running it.

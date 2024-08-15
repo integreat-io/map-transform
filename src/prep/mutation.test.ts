@@ -293,7 +293,7 @@ test('should iterate sub-objects on array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should support modify prop', (t) => {
+test('should support $modify prop', (t) => {
   const def = {
     $modify: true,
     slug: 'key',
@@ -311,7 +311,7 @@ test('should support modify prop', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should support modify prop with a dot notation path', (t) => {
+test('should support $modify prop with a dot notation path', (t) => {
   const def = {
     $modify: 'data.props',
     slug: 'key',
@@ -346,7 +346,16 @@ test('should not treat prop starting with $modify as modify', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should flip pipelines when $flip is true', (t) => {
+test('should return no step when mutation object has only a $modify prop', (t) => {
+  const def = { $modify: true }
+  const expected: PreppedPipeline = []
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should pass on $flip', (t) => {
   const def = {
     $flip: true,
     key: 'id',
@@ -368,9 +377,44 @@ test('should flip pipelines when $flip is true', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return no step when mutation object has only a $modify prop', (t) => {
-  const def = { $modify: true }
-  const expected: PreppedPipeline = []
+test('should pass on $noDefaults', (t) => {
+  const def = {
+    $noDefaults: true,
+    id: 'key',
+    title: 'name',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      noDefaults: true,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should pass on $noDefaults when it is false', (t) => {
+  const def = {
+    $noDefaults: false,
+    id: 'key',
+    title: 'name',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      noDefaults: false,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
 
   const ret = prep(def, options)
 

@@ -1,3 +1,4 @@
+import prepareAltStep from './alt.js'
 import prepareMutationStep from './mutation.js'
 import preparePathStep from './path.js'
 import prepareTransformStep from './transform.js'
@@ -7,19 +8,22 @@ import type { PreppedPipeline, StepProps, OperationStep } from '../run/index.js'
 import type {
   Options,
   Path,
+  AltOperationNext as AltOperation,
   TransformOperation,
   ValueOperation,
   MutationObject,
-  OperationObject,
 } from '../types.js'
 
+export type OperationObject = AltOperation | TransformOperation | ValueOperation
 export type Step = Path | MutationObject | OperationObject | Pipeline
 export type Pipeline = Step[]
-export type Def = Step | Pipeline
+export type TransformDefinition = Step | Pipeline
 export type DataMapper = (value: unknown) => unknown
 
 type ObjectStep = MutationObject | OperationObject
 
+const isAltOperation = (step: ObjectStep): step is AltOperation =>
+  step.hasOwnProperty('$alt')
 const isTransformOperation = (step: ObjectStep): step is TransformOperation =>
   step.hasOwnProperty('$transform')
 const isValueOperation = (step: ObjectStep): step is ValueOperation =>
@@ -41,17 +45,37 @@ function getDir(dir: unknown, options: Options) {
 // Extract known operation object props from the step object and return both an
 // object with these props, prepared for the internal operation format, and the
 // step object without these props.
+// The supported step props are:
+// - `$iterate`: Causes the operation to be iterated if the pipeline value is
+//   an array.
+// - `$direction`: Will only run the operation in the specified direction.
+// - `$nonvalues`: Will apply the list of nonvalues to options for the
+//   operation and any child pipelines.
+// - `$undefined`: An alias of `$nonvalues`. If both are set, `$nonvalues` will
+//   be used.
 function extractStepProps(
-  { $iterate, $direction, ...step }: MutationObject | OperationObject,
+  {
+    $iterate,
+    $direction,
+    $nonvalues,
+    $undefined,
+    ...step
+  }: MutationObject | OperationObject,
   options: Options,
 ): [StepProps | undefined, MutationObject | OperationObject] {
   const it = !!$iterate
   const dir = getDir($direction, options)
-  return it || dir
+  const nonvalues = Array.isArray($nonvalues)
+    ? $nonvalues
+    : Array.isArray($undefined)
+      ? $undefined
+      : undefined
+  return it || dir || nonvalues
     ? [
         {
           ...(it && { it }),
           ...(dir && { dir }),
+          ...(nonvalues && { nonvalues }),
         },
         step,
       ]
@@ -63,6 +87,25 @@ function extractStepProps(
 const setStepProps = (step?: OperationStep, props?: StepProps) =>
   step && props ? { ...step, ...props } : step
 
+// Figure out what type of operation this is and prepare it. If no operation
+// matches, we treat it as a mutation object.
+function prepareOperation(operation: ObjectStep, options: Options) {
+  if (isTransformOperation(operation)) {
+    // A transform operation
+    return prepareTransformStep(operation, options)
+  } else if (isValueOperation(operation)) {
+    // A value operation
+    return prepareValueStep(operation)
+  } else if (isAltOperation(operation)) {
+    // An alt operation
+    return prepareAltStep(operation, options)
+  } else {
+    // The step matches none of the known operations, so treat it as
+    // a mutation object
+    return prepareMutationStep(operation, options)
+  }
+}
+
 // Validate and prepare a step. If a step is an array (a sub-pipeline), we
 // prepare it and return it, knowing it will be flattened into the pipeline
 // this step is a part of.
@@ -70,30 +113,20 @@ const prepareStep = (options: Options) =>
   function prepareStep(step: Step | Pipeline) {
     if (Array.isArray(step)) {
       // A sub-pipeline
-      return prepPipeline(step, options)
+      return preparePipeline(step, options)
     } else if (typeof step === 'string') {
       // A path pipeline
       return preparePathStep(step)
     } else {
       // An operation or mutation object step
       const [props, operation] = extractStepProps(step, options)
-
-      if (isTransformOperation(operation)) {
-        // A transform operation
-        return setStepProps(prepareTransformStep(operation, options), props)
-      } else if (isValueOperation(operation)) {
-        // A value operation
-        return setStepProps(prepareValueStep(operation), props)
-      } else {
-        // The step matches none of the known operations, so treat it as
-        // a mutation object
-        return setStepProps(prepareMutationStep(operation, options), props)
-      }
+      const operationObject = prepareOperation(operation, options)
+      return setStepProps(operationObject, props) // Set the step props that is common for all operations
     }
   }
 
 // Turn a single step into a pipeline.
-const ensurePipeline = (def: Def): Pipeline =>
+const ensurePipeline = (def: TransformDefinition): Pipeline =>
   Array.isArray(def) ? def : [def]
 
 /**
@@ -101,8 +134,8 @@ const ensurePipeline = (def: Def): Pipeline =>
  * step to the internal pipeline format that may be given to the
  * `runPipeline()` function.
  */
-export default function prepPipeline(
-  def: Def,
+export default function preparePipeline(
+  def: TransformDefinition,
   options: Options,
 ): PreppedPipeline {
   return ensurePipeline(def)

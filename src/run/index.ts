@@ -1,4 +1,5 @@
 import State, { InitialState } from '../state.js'
+import runAltStep, { AltStep } from './alt.js'
 import runMutationStep, { MutationStep } from './mutation.js'
 import runTransformStep, { TransformStep } from './transform.js'
 import runValueStep, { ValueStep } from './value.js'
@@ -11,9 +12,15 @@ import type { Path } from '../types.js'
 export interface StepProps {
   it?: boolean
   dir?: number
+  nonvalues?: unknown[]
 }
 
-export type OperationStep = (MutationStep | TransformStep | ValueStep) &
+export type OperationStep = (
+  | AltStep
+  | MutationStep
+  | TransformStep
+  | ValueStep
+) &
   StepProps
 export type PreppedStep = Path | OperationStep
 export type PreppedPipeline = PreppedStep[]
@@ -53,24 +60,43 @@ function getOperationForStep<T extends OperationStep>(
   switch (step.type) {
     case 'mutation':
       return runMutationStep as RunStep<T> // TODO: Make typing work without forcing to RunStep?
-    case 'transform':
-      return runTransformStep as RunStep<T>
     case 'value':
       return runValueStep as RunStep<T>
+    case 'transform':
+      return runTransformStep as RunStep<T>
+    case 'alt':
+      return runAltStep as RunStep<T>
     default:
       return undefined
   }
 }
 
-function handOffState(state: State, value: unknown) {
-  state.value = value
-  return state
+// Prepare state before handing it off to a step. If `nonvalues` is an array,
+// we'll clone the state, giving it the nonvalues, and making sure we provide
+// the same context (no cloning). Otherwise, we'll reuse the state and just set
+// the value.
+function handOffState(state: State, value: unknown, nonvalues?: unknown[]) {
+  if (Array.isArray(nonvalues)) {
+    const nextState = new State({ ...state, nonvalues }, value)
+    nextState.replaceContext(state.context)
+    return nextState
+  } else {
+    state.value = value
+    return state
+  }
 }
 
 /**
- * Run one the pipeline until a point where it needs to hand off to
- * another level (currently because of iteration). Will finish any
- * remainder of the pipeline when the lower levels are done.
+ * Run one the pipeline until a point where it needs to hand off to another
+ * level (currently because of iteration). Will finish any remainder of the
+ * pipeline when the lower levels are done.
+ *
+ * Note: We don't currently pay much attention to the value of state here. It
+ * is set before handing off to a step, to ensure that transformers etc. that
+ * may rely on it will get the correct value, but it is not used in any of the
+ * logic for running a pipeline or the steps in it. At some point, we should
+ * consider removing it from State (a breaking change) or go all-in and use the
+ * state value instead of a separate `value` variable.
  */
 export function runOneLevel(
   value: unknown,
@@ -103,10 +129,11 @@ export function runOneLevel(
       if (op && shouldRun(step, isRev)) {
         // This is an operation step and we are not being stopped by the
         // direction we are going in -- run it with or without iterating
-        // TODO: Clean up how we pass off state
         next = shouldIterate(next, step)
-          ? next.map((value) => op(value, step, handOffState(state, value)))
-          : op(next, step, handOffState(state, next))
+          ? next.map((value) =>
+              op(value, step, handOffState(state, value, step.nonvalues)),
+            )
+          : op(next, step, handOffState(state, next, step.nonvalues))
       }
     }
   }

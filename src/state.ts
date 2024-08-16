@@ -54,6 +54,10 @@ export default class State {
     return this.#context.pop()
   }
 
+  replaceContext(context: unknown[]) {
+    this.#context = context
+  }
+
   clearContext() {
     this.#context = []
   }

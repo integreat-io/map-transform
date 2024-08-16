@@ -1,5 +1,6 @@
 import type { TransformStep } from '../run/transform.js'
-import type { Options, TransformOperation } from '../types.js'
+import type { TransformOperation } from '../types.js'
+import type { Options } from './index.js'
 
 const getTransformerFn = (fnId: string | symbol, options: Options) =>
   options.transformers && options.transformers[fnId] // eslint-disable-line security/detect-object-injection

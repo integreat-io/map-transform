@@ -1,6 +1,5 @@
-import preparePipeline, { TransformDefinition } from './prep/index.js'
+import preparePipeline, { TransformDefinition, Options } from './prep/index.js'
 import runPipeline from './run/index.js'
-import type { Options } from './types.js'
 
 export interface InitialState {
   context?: unknown[]
@@ -14,7 +13,16 @@ export default function mapTransform(
   options: Options,
 ) {
   const pipeline = preparePipeline(def, options)
-  const stateProps = { nonvalues: options.nonvalues }
+  const pipelines = new Map()
+  if (options.neededPipelineIds && options.pipelines) {
+    for (const id of options.neededPipelineIds) {
+      const pipeline = options.pipelines[id] // eslint-disable-line security/detect-object-injection
+      pipelines.set(id, preparePipeline(pipeline, options))
+    }
+  }
+
+  const stateProps = { nonvalues: options.nonvalues, pipelines }
+
   return (value: unknown, state: InitialState) =>
     runPipeline(value, pipeline, { ...state, ...stateProps })
 }

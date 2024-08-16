@@ -1,4 +1,5 @@
 import prepareAltStep from './alt.js'
+import prepareApplyStep from './apply.js'
 import prepareMutationStep from './mutation.js'
 import preparePathStep from './path.js'
 import prepareTransformStep from './transform.js'
@@ -6,15 +7,21 @@ import prepareValueStep from './value.js'
 import { isNotNullOrUndefined } from '../utils/is.js'
 import type { PreppedPipeline, StepProps, OperationStep } from '../run/index.js'
 import type {
-  Options,
   Path,
   AltOperationNext as AltOperation,
+  ApplyOperation,
   TransformOperation,
   ValueOperation,
   MutationObject,
+  Transformer,
+  Dictionaries,
 } from '../types.js'
 
-export type OperationObject = AltOperation | TransformOperation | ValueOperation
+export type OperationObject =
+  | AltOperation
+  | ApplyOperation
+  | TransformOperation
+  | ValueOperation
 export type Step = Path | MutationObject | OperationObject | Pipeline
 export type Pipeline = Step[]
 export type TransformDefinition = Step | Pipeline
@@ -22,8 +29,23 @@ export type DataMapper = (value: unknown) => unknown
 
 type ObjectStep = MutationObject | OperationObject
 
+export interface Options {
+  transformers?: Record<string | symbol, Transformer>
+  pipelines?: Record<string | symbol, TransformDefinition>
+  neededPipelineIds?: Set<string | symbol>
+  dictionaries?: Dictionaries
+  nonvalues?: unknown[]
+  fwdAlias?: string
+  revAlias?: string
+  modifyOperationObject?: (
+    operation: Record<string, unknown>,
+  ) => Record<string, unknown>
+}
+
 const isAltOperation = (step: ObjectStep): step is AltOperation =>
   step.hasOwnProperty('$alt')
+const isApplyOperation = (step: ObjectStep): step is ApplyOperation =>
+  step.hasOwnProperty('$apply')
 const isTransformOperation = (step: ObjectStep): step is TransformOperation =>
   step.hasOwnProperty('$transform')
 const isValueOperation = (step: ObjectStep): step is ValueOperation =>
@@ -96,6 +118,9 @@ function prepareOperation(operation: ObjectStep, options: Options) {
   } else if (isValueOperation(operation)) {
     // A value operation
     return prepareValueStep(operation)
+  } else if (isApplyOperation(operation)) {
+    // An apply operation
+    return prepareApplyStep(operation, options)
   } else if (isAltOperation(operation)) {
     // An alt operation
     return prepareAltStep(operation, options)

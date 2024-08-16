@@ -1,3 +1,5 @@
+import type { TransformDefinition as TransformDefinitionNext } from './prep/index.js'
+
 // Dictionary types
 
 export type DictionaryValue = string | number | boolean | null | undefined
@@ -131,6 +133,11 @@ export interface AltOperation extends TransformerProps {
   $iterate?: boolean
   $direction?: string
   $undefined?: unknown[]
+}
+
+export interface AltOperationNext extends AltOperation {
+  $alt: TransformDefinitionNext[]
+  useLastAsDefault?: boolean
 }
 
 export interface ConcatOperation extends TransformerProps {

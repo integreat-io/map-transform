@@ -1,4 +1,4 @@
-import prepPipeline, { Def } from './index.js'
+import prepPipeline, { TransformDefinition } from './index.js'
 import preparePathStep from './path.js'
 import { isNotNullOrUndefined, isObject } from '../utils/is.js'
 import type { MutationStep } from '../run/mutation.js'
@@ -31,7 +31,11 @@ function addStepWhenNoGetStep(pipeline: PreppedPipeline) {
 // pipeline. Properties starting with `'$'` or properties withtout pipelines
 // are not included. Properties ending in `'[]'` with another mutation object
 // as pipeline, is iterated.
-function prepProp(setPath: string, pipeline: Def, options: Options) {
+function prepProp(
+  setPath: string,
+  pipeline: TransformDefinition,
+  options: Options,
+) {
   if (setPath.startsWith('\\$')) {
     setPath = setPath.slice(1)
   } else if (setPath[0] === '$' || !pipeline) {
@@ -73,7 +77,9 @@ export default function prepareMutationStep(
   options: Options,
 ): MutationStep | undefined {
   const pipelines = Object.entries(props)
-    .map(([setPath, pipeline]) => prepProp(setPath, pipeline as Def, options))
+    .map(([setPath, pipeline]) =>
+      prepProp(setPath, pipeline as TransformDefinition, options),
+    )
     .filter(isNotNullOrUndefined)
   if (pipelines.length === 0 && $modify === true) {
     return undefined

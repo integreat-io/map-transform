@@ -90,22 +90,32 @@ test('should push to context', (t) => {
 
 test('should pop from context', (t) => {
   const state = new State()
+  state.pushContext({ item: { id: 'ent1' } })
+  state.pushContext({ id: 'ent1' })
   const expectedValue = { id: 'ent1' }
   const expectedContext = [{ item: { id: 'ent1' } }]
 
-  state.pushContext({ item: { id: 'ent1' } })
-  state.pushContext({ id: 'ent1' })
   const ret = state.popContext()
 
   t.deepEqual(ret, expectedValue)
   t.deepEqual(state.context, expectedContext)
 })
 
+test('should replace context', (t) => {
+  const state = new State()
+  state.pushContext({ item: { id: 'ent1' } })
+  const context = [{ id: 'ent1' }]
+
+  state.replaceContext(context)
+
+  t.is(state.context, context)
+})
+
 test('should clear context', (t) => {
   const state = new State()
+  state.pushContext({ item: { id: 'ent1' } })
   const expected: unknown[] = []
 
-  state.pushContext({ item: { id: 'ent1' } })
   state.clearContext()
 
   t.deepEqual(state.context, expected)

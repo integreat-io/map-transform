@@ -1,8 +1,8 @@
-import prepPipeline, { TransformDefinition } from './index.js'
+import prepPipeline, { TransformDefinition, Options } from './index.js'
 import preparePathStep from './path.js'
 import { isNotNullOrUndefined, isObject } from '../utils/is.js'
 import type { MutationStep } from '../run/mutation.js'
-import type { Options, MutationObject, Path } from '../types.js'
+import type { MutationObject, Path } from '../types.js'
 import { PreppedPipeline } from '../run/index.js'
 
 const slashedRegex = /(?<!\\)\/\d+$/ // Matches /1 at the end, but not if the slash is escaped

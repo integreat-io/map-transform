@@ -1,5 +1,6 @@
 import State, { InitialState } from '../state.js'
 import runAltStep, { AltStep } from './alt.js'
+import runApplyStep, { ApplyStep } from './apply.js'
 import runMutationStep, { MutationStep } from './mutation.js'
 import runTransformStep, { TransformStep } from './transform.js'
 import runValueStep, { ValueStep } from './value.js'
@@ -17,6 +18,7 @@ export interface StepProps {
 
 export type OperationStep = (
   | AltStep
+  | ApplyStep
   | MutationStep
   | TransformStep
   | ValueStep
@@ -64,6 +66,8 @@ function getOperationForStep<T extends OperationStep>(
       return runValueStep as RunStep<T>
     case 'transform':
       return runTransformStep as RunStep<T>
+    case 'apply':
+      return runApplyStep as RunStep<T>
     case 'alt':
       return runAltStep as RunStep<T>
     default:

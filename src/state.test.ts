@@ -11,6 +11,8 @@ test('should create a new empty state', (t) => {
   t.deepEqual(state.context, [])
   t.is(state.target, undefined)
   t.deepEqual(state.nonvalues, [undefined])
+  t.true(state.pipelines instanceof Map)
+  t.is(state.pipelines.size, 0)
   t.is(state.rev, false)
   t.is(state.flip, false)
   t.is(state.noDefaults, false)
@@ -32,6 +34,8 @@ test('should create a new state with prefilled properties', (t) => {
   t.deepEqual(state.context, [])
   t.deepEqual(state.target, target)
   t.deepEqual(state.nonvalues, [undefined, null])
+  t.true(state.pipelines instanceof Map)
+  t.is(state.pipelines.size, 0)
   t.is(state.rev, true)
   t.is(state.flip, false)
   t.is(state.noDefaults, true)
@@ -46,6 +50,18 @@ test('should clone context when creating state from prefilled values', (t) => {
 
   t.deepEqual(state.context, context)
   t.not(state.context, context)
+})
+
+test('should pass on pipelines when creating state from prefilled values', (t) => {
+  const pipelines = new Map()
+  pipelines.set('items', ['items'])
+  const initialState = { pipelines }
+
+  const state = new State(initialState)
+
+  t.is(state.pipelines, pipelines)
+  t.is(state.pipelines.size, 1)
+  t.true(state.pipelines.has('items'))
 })
 
 test('should accept a separate value when creating state', (t) => {

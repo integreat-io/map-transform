@@ -1,8 +1,11 @@
+import { PreppedPipeline } from './run/index.js'
+
 export interface InitialState {
   value?: unknown
   context?: unknown[]
   target?: unknown
   nonvalues?: unknown[]
+  pipelines?: Map<string | symbol, PreppedPipeline>
   rev?: boolean
   flip?: boolean
   noDefaults?: boolean
@@ -18,25 +21,29 @@ const cloneContext = (context?: unknown[]) =>
 export default class State {
   #context: unknown[] = []
 
-  value: unknown = undefined
-  target: unknown = undefined
-  nonvalues: unknown[] = [undefined]
-  rev = false
-  flip = false
-  noDefaults = false
-  index?: number = undefined
+  value: unknown
+  target: unknown
+  nonvalues: unknown[]
+  pipelines: Map<string | symbol, PreppedPipeline>
+  rev: boolean
+  flip: boolean
+  noDefaults: boolean
+  index?: number
 
   constructor(initialState?: InitialState, value?: unknown) {
-    if (initialState) {
+    if (initialState?.context) {
       this.#context = cloneContext(initialState.context)
-      this.value = initialState.value
-      this.target = initialState.target
-      this.nonvalues = initialState.nonvalues ?? this.nonvalues
-      this.rev = initialState.rev ?? false
-      this.flip = initialState.flip ?? false
-      this.noDefaults = initialState.noDefaults ?? false
-      this.index = initialState.index
     }
+    this.nonvalues = initialState?.nonvalues ?? [undefined]
+    this.pipelines =
+      initialState?.pipelines ?? new Map<string | symbol, PreppedPipeline>()
+    this.value = initialState?.value
+    this.target = initialState?.target
+    this.rev = !!initialState?.rev
+    this.flip = !!initialState?.flip
+    this.noDefaults = !!initialState?.noDefaults
+    this.index = initialState?.index
+
     if (arguments.length === 2) {
       this.value = value
     }

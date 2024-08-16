@@ -1,5 +1,6 @@
 import preparePipeline, { TransformDefinition, Options } from './prep/index.js'
 import runPipeline from './run/index.js'
+import { sync as transformers } from './transformers/index.js'
 
 export interface InitialState {
   context?: unknown[]
@@ -12,6 +13,11 @@ export default function mapTransform(
   def: TransformDefinition,
   options: Options,
 ) {
+  options = {
+    ...options,
+    transformers: { ...transformers, ...options.transformers },
+  }
+
   const pipeline = preparePipeline(def, options)
   const pipelines = new Map()
   if (options.neededPipelineIds && options.pipelines) {

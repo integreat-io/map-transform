@@ -71,8 +71,7 @@ test('should not prepare uneeded pipelines', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: Will need sync versions of transformers
-test.failing('should include built-in transformers', (t) => {
+test('should include built-in transformers', (t) => {
   const def = {
     id: 'key',
     title: 'name',

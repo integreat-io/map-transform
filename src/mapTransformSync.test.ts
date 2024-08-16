@@ -1,6 +1,7 @@
 import test from 'ava'
 import type StateNext from './state.js'
-import type { State } from './types.js'
+import type { Options as OptionsNext } from './prep/index.js'
+import type { State, Options } from './types.js'
 
 import mapTransform from './mapTransformSync.js'
 
@@ -37,6 +38,27 @@ test('should prepare needed pipelines', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const state = {}
   const options = { pipelines }
+  const expected = { id: 'ent1', title: 'Entry 1', props: { slug: 'ent1' } }
+
+  const ret = mapTransform(def, options)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should prepare pipelines used in transformers through a sub mapTransform', (t) => {
+  const def = { $apply: 'entry' }
+  const pipelines = {
+    entry: { id: 'key', title: 'name', props: { $transform: 'props' } },
+    props: { slug: 'key' },
+    user: { id: 'username' },
+  }
+  const transformers = {
+    props: () => (options: Options) =>
+      mapTransform({ $apply: 'props' }, options as OptionsNext),
+  }
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const state = {}
+  const options = { pipelines, transformers }
   const expected = { id: 'ent1', title: 'Entry 1', props: { slug: 'ent1' } }
 
   const ret = mapTransform(def, options)(value, state)

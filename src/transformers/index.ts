@@ -9,7 +9,7 @@ import logical from './logical.js'
 import map from './map.js'
 import { merge, mergeRev } from './merge.js'
 import not from './not.js'
-import notSync from './sync/not.js'
+import notSync from './next/not.js'
 import project from './project.js'
 import sort from './sort.js'
 

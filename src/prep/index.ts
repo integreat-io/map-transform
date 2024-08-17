@@ -24,7 +24,7 @@ export type OperationObject =
   | ValueOperation
 export type Step = Path | MutationObject | OperationObject | Pipeline
 export type Pipeline = Step[]
-export type TransformDefinition = Step | Pipeline
+export type TransformDefinition = Step | Pipeline | null
 export type DataMapper = (value: unknown) => unknown
 
 type ObjectStep = MutationObject | OperationObject
@@ -41,6 +41,12 @@ export interface Options {
     operation: Record<string, unknown>,
   ) => Record<string, unknown>
 }
+
+// TODO
+// - concat
+// - filter
+// - ifelse
+// - lookup
 
 const isAltOperation = (step: ObjectStep): step is AltOperation =>
   step.hasOwnProperty('$alt')
@@ -152,7 +158,7 @@ const prepareStep = (options: Options) =>
 
 // Turn a single step into a pipeline.
 const ensurePipeline = (def: TransformDefinition): Pipeline =>
-  Array.isArray(def) ? def : [def]
+  Array.isArray(def) ? def : !def ? [] : [def]
 
 /**
  * Go through all steps in a pipeline definition, validate and converting each

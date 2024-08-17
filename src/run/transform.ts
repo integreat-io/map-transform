@@ -1,9 +1,9 @@
 import type State from '../state.js'
-import type { DataMapperWithState } from '../types.js'
+import type { DataMapperWithState, AsyncDataMapperWithState } from '../types.js'
 
 export interface TransformStep {
   type: 'transform'
-  fn: DataMapperWithState
+  fn: DataMapperWithState | AsyncDataMapperWithState
 }
 
 export default function runTransformStep(

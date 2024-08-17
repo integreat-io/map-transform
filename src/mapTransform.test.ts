@@ -4,7 +4,7 @@ import type StateNext from './state.js'
 import type { Options as OptionsNext } from './prep/index.js'
 import type { State, Options } from './types.js'
 
-import mapTransform from './mapTransformSync.js'
+import mapTransform from './mapTransform.js'
 
 // Tests
 

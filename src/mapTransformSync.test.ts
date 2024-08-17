@@ -1,4 +1,5 @@
 import test from 'ava'
+import { createDataMapper } from './createDataMapper.js'
 import type StateNext from './state.js'
 import type { Options as OptionsNext } from './prep/index.js'
 import type { State, Options } from './types.js'
@@ -45,27 +46,6 @@ test('should prepare needed pipelines', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should prepare pipelines used in transformers through a sub mapTransform', (t) => {
-  const def = { $apply: 'entry' }
-  const pipelines = {
-    entry: { id: 'key', title: 'name', props: { $transform: 'props' } },
-    props: { slug: 'key' },
-    user: { id: 'username' },
-  }
-  const transformers = {
-    props: () => (options: Options) =>
-      mapTransform({ $apply: 'props' }, options as OptionsNext),
-  }
-  const value = { key: 'ent1', name: 'Entry 1' }
-  const state = {}
-  const options = { pipelines, transformers }
-  const expected = { id: 'ent1', title: 'Entry 1', props: { slug: 'ent1' } }
-
-  const ret = mapTransform(def, options)(value, state)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should not prepare uneeded pipelines', (t) => {
   const def = {
     item: { $apply: 'entry' },
@@ -87,6 +67,43 @@ test('should not prepare uneeded pipelines', (t) => {
     item: { id: 'ent1', title: 'Entry 1', props: { slug: 'ent1' } },
     pipelines: 2,
   }
+
+  const ret = mapTransform(def, options)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should pass on prepared pipelines to a data mapper in transformer', (t) => {
+  const def = { $apply: 'entry' }
+  const pipelines = {
+    entry: { id: 'key', title: 'name', props: { $transform: 'props' } },
+    props: { slug: 'key' },
+    user: { id: 'username' },
+  }
+  const transformers = {
+    props: () => (options: Options) =>
+      createDataMapper({ $apply: 'props' }, options as OptionsNext),
+  }
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const state = {}
+  const options = { pipelines, transformers }
+  const expected = { id: 'ent1', title: 'Entry 1', props: { slug: 'ent1' } }
+
+  const ret = mapTransform(def, options)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should pass on context to a data mapper in transformer', (t) => {
+  const def = ['name', { $transform: 'props' }]
+  const transformers = {
+    props: () => (options: Options) =>
+      createDataMapper(['^.key'], options as OptionsNext),
+  }
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const state = {}
+  const options = { transformers }
+  const expected = 'ent1'
 
   const ret = mapTransform(def, options)(value, state)
 

@@ -1,13 +1,22 @@
+import {
+  createDataMapper,
+  DataMapper,
+  DataMapperAsync,
+} from '../createDataMapper.js'
+import StateNext from '../state.js'
 import { ensureArray } from '../utils/array.js'
-import { defToDataMapper } from '../utils/definitionHelpers.js'
-import { isObject } from '../utils/is.js'
-import { flipState } from '../utils/stateHelpers.js'
+import { isNotNullOrUndefined, isObject } from '../utils/is.js'
 import type {
-  TransformerProps,
-  AsyncTransformer,
   TransformDefinition,
-  AsyncDataMapperWithOptions,
+  TransformDefinitionAsync,
+} from '../prep/index.js'
+import type {
+  Transformer,
+  AsyncTransformer,
+  TransformerProps,
+  State,
 } from '../types.js'
+import type { Options } from '../prep/index.js'
 
 export interface Props extends TransformerProps {
   path?: TransformDefinition | TransformDefinition[]
@@ -19,51 +28,85 @@ const undefinedFirst = (
   [_b, b]: [string, unknown],
 ) => (b === undefined && a !== undefined ? 1 : a === undefined ? -1 : 0)
 
-// Merge objects, either from an array of paths that points to objects (or
-// arrays of objects) or one path that points to an array of objects.
-// Any values in the array (after flattening) that are not objects, will be
-// skipped.
-function mergeTransformer(
-  { path }: Props,
-  flip: boolean,
-): AsyncDataMapperWithOptions {
-  return (options) => {
-    const getFns = ensureArray(path).map((path) =>
-      defToDataMapper(path, options),
-    )
+const createGetFns = (
+  path: TransformDefinition,
+  options: Options,
+): DataMapper[] =>
+  ensureArray(path)
+    .filter(isNotNullOrUndefined)
+    .map((path) => createDataMapper(path, options))
 
-    return async function mergePipelines(data, state) {
-      const values = []
-      for (const fn of getFns) {
-        values.push(await fn(data, flipState(state, flip)))
-      }
-      return Object.fromEntries(
-        values
-          .flat()
-          .filter(isObject)
-          .flatMap(Object.entries)
-          .sort(undefinedFirst),
-      )
+const mergeObjects = (values: unknown[]) =>
+  Object.fromEntries(
+    values.flat().filter(isObject).flatMap(Object.entries).sort(undefinedFirst),
+  )
+
+function setFlipOnState(state: State, flip: boolean) {
+  const nextState = new StateNext({ ...state, flip })
+  nextState.replaceContext(state.context)
+  return nextState
+}
+
+function createMergeTransformer(
+  getFns: DataMapper[],
+  flip: boolean,
+): DataMapper {
+  return function mergePipelines(data, state) {
+    const nextState = setFlipOnState(state, flip)
+    const values: unknown[] = []
+    for (const fn of getFns) {
+      values.push(fn(data, nextState))
     }
+    return mergeObjects(values)
   }
 }
 
-/**
- * Merge object resulting from the given array of pipelines (or the result of
- * one pipeline), going forward. In reverse, the pipeline data will be set on
- * the given pipelines.
- */
-export const merge: AsyncTransformer<Props> = function merge(props: Props) {
-  return mergeTransformer(props, false)
+function createMergeTransformerAync(
+  getFns: DataMapperAsync[],
+  flip: boolean,
+): DataMapperAsync {
+  return async function mergePipelines(data, state) {
+    const nextState = setFlipOnState(state, flip)
+    const values: unknown[] = []
+    for (const fn of getFns) {
+      values.push(await fn(data, nextState))
+    }
+    return mergeObjects(values)
+  }
 }
 
-/**
- * Merge object resulting from the given array of pipelines (or the result of
- * one pipeline), in reverse. Going forward, the pipeline data will be set on
- * the given pipelines.
- */
-export const mergeRev: AsyncTransformer<Props> = function mergeRev(
-  props: Props,
-) {
-  return mergeTransformer(props, true)
-}
+export const merge: Transformer<Props> =
+  ({ path }: Props) =>
+  (options) => {
+    const getFns = createGetFns(path as TransformDefinition, options as Options)
+    return createMergeTransformer(getFns, false)
+  }
+
+export const mergeRev: Transformer<Props> =
+  ({ path }: Props) =>
+  (options) => {
+    const getFns = createGetFns(path as TransformDefinition, options as Options)
+    return createMergeTransformer(getFns, true)
+  }
+
+// TODO: Replace with async mapTransform when it's ready
+export const mergeAsync: AsyncTransformer<Props> =
+  ({ path }: Props) =>
+  (options) => {
+    const getFns = createGetFns(
+      path as TransformDefinitionAsync,
+      options as Options,
+    ) as DataMapperAsync[]
+    return createMergeTransformerAync(getFns, false)
+  }
+
+// TODO: Replace with async mapTransform when it's ready
+export const mergeRevAsync: AsyncTransformer<Props> =
+  ({ path }: Props) =>
+  (options) => {
+    const getFns = createGetFns(
+      path as TransformDefinitionAsync,
+      options as Options,
+    ) as DataMapperAsync[]
+    return createMergeTransformerAync(getFns, true)
+  }

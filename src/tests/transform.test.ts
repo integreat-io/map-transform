@@ -1,6 +1,7 @@
 import test from 'ava'
-import type { TransformerProps, TransformDefinition } from '../types.js'
+import { mergeAsync } from '../transformers/merge.js'
 import { isObject } from '../utils/is.js'
+import type { TransformerProps, TransformDefinition } from '../types.js'
 
 import mapTransform, { transform, rev } from '../index.js'
 
@@ -54,6 +55,7 @@ const transformers = {
   appendToTitle,
   generateTag,
   getLength,
+  merge: mergeAsync,
   [Symbol.for('getLength')]: getLength,
 }
 
@@ -260,6 +262,19 @@ test('should apply transform from an operation object', async (t) => {
   const expected = {
     titleLength: 11,
   }
+
+  const ret = await mapTransform(def, { transformers })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply transform that uses the new data mapper', async (t) => {
+  const def = { $transform: 'merge', path: ['source', 'target'] }
+  const data = {
+    source: { id: 'ent1', heading: 'The old heading' },
+    target: { heading: 'The heading' },
+  }
+  const expected = { id: 'ent1', heading: 'The heading' }
 
   const ret = await mapTransform(def, { transformers })(data)
 

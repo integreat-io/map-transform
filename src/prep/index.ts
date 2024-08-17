@@ -25,6 +25,7 @@ export type OperationObject =
 export type Step = Path | MutationObject | OperationObject | Pipeline
 export type Pipeline = Step[]
 export type TransformDefinition = Step | Pipeline | null
+export type TransformDefinitionAsync = Step | Pipeline | null
 export type DataMapper = (value: unknown) => unknown
 
 type ObjectStep = MutationObject | OperationObject
@@ -141,18 +142,20 @@ function prepareOperation(operation: ObjectStep, options: Options) {
 // prepare it and return it, knowing it will be flattened into the pipeline
 // this step is a part of.
 const prepareStep = (options: Options) =>
-  function prepareStep(step: Step | Pipeline) {
+  function prepareStep(step: Step | Pipeline | null) {
     if (Array.isArray(step)) {
       // A sub-pipeline
       return preparePipeline(step, options)
     } else if (typeof step === 'string') {
       // A path pipeline
       return preparePathStep(step)
-    } else {
+    } else if (step) {
       // An operation or mutation object step
       const [props, operation] = extractStepProps(step, options)
       const operationObject = prepareOperation(operation, options)
       return setStepProps(operationObject, props) // Set the step props that is common for all operations
+    } else {
+      return undefined
     }
   }
 

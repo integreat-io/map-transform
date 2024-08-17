@@ -2,7 +2,7 @@ import test from 'ava'
 import type { State } from '../types.js'
 import type { PreppedPipeline } from '../run/index.js'
 
-import preparePipeline from './index.js'
+import preparePipeline, { TransformDefinition } from './index.js'
 
 // Setup
 
@@ -52,6 +52,15 @@ test('should prepare pipeline with sub-pipeline', (t) => {
 
 test('should return empty pipeline when no def', (t) => {
   const def = null
+  const expected: PreppedPipeline = []
+
+  const ret = preparePipeline(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip null in pipeline', (t) => {
+  const def = [null] as unknown as TransformDefinition
   const expected: PreppedPipeline = []
 
   const ret = preparePipeline(def, options)

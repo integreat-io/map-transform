@@ -1,7 +1,7 @@
 import test from 'ava'
-import State from '../../state.js'
+import State from '../state.js'
 
-import not from './not.js'
+import not from './notSync.js'
 
 // Setup
 

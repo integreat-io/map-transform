@@ -147,7 +147,7 @@ test('should plug pipelines with no set in reverse', (t) => {
 test('should skip props without a pipeline', (t) => {
   const def = {
     id: 'key',
-    title: undefined,
+    title: null,
   }
   const expected = [
     {

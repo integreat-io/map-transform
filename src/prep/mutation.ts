@@ -48,7 +48,7 @@ function prepProp(
     if (isSlashed(setPath)) {
       // We have a slashed property. Unslash it and plug the pipeline to only run it in reverse
       setPath = removeSlash(setPath)
-      pipeline = ['|', pipeline].flat()
+      pipeline = ['|', pipeline!].flat() // We know this is not null or undefined, but TS doesn't seem to know that
     }
 
     // Make sure to unescape any slashes -- slashed property or not

@@ -1,7 +1,8 @@
 import test from 'ava'
 import type { State } from '../types.js'
+import type { PreppedPipeline } from '../run/index.js'
 
-import prep from './index.js'
+import preparePipeline from './index.js'
 
 // Setup
 
@@ -28,7 +29,7 @@ test('should prepare pipeline', (t) => {
     '>items',
   ]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -44,7 +45,16 @@ test('should prepare pipeline with sub-pipeline', (t) => {
     '>items',
   ]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return empty pipeline when no def', (t) => {
+  const def = null
+  const expected: PreppedPipeline = []
+
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -58,7 +68,7 @@ test('should prepare transform operation with iteration', (t) => {
   ]
   const expected = [{ type: 'transform', fn: uppercaseFn, it: true }]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -71,7 +81,7 @@ test('should prepare transform operation with direction fwd', (t) => {
   }
   const expected = [{ type: 'transform', fn: uppercaseFn, dir: 1, it: true }]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -83,7 +93,7 @@ test('should prepare transform operation with direction rev', (t) => {
   }
   const expected = [{ type: 'transform', fn: uppercaseFn, dir: -1 }]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -95,7 +105,7 @@ test('should prepare transform operation with direction set to fwdAlias', (t) =>
   }
   const expected = [{ type: 'transform', fn: uppercaseFn, dir: 1 }]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -107,7 +117,7 @@ test('should prepare transform operation with direction revAlias', (t) => {
   }
   const expected = [{ type: 'transform', fn: uppercaseFn, dir: -1 }]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })

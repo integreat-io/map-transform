@@ -1,5 +1,9 @@
 import State from '../state.js'
-import runPipeline, { runOneLevel } from './index.js'
+import runPipeline, {
+  runPipelineAsync,
+  runOneLevel,
+  runOneLevelAsync,
+} from './index.js'
 import { isNonvalue } from '../utils/is.js'
 import { revFromState } from '../utils/stateHelpers.js'
 import type { PreppedPipeline } from './index.js'
@@ -11,17 +15,20 @@ export interface AltStep {
 }
 
 // Run each pipeline until we get a value -- or return undefined.
-function getWithAltPipelines(
+function* getWithAltPipelines(
   value: unknown,
   pipelines: PreppedPipeline[],
   state: State,
-) {
+  isAsync = false,
+): Generator<unknown, unknown, unknown> {
   for (const pipeline of pipelines) {
     // Run a pipeline on the value. We create a cloned state for every pipeline
     // so they won't interfere with each other. We do the cloning here, to be
     // able to retrieve the context from the "winner".
     const nextState = new State(state)
-    const next = runOneLevel(value, pipeline, nextState)
+    const next = yield isAsync
+      ? runOneLevelAsync(value, pipeline, nextState)
+      : runOneLevel(value, pipeline, nextState)
     if (!isNonvalue(next, state.nonvalues)) {
       // We have a value -- update the state context from this pipeline and
       // return the value.
@@ -34,29 +41,40 @@ function getWithAltPipelines(
   return undefined
 }
 
-// Use the first pipeline to set the value. If `useLastAsDefault` is `true`,
-// we use the last pipeline to get a default value when we have a non-value.
-function setWithAltPipelines(
+// Retrurn `true` if the value is non-value, `useLastAsDefault` is `true`, and
+// there are more than one pipline, we should get a default value from the last
+// pipeline.
+const shouldUseDefault = (
   value: unknown,
   pipelines: PreppedPipeline[],
   state: State,
   useLastAsDefault: boolean,
-) {
-  if (
-    useLastAsDefault &&
-    pipelines.length > 1 &&
-    isNonvalue(value, state.nonvalues)
-  ) {
-    // We have a non-value, there are more than one pipelne, and
-    // `useLastAsDefault` is `true`. Get the default value.
-    const lastPipeline = pipelines[pipelines.length - 1]
-    value = runPipeline(value, lastPipeline, {
-      ...state,
-      rev: false,
-      flip: false,
-    })
-  }
+) =>
+  useLastAsDefault && pipelines.length > 1 && isNonvalue(value, state.nonvalues)
 
+// Get a default value from the last pipeline.
+function getDefaultValue(
+  pipelines: PreppedPipeline[],
+  state: State,
+  isAsync = false,
+) {
+  const lastPipeline = pipelines[pipelines.length - 1]
+  const nextState = new State({
+    ...state,
+    rev: false,
+    flip: false,
+  })
+  return isAsync
+    ? runPipelineAsync(undefined, lastPipeline, nextState)
+    : runPipeline(undefined, lastPipeline, nextState)
+}
+
+// Use the first pipeline to set the value.
+function setWithAltPipelines(
+  value: unknown,
+  pipelines: PreppedPipeline[],
+  state: State,
+) {
   // Set value with the first pipeline
   const firstPipeline = pipelines[0]
   return runPipeline(value, firstPipeline, state)
@@ -81,7 +99,63 @@ export default function runAltStep(
   state: State,
 ) {
   const isRev = revFromState(state)
-  return isRev
-    ? setWithAltPipelines(value, pipelines, state, useLastAsDefault)
-    : getWithAltPipelines(value, pipelines, state)
+  if (isRev) {
+    if (shouldUseDefault(value, pipelines, state, useLastAsDefault)) {
+      value = getDefaultValue(pipelines, state)
+    }
+    return setWithAltPipelines(value, pipelines, state)
+  } else {
+    const it = getWithAltPipelines(value, pipelines, state)
+
+    // Run throught the pipelines. We don't need to await anything, so we just
+    // pass on the value yielded from the iterator.
+    let result = it.next()
+    while (!result.done) {
+      result = it.next(result.value)
+    }
+
+    // We have a value, return it.
+    return result.value
+  }
+}
+
+/**
+ * Run several pipelines until one of them returns a value. If no pipelines
+ * returns a value, `undefined` is returned. The `state` context will be
+ * updated as if only the "winning" pipeline ran.
+ *
+ * In reverse, the first pipeline will be used to set the `value`, as this is
+ * most likely to be the wanted reverse version.
+ *
+ * There is a special case when `useLastAsDefault` is `true` and we have a
+ * non-value in reverse. In this case assume that the last pipeline will return
+ * a default value, so we run it forward and give the resulting value to the
+ * first pipeline. This is a way to use a default value in both directions.
+ *
+ * This is an async version of `runAltStep()`.
+ */
+export async function runAltStepAsync(
+  value: unknown,
+  { pipelines, useLastAsDefault = false }: AltStep,
+  state: State,
+) {
+  const isRev = revFromState(state)
+  if (isRev) {
+    if (shouldUseDefault(value, pipelines, state, useLastAsDefault)) {
+      value = await getDefaultValue(pipelines, state, true)
+    }
+    return await setWithAltPipelines(value, pipelines, state)
+  } else {
+    const it = getWithAltPipelines(value, pipelines, state, true)
+
+    // Run throught the pipelines and await each value yielded value from the
+    // iterator.
+    let result = it.next()
+    while (!result.done) {
+      result = it.next(await result.value)
+    }
+
+    // We have a value, return it.
+    return await result.value
+  }
 }

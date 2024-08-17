@@ -1,9 +1,9 @@
 import test from 'ava'
 import State from '../state.js'
 
-import runPipeline from './index.js'
+import runPipeline, { runPipelineAsync } from './index.js'
 
-// Tests
+// Tests -- sync
 
 test('should run pipeline', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
@@ -151,4 +151,30 @@ test('should throw if pipeline is not found', (t) => {
 
   t.true(error instanceof Error)
   t.is(error.message, "Pipeline 'unknown' does not exist")
+})
+
+// Tests -- async
+
+test('should run pipeline asynchronously', async (t) => {
+  const fn = async () => 'From async'
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const pipeline = [{ type: 'apply' as const, id: 'entry' }]
+  const entryPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        [{ type: 'transform' as const, fn }, '>asyncValue'],
+      ],
+    },
+  ]
+  const pipelines = new Map()
+  pipelines.set('entry', entryPipeline)
+  const state = { pipelines }
+  const expected = { id: 'ent1', title: 'Entry 1', asyncValue: 'From async' }
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
 })

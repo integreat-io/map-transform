@@ -2,7 +2,7 @@ import test from 'ava'
 import type { PreppedPipeline } from './index.js'
 import type { State } from '../types.js'
 
-import runPipeline from './index.js'
+import runPipeline, { runPipelineAsync } from './index.js'
 
 // Setup
 
@@ -12,7 +12,7 @@ const uppercase = (val: unknown, _state: State) =>
 const state = { rev: false }
 const stateRev = { rev: true }
 
-// Tests
+// Tests -- sync
 
 test('should run mutation object', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
@@ -547,6 +547,28 @@ test('should not skip pipeline with forward plug in reverse', (t) => {
   const expected = { key: 'ent1', name: 'Entry 1', desc: 'Entry 1' }
 
   const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+// Tests -- async
+
+test('should run mutation object asynchronously', async (t) => {
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const fn = async () => 'From async'
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        [{ type: 'transform' as const, fn }, '>asyncValue'],
+      ],
+    },
+  ]
+  const expected = { id: 'ent1', title: 'Entry 1', asyncValue: 'From async' }
+
+  const ret = await runPipelineAsync(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })

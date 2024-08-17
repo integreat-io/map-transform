@@ -4,9 +4,9 @@ import type StateNext from './state.js'
 import type { Options as OptionsNext } from './prep/index.js'
 import type { State, Options } from './types.js'
 
-import mapTransform from './mapTransform.js'
+import mapTransform, { mapTransformAsync } from './mapTransform.js'
 
-// Tests
+// Tests -- sync
 
 test('should create mapper', (t) => {
   const def = { id: 'key', title: 'name' }
@@ -134,6 +134,21 @@ test('should pass on nonvalues to the run function', (t) => {
   const expected = { id: 'ent1' }
 
   const ret = mapTransform(def, options)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+// Tests -- async
+
+test('should create async mapper', async (t) => {
+  const fn = () => () => async () => 'From async'
+  const def = { id: 'key', title: 'name', asyncValue: { $transform: 'async' } }
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const state = {}
+  const options = { transformers: { async: fn } }
+  const expected = { id: 'ent1', title: 'Entry 1', asyncValue: 'From async' }
+
+  const ret = await mapTransformAsync(def, options)(value, state)
 
   t.deepEqual(ret, expected)
 })

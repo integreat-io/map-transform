@@ -1,5 +1,5 @@
 import preparePipeline, { TransformDefinition, Options } from './prep/index.js'
-import runPipeline, { PreppedPipeline } from './run/index.js'
+import runPipeline, { runPipelineAsync, PreppedPipeline } from './run/index.js'
 import { sync as transformers } from './transformers/index.js'
 import type State from './state.js'
 
@@ -23,7 +23,7 @@ function preparePipelines(options: Options) {
   return pipelines
 }
 
-// Create the transform function. It will run the given prepared pipeline with
+// Create a synchronous transform function. It will run the given prepared
 // the given state props added to the state object.
 function createTransformFunction(
   pipeline: PreppedPipeline,
@@ -33,23 +33,20 @@ function createTransformFunction(
     runPipeline(value, pipeline, { ...state, ...stateProps })
 }
 
-/**
- * Prepare the transform definition and return a function that can be used to
- * transform data. The function takes two arguments: the data to transform and
- * a state object. Set `rev: true` on the state object to run the transform
- * pipeline in reverse.
- *
- * `mapTransform()` may be called recursively by transformers, so to not
- * prepare the same pipelines several times, the rule is that only the first
- * level initiates a `Set` at the `neededPipelineIds` property and prepare the
- * pipelines. The lower levels see that `neededPipelineIds` is already set, and
- * will not touch the `pipelines` property. Instead, it will be already set on
- * the state object by the first level.
- */
-export default function mapTransform(
+// Create an asynchronous transform function. It will run the given prepared
+// the given state props added to the state object.
+function createTransformFunctionAsync(
+  pipeline: PreppedPipeline,
+  stateProps: Partial<State>,
+) {
+  return async (value: unknown, state?: Partial<State>) =>
+    runPipelineAsync(value, pipeline, { ...state, ...stateProps })
+}
+
+function preparePipelinesAndStateProps(
   def: TransformDefinition,
   options: Options,
-): (data: unknown, state?: InitialState) => unknown {
+): [PreppedPipeline, Partial<State>] {
   const stateProps: Partial<State> = { nonvalues: options.nonvalues } // These props will be added to the state object
 
   // Set the `neededPipelineIds` Set and add the built-in transformers.
@@ -67,6 +64,38 @@ export default function mapTransform(
   // state object.
   stateProps.pipelines = preparePipelines(options)
 
-  // Return the transform function.
+  // Return the pipeline and state props.
+  return [pipeline, stateProps]
+}
+
+/**
+ * Prepare the transform definition and return a function that can be used to
+ * transform data. The returned function takes two arguments: the data to
+ * transform and a state object. Set `rev: true` on the state object to run the
+ * transform pipeline in reverse.
+ *
+ * Use `mapTransformAsync()` if you need to transform data asynchronously.
+ */
+export default function mapTransform(
+  def: TransformDefinition,
+  options: Options,
+): (data: unknown, state?: InitialState) => unknown {
+  const [pipeline, stateProps] = preparePipelinesAndStateProps(def, options)
   return createTransformFunction(pipeline, stateProps)
+}
+
+/**
+ * Prepare the transform definition and return an _async_ function that can be
+ * used to transform data. The returned function takes two arguments: the data
+ * to transform and a state object. Set `rev: true` on the state object to run
+ * the transform pipeline in reverse.
+ *
+ * Use `mapTransform()` if you don't need to transform data asynchronously.
+ */
+export function mapTransformAsync(
+  def: TransformDefinition,
+  options: Options,
+): (data: unknown, state?: InitialState) => Promise<unknown> {
+  const [pipeline, stateProps] = preparePipelinesAndStateProps(def, options)
+  return createTransformFunctionAsync(pipeline, stateProps)
 }

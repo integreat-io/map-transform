@@ -1,13 +1,13 @@
 import test from 'ava'
 
-import runPipeline, { PreppedPipeline } from './index.js'
+import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
 
 // Setup
 
 const state = { rev: false }
 const stateRev = { rev: true }
 
-// Tests
+// Tests -- sync
 
 test('should use value from first pipeline', (t) => {
   const value = { id: 'ent1', title: 'Entry 1', name: 'The real name' }
@@ -284,4 +284,43 @@ test('should not run alt step in rev', (t) => {
   const ret = runPipeline(value, pipeline, stateRev)
 
   t.is(ret, expected)
+})
+
+// Tests -- async
+
+test('should use value from async pipelines', async (t) => {
+  const fn1 = async () => undefined
+  const fn2 = async () => 'From async'
+  const value = { id: 'ent1', title: 'Entry 1' } // No `name` property, so first pipeline will return undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [
+        [{ type: 'transform' as const, fn: fn1 }],
+        [{ type: 'transform' as const, fn: fn2 }],
+      ],
+    },
+  ]
+  const expected = 'From async'
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
+test('should set a default value with async pipelines', async (t) => {
+  const fn = async () => 'From async'
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      useLastAsDefault: true,
+      pipelines: [['name'], ['title'], [{ type: 'transform' as const, fn }]],
+    },
+  ]
+  const expected = { name: 'From async' }
+
+  const ret = await runPipelineAsync(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
 })

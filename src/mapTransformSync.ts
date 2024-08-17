@@ -10,14 +10,6 @@ export interface InitialState {
   noDefaults?: boolean
 }
 
-// Add `neededPipelineIds` Set ot the options object, and add the built-in
-// transformers.
-const createInternalOptions = (options: Options): Options => ({
-  ...options,
-  neededPipelineIds: new Set(),
-  transformers: { ...transformers, ...options.transformers },
-})
-
 // Prepare the pipelines that have their id in `neededPipelineIds` Set. Return
 // a Map of the pipelines.
 function preparePipelines(options: Options) {
@@ -37,7 +29,7 @@ function createTransformFunction(
   pipeline: PreppedPipeline,
   stateProps: Partial<State>,
 ) {
-  return (value: unknown, state: InitialState) =>
+  return (value: unknown, state?: Partial<State>) =>
     runPipeline(value, pipeline, { ...state, ...stateProps })
 }
 
@@ -57,25 +49,23 @@ function createTransformFunction(
 export default function mapTransform(
   def: TransformDefinition,
   options: Options,
-) {
+): (data: unknown, state?: InitialState) => unknown {
   const stateProps: Partial<State> = { nonvalues: options.nonvalues } // These props will be added to the state object
-  const isFirstLevel = !options.neededPipelineIds // We are at the first level if there's no `neededPipelineIds` Set
 
-  // If we are at the first level, Set the `neededPipelineIds` Set and add the
-  // built-intransformers to options object.
-  if (isFirstLevel) {
-    options = createInternalOptions(options)
+  // Set the `neededPipelineIds` Set and add the built-in transformers.
+  options = {
+    ...options,
+    neededPipelineIds: new Set(),
+    transformers: { ...transformers, ...options.transformers },
   }
 
-  // Prepare the pipeline. This is done on all levels.
+  // Prepare the pipeline.
   const pipeline = preparePipeline(def, options)
 
-  // At the first level, we'll prepare all pipelines that have had their id in
-  // set in `neededPipelineIds` during pipeline preparation, and add them to
-  // the `pipelines` Map on the state object.
-  if (isFirstLevel) {
-    stateProps.pipelines = preparePipelines(options)
-  }
+  // Prepare all pipelines that have had their id in set in `neededPipelineIds`
+  // during pipeline preparation, and add them to the `pipelines` Map on the
+  // state object.
+  stateProps.pipelines = preparePipelines(options)
 
   // Return the transform function.
   return createTransformFunction(pipeline, stateProps)

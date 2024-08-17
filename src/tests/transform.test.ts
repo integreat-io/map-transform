@@ -1,6 +1,7 @@
 import test from 'ava'
-import type { TransformerProps, TransformDefinition } from '../types.js'
+import { mergeAsync } from '../transformers/merge.js'
 import { isObject } from '../utils/is.js'
+import type { TransformerProps, TransformDefinition } from '../types.js'
 
 import mapTransform, { transform, rev } from '../index.js'
 
@@ -14,7 +15,7 @@ const removeAuthor = async (item: Record<string, unknown>) =>
         0,
         item.title.length -
           6 -
-          (typeof item.author === 'string' ? item.author.length : 0)
+          (typeof item.author === 'string' ? item.author.length : 0),
       )
     : item.title
 
@@ -54,6 +55,7 @@ const transformers = {
   appendToTitle,
   generateTag,
   getLength,
+  merge: mergeAsync,
   [Symbol.for('getLength')]: getLength,
 }
 
@@ -260,6 +262,19 @@ test('should apply transform from an operation object', async (t) => {
   const expected = {
     titleLength: 11,
   }
+
+  const ret = await mapTransform(def, { transformers })(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should apply transform that uses the new data mapper', async (t) => {
+  const def = { $transform: 'merge', path: ['source', 'target'] }
+  const data = {
+    source: { id: 'ent1', heading: 'The old heading' },
+    target: { heading: 'The heading' },
+  }
+  const expected = { id: 'ent1', heading: 'The heading' }
 
   const ret = await mapTransform(def, { transformers })(data)
 
@@ -795,7 +810,7 @@ test('should throw when transform is given an unknown transformer id', (t) => {
   t.true(error instanceof Error)
   t.is(
     error?.message,
-    "Transform operator was given the unknown transformer id 'unknown'"
+    "Transform operator was given the unknown transformer id 'unknown'",
   )
 })
 
@@ -811,7 +826,7 @@ test('should throw when transform is given an unknown transformer id symbol', (t
   t.true(error instanceof Error)
   t.is(
     error?.message,
-    "Transform operator was given the unknown transformer id 'Symbol(unknown)'"
+    "Transform operator was given the unknown transformer id 'Symbol(unknown)'",
   )
 })
 
@@ -829,7 +844,7 @@ test('should throw when transform operation is missing a transformer id', (t) =>
   t.true(error instanceof Error)
   t.is(
     error?.message,
-    'Transform operator was given no transformer id or an invalid transformer id'
+    'Transform operator was given no transformer id or an invalid transformer id',
   )
 })
 
@@ -847,7 +862,7 @@ test('should throw when transform operation has invalid transformer id', async (
   t.true(error instanceof Error)
   t.is(
     error?.message,
-    'Transform operator was given no transformer id or an invalid transformer id'
+    'Transform operator was given no transformer id or an invalid transformer id',
   )
 })
 
@@ -873,7 +888,7 @@ test('should run operation objects trought modifyOperationObject', async (t) => 
   }
 
   const ret = await mapTransform(def, { transformers, modifyOperationObject })(
-    data
+    data,
   )
 
   t.deepEqual(ret, expected)

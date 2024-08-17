@@ -27,12 +27,6 @@ export type OperationStep = (
 export type PreppedStep = Path | OperationStep
 export type PreppedPipeline = PreppedStep[]
 
-export type RunStep<T extends OperationStep> = (
-  value: unknown,
-  step: T,
-  state: State,
-) => unknown
-
 export interface PreppedOptions {
   pipelines: Map<string | symbol, PreppedPipeline>
   nonvalues?: unknown[]
@@ -56,22 +50,25 @@ const shouldIterate = (
   step: OperationStep,
 ): value is unknown[] => !!step.it && Array.isArray(value)
 
-function getOperationForStep<T extends OperationStep>(
-  step: T,
-): RunStep<T> | undefined {
+// Pick the right step runner based on the step type, and run it
+function runOp(value: unknown, step: OperationStep, state: State) {
+  const nextState = handOffState(state, value, step.nonvalues)
   switch (step.type) {
     case 'mutation':
-      return runMutationStep as RunStep<T> // TODO: Make typing work without forcing to RunStep?
+      return runMutationStep(value, step, nextState)
     case 'value':
-      return runValueStep as RunStep<T>
+      return runValueStep(value, step, nextState)
     case 'transform':
-      return runTransformStep as RunStep<T>
+      return runTransformStep(value, step, nextState)
     case 'apply':
-      return runApplyStep as RunStep<T>
+      return runApplyStep(value, step, nextState)
     case 'alt':
-      return runAltStep as RunStep<T>
+      return runAltStep(value, step, nextState)
     default:
-      return undefined
+      // We have an unknown operation type
+      throw new Error(
+        `Unknown operation type '${(step as OperationStep).type}'`,
+      )
   }
 }
 
@@ -91,9 +88,9 @@ function handOffState(state: State, value: unknown, nonvalues?: unknown[]) {
 }
 
 /**
- * Run one the pipeline until a point where it needs to hand off to another
- * level (currently because of iteration). Will finish any remainder of the
- * pipeline when the lower levels are done.
+ * Run each step of a pipeline and return the resulting value. Path steps are
+ * handled here, but for operation and mutation steps we yield to the caller to
+ * let them to run the step as sync or async.
  *
  * Note: We don't currently pay much attention to the value of state here. It
  * is set before handing off to a step, to ensure that transformers etc. that
@@ -102,11 +99,11 @@ function handOffState(state: State, value: unknown, nonvalues?: unknown[]) {
  * consider removing it from State (a breaking change) or go all-in and use the
  * state value instead of a separate `value` variable.
  */
-export function runOneLevel(
+function* runOneLevelGen(
   value: unknown,
   pipeline: PreppedPipeline,
   state: State,
-) {
+): Generator<[unknown, OperationStep, State], unknown, unknown> {
   // Set the actual rev, based on flip and what not
   const isRev = revFromState(state)
 
@@ -129,20 +126,46 @@ export function runOneLevel(
         isRev,
       )
     } else if (isOperationObject(step)) {
-      const op = getOperationForStep(step)
-      if (op && shouldRun(step, isRev)) {
+      if (shouldRun(step, isRev)) {
         // This is an operation step and we are not being stopped by the
-        // direction we are going in -- run it with or without iterating
-        next = shouldIterate(next, step)
-          ? next.map((value) =>
-              op(value, step, handOffState(state, value, step.nonvalues)),
-            )
-          : op(next, step, handOffState(state, next, step.nonvalues))
+        // direction we are going in -- yield to let the caller run it
+        // sync or async
+        next = yield [next, step, state]
       }
     }
   }
 
   return next
+}
+
+/**
+ * Run each step of a pipeline and return the resulting value. Call this
+ * directly only if you know that the state and the pipeline has been prepared
+ * already. Otherwise, use `runPipeline()` instead.
+ */
+export function runOneLevel(
+  value: unknown,
+  pipeline: PreppedPipeline,
+  state: State,
+) {
+  // We call the generator and handle only the operation steps here. This is
+  // done to reuse the logic in the iterator for an async version of this
+  // method.
+  const it = runOneLevelGen(value, pipeline, state)
+  let result = it.next()
+  while (!result.done) {
+    // The iterator has yielded, so handle it as an operation or mutation step
+    const [val, step, state] = result.value
+    const next = shouldIterate(val, step)
+      ? val.map((value) => runOp(value, step, state))
+      : runOp(val, step, state)
+
+    // Continue the iterator
+    result = it.next(next)
+  }
+
+  // Done, return the result
+  return result.value
 }
 
 function adjustPipelineToDirection(pipeline: PreppedPipeline, state: State) {

@@ -9,6 +9,7 @@ import runTransformStep, { TransformStep } from './transform.js'
 import runValueStep, { ValueStep } from './value.js'
 import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
+import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { isObject } from '../utils/is.js'
 import { revFromState } from '../utils/stateHelpers.js'
 import type { Path } from '../types.js'
@@ -117,7 +118,7 @@ function* runOneLevelGen(
   value: unknown,
   pipeline: PreppedPipeline,
   state: State,
-  isAsync = false,
+  isAsync: boolean,
 ): Generator<unknown, unknown, unknown> {
   // Set the actual rev, based on flip and what not
   const isRev = revFromState(state)
@@ -145,10 +146,15 @@ function* runOneLevelGen(
         // This is an operation step and we are not being stopped by the
         // direction we are going in -- yield to let the caller run it
         // sync or async
-        const value = shouldIterate(next, step)
-          ? next.map((value) => runOp(value, step, state, isAsync))
-          : runOp(next, step, state, isAsync)
-        next = yield value
+        if (shouldIterate(next, step)) {
+          const items = []
+          for (const value of next) {
+            items.push(yield runOp(value, step, state, isAsync))
+          }
+          next = items
+        } else {
+          next = yield runOp(next, step, state, isAsync)
+        }
       }
     }
   }
@@ -166,19 +172,12 @@ export function runOneLevel(
   pipeline: PreppedPipeline,
   state: State,
 ) {
-  // We call the generator and handle only the operation steps here. This is
-  // done to reuse the logic in the iterator between sync and async versions of
-  // this method.
-  const it = runOneLevelGen(value, pipeline, state)
-  let result = it.next()
-  while (!result.done) {
-    // The iterator has yielded, but as we don't need to await anything, we
-    // just pass on the value and continue the iterator.
-    result = it.next(result.value)
-  }
-
-  // Done, return the result
-  return result.value
+  // The runing of the steps is handled by a generator, that will yield values
+  // that would need to be awaited if we were to run them asynchronously. We
+  // don't need to await anything here, but we still need to run the generator
+  // to get the result.
+  const it = runOneLevelGen(value, pipeline, state, false)
+  return runIterator(it)
 }
 
 /**
@@ -193,27 +192,10 @@ export async function runOneLevelAsync(
   pipeline: PreppedPipeline,
   state: State,
 ) {
-  // We call the generator and handle only the operation steps here. This is
-  // done to reuse the logic in the iterator between sync and async versions of
-  // this method.
+  // The runing of the steps is handled by a generator, that will yield values
+  // that need to be awaited. This is done in the `runIteratorAsync()` method.
   const it = runOneLevelGen(value, pipeline, state, true)
-  let result = it.next()
-  while (!result.done) {
-    // The iterator has yielded, so await the result, either as a single
-    // promsise or an array of promises, and continue the iterator.
-    if (Array.isArray(result.value)) {
-      const items = []
-      for (const item of result.value) {
-        items.push(await item)
-      }
-      result = it.next(items)
-    } else {
-      result = it.next(await result.value)
-    }
-  }
-
-  // Done, return the result
-  return result.value
+  return runIteratorAsync(it)
 }
 
 function adjustPipelineToDirection(pipeline: PreppedPipeline, state: State) {

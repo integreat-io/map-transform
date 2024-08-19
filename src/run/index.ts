@@ -71,6 +71,10 @@ export interface PreppedOptions {
 const isOperationObject = (step: PreppedStep): step is OperationStep =>
   isObject(step) && typeof step.type === 'string'
 
+// Return true if the step should be run based on the direction set on the
+// operation object. If `dir` is negative, it should only be run in reverse, if
+// it's positive, it should only be run when we're going forward. `0` or
+// `undefined` means it may be run in both directions.
 const shouldRun = (step: OperationStep, isRev: boolean) =>
   step.dir && typeof step.dir === 'number'
     ? step.dir < 0
@@ -83,20 +87,14 @@ const shouldIterate = (
   step: OperationStep,
 ): value is unknown[] => !!step.it && Array.isArray(value)
 
-// Pick the right step runner based on the step type, and run it
-function runOp(
-  value: unknown,
-  step: OperationStep,
-  state: State,
-  stepFunctions: StepFunctions,
-) {
+// Pick the right step runner based on the step type.
+function getRunnerForStep(step: OperationStep, stepFunctions: StepFunctions) {
   const stepFunction = stepFunctions[step.type] as StepFunction<typeof step>
-
-  if (!stepFunction) {
+  if (stepFunction) {
+    return stepFunction
+  } else {
     throw new Error(`Unknown operation type '${step.type}'`)
   }
-
-  return stepFunction(value, step, state)
 }
 
 // Prepare state before handing it off to a step. If `nonvalues` is an array,
@@ -126,10 +124,21 @@ function handOffState(
   }
 }
 
+// Calls the given operation runner. The state is updated with the value and
+// potentially any `nonvalues` provided on the step, and `index`.
+const runStep = (
+  runner: StepFunction<OperationStep>,
+  value: unknown,
+  step: OperationStep,
+  state: State,
+  index?: number,
+) => runner(value, step, handOffState(state, value, step.nonvalues, index))
+
 /**
  * Run each step of a pipeline and return the resulting value. Path steps are
- * handled here, but for operation and mutation steps we yield to the caller to
- * let them to run the step as sync or async.
+ * handled here, but for operation and mutation steps we yield the value to the
+ * caller to let them await the value if necessary. This lets us use the same
+ * logic for both sync and async pipelines, with almost no duplication of code.
  *
  * Note: We don't currently pay much attention to the value of state here. It
  * is set before handing off to a step, to ensure that transformers etc. that
@@ -168,29 +177,23 @@ function* runOneLevelGen(
     } else if (isOperationObject(step)) {
       if (shouldRun(step, isRev)) {
         // This is an operation step and we are not being stopped by the
-        // direction we are going in -- yield to let the caller run it
-        // sync or async
+        // direction we are going in. Get the right operation runner for this
+        // step.
+        const runner = getRunnerForStep(step, stepFunctions)
+
         if (shouldIterate(next, step)) {
+          // We are iterating, so pass each value in the `next` array to the
+          // operation runner. The index is set on the state to be available to
+          // transformers.
           const items = []
           for (let i = 0; i < next.length; i++) {
-            const value = next[i] // eslint-disable-line security/detect-object-injection
-            items.push(
-              yield runOp(
-                value,
-                step,
-                handOffState(state, value, step.nonvalues, i),
-                stepFunctions,
-              ),
-            )
+            // eslint-disable-next-line security/detect-object-injection
+            items.push(yield runStep(runner, next[i], step, state, i))
           }
           next = items
         } else {
-          next = yield runOp(
-            next,
-            step,
-            handOffState(state, value, step.nonvalues),
-            stepFunctions,
-          )
+          // This is a single value, so just pass it to the operation runner.
+          next = yield runStep(runner, next, step, state)
         }
       }
     }
@@ -235,6 +238,9 @@ export async function runOneLevelAsync(
   return runIteratorAsync(it)
 }
 
+// Reverse the pipeline when we are going in reverse. Will also skip steps when
+// there we are setting with parent or root, to get to the set path that is most
+// likely the reverse of what the pipeline would get from.
 function adjustPipelineToDirection(pipeline: PreppedPipeline, state: State) {
   const isRev = revFromState(state)
 

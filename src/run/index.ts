@@ -90,28 +90,39 @@ function runOp(
   state: State,
   stepFunctions: StepFunctions,
 ) {
-  const nextState = handOffState(state, value, step.nonvalues)
   const stepFunction = stepFunctions[step.type] as StepFunction<typeof step>
 
   if (!stepFunction) {
     throw new Error(`Unknown operation type '${step.type}'`)
   }
 
-  return stepFunction(value, step, nextState)
+  return stepFunction(value, step, state)
 }
 
 // Prepare state before handing it off to a step. If `nonvalues` is an array,
 // we'll clone the state, giving it the nonvalues, and making sure we provide
 // the same context (no cloning). Otherwise, we'll reuse the state and just set
 // the value.
-function handOffState(state: State, value: unknown, nonvalues?: unknown[]) {
-  if (Array.isArray(nonvalues)) {
-    const nextState = new State({ ...state, nonvalues }, value)
-    nextState.replaceContext(state.context)
-    return nextState
-  } else {
+function handOffState(
+  state: State,
+  value: unknown,
+  nonvalues?: unknown[],
+  index?: number,
+) {
+  if (!Array.isArray(nonvalues) && index === undefined) {
     state.value = value
     return state
+  } else {
+    const nextState = new State(
+      {
+        ...state,
+        ...(Array.isArray(nonvalues) && { nonvalues }),
+        ...(index !== undefined && { index }),
+      },
+      value,
+    )
+    nextState.replaceContext(state.context)
+    return nextState
   }
 }
 
@@ -161,12 +172,25 @@ function* runOneLevelGen(
         // sync or async
         if (shouldIterate(next, step)) {
           const items = []
-          for (const value of next) {
-            items.push(yield runOp(value, step, state, stepFunctions))
+          for (let i = 0; i < next.length; i++) {
+            const value = next[i] // eslint-disable-line security/detect-object-injection
+            items.push(
+              yield runOp(
+                value,
+                step,
+                handOffState(state, value, step.nonvalues, i),
+                stepFunctions,
+              ),
+            )
           }
           next = items
         } else {
-          next = yield runOp(next, step, state, stepFunctions)
+          next = yield runOp(
+            next,
+            step,
+            handOffState(state, value, step.nonvalues),
+            stepFunctions,
+          )
         }
       }
     }

@@ -1,4 +1,5 @@
 import test from 'ava'
+import type { State } from '../types.js'
 
 import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
 
@@ -12,6 +13,33 @@ test('should run a simple pipeline', (t) => {
   const pipeline = ['items']
   const value = { items: [{ id: 'ent1' }, { id: 'ent2' }] }
   const expected = [{ id: 'ent1' }, { id: 'ent2' }]
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should iterate with an operation and make index available on state', (t) => {
+  const fn = (_value: unknown, state: State) => state.index ?? 0
+  const value = [
+    { key: 'ent1', name: 'Entry 1' },
+    { key: 'ent2', name: 'Entry 2' },
+  ]
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        [{ type: 'transform', fn }, '>order'],
+      ],
+    },
+  ]
+  const expected = [
+    { id: 'ent1', title: 'Entry 1', order: 0 },
+    { id: 'ent2', title: 'Entry 2', order: 1 },
+  ]
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -111,6 +139,33 @@ test('should run a pipeline with async alt pipelines', async (t) => {
   ]
   const value = { key: 'ent1' }
   const expected = { value: 'From async' }
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should iterate with an operation and make index available on state for async', async (t) => {
+  const fn = async (_value: unknown, state: State) => state.index ?? 0
+  const value = [
+    { key: 'ent1', name: 'Entry 1' },
+    { key: 'ent2', name: 'Entry 2' },
+  ]
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        [{ type: 'transform', fn }, '>order'],
+      ],
+    },
+  ]
+  const expected = [
+    { id: 'ent1', title: 'Entry 1', order: 0 },
+    { id: 'ent2', title: 'Entry 2', order: 1 },
+  ]
 
   const ret = await runPipelineAsync(value, pipeline, state)
 

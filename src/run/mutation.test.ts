@@ -572,5 +572,3 @@ test('should run mutation object asynchronously', async (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should provide index on state during iteration')

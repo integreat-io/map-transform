@@ -3,13 +3,14 @@ import runPipeline, {
   runPipelineAsync,
   runOneLevel,
   runOneLevelAsync,
+  OperationStepBase,
 } from './index.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { isNonvalue } from '../utils/is.js'
 import { revFromState } from '../utils/stateHelpers.js'
 import type { PreppedPipeline } from './index.js'
 
-export interface AltStep {
+export interface AltStep extends OperationStepBase {
   type: 'alt'
   useLastAsDefault?: boolean
   pipelines: PreppedPipeline[]

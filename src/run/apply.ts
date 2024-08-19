@@ -1,7 +1,7 @@
-import runPipeline, { runPipelineAsync } from './index.js'
+import runPipeline, { runPipelineAsync, OperationStepBase } from './index.js'
 import type State from '../state.js'
 
-export interface ApplyStep {
+export interface ApplyStep extends OperationStepBase {
   type: 'apply'
   id: string
 }

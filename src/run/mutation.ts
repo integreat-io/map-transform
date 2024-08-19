@@ -1,9 +1,13 @@
-import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
+import runPipeline, {
+  runPipelineAsync,
+  PreppedPipeline,
+  OperationStepBase,
+} from './index.js'
 import { isObject, isNonvalue } from '../utils/is.js'
 import type State from '../state.js'
 import type { Path } from '../types.js'
 
-export interface MutationStep {
+export interface MutationStep extends OperationStepBase {
   type: 'mutation'
   flip?: boolean
   mod?: Path[]

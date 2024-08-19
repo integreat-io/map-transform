@@ -4,6 +4,7 @@ import runPipeline, {
   runOneLevel,
   runOneLevelAsync,
 } from './index.js'
+import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { isNonvalue } from '../utils/is.js'
 import { revFromState } from '../utils/stateHelpers.js'
 import type { PreppedPipeline } from './index.js'
@@ -105,17 +106,12 @@ export default function runAltStep(
     }
     return setWithAltPipelines(value, pipelines, state)
   } else {
+    // The piplines are run with a generator that yields each value so that we
+    // could have await it if this was an async method. We still need to run
+    // through the iterator to get the result, and this is handled by
+    // `runIteratorAsync()`.
     const it = getWithAltPipelines(value, pipelines, state)
-
-    // Run throught the pipelines. We don't need to await anything, so we just
-    // pass on the value yielded from the iterator.
-    let result = it.next()
-    while (!result.done) {
-      result = it.next(result.value)
-    }
-
-    // We have a value, return it.
-    return result.value
+    return runIterator(it)
   }
 }
 
@@ -146,16 +142,9 @@ export async function runAltStepAsync(
     }
     return await setWithAltPipelines(value, pipelines, state)
   } else {
+    // The piplines are run with a generator that yields each value so that we
+    // can await it. Running the iterator is handled by `runIteratorAsync()`.
     const it = getWithAltPipelines(value, pipelines, state, true)
-
-    // Run throught the pipelines and await each value yielded value from the
-    // iterator.
-    let result = it.next()
-    while (!result.done) {
-      result = it.next(await result.value)
-    }
-
-    // We have a value, return it.
-    return await result.value
+    return runIteratorAsync(it)
   }
 }

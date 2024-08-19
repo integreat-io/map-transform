@@ -14,6 +14,23 @@ export interface MutationStep {
 const overrideFlag = (our?: boolean, their?: boolean) =>
   typeof our === 'boolean' ? our : their
 
+const handOffState = (
+  state: State,
+  target: unknown,
+  flip?: boolean,
+  noDefaults?: boolean,
+) => ({
+  ...state,
+  context: state.context, // We need to set the context explicitly, as it is a get prop on the State class
+  target,
+  flip: overrideFlag(flip, state.flip),
+  noDefaults: overrideFlag(noDefaults, state.noDefaults),
+})
+
+// If `modValue` is an object, merge with `value`. If not, return `value`.
+const merge = (modValue: unknown, value: Record<string, unknown>) =>
+  isObject(modValue) ? { ...modValue, ...value } : value
+
 /**
  * Run a mutation step, by running each pipeline and combining the results
  * into one object. This is done by giving the result of a pipeline as the
@@ -35,13 +52,11 @@ export default function runMutationStep(
   // of the next. The first one is given an empty object as target
   const next = pipelines.reduce(
     (target, pipeline) =>
-      runPipeline(value, pipeline, {
-        ...state,
-        context: state.context, // We need to set the context explicitly, as it is a get prop on the State class
-        target,
-        flip: overrideFlag(flip, state.flip),
-        noDefaults: overrideFlag(noDefaults, state.noDefaults),
-      }) as Record<string, unknown>,
+      runPipeline(
+        value,
+        pipeline,
+        handOffState(state, target, flip, noDefaults),
+      ) as Record<string, unknown>,
     {},
   )
 
@@ -49,10 +64,8 @@ export default function runMutationStep(
   // mod pipeline and shallow merge with it, if it's an object too
   if (modPipeline && isObject(next)) {
     // TODO: Override direction to fwd, here?
-    const modValue = runPipeline(value, modPipeline, state) // TODO: Use a get path only runner instead of running a full pipeline
-    if (isObject(modValue)) {
-      return { ...modValue, ...next }
-    }
+    // TODO: Use a get path only runner instead of running a full pipeline
+    return merge(runPipeline(value, modPipeline, state), next)
   }
 
   // We're not merging with a mod object -- just return
@@ -81,25 +94,20 @@ export async function runMutationStepAsync(
   // Run every pipeline in turn, with the result of the previous as the target
   // of the next. The first one is given an empty object as target
   let next: unknown = {}
-
   for (const pipeline of pipelines) {
-    next = await runPipelineAsync(value, pipeline, {
-      ...state,
-      context: state.context, // We need to set the context explicitly, as it is a get prop on the State class
-      target: next,
-      flip: overrideFlag(flip, state.flip),
-      noDefaults: overrideFlag(noDefaults, state.noDefaults),
-    })
+    next = await runPipelineAsync(
+      value,
+      pipeline,
+      handOffState(state, next, flip, noDefaults),
+    )
   }
 
   // If we have a mod pipeline and next is an object, we get the value at the
   // mod pipeline and shallow merge with it, if it's an object too
   if (modPipeline && isObject(next)) {
     // TODO: Override direction to fwd, here?
-    const modValue = await runPipelineAsync(value, modPipeline, state) // TODO: Use a get path only runner instead of running a full pipeline
-    if (isObject(modValue)) {
-      return { ...modValue, ...next }
-    }
+    // TODO: Use a get path only runner instead of running a full pipeline
+    return merge(await runPipelineAsync(value, modPipeline, state), next)
   }
 
   // We're not merging with a mod object -- just return

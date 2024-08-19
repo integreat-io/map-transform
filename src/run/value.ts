@@ -1,6 +1,7 @@
 import type State from '../state.js'
+import type { OperationStepBase } from './index.js'
 
-export interface ValueStep {
+export interface ValueStep extends OperationStepBase {
   type: 'value'
   value: unknown
 }

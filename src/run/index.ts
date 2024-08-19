@@ -20,14 +20,43 @@ export interface StepProps {
   nonvalues?: unknown[]
 }
 
-export type OperationStep = (
+export interface OperationStepBase extends StepProps {
+  type: string
+}
+
+interface StepFunction<T extends OperationStepBase> {
+  (value: unknown, step: T, state: State): unknown
+}
+
+type StepFunctions = {
+  [K in OperationStep['type']]: StepFunction<
+    Extract<OperationStep, { type: K }>
+  >
+}
+
+const syncStepFunctions: StepFunctions = {
+  alt: runAltStep,
+  apply: runApplyStep,
+  mutation: runMutationStep,
+  transform: runTransformStep,
+  value: runValueStep,
+}
+
+const asyncStepFunctions: StepFunctions = {
+  alt: runAltStepAsync,
+  apply: runApplyStepAsync,
+  mutation: runMutationStepAsync,
+  transform: runTransformStep,
+  value: runValueStep,
+}
+
+export type OperationStep =
   | AltStep
   | ApplyStep
   | MutationStep
   | TransformStep
   | ValueStep
-) &
-  StepProps
+
 export type PreppedStep = Path | OperationStep
 export type PreppedPipeline = PreppedStep[]
 
@@ -59,32 +88,16 @@ function runOp(
   value: unknown,
   step: OperationStep,
   state: State,
-  isAsync: boolean,
+  stepFunctions: StepFunctions,
 ) {
   const nextState = handOffState(state, value, step.nonvalues)
-  switch (step.type) {
-    case 'mutation':
-      return isAsync
-        ? runMutationStepAsync(value, step, nextState)
-        : runMutationStep(value, step, nextState)
-    case 'value':
-      return runValueStep(value, step, nextState)
-    case 'transform':
-      return runTransformStep(value, step, nextState)
-    case 'apply':
-      return isAsync
-        ? runApplyStepAsync(value, step, nextState)
-        : runApplyStep(value, step, nextState)
-    case 'alt':
-      return isAsync
-        ? runAltStepAsync(value, step, nextState)
-        : runAltStep(value, step, nextState)
-    default:
-      // We have an unknown operation type
-      throw new Error(
-        `Unknown operation type '${(step as OperationStep).type}'`,
-      )
+  const stepFunction = stepFunctions[step.type] as StepFunction<typeof step>
+
+  if (!stepFunction) {
+    throw new Error(`Unknown operation type '${step.type}'`)
   }
+
+  return stepFunction(value, step, nextState)
 }
 
 // Prepare state before handing it off to a step. If `nonvalues` is an array,
@@ -118,7 +131,7 @@ function* runOneLevelGen(
   value: unknown,
   pipeline: PreppedPipeline,
   state: State,
-  isAsync: boolean,
+  stepFunctions: StepFunctions,
 ): Generator<unknown, unknown, unknown> {
   // Set the actual rev, based on flip and what not
   const isRev = revFromState(state)
@@ -149,11 +162,11 @@ function* runOneLevelGen(
         if (shouldIterate(next, step)) {
           const items = []
           for (const value of next) {
-            items.push(yield runOp(value, step, state, isAsync))
+            items.push(yield runOp(value, step, state, stepFunctions))
           }
           next = items
         } else {
-          next = yield runOp(next, step, state, isAsync)
+          next = yield runOp(next, step, state, stepFunctions)
         }
       }
     }
@@ -176,7 +189,7 @@ export function runOneLevel(
   // that would need to be awaited if we were to run them asynchronously. We
   // don't need to await anything here, but we still need to run the generator
   // to get the result.
-  const it = runOneLevelGen(value, pipeline, state, false)
+  const it = runOneLevelGen(value, pipeline, state, syncStepFunctions)
   return runIterator(it)
 }
 
@@ -194,7 +207,7 @@ export async function runOneLevelAsync(
 ) {
   // The runing of the steps is handled by a generator, that will yield values
   // that need to be awaited. This is done in the `runIteratorAsync()` method.
-  const it = runOneLevelGen(value, pipeline, state, true)
+  const it = runOneLevelGen(value, pipeline, state, asyncStepFunctions)
   return runIteratorAsync(it)
 }
 

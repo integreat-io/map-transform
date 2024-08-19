@@ -1,7 +1,8 @@
 import type State from '../state.js'
+import type { OperationStepBase } from './index.js'
 import type { DataMapperWithState, AsyncDataMapperWithState } from '../types.js'
 
-export interface TransformStep {
+export interface TransformStep extends OperationStepBase {
   type: 'transform'
   fn: DataMapperWithState | AsyncDataMapperWithState
 }

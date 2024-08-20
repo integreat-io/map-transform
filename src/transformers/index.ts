@@ -9,7 +9,13 @@ import get from './get.js'
 import index from './indexFn.js'
 import logical from './logical.js'
 import map from './map.js'
-import { merge, mergeRev, mergeAsync, mergeRevAsync } from './merge.js'
+import { merge, mergeRev } from './merge.js'
+import {
+  merge as mergeSync,
+  mergeRev as mergeRevSync,
+  mergeAsync,
+  mergeRevAsync,
+} from './mergeNext.js'
 import not from './not.js'
 import notNext from './notNext.js'
 import project from './project.js'
@@ -26,8 +32,8 @@ export const sync = {
   implode,
   index,
   map,
-  merge,
-  mergeRev,
+  merge: mergeSync,
+  mergeRev: mergeRevSync,
   not: notNext,
   project,
   sort,
@@ -62,8 +68,8 @@ export default {
   index,
   logical,
   map,
-  merge: mergeAsync,
-  mergeRev: mergeRevAsync,
+  merge,
+  mergeRev,
   not,
   project,
   sort,

@@ -26,7 +26,6 @@ export type OperationObject =
 export type Step = Path | MutationObject | OperationObject | Pipeline
 export type Pipeline = Step[]
 export type TransformDefinition = Step | Pipeline | null
-export type TransformDefinitionAsync = Step | Pipeline | null
 export type DataMapper = (value: unknown) => unknown
 
 type ObjectStep = MutationObject | OperationObject

@@ -1,6 +1,7 @@
 import test from 'ava'
+import type { Transformer, AsyncTransformer } from '../types.js'
 
-import { merge, mergeRev } from './merge.js'
+import { merge, mergeRev, mergeAsync, mergeRevAsync } from './mergeNext.js'
 
 // Setup
 
@@ -22,7 +23,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should merge two objects', async (t) => {
+test('should merge two objects', (t) => {
   const path = ['original', 'modified']
   const data = {
     original: {
@@ -49,12 +50,12 @@ test('should merge two objects', async (t) => {
     tags: ['sports'],
   }
 
-  const ret = await merge({ path })(options)(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should merge three objects', async (t) => {
+test('should merge three objects', (t) => {
   const path = ['original', 'modified', 'final']
   const data = {
     original: {
@@ -85,12 +86,44 @@ test('should merge three objects', async (t) => {
     tags: ['sports'],
   }
 
-  const ret = await merge({ path })(options)(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should return one object', async (t) => {
+test('should skip empty steps', (t) => {
+  const path = ['original', 'modified', null]
+  const data = {
+    original: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Title 1',
+      subtitle: undefined,
+      text: 'And so this happened',
+      tags: ['news', 'politics'],
+    },
+    modified: {
+      id: 'ent1',
+      title: 'Better title',
+      text: undefined,
+      tags: ['sports'],
+    },
+  }
+  const expected = {
+    id: 'ent1',
+    $type: 'entry',
+    title: 'Better title',
+    subtitle: undefined,
+    text: 'And so this happened',
+    tags: ['sports'],
+  }
+
+  const ret = merge({ path })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should return one object', (t) => {
   const path = ['original']
   const data = {
     original: {
@@ -111,12 +144,12 @@ test('should return one object', async (t) => {
     tags: ['news', 'politics'],
   }
 
-  const ret = await merge({ path })(options)(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should merge array of objects', async (t) => {
+test('should merge array of objects', (t) => {
   const path = 'all'
   const data = {
     all: [
@@ -149,12 +182,12 @@ test('should merge array of objects', async (t) => {
     tags: ['sports'],
   }
 
-  const ret = await merge({ path })(options)(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should merge object and array of objects', async (t) => {
+test('should merge object and array of objects', (t) => {
   const path = ['original', 'therest']
   const data = {
     original: {
@@ -187,12 +220,12 @@ test('should merge object and array of objects', async (t) => {
     tags: ['sports'],
   }
 
-  const ret = await merge({ path })(options)(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should skip non-objects', async (t) => {
+test('should skip non-objects', (t) => {
   const path = ['original', 'unknown', 'somethingelse', 'arr', 'perhaps']
   const data = {
     original: {
@@ -216,12 +249,12 @@ test('should skip non-objects', async (t) => {
     tags: ['news', 'politics'],
   }
 
-  const ret = await merge({ path })(options)(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should set object on paths in reverse', async (t) => {
+test('should set object on paths in reverse', (t) => {
   const path = ['original', 'modified']
   const data = {
     id: 'ent1',
@@ -250,12 +283,12 @@ test('should set object on paths in reverse', async (t) => {
     },
   }
 
-  const ret = await merge({ path })(options)(data, stateRev)
+  const ret = merge({ path })(options)(data, stateRev)
 
   t.deepEqual(ret, expected)
 })
 
-test('should run pipelines and merge the result', async (t) => {
+test('should run pipelines and merge the result', (t) => {
   const path = [
     ['heading', '>title'],
     ['createdBy', '>author'],
@@ -273,12 +306,12 @@ test('should run pipelines and merge the result', async (t) => {
     sections: ['popular', 'news'],
   }
 
-  const ret = await merge({ path })(options)(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expectedValue)
 })
 
-test('should merge with existing object', async (t) => {
+test('should merge with existing object', (t) => {
   const path = [['.'], ['createdBy', '>heading'], ['heading', '>title']]
   const data = {
     heading: 'Entry 1',
@@ -294,14 +327,41 @@ test('should merge with existing object', async (t) => {
     tags: ['popular', 'news'],
   }
 
-  const ret = await merge({ path })(options)(data, state)
+  const ret = merge({ path })(options)(data, state)
 
   t.deepEqual(ret, expectedValue)
 })
 
+test('should merge with result from transformer', (t) => {
+  const getObj: Transformer = () => () => () => ({
+    item: {
+      id: 'ent3',
+      title: 'Title 3',
+    },
+  })
+  const path = ['original', [{ $transform: 'getObj' }, 'item']]
+  const data = {
+    original: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Title 1',
+    },
+  }
+  const options = { transformers: { getObj } }
+  const expected = {
+    id: 'ent3',
+    $type: 'entry',
+    title: 'Title 3',
+  }
+
+  const ret = merge({ path })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- reverse
 
-test('mergeRev should merge two objects in reverse', async (t) => {
+test('mergeRev should merge two objects in reverse', (t) => {
   const path = ['original', 'modified']
   const data = {
     original: {
@@ -328,12 +388,12 @@ test('mergeRev should merge two objects in reverse', async (t) => {
     tags: ['sports'],
   }
 
-  const ret = await mergeRev({ path })(options)(data, stateRev)
+  const ret = mergeRev({ path })(options)(data, stateRev)
 
   t.deepEqual(ret, expected)
 })
 
-test('mergeRev should set object on paths going forward', async (t) => {
+test('mergeRev should set object on paths going forward', (t) => {
   const path = ['original', 'modified']
   const data = {
     id: 'ent1',
@@ -362,7 +422,100 @@ test('mergeRev should set object on paths going forward', async (t) => {
     },
   }
 
-  const ret = await mergeRev({ path })(options)(data, state)
+  const ret = mergeRev({ path })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+// Tests -- async
+
+test('should merge with async pipelines', async (t) => {
+  const path = ['original', 'modified']
+  const data = {
+    original: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Title 1',
+      subtitle: undefined,
+      text: 'And so this happened',
+      tags: ['news', 'politics'],
+    },
+    modified: {
+      id: 'ent1',
+      title: 'Better title',
+      text: undefined,
+      tags: ['sports'],
+    },
+  }
+  const expected = {
+    id: 'ent1',
+    $type: 'entry',
+    title: 'Better title',
+    subtitle: undefined,
+    text: 'And so this happened',
+    tags: ['sports'],
+  }
+
+  const ret = await mergeAsync({ path })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge with result from async transformer', async (t) => {
+  const getObj: AsyncTransformer = () => () => async () => ({
+    item: {
+      id: 'ent3',
+      title: 'Title 3',
+    },
+  })
+  const path = ['original', [{ $transform: 'getObj' }, 'item']]
+  const data = {
+    original: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Title 1',
+    },
+  }
+  const options = { transformers: { getObj } }
+  const expected = {
+    id: 'ent3',
+    $type: 'entry',
+    title: 'Title 3',
+  }
+
+  const ret = await mergeAsync({ path })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('mergeRev should merge with async pipelines in reverse', async (t) => {
+  const path = ['original', 'modified']
+  const data = {
+    original: {
+      id: 'ent1',
+      $type: 'entry',
+      title: 'Title 1',
+      subtitle: undefined,
+      text: 'And so this happened',
+      tags: ['news', 'politics'],
+    },
+    modified: {
+      id: 'ent1',
+      title: 'Better title',
+      text: undefined,
+      tags: ['sports'],
+    },
+  }
+  const expected = {
+    id: 'ent1',
+    $type: 'entry',
+    title: 'Better title',
+    subtitle: undefined,
+    text: 'And so this happened',
+    tags: ['sports'],
+  }
+
+  const ret = await mergeRevAsync({ path })(options)(data, stateRev)
 
   t.deepEqual(ret, expected)
 })

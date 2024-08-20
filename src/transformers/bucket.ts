@@ -1,4 +1,4 @@
-import { pathGetter, pathSetter } from '../operations/getSet.js'
+import { pathGetter, pathSetter } from '../createPathMapper.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { revFromState } from '../utils/stateHelpers.js'
 import { ensureArray } from '../utils/array.js'
@@ -127,7 +127,7 @@ const transformer: AsyncTransformer<Props> = function bucket({
 }) {
   return (options) => {
     const getFn = pathGetter(path)
-    const setFn = pathSetter(path, options)
+    const setFn = pathSetter(path)
     const getGroupByPathFn = prepareGroupByPathFn(groupByPath, options)
 
     const pipelines: PipelineWithKey[] = buckets

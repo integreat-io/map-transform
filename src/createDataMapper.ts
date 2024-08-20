@@ -6,7 +6,7 @@ export type DataMapper = (value: unknown, state: State) => unknown
 export type DataMapperAsync = (value: unknown, state: State) => Promise<unknown>
 
 // Create the synchronous transform function.
-function createTransformFunction(pipeline: PreppedPipeline) {
+export function createTransformFunction(pipeline: PreppedPipeline) {
   return (value: unknown, state: State) => runPipeline(value, pipeline, state)
 }
 

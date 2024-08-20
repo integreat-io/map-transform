@@ -1,5 +1,5 @@
 import mapAny from 'map-any/async.js'
-import { pathGetter } from '../operations/getSet.js'
+import { pathGetter } from '../createPathMapper.js'
 import {
   getStateValue,
   setStateValue,

@@ -1,4 +1,4 @@
-import { pathGetter } from '../operations/getSet.js'
+import { pathGetter } from '../createPathMapper.js'
 import type { TransformerProps, Transformer } from '../types.js'
 
 export interface Props extends TransformerProps {

@@ -45,6 +45,24 @@ test('should prepare path already in array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should prepare path with escaped dollar', (t) => {
+  const def = '\\$item'
+  const expected = ['$item']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should prepare path with escaped backslash', (t) => {
+  const def = 'item\\\\data'
+  const expected = ['item\\data']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should prepare path with get indicator', (t) => {
   const def = '<response.data.item'
   const expected = ['response', 'data', 'item']
@@ -166,6 +184,15 @@ test('should prepare path with several array brackets', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should prepare path with escaped array notation', (t) => {
+  const def = 'response.data.items\\[]'
+  const expected = ['response', 'data', 'items[]']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- parent and root
 
 test('should prepare path with parent', (t) => {
@@ -197,6 +224,15 @@ test('should prepare path from root', (t) => {
 
 test('should prepare path with dot-less root notation', (t) => {
   const def = '^^response'
+  const expected = ['^^', 'response']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should prepare path from obsolete root format', (t) => {
+  const def = '^response'
   const expected = ['^^', 'response']
 
   const ret = prep(def, options)

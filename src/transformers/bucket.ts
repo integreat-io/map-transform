@@ -1,4 +1,9 @@
-import { pathGetter, pathSetter } from '../createPathMapper.js'
+import {
+  prepare,
+  addToBucket,
+  getBucketSize,
+  Props as PropsNext,
+} from './bucketNext.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { revFromState } from '../utils/stateHelpers.js'
 import { ensureArray } from '../utils/array.js'
@@ -11,10 +16,14 @@ import type {
   TransformDefinition,
   Path,
   State,
-  Options,
 } from '../types.js'
+import type { Options as OptionsNext } from '../prep/index.js'
 
-type PipelineWithKey = [DataMapperWithState | AsyncDataMapperWithState, string]
+type BucketArgs = [
+  string,
+  number | undefined,
+  DataMapperWithState | AsyncDataMapperWithState | undefined,
+]
 
 export interface Bucket {
   key: string
@@ -29,22 +38,9 @@ export interface Props extends TransformerProps {
   groupByPath?: TransformDefinition
 }
 
-function addToBucket(
-  value: unknown,
-  buckets: Map<string, unknown[]>,
-  key: string,
-) {
-  const bucket = buckets.get(key)
-  if (bucket) {
-    bucket.push(value)
-  } else {
-    buckets.set(key, [value])
-  }
-}
-
 async function sortIntoBuckets(
   getFn: DataMapperWithState | AsyncDataMapperWithState,
-  pipelines: PipelineWithKey[],
+  buckets: BucketArgs[],
   getGroupFn: DataMapperWithState | AsyncDataMapperWithState | undefined,
   data: unknown,
   state: State,
@@ -53,13 +49,15 @@ async function sortIntoBuckets(
   const arr = ensureArray(getFn(data, state))
   const retBucket = new Map<string, unknown[]>()
 
-  if (pipelines.length > 0) {
+  if (buckets.length > 0) {
     for (const value of arr) {
-      for (const [pipeline, key] of pipelines) {
-        const result = await pipeline(value, state)
-        if (result) {
-          addToBucket(value, retBucket, key)
-          break
+      for (const [key, size, mapper] of buckets) {
+        if (size === undefined || getBucketSize(retBucket, key) < size) {
+          const isMatch = !mapper || !!(await mapper(value, state))
+          if (isMatch) {
+            addToBucket(value, retBucket, key)
+            break
+          }
         }
       }
     }
@@ -75,24 +73,6 @@ async function sortIntoBuckets(
   return Object.fromEntries(retBucket.entries())
 }
 
-function shouldGoInBucket(
-  options: Options,
-  condition?: TransformDefinition,
-  size?: number,
-): AsyncDataMapperWithState {
-  let inBucket = 0
-  const mapper = condition ? defToDataMapper(condition, options) : undefined
-  return async function considerItemForBucket(item, state) {
-    if (size === undefined || inBucket < size) {
-      if (!mapper || (await mapper(item, state))) {
-        inBucket++
-        return true
-      }
-    }
-    return false
-  }
-}
-
 const extractArrayFromBuckets = (
   buckets: unknown,
   keys?: string[],
@@ -105,42 +85,13 @@ const extractArrayFromBuckets = (
         .filter((key) => !isNonvalue(key, nonvalues))
     : []
 
-const prepareGroupByPathFn = (
-  pipeline: TransformDefinition | undefined,
-  options: Options,
-) =>
-  typeof pipeline === 'string'
-    ? pathGetter(pipeline)
-    : pipeline === undefined
-      ? undefined
-      : defToDataMapper(pipeline, options)
-
-// Return keys from buckets. If there's no buckets and we havev a group fn,
-// return `undefined` to signal that we want whatever keys are in the data
-const extractBucketKeys = (buckets: Bucket[], hasGroupFn: boolean) =>
-  buckets.length === 0 && hasGroupFn ? undefined : buckets.map(({ key }) => key)
-
-const transformer: AsyncTransformer<Props> = function bucket({
-  path = '.',
-  buckets = [],
-  groupByPath,
-}) {
+const transformer: AsyncTransformer<Props> = function bucket(props) {
   return (options) => {
-    const getFn = pathGetter(path)
-    const setFn = pathSetter(path)
-    const getGroupByPathFn = prepareGroupByPathFn(groupByPath, options)
-
-    const pipelines: PipelineWithKey[] = buckets
-      .filter(({ key }) => typeof key === 'string')
-      .map((bucket) => [
-        shouldGoInBucket(
-          options,
-          bucket.condition ?? bucket.pipeline, // Keep `pipeline` as an alias of `condition` for backwards compatibility. TODO: Remove in v2
-          bucket.size,
-        ),
-        bucket.key,
-      ])
-    const keys = extractBucketKeys(buckets, !!getGroupByPathFn)
+    const [getFn, setFn, getGroupByPathFn, keys, bucketPipelines] = prepare(
+      props as PropsNext, // These type overrides are not strictly correct, but ...
+      options as OptionsNext, // ... will do for now, as this is a temporary solution
+      defToDataMapper,
+    )
 
     return async (data, state) => {
       if (revFromState(state)) {
@@ -151,7 +102,7 @@ const transformer: AsyncTransformer<Props> = function bucket({
       } else {
         return sortIntoBuckets(
           getFn,
-          pipelines,
+          bucketPipelines,
           getGroupByPathFn,
           data,
           state,

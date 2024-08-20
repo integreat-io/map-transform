@@ -1,21 +1,17 @@
-import { setTargetOnState, goForward } from '../utils/stateHelpers.js'
+import { getLogicalFn, Operator } from './logicalNext.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
+import { setTargetOnState, goForward } from '../utils/stateHelpers.js'
 import type { AsyncTransformer, TransformerProps, Path } from '../types.js'
 import { ensureArray } from '../utils/array.js'
-
-export type Operator = 'AND' | 'OR'
 
 export interface Props extends TransformerProps {
   path?: Path | Path[]
   operator?: Operator
 }
 
-const getLogicalFn = (operator: Operator) =>
-  operator === 'OR'
-    ? (a: unknown, b: unknown) => Boolean(a) || Boolean(b)
-    : (a: unknown, b: unknown) => Boolean(a) && Boolean(b)
-
-// TODO: Should handle pipelines, not just paths
+// This transformer states that it only accepts paths, but it will still run
+// pipelines when getting. When setting, it will fail if it gets something else
+// than paths
 const transformer: AsyncTransformer<Props> = function logical({
   path = '.',
   operator = 'AND',

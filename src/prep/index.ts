@@ -14,6 +14,7 @@ import type {
   ValueOperation,
   MutationObject,
   Transformer,
+  AsyncTransformer,
   Dictionaries,
 } from '../types.js'
 
@@ -31,7 +32,7 @@ export type DataMapper = (value: unknown) => unknown
 type ObjectStep = MutationObject | OperationObject
 
 export interface Options {
-  transformers?: Record<string | symbol, Transformer>
+  transformers?: Record<string | symbol, Transformer | AsyncTransformer>
   pipelines?: Record<string | symbol, TransformDefinition>
   neededPipelineIds?: Set<string | symbol>
   dictionaries?: Dictionaries

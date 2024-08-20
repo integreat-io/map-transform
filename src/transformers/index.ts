@@ -8,6 +8,7 @@ import flatten from './flatten.js'
 import get from './get.js'
 import index from './indexFn.js'
 import logical from './logical.js'
+import { logical as logicalSync, logicalAsync } from './logicalNext.js'
 import map from './map.js'
 import { merge, mergeRev } from './merge.js'
 import {
@@ -21,8 +22,6 @@ import notNext from './notNext.js'
 import project from './project.js'
 import sort from './sort.js'
 
-// Transformers that are not sync yet:
-// - logical
 export const sync = {
   bucket: bucketSync,
   compare: compareSync,
@@ -31,6 +30,7 @@ export const sync = {
   flatten,
   implode,
   index,
+  logical: logicalSync,
   map,
   merge: mergeSync,
   mergeRev: mergeRevSync,
@@ -48,6 +48,7 @@ export const async = {
   flatten,
   implode,
   index,
+  logical: logicalAsync,
   map,
   merge: mergeAsync,
   mergeRev: mergeRevAsync,

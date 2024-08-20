@@ -1,7 +1,11 @@
 import preparePipeline, { TransformDefinition, Options } from './prep/index.js'
 import runPipeline, { runPipelineAsync, PreppedPipeline } from './run/index.js'
-import { sync as transformers } from './transformers/index.js'
+import {
+  sync as syncTransformers,
+  async as asyncTransformers,
+} from './transformers/index.js'
 import type State from './state.js'
+import { Transformer, AsyncTransformer } from './types.js'
 
 export interface InitialState {
   context?: unknown[]
@@ -46,6 +50,7 @@ function createTransformFunctionAsync(
 function preparePipelinesAndStateProps(
   def: TransformDefinition,
   options: Options,
+  transformers: Record<string, Transformer | AsyncTransformer>,
 ): [PreppedPipeline, Partial<State>] {
   const stateProps: Partial<State> = { nonvalues: options.nonvalues } // These props will be added to the state object
 
@@ -80,7 +85,11 @@ export default function mapTransform(
   def: TransformDefinition,
   options: Options,
 ): (data: unknown, state?: InitialState) => unknown {
-  const [pipeline, stateProps] = preparePipelinesAndStateProps(def, options)
+  const [pipeline, stateProps] = preparePipelinesAndStateProps(
+    def,
+    options,
+    syncTransformers,
+  )
   return createTransformFunction(pipeline, stateProps)
 }
 
@@ -96,6 +105,10 @@ export function mapTransformAsync(
   def: TransformDefinition,
   options: Options,
 ): (data: unknown, state?: InitialState) => Promise<unknown> {
-  const [pipeline, stateProps] = preparePipelinesAndStateProps(def, options)
+  const [pipeline, stateProps] = preparePipelinesAndStateProps(
+    def,
+    options,
+    asyncTransformers,
+  )
   return createTransformFunctionAsync(pipeline, stateProps)
 }

@@ -2,7 +2,7 @@ import test from 'ava'
 import { createDataMapper } from './createDataMapper.js'
 import type StateNext from './state.js'
 import type { Options as OptionsNext } from './prep/index.js'
-import type { State, Options } from './types.js'
+import type { State, Options, Transformer, AsyncTransformer } from './types.js'
 
 import mapTransform, { mapTransformAsync } from './mapTransform.js'
 
@@ -111,15 +111,23 @@ test('should pass on context to a data mapper in transformer', (t) => {
 })
 
 test('should include built-in transformers', (t) => {
+  const uppercase: Transformer = () => () => (value) =>
+    typeof value === 'string' ? value.toUpperCase() : value
   const def = {
     id: 'key',
     title: 'name',
-    active: ['archived', { $transform: 'not' }],
+    isSports: [
+      {
+        $transform: 'compare',
+        path: ['section', { $transform: 'uppercase' }],
+        match: 'SPORTS',
+      },
+    ],
   }
-  const value = { key: 'ent1', name: 'Entry 1', archived: true }
+  const value = { key: 'ent1', name: 'Entry 1', section: 'sports' }
   const state = {}
-  const options = {}
-  const expected = { id: 'ent1', title: 'Entry 1', active: false }
+  const options = { transformers: { uppercase } }
+  const expected = { id: 'ent1', title: 'Entry 1', isSports: true }
 
   const ret = mapTransform(def, options)(value, state)
 
@@ -147,6 +155,30 @@ test('should create async mapper', async (t) => {
   const state = {}
   const options = { transformers: { async: fn } }
   const expected = { id: 'ent1', title: 'Entry 1', asyncValue: 'From async' }
+
+  const ret = await mapTransformAsync(def, options)(value, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should include built-in transformers async', async (t) => {
+  const uppercase: AsyncTransformer = () => () => async (value) =>
+    typeof value === 'string' ? value.toUpperCase() : value
+  const def = {
+    id: 'key',
+    title: 'name',
+    isSports: [
+      {
+        $transform: 'compare',
+        path: ['section', { $transform: 'uppercase' }], // This path will return a Promise, so we know we have included the async transformers if it succeeds
+        match: 'SPORTS',
+      },
+    ],
+  }
+  const value = { key: 'ent1', name: 'Entry 1', section: 'sports' }
+  const state = {}
+  const options = { transformers: { uppercase } }
+  const expected = { id: 'ent1', title: 'Entry 1', isSports: true }
 
   const ret = await mapTransformAsync(def, options)(value, state)
 

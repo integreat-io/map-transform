@@ -1,5 +1,5 @@
 import test from 'ava'
-import { mergeAsync } from '../transformers/merge.js'
+import { merge } from '../transformers/merge.js'
 import { isObject } from '../utils/is.js'
 import type { TransformerProps, TransformDefinition } from '../types.js'
 
@@ -55,7 +55,7 @@ const transformers = {
   appendToTitle,
   generateTag,
   getLength,
-  merge: mergeAsync,
+  merge,
   [Symbol.for('getLength')]: getLength,
 }
 

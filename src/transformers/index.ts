@@ -11,7 +11,7 @@ import logical from './logical.js'
 import map from './map.js'
 import { merge, mergeRev, mergeAsync, mergeRevAsync } from './merge.js'
 import not from './not.js'
-import notSync from './notSync.js'
+import notNext from './notNext.js'
 import project from './project.js'
 import sort from './sort.js'
 
@@ -28,7 +28,7 @@ export const sync = {
   map,
   merge,
   mergeRev,
-  not: notSync,
+  not: notNext,
   project,
   sort,
   value,
@@ -45,7 +45,7 @@ export const async = {
   map,
   merge: mergeAsync,
   mergeRev: mergeRevAsync,
-  not: notSync,
+  not: notNext,
   project,
   sort,
   value,

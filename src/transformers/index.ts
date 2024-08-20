@@ -1,5 +1,6 @@
 import { value, fixed } from './value.js'
 import bucket from './bucket.js'
+import { bucket as bucketSync, bucketAsync } from './bucketNext.js'
 import compare from './compare.js'
 import { compare as compareSync, compareAsync } from './compareNext.js'
 import { explode, implode } from './explode.js'
@@ -15,9 +16,9 @@ import project from './project.js'
 import sort from './sort.js'
 
 // Transformers that are not sync yet:
-// - bucket
 // - logical
 export const sync = {
+  bucket: bucketSync,
   compare: compareSync,
   explode,
   fixed,
@@ -34,6 +35,7 @@ export const sync = {
 }
 
 export const async = {
+  bucket: bucketAsync,
   compare: compareAsync,
   explode,
   fixed,

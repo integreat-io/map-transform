@@ -169,6 +169,16 @@ test('should return undefined when index in pipeline addresses a non-array', (t)
   t.is(ret, expected)
 })
 
+test('should return undefined when value is null', (t) => {
+  const pipeline = ['item']
+  const value = null
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
 // Test -- get array
 
 test('should get array from pipeline without array notation', (t) => {
@@ -347,6 +357,16 @@ test('should get array from pipeline with index notation', (t) => {
     ],
   }
   const expected = [{ id: 'ent3' }]
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should get wrap null in array with array notation', (t) => {
+  const pipeline = ['response', 'data', 'items', '[]']
+  const value = { response: { data: { items: null } } }
+  const expected = [null]
 
   const ret = runPipeline(value, pipeline, state)
 

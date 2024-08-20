@@ -1,4 +1,4 @@
-import { pathGetter } from '../operations/getSet.js'
+import { pathGetter } from '../createPathMapper.js'
 import type {
   Path,
   State,

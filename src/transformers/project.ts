@@ -1,5 +1,5 @@
 import mapAny from 'map-any'
-import { pathGetter } from '../operations/getSet.js'
+import { pathGetter } from '../createPathMapper.js'
 import { isObject, isString, isNonEmptyArray } from '../utils/is.js'
 import { ensureArray } from '../utils/array.js'
 import type { Transformer, TransformerProps, State } from '../types.js'

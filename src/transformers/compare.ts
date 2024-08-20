@@ -1,5 +1,5 @@
 import mapAny from 'map-any'
-import { pathGetter } from '../operations/getSet.js'
+import { pathGetter } from '../createPathMapper.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import { goForward } from '../utils/stateHelpers.js'
 import xor from '../utils/xor.js'

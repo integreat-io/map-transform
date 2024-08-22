@@ -777,6 +777,18 @@ test('should set pipeline on target with index', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set pipeline with array index on target', (t) => {
+  const pipeline = ['content', 'prop2', '>value', '>[1]', '>props']
+  const value = { content: { prop2: 'Value 2' } }
+  const target = { props: [{ value: 'Value 1' }] }
+  const state = { target }
+  const expected = { props: [{ value: 'Value 1' }, { value: 'Value 2' }] }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set pipeline on target with array notation', (t) => {
   const pipeline = ['response', 'data', 'item', '>[]', '>values']
   const value = { response: { data: { item: { id: 'ent1' } } } }

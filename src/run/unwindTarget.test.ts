@@ -116,6 +116,16 @@ test('should return empty array when no set steps', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should unwind with index notation', (t) => {
+  const pipeline = ['response', '>id', '>[1]', '>data']
+  const target = { data: [{ id: 'ent1' }, {}] }
+  const expected = [{ data: [{ id: 'ent1' }, {}] }, [{ id: 'ent1' }, {}], {}]
+
+  const ret = unwindTarget(target, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should unwind with an array', (t) => {
   const pipeline = ['>id', '>values']
   const target = { values: [{ title: 'Entry 1' }, { title: 'Entry 2' }] }
@@ -222,5 +232,3 @@ test('should skip plug when unwinding in reverse', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should unwind with index notation')

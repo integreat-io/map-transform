@@ -1,5 +1,6 @@
 import prepareAltStep from './alt.js'
 import prepareApplyStep from './apply.js'
+import prepareFilterStep from './filter.js'
 import prepareMutationStep from './mutation.js'
 import preparePathStep from './path.js'
 import prepareTransformStep from './transform.js'
@@ -11,6 +12,7 @@ import type {
   AltOperationNext as AltOperation,
   ApplyOperation,
   TransformOperation,
+  FilterOperation,
   ValueOperation,
   MutationObject,
   Transformer,
@@ -22,6 +24,7 @@ export type OperationObject =
   | AltOperation
   | ApplyOperation
   | TransformOperation
+  | FilterOperation
   | ValueOperation
 export type Step = Path | MutationObject | OperationObject | Pipeline
 export type Pipeline = Step[]
@@ -44,7 +47,6 @@ export interface Options {
 
 // TODO
 // - concat
-// - filter
 // - ifelse
 // - lookup
 
@@ -52,6 +54,8 @@ const isAltOperation = (step: ObjectStep): step is AltOperation =>
   step.hasOwnProperty('$alt')
 const isApplyOperation = (step: ObjectStep): step is ApplyOperation =>
   step.hasOwnProperty('$apply')
+const isFilterOperation = (step: ObjectStep): step is FilterOperation =>
+  step.hasOwnProperty('$filter')
 const isTransformOperation = (step: ObjectStep): step is TransformOperation =>
   step.hasOwnProperty('$transform')
 const isValueOperation = (step: ObjectStep): step is ValueOperation =>
@@ -130,6 +134,9 @@ function prepareOperation(operation: ObjectStep, options: Options) {
   } else if (isAltOperation(operation)) {
     // An alt operation
     return prepareAltStep(operation, options)
+  } else if (isFilterOperation(operation)) {
+    // An alt operation
+    return prepareFilterStep(operation, options)
   } else {
     // The step matches none of the known operations, so treat it as
     // a mutation object

@@ -122,6 +122,13 @@ export interface IfOperation extends TransformerProps {
   else?: TransformDefinition
 }
 
+export interface IfOperationNext extends TransformerProps {
+  $if: TransformDefinitionNext
+  $direction?: string
+  then?: TransformDefinitionNext
+  else?: TransformDefinitionNext
+}
+
 export interface ApplyOperation extends TransformerProps {
   $apply: string | symbol
   $iterate?: boolean

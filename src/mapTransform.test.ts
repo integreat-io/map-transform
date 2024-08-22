@@ -17,6 +17,14 @@ test('should create mapper', (t) => {
   t.is(typeof ret, 'function')
 })
 
+test('should create mapper without options', (t) => {
+  const def = { id: 'key', title: 'name' }
+
+  const ret = mapTransform(def)
+
+  t.is(typeof ret, 'function')
+})
+
 test('should map data with created mapper', (t) => {
   const def = { id: 'key', title: 'name' }
   const value = { key: 'ent1', name: 'Entry 1' }
@@ -159,6 +167,14 @@ test('should create async mapper', async (t) => {
   const ret = await mapTransformAsync(def, options)(value, state)
 
   t.deepEqual(ret, expected)
+})
+
+test('should create async mapper without options', (t) => {
+  const def = { id: 'key', title: 'name' }
+
+  const ret = mapTransformAsync(def)
+
+  t.is(typeof ret, 'function')
 })
 
 test('should include built-in transformers async', async (t) => {

@@ -1,5 +1,6 @@
 import { isObject } from '../utils/is.js'
 import type { PreppedPipeline, PreppedStep } from './index.js'
+import type { Path } from '../types.js'
 
 const isSetStep =
   (isRev: boolean) =>
@@ -11,12 +12,21 @@ const isSetStep =
 const removeStepPrefix = (path: string) =>
   path[0] === '>' ? path.slice(1) : path
 
+function cleanStep(step: Path) {
+  const path = removeStepPrefix(step)
+  if (path[0] === '[') {
+    return Number.parseInt(path.slice(1), 10)
+  } else {
+    return path
+  }
+}
+
 /**
  * Extract the levels of a target object according to the set paths in the
  * pipeline. Will return an array of all the target levels, with the
- * outermost first. If we encounter an array, we will not continue, as the
- * each item in the array will be unwind at its own later. Any other value
- * will cause us to stop.
+ * outermost first. If we encounter an array in the target or an array notation
+ * step, we will not continue, as each item in the array will be unwind at its
+ * own later. Any other value will be pushed to the targets array.
  */
 export default function unwindTarget(
   target: unknown,
@@ -40,13 +50,17 @@ export default function unwindTarget(
     if (step === '[]' || step === '>[]') {
       break
     }
+    const path = cleanStep(step)
 
-    if (isObject(target)) {
+    if (
+      isObject(target) ||
+      (Array.isArray(target) && typeof path === 'number')
+    ) {
       // Push this target before getting the next
       targets.push(target)
       if (index < setPipeline.length - 1) {
         // We have not reached the last step yet -- fetch the next one
-        target = target[removeStepPrefix(step)]
+        target = target[path as keyof typeof target] // We know that a numeric key will only be applied to an array
       }
     } else if (Array.isArray(target)) {
       // For an array, push and stop

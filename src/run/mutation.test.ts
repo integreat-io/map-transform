@@ -166,6 +166,27 @@ test('should support parent steps in pipelines', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should support parent steps through iteration', (t) => {
+  const value = { items: [{ key: 'ent1', name: 'Entry 1' }], count: 1 }
+  const pipeline: PreppedPipeline = [
+    'items',
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['^', '^', 'count', '>count'],
+      ],
+    },
+  ]
+  const expected = [{ id: 'ent1', title: 'Entry 1', count: 1 }]
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should run several mutation objects in a pipeline', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [

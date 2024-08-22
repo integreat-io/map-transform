@@ -184,12 +184,16 @@ function* runOneLevelGen(
         if (shouldIterate(next, step)) {
           // We are iterating, so pass each value in the `next` array to the
           // operation runner. The index is set on the state to be available to
-          // transformers.
+          // transformers.We push the array to the context before iterating,
+          // and remove it afterwards, so that the array is available to parent
+          // paths during iteration.
           const items = []
+          state.pushContext(next) // Push the array to the context
           for (let i = 0; i < next.length; i++) {
             // eslint-disable-next-line security/detect-object-injection
             items.push(yield runStep(runner, next[i], step, state, i))
           }
+          state.popContext() // Remove the array from the context after iteration
           next = items
         } else {
           // This is a single value, so just pass it to the operation runner.

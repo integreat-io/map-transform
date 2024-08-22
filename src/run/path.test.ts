@@ -420,6 +420,37 @@ test('should get from parent throught array notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should get from parent through an iteration inside another iteration', (t) => {
+  const pipeline = [
+    'response',
+    'data',
+    '[]',
+    'items',
+    '[]',
+    'props',
+    '^',
+    '^',
+    '^',
+    'count',
+  ]
+  const value = {
+    response: {
+      data: [
+        {
+          items: [{ props: { id: 'ent1' } }, { props: { id: 'ent2' } }],
+          count: 2,
+        },
+        { items: [{ props: { id: 'ent3' } }], count: 1 },
+      ],
+    },
+  }
+  const expected = [2, 2, 1]
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 // TODO: I'm not at all sure this is correct behavior. I'm also not
 // sure we every defined an expected behavior for a parent directly
 // after a set.

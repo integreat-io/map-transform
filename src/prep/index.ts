@@ -6,6 +6,7 @@ import prepareMutationStep from './mutation.js'
 import preparePathStep from './path.js'
 import prepareTransformStep from './transform.js'
 import prepareValueStep from './value.js'
+import modifyOperation from './modifyOperation.js'
 import { isNotNullOrUndefined } from '../utils/is.js'
 import type { PreppedPipeline, StepProps, OperationStep } from '../run/index.js'
 import type {
@@ -49,11 +50,9 @@ export interface Options {
 }
 
 // TODO
-// - and
 // - concat
 // - lookup
 // - not
-// - or
 
 const isAltOperation = (step: ObjectStep): step is AltOperation =>
   step.hasOwnProperty('$alt')
@@ -167,7 +166,10 @@ const prepareStep = (options: Options) =>
       return preparePathStep(step)
     } else if (step) {
       // An operation or mutation object step
-      const [props, operation] = extractStepProps(step, options)
+      const [props, operation] = extractStepProps(
+        modifyOperation(step, options),
+        options,
+      )
       const operationObject = prepareOperation(operation, options)
       return setStepProps(operationObject, props) // Set the step props that is common for all operations
     } else {

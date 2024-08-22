@@ -1,6 +1,7 @@
 import State, { InitialState } from '../state.js'
 import runAltStep, { runAltStepAsync, AltStep } from './alt.js'
 import runApplyStep, { runApplyStepAsync, ApplyStep } from './apply.js'
+import runFilterStep, { runFilterStepAsync, FilterStep } from './filter.js'
 import runMutationStep, {
   runMutationStepAsync,
   MutationStep,
@@ -37,6 +38,7 @@ type StepFunctions = {
 const syncStepFunctions: StepFunctions = {
   alt: runAltStep,
   apply: runApplyStep,
+  filter: runFilterStep,
   mutation: runMutationStep,
   transform: runTransformStep,
   value: runValueStep,
@@ -45,6 +47,7 @@ const syncStepFunctions: StepFunctions = {
 const asyncStepFunctions: StepFunctions = {
   alt: runAltStepAsync,
   apply: runApplyStepAsync,
+  filter: runFilterStepAsync,
   mutation: runMutationStepAsync,
   transform: runTransformStep,
   value: runValueStep,
@@ -53,6 +56,7 @@ const asyncStepFunctions: StepFunctions = {
 export type OperationStep =
   | AltStep
   | ApplyStep
+  | FilterStep
   | MutationStep
   | TransformStep
   | ValueStep

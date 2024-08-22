@@ -2,7 +2,7 @@ import test from 'ava'
 import { isObject } from '../utils/is.js'
 import type { Options, State } from '../types.js'
 
-import prep from './index.js'
+import preparePipeline from './index.js'
 
 // Setup
 
@@ -31,7 +31,7 @@ test('should prepare transform operation', (t) => {
   }
   const expected = [{ type: 'transform', fn: uppercaseFn }]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -43,7 +43,7 @@ test('should pass props to transformer', (t) => {
   }
   const expected = [{ type: 'transform', fn: lowercaseFn }]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -56,7 +56,7 @@ test('should not pass operation props to transformer', (t) => {
   }
   const expected = [{ type: 'transform', fn: lowercaseFn, it: true }]
 
-  const ret = prep(def, options)
+  const ret = preparePipeline(def, options)
 
   t.deepEqual(ret, expected)
 })
@@ -66,7 +66,7 @@ test('should pass options to transformer', (t) => {
   const optionsWithFwdAlias = { ...options, fwdAlias: 'from' } // Setting fwdAlias will give use the lowercase transformer in this weird test case
   const expected = [{ type: 'transform', fn: lowercaseFn }]
 
-  const ret = prep(def, optionsWithFwdAlias)
+  const ret = preparePipeline(def, optionsWithFwdAlias)
 
   t.deepEqual(ret, expected)
 })
@@ -76,10 +76,13 @@ test('should throw for unknown transformer function', (t) => {
     $transform: 'unknown',
   }
 
-  const error = t.throws(() => prep(def, options))
+  const error = t.throws(() => preparePipeline(def, options))
 
   t.true(error instanceof Error)
-  t.is(error.message, "Transformer 'unknown' was not found")
+  t.is(
+    error.message,
+    "Transformer 'unknown' was not found for transform operation",
+  )
 })
 
 test('should throw when no transformers', (t) => {
@@ -88,10 +91,13 @@ test('should throw when no transformers', (t) => {
   }
   const options = {} // No transformers
 
-  const error = t.throws(() => prep(def, options))
+  const error = t.throws(() => preparePipeline(def, options))
 
   t.true(error instanceof Error)
-  t.is(error.message, "Transformer 'uppercase' was not found. No transformers")
+  t.is(
+    error.message,
+    "Transformer 'uppercase' was not found for transform operation. No transformers",
+  )
 })
 
 test('should throw when no transformer id', (t) => {
@@ -99,8 +105,8 @@ test('should throw when no transformer id', (t) => {
     $transform: '',
   }
 
-  const error = t.throws(() => prep(def, options))
+  const error = t.throws(() => preparePipeline(def, options))
 
   t.true(error instanceof Error)
-  t.is(error.message, 'Transformer operation is missing transformer id')
+  t.is(error.message, 'Transform operation is missing transformer id')
 })

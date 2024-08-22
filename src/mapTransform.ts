@@ -83,7 +83,7 @@ function preparePipelinesAndStateProps(
  */
 export default function mapTransform(
   def: TransformDefinition,
-  options: Options,
+  options: Options = {},
 ): (data: unknown, state?: InitialState) => unknown {
   const [pipeline, stateProps] = preparePipelinesAndStateProps(
     def,
@@ -103,7 +103,7 @@ export default function mapTransform(
  */
 export function mapTransformAsync(
   def: TransformDefinition,
-  options: Options,
+  options: Options = {},
 ): (data: unknown, state?: InitialState) => Promise<unknown> {
   const [pipeline, stateProps] = preparePipelinesAndStateProps(
     def,

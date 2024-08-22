@@ -52,7 +52,6 @@ export interface Options {
 // TODO
 // - concat
 // - lookup
-// - not
 
 const isAltOperation = (step: ObjectStep): step is AltOperation =>
   step.hasOwnProperty('$alt')

@@ -1,5 +1,5 @@
 import test from 'ava'
-import not from './notNext.js'
+import { not } from './notNext.js'
 import type { Transformer, AsyncTransformer } from '../types.js'
 
 import { logical, logicalAsync } from './logicalNext.js'

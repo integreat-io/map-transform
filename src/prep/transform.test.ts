@@ -79,10 +79,7 @@ test('should throw for unknown transformer function', (t) => {
   const error = t.throws(() => prep(def, options))
 
   t.true(error instanceof Error)
-  t.is(
-    error.message,
-    'Transform operation was called without a valid transformer function',
-  )
+  t.is(error.message, "Transformer 'unknown' was not found")
 })
 
 test('should throw when no transformers', (t) => {
@@ -94,8 +91,16 @@ test('should throw when no transformers', (t) => {
   const error = t.throws(() => prep(def, options))
 
   t.true(error instanceof Error)
-  t.is(
-    error.message,
-    'Transform operation was called without a valid transformer function',
-  )
+  t.is(error.message, "Transformer 'uppercase' was not found. No transformers")
+})
+
+test('should throw when no transformer id', (t) => {
+  const def = {
+    $transform: '',
+  }
+
+  const error = t.throws(() => prep(def, options))
+
+  t.true(error instanceof Error)
+  t.is(error.message, 'Transformer operation is missing transformer id')
 })

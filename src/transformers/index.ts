@@ -18,7 +18,7 @@ import {
   mergeRevAsync,
 } from './mergeNext.js'
 import not from './not.js'
-import notNext from './notNext.js'
+import { not as notSync, notAsync } from './notNext.js'
 import project from './project.js'
 import sort from './sort.js'
 
@@ -34,7 +34,7 @@ export const sync = {
   map,
   merge: mergeSync,
   mergeRev: mergeRevSync,
-  not: notNext,
+  not: notSync,
   project,
   sort,
   value,
@@ -52,7 +52,7 @@ export const async = {
   map,
   merge: mergeAsync,
   mergeRev: mergeRevAsync,
-  not: notNext,
+  not: notAsync,
   project,
   sort,
   value,

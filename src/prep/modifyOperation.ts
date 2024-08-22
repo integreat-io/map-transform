@@ -1,33 +1,29 @@
 import type { OperationObject, Options } from './index.js'
 import type { MutationObject } from '../types.js'
 
-const createTransformWithPath = (
+const createTransformOperation = (
   $transform: string,
   path: unknown,
+  rest: Record<string, unknown>,
   operator?: string,
 ) => ({
+  ...rest,
   $transform,
   path,
   ...(operator && { operator }),
 })
 
-const createAndTransform = ({ $and, ...rest }: Record<string, unknown>) => ({
-  ...rest,
-  ...createTransformWithPath('logical', $and, 'AND'),
-})
+const createAndTransform = ({ $and, ...rest }: Record<string, unknown>) =>
+  createTransformOperation('logical', $and, rest, 'AND')
 
-const createOrTransform = ({ $or, ...rest }: Record<string, unknown>) => ({
-  ...rest,
-  ...createTransformWithPath('logical', $or, 'OR'),
-})
+const createOrTransform = ({ $or, ...rest }: Record<string, unknown>) =>
+  createTransformOperation('logical', $or, rest, 'OR')
 
-const createMergeTransform = ({
-  $merge,
-  ...rest
-}: Record<string, unknown>) => ({
-  ...rest,
-  ...createTransformWithPath('merge', $merge),
-})
+const createNotTransform = ({ $not, ...rest }: Record<string, unknown>) =>
+  createTransformOperation('not', $not, rest)
+
+const createMergeTransform = ({ $merge, ...rest }: Record<string, unknown>) =>
+  createTransformOperation('merge', $merge, rest)
 
 export default function modifyOperation(
   operation: MutationObject | OperationObject,
@@ -41,6 +37,8 @@ export default function modifyOperation(
     return createAndTransform(operation)
   } else if (operation.hasOwnProperty('$or')) {
     return createOrTransform(operation)
+  } else if (operation.hasOwnProperty('$not')) {
+    return createNotTransform(operation)
   } else if (operation.hasOwnProperty('$merge')) {
     return createMergeTransform(operation)
   } else {

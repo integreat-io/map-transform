@@ -7,6 +7,7 @@ import preparePipeline from './index.js'
 
 const castFn = (value: unknown) => String(value) // The implementation doesn't matter
 const logicalFn = () => true // The implementation doesn't matter
+const notFn = (value: unknown) => !value // The implementation doesn't matter
 const mergeFn = (value: unknown) => value // The implementation doesn't matter
 
 // Tests
@@ -53,6 +54,27 @@ test('should change $or to $transform', (t) => {
   t.deepEqual(ret, expectedPipeline)
   t.is(logicalStub.callCount, 1)
   t.deepEqual(logicalStub.args[0][0], expectedProps)
+})
+
+test('should change $not to $transform', (t) => {
+  const notStub = sinon.stub().callsFake(() => () => notFn)
+  const def = { $not: 'this' }
+  const options = { transformers: { not: notStub } }
+  const expectedPipeline = [
+    {
+      type: 'transform',
+      fn: notFn,
+    },
+  ]
+  const expectedProps = {
+    path: 'this',
+  }
+
+  const ret = preparePipeline(def, options)
+
+  t.deepEqual(ret, expectedPipeline)
+  t.is(notStub.callCount, 1)
+  t.deepEqual(notStub.args[0][0], expectedProps)
 })
 
 test('should change $merge to $transform', (t) => {

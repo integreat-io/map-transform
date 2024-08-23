@@ -42,9 +42,7 @@ export const mergeObjects = (values: unknown[]) =>
   )
 
 function setFlipOnState(state: State, flip: boolean) {
-  const nextState = new StateNext({ ...state, flip })
-  nextState.replaceContext(state.context)
-  return nextState
+  return new StateNext({ ...state, flip })
 }
 
 // This is where the extraction of values and merging happens. We do it in a

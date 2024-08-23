@@ -119,7 +119,7 @@ function handOffState(
     state.value = value
     return state
   } else {
-    const nextState = new State(
+    return new State(
       {
         ...state,
         ...(Array.isArray(nonvalues) && { nonvalues }),
@@ -127,8 +127,6 @@ function handOffState(
       },
       value,
     )
-    nextState.replaceContext(state.context)
-    return nextState
   }
 }
 
@@ -196,12 +194,12 @@ function* runOneLevelGen(
           // and remove it afterwards, so that the array is available to parent
           // paths during iteration.
           const items = []
-          state.pushContext(next) // Push the array to the context
+          state.context.push(next) // Push the array to the context
           for (let i = 0; i < next.length; i++) {
             // eslint-disable-next-line security/detect-object-injection
             items.push(yield runStep(runner, next[i], step, state, i))
           }
-          state.popContext() // Remove the array from the context after iteration
+          state.context.pop() // Remove the array from the context after iteration
           next = items
         } else {
           // This is a single value, so just pass it to the operation runner.

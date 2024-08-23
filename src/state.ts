@@ -19,9 +19,8 @@ const cloneContext = (context?: unknown[]) =>
  * Internal state used by the rewritten core.
  */
 export default class State {
-  #context: unknown[] = []
-
   value: unknown
+  context: unknown[] = []
   target: unknown
   nonvalues: unknown[]
   pipelines: Map<string | symbol, PreppedPipeline>
@@ -32,7 +31,7 @@ export default class State {
 
   constructor(initialState?: InitialState, value?: unknown) {
     if (initialState?.context) {
-      this.#context = cloneContext(initialState.context)
+      this.context = cloneContext(initialState.context)
     }
     this.nonvalues = initialState?.nonvalues ?? [undefined]
     this.pipelines =
@@ -47,25 +46,5 @@ export default class State {
     if (arguments.length === 2) {
       this.value = value
     }
-  }
-
-  get context() {
-    return this.#context
-  }
-
-  pushContext(value: unknown) {
-    this.#context.push(value)
-  }
-
-  popContext() {
-    return this.#context.pop()
-  }
-
-  replaceContext(context: unknown[]) {
-    this.#context = context
-  }
-
-  clearContext() {
-    this.#context = []
   }
 }

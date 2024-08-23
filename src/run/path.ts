@@ -131,13 +131,13 @@ export default function runPathStep(
   } else if (path === '^') {
     // Get the parent value. This is never run in rev, as we remove it from the
     // pipeline before running it.
-    return [state.popContext(), index]
+    return [state.context.pop(), index]
   } else if (path === '^^') {
     // Get the root from the context -- or the present value when we have no
     // context. This is never run in rev, as we remove it from the pipeline
     // before running it.
     const next = state.context.length === 0 ? value : state.context[0]
-    state.clearContext()
+    state.context = []
     return [next, index]
   } else if (path === '.') {
     return isSet ? [merge(value, targets.pop()), index] : [value, index]
@@ -153,7 +153,7 @@ export default function runPathStep(
 
   if (!isSet) {
     // Push value to context for get
-    state.pushContext(value)
+    state.context.push(value)
   }
 
   if (path[0] === '[') {

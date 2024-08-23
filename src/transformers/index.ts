@@ -3,6 +3,7 @@ import bucket from './bucket.js'
 import { bucket as bucketSync, bucketAsync } from './bucketNext.js'
 import compare from './compare.js'
 import { compare as compareSync, compareAsync } from './compareNext.js'
+import { concat, concatAsync, concatRev, concatRevAsync } from './concat.js'
 import { explode, implode } from './explode.js'
 import flatten from './flatten.js'
 import get from './get.js'
@@ -25,6 +26,8 @@ import sort from './sort.js'
 export const sync = {
   bucket: bucketSync,
   compare: compareSync,
+  concat,
+  concatRev,
   explode,
   fixed,
   flatten,
@@ -43,6 +46,8 @@ export const sync = {
 export const async = {
   bucket: bucketAsync,
   compare: compareAsync,
+  concat: concatAsync,
+  concatRev: concatRevAsync,
   explode,
   fixed,
   flatten,

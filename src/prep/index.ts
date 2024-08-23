@@ -50,7 +50,6 @@ export interface Options {
 }
 
 // TODO
-// - concat
 // - lookup
 
 const isAltOperation = (step: ObjectStep): step is AltOperation =>

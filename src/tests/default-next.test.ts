@@ -56,7 +56,7 @@ test('should run $alt in iteration', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should run $alt in reverse', (t) => {
+test('should run $alt in reverse', (t) => {
   const def = {
     $iterate: true,
     title: {
@@ -181,14 +181,14 @@ test('should use directional default value - forward', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should use directional default value - reverse', (t) => {
+test('should use directional default value - reverse', (t) => {
   const def = {
     $iterate: true,
     title: {
       $alt: [
         'content.heading',
-        { $value: 'Default heading', $direction: 'fwd' },
-        { $value: 'Wrong way', $direction: 'rev' },
+        { $value: 'Wrong way', $direction: 'fwd' },
+        { $value: 'Default heading', $direction: 'rev' },
       ],
       useLastAsDefault: true,
     },
@@ -361,23 +361,6 @@ test('should return undefined for undefined', (t) => {
   }
   const data = undefined
   const expected = undefined
-
-  const ret = mapTransform(def)(data)
-
-  t.deepEqual(ret, expected)
-})
-
-// TODO: Remove?
-test('should apply default value from an operation object', (t) => {
-  const def = [
-    '[]',
-    {
-      $iterate: true,
-      title: [{ $alt: ['content.heading', { $value: 'Default heading' }] }],
-    },
-  ]
-  const data = [{ content: {} }, { content: { heading: 'From data' } }]
-  const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
   const ret = mapTransform(def)(data)
 

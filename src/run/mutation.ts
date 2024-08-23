@@ -25,7 +25,6 @@ const handOffState = (
   noDefaults?: boolean,
 ) => ({
   ...state,
-  context: state.context, // We need to set the context explicitly, as it is a get prop on the State class
   target,
   flip: overrideFlag(flip, state.flip),
   noDefaults: overrideFlag(noDefaults, state.noDefaults),

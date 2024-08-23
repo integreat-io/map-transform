@@ -9,14 +9,20 @@ const slashedRegex = /(?<!\\)\/\d+$/ // Matches /1 at the end, but not if the sl
 const isSlashed = (path: Path) => slashedRegex.test(path)
 const removeSlash = (path: Path) => path.replace(slashedRegex, '')
 
+const allowedFirstStepOperations = ['mutation', 'alt']
+
 // When a pipeline starts with no get step, i.e. the first step is not a path
 // or a mutation object, we either plug it or add a get dot step.
 function addStepWhenNoGetStep(pipeline: PreppedPipeline) {
   const firstStep = pipeline[0]
   if (typeof firstStep !== 'string') {
-    if (isObject(firstStep) && firstStep.type === 'mutation') {
-      // We have a mutation object as the first step, so add a get dot step,
-      // will cause a merge with the target when we go in reverse.
+    if (
+      isObject(firstStep) &&
+      allowedFirstStepOperations.includes(firstStep.type)
+    ) {
+      // We have a mutation object or an allowed operation as the first step,
+      // so add a get dot step, will cause a merge with the target when we go
+      // in reverse.
       return ['.', ...pipeline]
     } else {
       // We have neighter a path or a mutation object as the first step, so

@@ -127,7 +127,7 @@ test('should use alternative path with dot notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should not set on alternative path in reverse', (t) => {
+test('should not set on alternative path in reverse', (t) => {
   const def = {
     $iterate: true,
     attributes: {
@@ -190,6 +190,7 @@ test.failing('should use directional default value - reverse', (t) => {
         { $value: 'Default heading', $direction: 'fwd' },
         { $value: 'Wrong way', $direction: 'rev' },
       ],
+      useLastAsDefault: true,
     },
   }
   const data = [{}, { title: 'From data' }]

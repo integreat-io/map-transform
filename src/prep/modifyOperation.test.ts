@@ -9,6 +9,8 @@ const castFn = (value: unknown) => String(value) // The implementation doesn't m
 const logicalFn = () => true // The implementation doesn't matter
 const notFn = (value: unknown) => !value // The implementation doesn't matter
 const mergeFn = (value: unknown) => value // The implementation doesn't matter
+const concatFn = () => [] // The implementation doesn't matter
+const concatRevFn = () => [] // The implementation doesn't matter
 
 // Tests
 
@@ -96,6 +98,48 @@ test('should change $merge to $transform', (t) => {
   t.deepEqual(ret, expectedPipeline)
   t.is(mergeStub.callCount, 1)
   t.deepEqual(mergeStub.args[0][0], expectedProps)
+})
+
+test('should change $concat to $transform', (t) => {
+  const concatStub = sinon.stub().callsFake(() => () => concatFn)
+  const def = { $concat: ['this', 'that'] }
+  const options = { transformers: { concat: concatStub } }
+  const expectedPipeline = [
+    {
+      type: 'transform',
+      fn: concatFn,
+    },
+  ]
+  const expectedProps = {
+    path: ['this', 'that'],
+  }
+
+  const ret = preparePipeline(def, options)
+
+  t.deepEqual(ret, expectedPipeline)
+  t.is(concatStub.callCount, 1)
+  t.deepEqual(concatStub.args[0][0], expectedProps)
+})
+
+test('should change $concatRev to $transform', (t) => {
+  const concatRevStub = sinon.stub().callsFake(() => () => concatRevFn)
+  const def = { $concatRev: ['this', 'that'] }
+  const options = { transformers: { concatRev: concatRevStub } }
+  const expectedPipeline = [
+    {
+      type: 'transform',
+      fn: concatRevFn,
+    },
+  ]
+  const expectedProps = {
+    path: ['this', 'that'],
+  }
+
+  const ret = preparePipeline(def, options)
+
+  t.deepEqual(ret, expectedPipeline)
+  t.is(concatRevStub.callCount, 1)
+  t.deepEqual(concatRevStub.args[0][0], expectedProps)
 })
 
 test('should apply modifyOperationObject to operation', (t) => {

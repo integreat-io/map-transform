@@ -25,6 +25,15 @@ const createNotTransform = ({ $not, ...rest }: Record<string, unknown>) =>
 const createMergeTransform = ({ $merge, ...rest }: Record<string, unknown>) =>
   createTransformOperation('merge', $merge, rest)
 
+const createConcatTransform = ({ $concat, ...rest }: Record<string, unknown>) =>
+  createTransformOperation('concat', $concat, rest)
+
+const createConcatRevTransform = ({
+  $concatRev,
+  ...rest
+}: Record<string, unknown>) =>
+  createTransformOperation('concatRev', $concatRev, rest)
+
 export default function modifyOperation(
   operation: MutationObject | OperationObject,
   options: Options,
@@ -41,6 +50,10 @@ export default function modifyOperation(
     return createNotTransform(operation)
   } else if (operation.hasOwnProperty('$merge')) {
     return createMergeTransform(operation)
+  } else if (operation.hasOwnProperty('$concat')) {
+    return createConcatTransform(operation)
+  } else if (operation.hasOwnProperty('$concatRev')) {
+    return createConcatRevTransform(operation)
   } else {
     return operation
   }

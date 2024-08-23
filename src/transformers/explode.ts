@@ -13,7 +13,7 @@ const isExplodedArray = (data: unknown[]) =>
 
 const setValueOnKey = (
   target: unknown[] | Record<string, unknown>,
-  keyValue: unknown
+  keyValue: unknown,
 ) => {
   if (isObject(keyValue)) {
     const { key, value } = keyValue
@@ -32,7 +32,7 @@ function doImplode(data: unknown) {
       setValueOnKey,
       isExplodedArray(data)
         ? ([] as unknown[])
-        : ({} as Record<string, unknown>)
+        : ({} as Record<string, unknown>),
     )
   } else {
     return undefined
@@ -55,7 +55,7 @@ function doExplode(data: unknown): unknown[] | undefined {
 }
 
 function explodeOrImplode(isImplode: boolean): Transformer {
-  return () => () => async (data, state) =>
+  return () => () => (data, state) =>
     revFromState(state, isImplode) ? doImplode(data) : doExplode(data)
 }
 

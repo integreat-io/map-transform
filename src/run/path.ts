@@ -9,13 +9,11 @@ const getProp = (prop: string, value: unknown) =>
   isObject(value) ? value[prop] : undefined // eslint-disable-line security/detect-object-injection
 
 // Set on a prop
-function setProp(
-  prop: string,
-  value: unknown,
-  target: unknown,
-  nonvalues: unknown[],
-) {
-  if (isNonvalue(value, nonvalues)) {
+function setProp(prop: string, value: unknown, target: unknown, state: State) {
+  if (isNonvalue(value, state.nonvalues)) {
+    value = undefined
+  }
+  if (state.noDefaults && value === undefined) {
     return target
   } else if (target === undefined) {
     return { [prop]: value }
@@ -190,7 +188,7 @@ export default function runPathStep(
   // We are not iterating, so handle a get or set normally
   return [
     isSet
-      ? setProp(path, value, targets.pop(), state.nonvalues) // Set to prop
+      ? setProp(path, value, targets.pop(), state) // Set to prop
       : getProp(path, value), // Get from prop
     index,
   ]

@@ -762,6 +762,7 @@ test('should reverse map with flipped mutate object', (t) => {
         id: 'ent1',
         attributes: {
           title: 'Ent',
+          age: undefined,
         },
         relationships: {
           author: 'johnf',
@@ -771,6 +772,7 @@ test('should reverse map with flipped mutate object', (t) => {
         id: 'ent2',
         attributes: {
           title: 'Ent',
+          age: undefined,
         },
         relationships: {
           author: 'johnf',
@@ -813,6 +815,7 @@ test('should reverse map with flipped mutate object async', async (t) => {
         id: 'ent1',
         attributes: {
           title: 'Ent',
+          age: undefined,
         },
         relationships: {
           author: 'johnf',
@@ -822,6 +825,7 @@ test('should reverse map with flipped mutate object async', async (t) => {
         id: 'ent2',
         attributes: {
           title: 'Ent',
+          age: undefined,
         },
         relationships: {
           author: 'johnf',

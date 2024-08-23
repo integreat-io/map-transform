@@ -148,8 +148,7 @@ test('should not set on alternative path in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: Is this correct?
-test.failing('should set missing values to undefined when no default', (t) => {
+test('should set missing values to undefined when no default', (t) => {
   const def = {
     $iterate: true,
     title: 'content.heading',
@@ -625,7 +624,6 @@ test('should provide correct context for parent during alt with only one pipelin
   t.deepEqual(ret, expected)
 })
 
-// TODO: Is this correct?
 test.failing(
   'should apply default value from an operation object going in reverse only',
   (t) => {

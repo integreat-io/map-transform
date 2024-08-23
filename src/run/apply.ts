@@ -3,14 +3,14 @@ import type State from '../state.js'
 
 export interface ApplyStep extends OperationStepBase {
   type: 'apply'
-  id: string
+  id: string | symbol
 }
 
-function getPipeline(state: State, id: string) {
+function getPipeline(state: State, id: string | symbol) {
   const pipeline = state.pipelines.get(id)
 
   if (!pipeline) {
-    throw new Error(`Pipeline '${id}' does not exist`)
+    throw new Error(`Pipeline '${String(id)}' does not exist`)
   }
 
   return pipeline

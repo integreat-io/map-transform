@@ -11,6 +11,11 @@ export function prepareFn(
   if (!id) {
     throw new Error(`${opName} operation is missing transformer id`)
   }
+  if (typeof id !== 'string' && typeof id !== 'symbol') {
+    throw new Error(
+      `${opName} operation was given a transformer id that is not a string or symbol`,
+    )
+  }
   if (!options.transformers) {
     throw new Error(
       `Transformer '${String(id)}' was not found for ${opName.toLowerCase()} operation. No transformers`,

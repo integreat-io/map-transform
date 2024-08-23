@@ -20,7 +20,12 @@ const lowerIfAlias = () => (options: Options) =>
   options.fwdAlias ? lowercaseFn : uppercaseFn
 
 const options = {
-  transformers: { uppercase, upperOrLower, lowerIfAlias },
+  transformers: {
+    lowerIfAlias,
+    uppercase,
+    upperOrLower,
+    [Symbol.for('uppercase')]: uppercase,
+  },
 }
 
 // Tests
@@ -28,6 +33,17 @@ const options = {
 test('should prepare transform operation', (t) => {
   const def = {
     $transform: 'uppercase',
+  }
+  const expected = [{ type: 'transform', fn: uppercaseFn }]
+
+  const ret = preparePipeline(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should prepare transform operation with symbol as key', (t) => {
+  const def = {
+    $transform: Symbol.for('uppercase'),
   }
   const expected = [{ type: 'transform', fn: uppercaseFn }]
 
@@ -109,4 +125,18 @@ test('should throw when no transformer id', (t) => {
 
   t.true(error instanceof Error)
   t.is(error.message, 'Transform operation is missing transformer id')
+})
+
+test('should throw when transformer id is not a string', (t) => {
+  const def = {
+    $transform: { id: 'what?' },
+  }
+
+  const error = t.throws(() => preparePipeline(def, options))
+
+  t.true(error instanceof Error)
+  t.is(
+    error.message,
+    'Transform operation was given a transformer id that is not a string or symbol',
+  )
 })

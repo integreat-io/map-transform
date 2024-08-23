@@ -6,14 +6,19 @@ export default function prepareApplyStep(
   { $apply: id }: ApplyOperation,
   options: Options,
 ): ApplyStep {
-  if (typeof id !== 'string' || id === '') {
+  if (!id) {
     throw new Error('Failed to apply pipeline. No id provided')
   }
+  if (typeof id !== 'string' && typeof id !== 'symbol') {
+    throw new Error('Failed to apply pipeline. Id is not string or symbol')
+  }
   if (!options.pipelines) {
-    throw new Error(`Failed to apply pipeline '${id}'. No pipelines`)
+    throw new Error(`Failed to apply pipeline '${String(id)}'. No pipelines`)
   }
   if (!options.pipelines.hasOwnProperty(id)) {
-    throw new Error(`Failed to apply pipeline '${id}'`)
+    throw new Error(
+      `Failed to apply pipeline '${String(id)}'. Unknown pipeline`,
+    )
   }
 
   if (!options.neededPipelineIds) {

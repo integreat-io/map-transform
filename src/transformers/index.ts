@@ -10,6 +10,7 @@ import get from './get.js'
 import index from './indexFn.js'
 import logical from './logical.js'
 import { logical as logicalSync, logicalAsync } from './logicalNext.js'
+import { lookup, lookupAsync, lookdown, lookdownAsync } from './lookup.js'
 import map from './map.js'
 import { merge, mergeRev } from './merge.js'
 import {
@@ -34,6 +35,8 @@ export const sync = {
   implode,
   index,
   logical: logicalSync,
+  lookup,
+  lookdown,
   map,
   merge: mergeSync,
   mergeRev: mergeRevSync,
@@ -54,6 +57,8 @@ export const async = {
   implode,
   index,
   logical: logicalAsync,
+  lookup: lookupAsync,
+  lookdown: lookdownAsync,
   map,
   merge: mergeAsync,
   mergeRev: mergeRevAsync,

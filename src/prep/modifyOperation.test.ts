@@ -11,6 +11,8 @@ const notFn = (value: unknown) => !value // The implementation doesn't matter
 const mergeFn = (value: unknown) => value // The implementation doesn't matter
 const concatFn = () => [] // The implementation doesn't matter
 const concatRevFn = () => [] // The implementation doesn't matter
+const lookupFn = () => [] // The implementation doesn't matter
+const lookdownFn = () => ({}) // The implementation doesn't matter
 
 // Tests
 
@@ -140,6 +142,50 @@ test('should change $concatRev to $transform', (t) => {
   t.deepEqual(ret, expectedPipeline)
   t.is(concatRevStub.callCount, 1)
   t.deepEqual(concatRevStub.args[0][0], expectedProps)
+})
+
+test('should change $lookup to $transform', (t) => {
+  const lookupStub = sinon.stub().callsFake(() => () => lookupFn)
+  const def = { $lookup: 'array.path', path: 'prop.path' }
+  const options = { transformers: { lookup: lookupStub } }
+  const expectedPipeline = [
+    {
+      type: 'transform',
+      fn: lookupFn,
+    },
+  ]
+  const expectedProps = {
+    arrayPath: 'array.path',
+    propPath: 'prop.path',
+  }
+
+  const ret = preparePipeline(def, options)
+
+  t.deepEqual(ret, expectedPipeline)
+  t.is(lookupStub.callCount, 1)
+  t.deepEqual(lookupStub.args[0][0], expectedProps)
+})
+
+test('should change $lookdown to $transform', (t) => {
+  const lookdownStub = sinon.stub().callsFake(() => () => lookdownFn)
+  const def = { $lookdown: 'array.path', path: 'prop.path' }
+  const options = { transformers: { lookdown: lookdownStub } }
+  const expectedPipeline = [
+    {
+      type: 'transform',
+      fn: lookdownFn,
+    },
+  ]
+  const expectedProps = {
+    arrayPath: 'array.path',
+    propPath: 'prop.path',
+  }
+
+  const ret = preparePipeline(def, options)
+
+  t.deepEqual(ret, expectedPipeline)
+  t.is(lookdownStub.callCount, 1)
+  t.deepEqual(lookdownStub.args[0][0], expectedProps)
 })
 
 test('should apply modifyOperationObject to operation', (t) => {

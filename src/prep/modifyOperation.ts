@@ -34,6 +34,28 @@ const createConcatRevTransform = ({
 }: Record<string, unknown>) =>
   createTransformOperation('concatRev', $concatRev, rest)
 
+const createLookupTransform = ({
+  $lookup,
+  path,
+  ...rest
+}: Record<string, unknown>) => ({
+  ...rest,
+  $transform: 'lookup',
+  arrayPath: $lookup,
+  propPath: path,
+})
+
+const createLookdownTransform = ({
+  $lookdown,
+  path,
+  ...rest
+}: Record<string, unknown>) => ({
+  ...rest,
+  $transform: 'lookdown',
+  arrayPath: $lookdown,
+  propPath: path,
+})
+
 export default function modifyOperation(
   operation: MutationObject | OperationObject,
   options: Options,
@@ -54,6 +76,10 @@ export default function modifyOperation(
     return createConcatTransform(operation)
   } else if (operation.hasOwnProperty('$concatRev')) {
     return createConcatRevTransform(operation)
+  } else if (operation.hasOwnProperty('$lookup')) {
+    return createLookupTransform(operation)
+  } else if (operation.hasOwnProperty('$lookdown')) {
+    return createLookdownTransform(operation)
   } else {
     return operation
   }

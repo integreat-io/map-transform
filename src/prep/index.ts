@@ -49,9 +49,6 @@ export interface Options {
   ) => Record<string, unknown>
 }
 
-// TODO
-// - lookup
-
 const isAltOperation = (step: ObjectStep): step is AltOperation =>
   step.hasOwnProperty('$alt')
 const isApplyOperation = (step: ObjectStep): step is ApplyOperation =>

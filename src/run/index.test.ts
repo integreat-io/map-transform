@@ -5,7 +5,11 @@ import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
 
 // Setup
 
+const uppercase = (val: unknown, _state: State) =>
+  typeof val === 'string' ? val.toUpperCase() : val
+
 const state = { rev: false }
+const stateRev = { rev: true }
 
 // Tests -- sync
 
@@ -53,6 +57,37 @@ test('should not touch value when empty pipeline', (t) => {
   const ret = runPipeline(value, pipeline, state)
 
   t.is(ret, value)
+})
+
+test('should run operation going forward', (t) => {
+  const value = 'Hello'
+  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
+  const expected = 'HELLO'
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not run operation function going in reverse', (t) => {
+  const value = 'Hello'
+  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
+  const expected = 'Hello'
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should ignore flip when checking direction', (t) => {
+  const value = 'Hello'
+  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
+  const stateFlipped = { ...state, flip: true }
+  const expected = 'HELLO'
+
+  const ret = runPipeline(value, pipeline, stateFlipped)
+
+  t.deepEqual(ret, expected)
 })
 
 test('should throw when an operation step has an unknown type', (t) => {

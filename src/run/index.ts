@@ -181,7 +181,7 @@ function* runOneLevelGen(
         isRev,
       )
     } else if (isOperationObject(step)) {
-      if (shouldRun(step, isRev)) {
+      if (shouldRun(step, state.rev)) {
         // This is an operation step and we are not being stopped by the
         // direction we are going in. Get the right operation runner for this
         // step.

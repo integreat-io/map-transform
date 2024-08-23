@@ -180,7 +180,7 @@ export default function runPathStep(
         runOneLevel(
           item,
           pipeline.slice(index - 1, setArrayIndex), // Iteration from this step to a qualified set operation
-          new State(state, item),
+          new State({ ...state, target: undefined }, item),
         ),
       )
       return [next, setArrayIndex] // Return index of the iteration left off, to continue from there

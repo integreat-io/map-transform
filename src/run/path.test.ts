@@ -772,6 +772,39 @@ test('should set pipeline several levels into target', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set pipeline on target with set array notation', (t) => {
+  const pipeline = ['meta', 'keywords', '>id', '>[]', '>topics']
+  const value = {
+    meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
+  }
+  const target = {}
+  const state = { target }
+  const expected = {
+    topics: [{ id: 'news' }, { id: 'latest' }],
+  }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set pipeline on target with set array notation and more levels in iteration', (t) => {
+  const pipeline = ['meta', 'keywords', '>id', '>item', '>[]', '>topics']
+  const value = {
+    content: { heading: 'Heading 1' },
+    meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
+  }
+  const target = {}
+  const state = { target }
+  const expected = {
+    topics: [{ item: { id: 'news' } }, { item: { id: 'latest' } }],
+  }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return target when value is undefined', (t) => {
   const pipeline = ['>value']
   const value = undefined

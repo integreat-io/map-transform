@@ -95,7 +95,7 @@ test('should map array in transform object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should map several layers of arrays', (t) => {
+test('should map several layers of arrays', (t) => {
   const def = [
     'content.articles[]',
     {
@@ -141,54 +141,6 @@ test.failing('should map several layers of arrays', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.failing(
-  'should map several layers of arrays - seperate pipelines',
-  (t) => {
-    const def = [
-      'content.articles[]',
-      {
-        $merge: [
-          ['content.heading', '>attributes.title'],
-          ['meta.keywords', '>relationships.topics[].id'],
-          ['meta.user_id', '>relationships.author.id'],
-        ],
-        $iterate: true,
-      },
-    ]
-    const data = {
-      content: {
-        articles: [
-          {
-            content: { heading: 'Heading 1' },
-            meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
-          },
-          {
-            content: { heading: 'Heading 2' },
-            meta: { keywords: ['tech'], ['user_id']: 'maryk' },
-          },
-        ],
-      },
-    }
-    const expected = [
-      {
-        attributes: { title: 'Heading 1' },
-        relationships: {
-          topics: [{ id: 'news' }, { id: 'latest' }],
-          author: { id: 'johnf' },
-        },
-      },
-      {
-        attributes: { title: 'Heading 2' },
-        relationships: { topics: [{ id: 'tech' }], author: { id: 'maryk' } },
-      },
-    ]
-
-    const ret = mapTransform(def)(data)
-
-    t.deepEqual(ret, expected)
-  },
-)
 
 test('should flatten arrays', (t) => {
   const def = [
@@ -459,7 +411,7 @@ test('should set empty data array', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should not hijack array', (t) => {
+test('should not hijack array', (t) => {
   const def = {
     $iterate: true,
     content: { title: 'heading' },

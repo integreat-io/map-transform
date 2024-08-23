@@ -61,14 +61,9 @@ function getDefaultValue(
   isAsync = false,
 ) {
   const lastPipeline = pipelines[pipelines.length - 1]
-  const nextState = new State({
-    ...state,
-    rev: false,
-    flip: false,
-  })
   return isAsync
-    ? runPipelineAsync(undefined, lastPipeline, nextState)
-    : runPipeline(undefined, lastPipeline, nextState)
+    ? runPipelineAsync(undefined, lastPipeline, state)
+    : runPipeline(undefined, lastPipeline, state)
 }
 
 // Use the first pipeline to set the value.

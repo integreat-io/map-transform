@@ -34,7 +34,7 @@ function* getWithAltPipelines(
     if (!isNonvalue(next, state.nonvalues)) {
       // We have a value -- update the state context from this pipeline and
       // return the value.
-      state.replaceContext(nextState.context)
+      state.context = nextState.context
       return next
     }
   }

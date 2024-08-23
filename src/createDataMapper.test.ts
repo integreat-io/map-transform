@@ -30,8 +30,7 @@ test('should use context provided in state', (t) => {
   const def = ['^', { id: 'key', title: 'name' }]
   const value = 'Entry 1'
   const context = [{ key: 'ent1', name: 'Entry 1' }]
-  const state = new State()
-  state.replaceContext(context)
+  const state = new State({ context })
   const options = {}
   const expected = { id: 'ent1', title: 'Entry 1' }
 

@@ -32,6 +32,33 @@ test('should run mutation object', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should iterate in pipeline', (t) => {
+  const value = {
+    key: 'ent1',
+    name: 'Entry 1',
+    meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
+  }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['meta', 'keywords', '>id', '>[]', '>topics'],
+      ],
+    },
+  ]
+  const expected = {
+    id: 'ent1',
+    title: 'Entry 1',
+    topics: [{ id: 'news' }, { id: 'latest' }],
+  }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should keep the order of the pipelines on the target object', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [

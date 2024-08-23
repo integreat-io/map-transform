@@ -79,7 +79,7 @@ test('should keep the order of the pipelines on the target object', (t) => {
   t.deepEqual(keys, expected)
 })
 
-test('should not set undefined values', (t) => {
+test('should set undefined value', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -87,18 +87,18 @@ test('should not set undefined values', (t) => {
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
-        ['unknown', '>dontSet'],
+        ['unknown', '>age'],
       ],
     },
   ]
-  const expected = { id: 'ent1', title: 'Entry 1' }
+  const expected = { id: 'ent1', title: 'Entry 1', age: undefined }
 
   const ret = runPipeline(value, pipeline, state)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not set a non-value', (t) => {
+test('should set a non-value to undefined', (t) => {
   const value = { key: 'ent1', name: 'Entry 1', empty: '' }
   const pipeline: PreppedPipeline = [
     {
@@ -106,12 +106,12 @@ test('should not set a non-value', (t) => {
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
-        ['empty', '>dontSet'],
+        ['unknown', '>age'],
       ],
     },
   ]
   const state = { nonvalues: [undefined, ''] }
-  const expected = { id: 'ent1', title: 'Entry 1' }
+  const expected = { id: 'ent1', title: 'Entry 1', age: undefined }
 
   const ret = runPipeline(value, pipeline, state)
 

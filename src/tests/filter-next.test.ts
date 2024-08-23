@@ -215,19 +215,15 @@ test('should filter before mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: Is this correct and does it matter?
-test.failing(
-  'should filter with filter before mapping on reverse mapping',
-  (t) => {
-    const def = ['content', { $filter: 'noHeadingTitle' }, { heading: 'title' }]
-    const data = { heading: 'The heading' }
-    const expected = { content: undefined }
+test('should filter with filter before mapping on reverse mapping', (t) => {
+  const def = ['content', { $filter: 'noHeadingTitle' }, { heading: 'title' }]
+  const data = { heading: 'The heading' }
+  const expected = { content: undefined }
 
-    const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransform(def, options)(data, { rev: true })
 
-    t.deepEqual(ret, expected)
-  },
-)
+  t.deepEqual(ret, expected)
+})
 
 test('should filter with compare transformer', (t) => {
   const def = [

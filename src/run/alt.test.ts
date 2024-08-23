@@ -223,11 +223,11 @@ test('should not try the other pipelines when setting', (t) => {
       ],
     },
   ]
-  const expected = undefined
+  const expected = { name: undefined }
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.is(ret, expected)
+  t.deepEqual(ret, expected)
 })
 
 test('should get a default value from the last pipeline when useLastAsDefault is true', (t) => {
@@ -263,11 +263,11 @@ test('should not get a default value from the last pipeline when useLastAsDefaul
       ],
     },
   ]
-  const expected = undefined
+  const expected = { name: undefined }
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.is(ret, expected)
+  t.deepEqual(ret, expected)
 })
 
 test('should not run alt step in rev', (t) => {

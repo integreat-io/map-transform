@@ -112,7 +112,10 @@ test('should run recursive pipeline', (t) => {
   const state = { pipelines }
   const expected = {
     comment: 'Comment 1',
-    children: [{ comment: 'Comment 2' }, { comment: 'Comment 3' }],
+    children: [
+      { comment: 'Comment 2', children: undefined },
+      { comment: 'Comment 3', children: undefined },
+    ],
   }
 
   const ret = runPipeline(value, pipeline, state)

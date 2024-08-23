@@ -530,25 +530,47 @@ test('should set pipeline with several set paths', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not set undefined value', (t) => {
+test('should set undefined value', (t) => {
   const pipeline = ['>value']
   const value = undefined
-  const expected = undefined
+  const expected = { value: undefined }
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  t.deepEqual(ret, expected)
 })
 
-test('should not set a non-value', (t) => {
+test('should set a non-value as undefined', (t) => {
   const pipeline = ['>value']
   const value = ''
   const state = { nonvalues: [undefined, ''] }
+  const expected = { value: undefined }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not set undefined value when noDefaults is true', (t) => {
+  const pipeline = ['>value']
+  const value = undefined
+  const state = { noDefaults: true }
   const expected = undefined
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  t.deepEqual(ret, expected)
+})
+
+test('should not set a non-value when noDefaults is true', (t) => {
+  const pipeline = ['>value']
+  const value = ''
+  const state = { nonvalues: [undefined, ''], noDefaults: true }
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
 })
 
 test('should set pipeline with array index', (t) => {
@@ -805,11 +827,35 @@ test('should set pipeline on target with set array notation and more levels in i
   t.deepEqual(ret, expected)
 })
 
-test('should return target when value is undefined', (t) => {
+test('should set undefined on target', (t) => {
   const pipeline = ['>value']
   const value = undefined
   const target = { count: 1 }
   const state = { target }
+  const expected = { count: 1, value: undefined }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set a non-value as undefined on target', (t) => {
+  const pipeline = ['>value']
+  const value = ''
+  const target = { count: 1 }
+  const state = { target, nonvalues: [undefined, ''] }
+  const expected = { count: 1, value: undefined }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not set undefined on target when noDefaults is true', (t) => {
+  const pipeline = ['>value']
+  const value = undefined
+  const target = { count: 1 }
+  const state = { target, noDefaults: true }
   const expected = { count: 1 }
 
   const ret = runPipeline(value, pipeline, state)
@@ -817,11 +863,11 @@ test('should return target when value is undefined', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should return target when value is a non-value', (t) => {
+test('should not set a non-value on target when noDefaults is true', (t) => {
   const pipeline = ['>value']
   const value = ''
   const target = { count: 1 }
-  const state = { target, nonvalues: [undefined, ''] }
+  const state = { target, nonvalues: [undefined, ''], noDefaults: true }
   const expected = { count: 1 }
 
   const ret = runPipeline(value, pipeline, state)

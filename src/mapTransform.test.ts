@@ -147,7 +147,7 @@ test('should pass on nonvalues to the run function', (t) => {
   const value = { key: 'ent1', name: '' }
   const state = {}
   const options = { nonvalues: [undefined, ''] }
-  const expected = { id: 'ent1' }
+  const expected = { id: 'ent1', title: undefined }
 
   const ret = mapTransform(def, options)(value, state)
 

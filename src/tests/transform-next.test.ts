@@ -391,7 +391,7 @@ test('should only use transform going forward', (t) => {
   }
   const data = { content: { heading: 'The heading' } }
   const expectedFwd = { title: "I'm always here" }
-  const expectedRev = {}
+  const expectedRev = { content: undefined }
 
   const retFwd = mapTransform(def, options)(data)
   const retRev = mapTransform(def, options)(data, { rev: true })
@@ -408,7 +408,7 @@ test('should only use transform going in reverse', (t) => {
     ],
   }
   const data = { title: 'The heading' }
-  const expectedFwd = {}
+  const expectedFwd = { title: undefined }
   const expectedRev = { content: "I'm always here" }
 
   const retFwd = mapTransform(def, options)(data)
@@ -427,7 +427,7 @@ test('should only use transform going in reverse when flipped', (t) => {
     ],
   }
   const data = { title: 'The heading' }
-  const expectedFwd = {}
+  const expectedFwd = { title: undefined }
   const expectedRev = { content: "I'm always here" }
 
   const retFwd = mapTransform(def, options)(data)

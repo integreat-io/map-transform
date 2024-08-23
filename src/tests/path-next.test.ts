@@ -1030,8 +1030,7 @@ test('should set empty transform object to empty object on a path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: Is this important or even correct?
-test.failing('should try to map even when no data is given', (t) => {
+test('should try to map even when no data is given', (t) => {
   const def = {
     title: 'content.heading',
   }

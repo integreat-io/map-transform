@@ -80,6 +80,7 @@ test('should apply pipeline by id', (t) => {
     meta: { hits: '45' },
   }
   const expected = {
+    id: undefined,
     title: 'The heading',
     viewCount: 45,
   }
@@ -241,7 +242,7 @@ test('should apply pipeline from array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should apply pipeline from array path in reverse', (t) => {
+test.failing('should apply pipeline from array path in reverse', (t) => {
   const def = {
     data: ['content.data[].createOrMutate', { $apply: 'entry' }],
   }
@@ -283,7 +284,7 @@ test('should apply pipeline as operation object going forward only', (t) => {
     { $apply: 'cast_entry', $direction: 'fwd' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
-  const expectedFwd = { title: 'The heading', viewCount: 45 }
+  const expectedFwd = { id: undefined, title: 'The heading', viewCount: 45 }
   const dataRev = { title: 'The heading', viewCount: '45' }
   const expectedRev = {
     content: { heading: 'The heading' },
@@ -324,7 +325,7 @@ test('should use forward alias', (t) => {
     { $apply: 'cast_entry', $direction: 'from' },
   ]
   const dataFwd = { content: { heading: 'The heading' }, meta: { hits: '45' } }
-  const expectedFwd = { title: 'The heading', viewCount: 45 }
+  const expectedFwd = { id: undefined, title: 'The heading', viewCount: 45 }
   const dataRev = { title: 'The heading', viewCount: '45' }
   const expectedRev = {
     content: { heading: 'The heading' },

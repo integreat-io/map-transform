@@ -16,8 +16,8 @@ function getPipeline(state: State, id: string | symbol) {
   return pipeline
 }
 
-const clearFlip = (state: State) => {
-  return { ...state, context: state.context, flip: false }
+const handOffState = (state: State) => {
+  return { ...state, context: state.context, target: undefined, flip: false }
 }
 
 /**
@@ -32,7 +32,7 @@ export default function runApplyStep(
   state: State,
 ) {
   const pipeline = getPipeline(state, id)
-  return runPipeline(value, pipeline, clearFlip(state))
+  return runPipeline(value, pipeline, handOffState(state))
 }
 
 /**
@@ -49,5 +49,5 @@ export async function runApplyStepAsync(
   state: State,
 ) {
   const pipeline = getPipeline(state, id)
-  return await runPipelineAsync(value, pipeline, clearFlip(state))
+  return await runPipelineAsync(value, pipeline, handOffState(state))
 }

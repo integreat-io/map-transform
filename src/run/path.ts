@@ -70,11 +70,8 @@ function ensureArrayIfDefaultsAreAllowed(value: unknown, state: State) {
 
 // Get the index of the next set array step, or get array step if
 // we're in reverse.
-const getNextSetArrayIndex = (
-  pipeline: PreppedPipeline,
-  currentIndex: number,
-  isRev: boolean,
-) => pipeline.indexOf(isRev ? '[]' : '>[]', currentIndex)
+const getNextSetArrayIndex = (pipeline: PreppedPipeline, isRev: boolean) =>
+  pipeline.lastIndexOf(isRev ? '[]' : '>[]')
 
 // Get the next set operation that is qualified for setting an array.
 // If none exist, return the length of the `steps` array. When we're
@@ -85,8 +82,8 @@ function getNextSetArrayOrSetIndex(
   currentIndex: number,
   isRev: boolean,
 ) {
-  let index = getNextSetArrayIndex(pipeline, currentIndex, isRev)
-  if (index < 0) {
+  let index = getNextSetArrayIndex(pipeline, isRev)
+  if (index < currentIndex) {
     // If there is no set array step, we treat the next set step as
     // an array set, or a get step if we're in reverse.
     index = pipeline.findIndex(
@@ -95,7 +92,7 @@ function getNextSetArrayOrSetIndex(
       currentIndex,
     )
   }
-  return index < 0 ? pipeline.length : index
+  return index < currentIndex ? pipeline.length : index
 }
 
 // Extract the normalized path, and return true in the second position of
@@ -178,11 +175,11 @@ export default function runPathStep(
   if (Array.isArray(value)) {
     // We have an array -- consider if we should iterate
     const setArrayIndex = isSet
-      ? getNextSetArrayIndex(pipeline, index, isRev) // For set
+      ? getNextSetArrayIndex(pipeline, isRev) // For set
       : getNextSetArrayOrSetIndex(pipeline, index, isRev) // For get
     // We always iterate when getting, and for pipelines with a set
     // array notation when setting.
-    if (setArrayIndex >= 0) {
+    if (setArrayIndex >= index) {
       // Hand off to the next level for each of the items in the array
       const next = value.flatMap((item) =>
         runOneLevel(

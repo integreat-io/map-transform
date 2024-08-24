@@ -682,6 +682,39 @@ test('should set pipeline with array notation in the middle of a path when itera
   t.deepEqual(ret, expected)
 })
 
+test('should set pipeline with an inner array notation', (t) => {
+  const pipeline = [
+    'response',
+    'data',
+    '[]',
+    'item',
+    'keywords',
+    '>[]',
+    '>tags',
+    '>item',
+    '>[]',
+    '>values',
+  ]
+  const value = {
+    response: {
+      data: [
+        { item: { id: 'ent1', keywords: ['news', 'politics'] } },
+        { item: { id: 'ent2', keywords: ['sports'] } },
+      ],
+    },
+  }
+  const expected = {
+    values: [
+      { item: { tags: ['news', 'politics'] } },
+      { item: { tags: ['sports'] } },
+    ],
+  }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set pipeline with array notation in the middle of a path when iteration is not started', (t) => {
   const pipeline = ['>item', '>[]', '>values']
   const value = [{ id: 'ent1' }, { id: 'ent2' }]

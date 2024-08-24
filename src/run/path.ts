@@ -138,7 +138,14 @@ export default function runPathStep(
     state.context = []
     return [next, index]
   } else if (path === '.') {
+    // Merge value and target, and prioritize value on conflicts
     return isSet ? [merge(value, targets.pop()), index] : [value, index]
+  } else if (path === '...') {
+    // Merge value and target, and prioritize target on conflicts. If we're
+    // getting, threat as a plug
+    return isSet
+      ? [merge(targets.pop(), value), index]
+      : [state.target, pipeline.length]
   } else if (path === '|') {
     // We have reached a plug step -- skip it if we are setting or return the
     // target and skip the rest of the pipeline if we are getting. What we are

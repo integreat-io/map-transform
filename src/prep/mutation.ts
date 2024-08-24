@@ -1,9 +1,9 @@
 import prepPipeline, { TransformDefinition, Options } from './index.js'
 import preparePathStep from './path.js'
-import { isNotNullOrUndefined, isObject } from '../utils/is.js'
+import { isObject } from '../utils/is.js'
 import type { MutationStep } from '../run/mutation.js'
 import type { MutationObject, Path } from '../types.js'
-import { PreppedPipeline } from '../run/index.js'
+import { PreppedPipeline, PreppedStep } from '../run/index.js'
 
 const slashedRegex = /(?<!\\)\/\d+$/ // Matches /1 at the end, but not if the slash is escaped
 const isSlashed = (path: Path) => slashedRegex.test(path)
@@ -33,18 +33,29 @@ function addStepWhenNoGetStep(pipeline: PreppedPipeline) {
   return pipeline
 }
 
+const isUnknownDollarProp = (path: Path) =>
+  path !== '$modify' && path[0] === '$'
+
 // Prepare one property by setting the key as the set path at the end of the
-// pipeline. Properties starting with `'$'` or properties withtout pipelines
-// are not included. Properties ending in `'[]'` with another mutation object
-// as pipeline, is iterated.
+// pipeline. Properties starting with `'$'` (unless it's `$modify`) or
+// properties withtout pipelines are not included. Properties ending in `'[]'`
+// with another mutation object as pipeline, is iterated.
 function prepProp(
   setPath: string,
-  pipeline: TransformDefinition,
+  pipeline: TransformDefinition | boolean,
   options: Options,
 ) {
-  if (setPath.startsWith('\\$')) {
-    setPath = setPath.slice(1)
-  } else if (setPath[0] === '$' || !pipeline) {
+  if (typeof pipeline === 'boolean') {
+    if (setPath === '$modify' && pipeline) {
+      // Replace the `$modify: true` shorthand with an empty pipeline
+      pipeline = []
+    } else {
+      // For all other cases of a boolean pipeline -- skip it
+      return undefined
+    }
+  }
+
+  if (isUnknownDollarProp(setPath) || !pipeline) {
     return undefined
   }
   if (setPath.endsWith('[]') && isObject(pipeline)) {
@@ -66,6 +77,22 @@ function prepProp(
   ])
 }
 
+const pathIsModify = (path: PreppedStep) => path === '...' || path === '>...'
+const pipelineHasModify = (pipeline: PreppedPipeline) =>
+  pipeline.some(pathIsModify)
+
+const sortModifyLast = (a: PreppedPipeline, b: PreppedPipeline) =>
+  Number(pipelineHasModify(a)) - Number(pipelineHasModify(b))
+
+const hasModifyInBothDirections = (pipeline: PreppedPipeline) =>
+  pipeline.some((path) => path === '...') &&
+  pipeline.some((path) => path === '>...')
+
+const isPipelineWithEffect = (
+  pipeline?: PreppedPipeline,
+): pipeline is PreppedPipeline =>
+  !!pipeline && !hasModifyInBothDirections(pipeline)
+
 /**
  * Prepare a mutation step and return the internal step format. Each property
  * on the mutation object is made into a pipeline, with the prop as set path at
@@ -74,34 +101,24 @@ function prepProp(
  * `true` becomming an empty pipeline.
  */
 export default function prepareMutationStep(
-  {
-    $modify,
-    $flip: flip = false,
-    $noDefaults: noDefaults,
-    ...props
-  }: MutationObject,
+  { $flip: flip = false, $noDefaults: noDefaults, ...props }: MutationObject,
   options: Options,
 ): MutationStep | undefined {
   const pipelines = Object.entries(props)
     .map(([setPath, pipeline]) =>
       prepProp(setPath, pipeline as TransformDefinition, options),
     )
-    .filter(isNotNullOrUndefined)
-  if (pipelines.length === 0 && $modify === true) {
+    .filter(isPipelineWithEffect)
+    .sort(sortModifyLast)
+
+  // Skip mutations with only a $modify prop
+  if (pipelines.length === 1 && pipelineHasModify(pipelines[0])) {
     return undefined
   }
-
-  const mod =
-    $modify === true
-      ? []
-      : typeof $modify === 'string'
-        ? preparePathStep($modify)
-        : undefined
 
   return {
     type: 'mutation',
     ...(flip && { flip }),
-    ...(mod && { mod }),
     ...(typeof noDefaults === 'boolean' ? { noDefaults } : {}),
     pipelines,
   }

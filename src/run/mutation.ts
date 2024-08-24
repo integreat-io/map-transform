@@ -3,14 +3,12 @@ import runPipeline, {
   PreppedPipeline,
   OperationStepBase,
 } from './index.js'
-import { isObject, isNonvalue } from '../utils/is.js'
+import { isNonvalue } from '../utils/is.js'
 import type State from '../state.js'
-import type { Path } from '../types.js'
 
 export interface MutationStep extends OperationStepBase {
   type: 'mutation'
   flip?: boolean
-  mod?: Path[]
   noDefaults?: boolean
   pipelines: PreppedPipeline[]
 }
@@ -30,10 +28,6 @@ const handOffState = (
   noDefaults: overrideFlag(noDefaults, state.noDefaults),
 })
 
-// If `modValue` is an object, merge with `value`. If not, return `value`.
-const merge = (modValue: unknown, value: Record<string, unknown>) =>
-  isObject(modValue) ? { ...modValue, ...value } : value
-
 /**
  * Run a mutation step, by running each pipeline and combining the results
  * into one object. This is done by giving the result of a pipeline as the
@@ -43,7 +37,7 @@ const merge = (modValue: unknown, value: Record<string, unknown>) =>
  */
 export default function runMutationStep(
   value: unknown,
-  { pipelines, mod: modPipeline, flip, noDefaults }: MutationStep,
+  { pipelines, flip, noDefaults }: MutationStep,
   state: State,
 ) {
   // Don't mutate a non-value
@@ -53,7 +47,7 @@ export default function runMutationStep(
 
   // Run every pipeline in turn, with the result of the previous as the target
   // of the next. The first one is given an empty object as target
-  const next = pipelines.reduce(
+  return pipelines.reduce(
     (target, pipeline) =>
       runPipeline(
         value,
@@ -62,17 +56,6 @@ export default function runMutationStep(
       ) as Record<string, unknown>,
     {},
   )
-
-  // If we have a mod pipeline and next is an object, we get the value at the
-  // mod pipeline and shallow merge with it, if it's an object too
-  if (modPipeline && isObject(next)) {
-    // TODO: Override direction to fwd, here?
-    // TODO: Use a get path only runner instead of running a full pipeline
-    return merge(runPipeline(value, modPipeline, state), next)
-  }
-
-  // We're not merging with a mod object -- just return
-  return next
 }
 
 /**
@@ -86,7 +69,7 @@ export default function runMutationStep(
  */
 export async function runMutationStepAsync(
   value: unknown,
-  { pipelines, mod: modPipeline, flip, noDefaults }: MutationStep,
+  { pipelines, flip, noDefaults }: MutationStep,
   state: State,
 ) {
   // Don't mutate a non-value
@@ -104,15 +87,5 @@ export async function runMutationStepAsync(
       handOffState(state, next, flip, noDefaults),
     )
   }
-
-  // If we have a mod pipeline and next is an object, we get the value at the
-  // mod pipeline and shallow merge with it, if it's an object too
-  if (modPipeline && isObject(next)) {
-    // TODO: Override direction to fwd, here?
-    // TODO: Use a get path only runner instead of running a full pipeline
-    return merge(await runPipelineAsync(value, modPipeline, state), next)
-  }
-
-  // We're not merging with a mod object -- just return
   return next
 }

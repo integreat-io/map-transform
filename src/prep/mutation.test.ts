@@ -78,6 +78,28 @@ test('should forward plug slashed properties', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should forward plug slashed property without a path', (t) => {
+  const def = {
+    id: 'key',
+    title: 'name',
+    '/1': 'desc',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+        ['|', 'desc'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should unescape escaped slash', (t) => {
   const def = {
     id: 'key',
@@ -345,8 +367,41 @@ test('should support $modify prop', (t) => {
   const expected = [
     {
       type: 'mutation',
-      mod: [],
-      pipelines: [['key', '>slug']],
+      pipelines: [['key', '>slug'], ['>...']],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support $modify prop with dot path', (t) => {
+  const def = {
+    $modify: '.',
+    slug: 'key',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      pipelines: [['key', '>slug'], ['>...']],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support reverse $modify prop', (t) => {
+  const def = {
+    '.': '$modify',
+    slug: 'key',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      pipelines: [['key', '>slug'], ['...']],
     },
   ]
 
@@ -363,7 +418,26 @@ test('should support $modify prop with a dot notation path', (t) => {
   const expected = [
     {
       type: 'mutation',
-      mod: ['data', 'props'],
+      pipelines: [
+        ['key', '>slug'],
+        ['data', 'props', '>...'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip props with $modify in both directions', (t) => {
+  const def = {
+    $modify: 'data.$modify',
+    slug: 'key',
+  }
+  const expected = [
+    {
+      type: 'mutation',
       pipelines: [['key', '>slug']],
     },
   ]
@@ -464,10 +538,3 @@ test('should pass on $noDefaults when it is false', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should skip rev $modify going forward')
-test.todo('should support reverse $modify going forward when flipped')
-test.todo('should skip both direction $modify going forward')
-test.todo('should shallow merge with $modify on a path')
-
-test.todo('should pass on $noDefaults flag') // Should we still do this?

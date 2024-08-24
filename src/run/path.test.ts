@@ -694,6 +694,27 @@ test('should set pipeline with array notation in the middle of a path when itera
   t.deepEqual(ret, expected)
 })
 
+test('should set undefined as empty array with array notation', (t) => {
+  const pipeline = ['>[]']
+  const value = undefined
+  const expected: unknown[] = []
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not set undefined as empty array when noDefaults is true', (t) => {
+  const pipeline = ['>[]']
+  const value = undefined
+  const stateWithNoDefaults = { ...state, noDefaults: true }
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, stateWithNoDefaults)
+
+  t.is(ret, expected)
+})
+
 test('should disregard one set step for each parent notation', (t) => {
   const pipeline = [
     'response',

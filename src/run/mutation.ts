@@ -13,31 +13,20 @@ export interface MutationStep extends OperationStepBase {
   pipelines: PreppedPipeline[]
 }
 
-const overrideFlag = (our?: boolean, their?: boolean) =>
-  typeof our === 'boolean' ? our : their
-
-const handOffState = (
-  state: State,
-  target: unknown,
-  flip?: boolean,
-  noDefaults?: boolean,
-) => ({
+const handOffState = (state: State, target: unknown, flip?: boolean) => ({
   ...state,
   target,
-  flip: overrideFlag(flip, state.flip),
-  noDefaults: overrideFlag(noDefaults, state.noDefaults),
+  flip: typeof flip === 'boolean' ? flip : state.flip,
 })
 
 /**
  * Run a mutation step, by running each pipeline and combining the results
  * into one object. This is done by giving the result of a pipeline as the
- * target for the next. If a `mod` pipeline is given, we'll shallow merge the
- * value it's pointing to with the result from the pipelines, as long as both
- * are objects.
+ * target for the next.
  */
 export default function runMutationStep(
   value: unknown,
-  { pipelines, flip, noDefaults }: MutationStep,
+  { pipelines, flip }: MutationStep,
   state: State,
 ) {
   // Don't mutate a non-value
@@ -49,27 +38,21 @@ export default function runMutationStep(
   // of the next. The first one is given an empty object as target
   return pipelines.reduce(
     (target, pipeline) =>
-      runPipeline(
-        value,
-        pipeline,
-        handOffState(state, target, flip, noDefaults),
-      ) as Record<string, unknown>,
-    {},
+      runPipeline(value, pipeline, handOffState(state, target, flip)),
+    (state.noDefaults ? undefined : {}) as unknown,
   )
 }
 
 /**
  * Run a mutation step, by running each pipeline and combining the results
  * into one object. This is done by giving the result of a pipeline as the
- * target for the next. If a `mod` pipeline is given, we'll shallow merge the
- * value it's pointing to with the result from the pipelines, as long as both
- * are objects.
+ * target for the next.
  *
  * This is an async version of `runMutationStep()`.
  */
 export async function runMutationStepAsync(
   value: unknown,
-  { pipelines, flip, noDefaults }: MutationStep,
+  { pipelines, flip }: MutationStep,
   state: State,
 ) {
   // Don't mutate a non-value
@@ -79,12 +62,12 @@ export async function runMutationStepAsync(
 
   // Run every pipeline in turn, with the result of the previous as the target
   // of the next. The first one is given an empty object as target
-  let next: unknown = {}
+  let next: unknown = state.noDefaults ? undefined : {}
   for (const pipeline of pipelines) {
     next = await runPipelineAsync(
       value,
       pipeline,
-      handOffState(state, next, flip, noDefaults),
+      handOffState(state, next, flip),
     )
   }
   return next

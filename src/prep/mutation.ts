@@ -101,7 +101,7 @@ const isPipelineWithEffect = (
  * `true` becomming an empty pipeline.
  */
 export default function prepareMutationStep(
-  { $flip: flip = false, $noDefaults: noDefaults, ...props }: MutationObject,
+  { $flip: flip = false, ...props }: MutationObject,
   options: Options,
 ): MutationStep | undefined {
   const pipelines = Object.entries(props)
@@ -119,7 +119,6 @@ export default function prepareMutationStep(
   return {
     type: 'mutation',
     ...(flip && { flip }),
-    ...(typeof noDefaults === 'boolean' ? { noDefaults } : {}),
     pipelines,
   }
 }

@@ -293,47 +293,24 @@ test('should set from parent after set', (t) => {
 
 // Tests -- get root
 
-test('should set pipeline with root in reverse', (t) => {
+test('should return undefined when setting with root', (t) => {
   const pipeline = ['response', 'data', 'item', '^^', 'response']
   const value = { data: { item: { id: 'ent1' } } }
-  const expected = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = undefined
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  t.is(ret, expected)
 })
 
-// TODO: Can this be reversed?
-test.skip('should get pipeline with root after array', (t) => {
-  const pipeline = ['response', 'data', '[]', 'item', '^^']
-  const value = {
-    response: { data: [{ item: { id: 'ent1' } }, { item: { id: 'ent2' } }] },
-  }
-  const expected = [value, value] // It is correct that we get one for every item
-
-  const ret = runPipeline(value, pipeline, state)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should set pipeline with root after parent', (t) => {
-  const pipeline = ['response', 'data', 'item', '^', '^^', 'response']
-  const value = { data: { item: { id: 'ent1' } } }
-  const expected = { response: { data: { item: { id: 'ent1' } } } }
-
-  const ret = runPipeline(value, pipeline, state)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should set up to root in reverse', (t) => {
+test('should return undefined when setting with root in reverse', (t) => {
   const pipeline = ['^^', 'response', 'data', 'item']
   const value = { id: 'ent1' }
-  const expected = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = undefined
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  t.is(ret, expected)
 })
 
 // Tests -- get path

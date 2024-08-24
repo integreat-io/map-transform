@@ -132,17 +132,20 @@ export default function runPathStep(
     return [state.context.pop(), index]
   } else if (path === '^^') {
     // Get the root from the context -- or the present value when we have no
-    // context. This is never run in rev, as we remove it from the pipeline
-    // before running it.
-    const next = state.context.length === 0 ? value : state.context[0]
-    state.context = []
-    return [next, index]
+    // context. When we're setting, treat this is a plug and return the target.
+    if (isSet) {
+      return [state.target, pipeline.length]
+    } else {
+      const next = state.context.length === 0 ? value : state.context[0]
+      state.context = []
+      return [next, index]
+    }
   } else if (path === '.') {
     // Merge value and target, and prioritize value on conflicts
     return isSet ? [merge(value, targets.pop()), index] : [value, index]
   } else if (path === '...') {
-    // Merge value and target, and prioritize target on conflicts. If we're
-    // getting, threat as a plug
+    // Merge value and target, and prioritize target on conflicts. When we're
+    // getting, threat as a plug and return target.
     return isSet
       ? [merge(targets.pop(), value), index]
       : [state.target, pipeline.length]

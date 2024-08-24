@@ -735,7 +735,7 @@ test('should apply parent to non-path steps too', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should disregard everything after a set root notation', (t) => {
+test('should return undefined when trying to set with root notation', (t) => {
   const pipeline = [
     'response',
     'data',
@@ -747,11 +747,11 @@ test('should disregard everything after a set root notation', (t) => {
     '>data',
   ]
   const value = { response: { data: { item: { id: 'ent1' } } } }
-  const expected = { value: { id: 'ent1' } }
+  const expected = undefined
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  t.is(ret, expected)
 })
 
 // Tests -- set on target

@@ -242,7 +242,7 @@ test('should apply pipeline from array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should apply pipeline from array path in reverse', (t) => {
+test('should apply pipeline from array path in reverse', (t) => {
   const def = {
     data: ['content.data[].createOrMutate', { $apply: 'entry' }],
   }

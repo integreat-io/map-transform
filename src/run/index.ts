@@ -261,10 +261,7 @@ function adjustPipelineToDirection(pipeline: PreppedPipeline, state: State) {
   const steps = []
   let skipCount = 0
   for (const step of directedPipeline) {
-    if (isRev ? step === '^^' : step === '>^^') {
-      // This is a root step -- skip the rest
-      break
-    } else if (isRev ? step === '^' : step === '>^') {
+    if (isRev ? step === '^' : step === '>^') {
       // This is a parent step -- count how many to skip after this
       skipCount++
     } else if (skipCount > 0) {

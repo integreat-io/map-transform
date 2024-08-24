@@ -307,13 +307,33 @@ test('should not mutate non-values when iterating', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should modify pipeline value when mod is a pipeline', (t) => {
+test('should merge mutated object with target ($modify)', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['>...'], // $modify
+      ],
+    },
+  ]
+  const expected = { key: 'ent1', name: 'Entry 1', slug: 'ENT1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should modify pipeline value with a pipeline', (t) => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
-      mod: ['item', 'props'],
-      pipelines: [['item', 'key', '>id']],
+      pipelines: [
+        ['item', 'key', '>id'],
+        ['item', 'props', '>...'], // $modify
+      ],
     },
   ]
   const expected = { id: 'ent1', name: 'Entry 1' }
@@ -330,8 +350,10 @@ test('should modify pipeline value with parent step in mod pipeline', (t) => {
     'props',
     {
       type: 'mutation',
-      mod: ['^'],
-      pipelines: [['name', '>title']],
+      pipelines: [
+        ['name', '>title'],
+        ['^', '>...'], // $modify
+      ],
     },
   ]
   const expected = { key: 'ent1', title: 'Entry 1', props: { name: 'Entry 1' } }
@@ -346,15 +368,18 @@ test('should use modify pipelines on several levels', (t) => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
-      mod: ['item'],
       pipelines: [
         ['item', 'props', 'name', '>desc'],
         [
           'item',
           'props',
-          { type: 'mutation', mod: [], pipelines: [['^', 'key', '>slug']] },
+          {
+            type: 'mutation',
+            pipelines: [['^', 'key', '>slug'], ['>...']], // $modify
+          },
           '>props',
         ],
+        ['item', '>...'], // $modify
       ],
     },
   ]
@@ -369,16 +394,37 @@ test('should use modify pipelines on several levels', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should modify pipeline value when mod is an empty pipeline', (t) => {
+test('should merge with flip ($modify)', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
-      mod: [],
-      pipelines: [['key', { type: 'transform', fn: uppercase }, '>slug']],
+      pipelines: [
+        ['slug', { type: 'transform', fn: uppercase }, '>key'],
+        ['...'], // Reverse $modify
+      ],
     },
   ]
+  const stateWithFlip = { state, flip: true }
   const expected = { key: 'ent1', name: 'Entry 1', slug: 'ENT1' }
+
+  const ret = runPipeline(value, pipeline, stateWithFlip)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip reverse merge going forward ($modify)', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['...'], // Reverse $modify
+      ],
+    },
+  ]
+  const expected = { slug: 'ENT1' }
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -593,6 +639,61 @@ test('should not skip pipeline with forward plug in reverse', (t) => {
     },
   ]
   const expected = { key: 'ent1', name: 'Entry 1', desc: 'Entry 1' }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge in reverse ($modify)', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['slug', { type: 'transform', fn: uppercase }, '>key'],
+        ['...'], // Reverse $modify
+      ],
+    },
+  ]
+  const expected = { key: 'ent1', name: 'Entry 1', slug: 'ENT1' }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge with flip in reverse ($modify)', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['>...'], // $modify
+      ],
+    },
+  ]
+  const stateRevWithFlip = { ...stateRev, flip: true }
+  const expected = { key: 'ent1', name: 'Entry 1', slug: 'ENT1' }
+
+  const ret = runPipeline(value, pipeline, stateRevWithFlip)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should skip forward merge in reverse ($modify)', (t) => {
+  const value = { key: 'ent1', name: 'Entry 1', slug: 'ENT1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['>...'], // $modify
+      ],
+    },
+  ]
+  const expected = { key: 'ENT1' }
 
   const ret = runPipeline(value, pipeline, stateRev)
 

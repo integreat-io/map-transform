@@ -1,7 +1,9 @@
 import type { Path } from '../types.js'
 
 function splitPart(part: string): string[] {
-  if (part[0] === '^' && part.length > 1) {
+  if (part === '$modify') {
+    return ['...']
+  } else if (part[0] === '^' && part.length > 1) {
     // The part starts with '^^' or the obsolete '^' root prefix.
     // Note that this obsolete prefix will be removed in future versions.
     const rest = part.slice(part[1] === '^' ? 2 : 1) // Extract the rest of the part

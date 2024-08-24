@@ -80,10 +80,10 @@ test('should disregard a prop pipeline without get in reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should support defining get only-pipelines for reverse', (t) => {
+test('should support defining get only-pipelines for reverse', (t) => {
   const def = {
     title: 'content.heading',
-    '/1': ['meta', { $value: { value: { tags: ['news'] } } }], // We must wrap the value object in a props object
+    '/1': ['meta', { $value: { tags: ['news'] } }],
   }
   const data = { title: 'New article' }
   const expected = {
@@ -368,61 +368,55 @@ test('should reverse map with root array path', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing(
-  'should shallow merge (modify) original object with transformed object in reverse',
-  (t) => {
-    const def = {
-      $modify: true,
-      '.': '$modify',
-      name: 'title',
-    }
-    const data = {
-      name: 'The real title',
-      title: 'Oh, this must go',
+test('should shallow merge (modify) original object with transformed object in reverse', (t) => {
+  const def = {
+    $modify: true,
+    '.': '$modify',
+    name: 'title',
+  }
+  const data = {
+    name: 'The real title',
+    title: 'Oh, this must go',
+    text: 'This is high quality content for sure',
+  }
+  const expected = {
+    name: 'The real title',
+    title: 'The real title',
+    text: 'This is high quality content for sure',
+  }
+
+  const ret = mapTransform(def)(data, { rev: true })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should shallow merge (modify) original object with transformed object from a path in reverse', (t) => {
+  const def = {
+    article: {
+      $modify: 'article',
+      '.': 'content.$modify',
+      title: 'content.name',
+    },
+  }
+  const data = {
+    article: {
+      title: 'The real title',
+      name: 'Got to go',
       text: 'This is high quality content for sure',
-    }
-    const expected = {
+    },
+  }
+  const expected = {
+    content: {
       name: 'The real title',
       title: 'The real title',
       text: 'This is high quality content for sure',
-    }
+    },
+  }
 
-    const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransform(def)(data, { rev: true })
 
-    t.deepEqual(ret, expected)
-  },
-)
-
-test.failing(
-  'should shallow merge (modify) original object with transformed object from a path in reverse',
-  (t) => {
-    const def = {
-      article: {
-        $modify: 'article',
-        '.': 'content.$modify',
-        title: 'content.name',
-      },
-    }
-    const data = {
-      article: {
-        title: 'The real title',
-        name: 'Got to go',
-        text: 'This is high quality content for sure',
-      },
-    }
-    const expected = {
-      content: {
-        name: 'The real title',
-        title: 'The real title',
-        text: 'This is high quality content for sure',
-      },
-    }
-
-    const ret = mapTransform(def)(data, { rev: true })
-
-    t.deepEqual(ret, expected)
-  },
-)
+  t.deepEqual(ret, expected)
+})
 
 test('should shallow merge (modify) original object with transformed object in reverse - flipped', (t) => {
   const def = {

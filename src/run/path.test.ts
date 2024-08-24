@@ -923,6 +923,34 @@ test('should merge with target when we reach a set dot step', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should prioritize value when merging with target', (t) => {
+  const pipeline = ['response', 'data', 'item', '>.']
+  const value = {
+    response: { data: { item: { id: 'ent1', title: 'Use this' } } },
+  }
+  const target = { count: 1, title: 'Not this' }
+  const state = { target }
+  const expected = { id: 'ent1', title: 'Use this', count: 1 }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge and prioritize target over value', (t) => {
+  const pipeline = ['response', 'data', 'item', '>...']
+  const value = {
+    response: { data: { item: { id: 'ent1', title: "Don't use this" } } },
+  }
+  const target = { count: 1, title: 'But this' }
+  const state = { target }
+  const expected = { id: 'ent1', title: 'But this', count: 1 }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return target when we reach a forward plug', (t) => {
   const pipeline = ['|', 'response', 'data', 'item']
   const value = { response: { data: { item: { id: 'ent1' } } } }

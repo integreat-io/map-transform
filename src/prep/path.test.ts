@@ -45,6 +45,15 @@ test('should prepare path already in array', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should prepare $modify as ellipse', (t) => {
+  const def = '$modify'
+  const expected = ['...']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should prepare path with escaped dollar', (t) => {
   const def = '\\$item'
   const expected = ['$item']

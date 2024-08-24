@@ -20,6 +20,7 @@ export interface StepProps {
   it?: boolean
   dir?: number
   nonvalues?: unknown[]
+  noDefaults?: boolean
 }
 
 export interface OperationStepBase extends StepProps {
@@ -105,17 +106,22 @@ function getRunnerForStep(step: OperationStep, stepFunctions: StepFunctions) {
   }
 }
 
-// Prepare state before handing it off to a step. If `nonvalues` is an array,
-// we'll clone the state, giving it the nonvalues, and making sure we provide
-// the same context (no cloning). Otherwise, we'll reuse the state and just set
-// the value.
+// Prepare state before handing it off to a step. If `nonvalues` is an array or
+// `noDefaults` is set`, we'll clone the state, giving it the nonvalues, and
+// making sure we provide the same context (no cloning). Otherwise, we'll reuse
+// the state and just set the value.
 function handOffState(
   state: State,
   value: unknown,
   nonvalues?: unknown[],
+  noDefaults?: boolean,
   index?: number,
 ) {
-  if (!Array.isArray(nonvalues) && index === undefined) {
+  if (
+    !Array.isArray(nonvalues) &&
+    noDefaults === undefined &&
+    index === undefined
+  ) {
     state.value = value
     return state
   } else {
@@ -123,6 +129,7 @@ function handOffState(
       {
         ...state,
         ...(Array.isArray(nonvalues) && { nonvalues }),
+        ...(typeof noDefaults === 'boolean' ? { noDefaults } : {}),
         ...(index !== undefined && { index }),
       },
       value,
@@ -138,7 +145,12 @@ const runStep = (
   step: OperationStep,
   state: State,
   index?: number,
-) => runner(value, step, handOffState(state, value, step.nonvalues, index))
+) =>
+  runner(
+    value,
+    step,
+    handOffState(state, value, step.nonvalues, step.noDefaults, index),
+  )
 
 /**
  * Run each step of a pipeline and return the resulting value. Path steps are

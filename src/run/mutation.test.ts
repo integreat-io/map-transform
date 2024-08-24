@@ -431,6 +431,22 @@ test('should skip reverse merge going forward ($modify)', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not return empty object when noDefaults is true', (t) => {
+  const value = { item: {} }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      noDefaults: true,
+      pipelines: [['item', 'key', '>id']],
+    },
+  ]
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
 test('should not include value from value operation when noDefaults is true', (t) => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [

@@ -133,6 +133,7 @@ export interface ApplyOperation extends TransformerProps {
   $apply: string | symbol
   $iterate?: boolean
   $direction?: string
+  $noDefaults?: boolean
 }
 
 export interface AltOperation extends TransformerProps {

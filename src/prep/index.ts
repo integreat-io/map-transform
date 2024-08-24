@@ -82,6 +82,7 @@ function getDir(dir: unknown, options: Options) {
 // - `$iterate`: Causes the operation to be iterated if the pipeline value is
 //   an array.
 // - `$direction`: Will only run the operation in the specified direction.
+// - `$noDefaults`: When true, no default values will be used.
 // - `$nonvalues`: Will apply the list of nonvalues to options for the
 //   operation and any child pipelines.
 // - `$undefined`: An alias of `$nonvalues`. If both are set, `$nonvalues` will
@@ -91,6 +92,7 @@ function extractStepProps(
     $iterate,
     $direction,
     $nonvalues,
+    $noDefaults: noDefaults,
     $undefined,
     ...step
   }: MutationObject | OperationObject,
@@ -103,11 +105,12 @@ function extractStepProps(
     : Array.isArray($undefined)
       ? $undefined
       : undefined
-  return it || dir || nonvalues
+  return it || dir || noDefaults !== undefined || nonvalues
     ? [
         {
           ...(it && { it }),
           ...(dir && { dir }),
+          ...(typeof noDefaults === 'boolean' && { noDefaults }),
           ...(nonvalues && { nonvalues }),
         },
         step,

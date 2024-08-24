@@ -203,8 +203,7 @@ test('should use directional default value - reverse', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: Is this correct?
-test.failing('should not use default values', (t) => {
+test('should not use default values', (t) => {
   const def = {
     $iterate: true,
     $noDefaults: true,
@@ -236,23 +235,19 @@ test('should not set missing data when $noDefaults is true', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: Is this correct?
-test.failing(
-  'should not set prop to undefined in array when $noDefaults is true',
-  (t) => {
-    const def = {
-      $iterate: true,
-      $noDefaults: true,
-      title: 'content.heading',
-    }
-    const data = [{ content: {} }, { content: { heading: 'From data' } }]
-    const expected = [undefined, { title: 'From data' }]
+test('should not set undefined on prop in array when $noDefaults is true', (t) => {
+  const def = {
+    $iterate: true,
+    $noDefaults: true,
+    title: 'content.heading',
+  }
+  const data = [{ content: {} }, { content: { heading: 'From data' } }]
+  const expected = [undefined, { title: 'From data' }]
 
-    const ret = mapTransform(def)(data)
+  const ret = mapTransform(def)(data)
 
-    t.deepEqual(ret, expected)
-  },
-)
+  t.deepEqual(ret, expected)
+})
 
 test('should not force nonvalue to empty array when $noDefaults is true', (t) => {
   const def = {
@@ -287,8 +282,7 @@ test('should not force nonvalue to empty array when $noDefaults is true - flippe
   t.deepEqual(ret, expected)
 })
 
-// TODO: Is this correct?
-test.failing('should not use default values on rev', (t) => {
+test('should not use default values on rev', (t) => {
   const def = {
     $iterate: true,
     $noDefaults: true,
@@ -318,40 +312,33 @@ test('should not force nonvalue to empty array when $noDefaults is true in rever
   t.deepEqual(ret, expected)
 })
 
-test.failing(
-  'should not force non-value to empty array when $noDefaults is true and applied from a pipeline',
-  (t) => {
-    const def = { $apply: 'entry', $noDefaults: true }
-    const pipelines = {
-      entry: { $iterate: true, id: 'id', items: 'content[]' },
-    }
-    const options = { nonvalues: [undefined, null], pipelines }
-    const data = { id: 'ent1', content: null }
-    const expected = { id: 'ent1' }
+test('should not force non-value to empty array when $noDefaults is true and applied from a pipeline', (t) => {
+  const def = { $apply: 'entry', $noDefaults: true }
+  const pipelines = {
+    entry: { $iterate: true, id: 'id', items: 'content[]' },
+  }
+  const options = { nonvalues: [undefined, null], pipelines }
+  const data = { id: 'ent1', content: null }
+  const expected = { id: 'ent1' }
 
-    const ret = mapTransform(def, options)(data)
+  const ret = mapTransform(def, options)(data)
 
-    t.deepEqual(ret, expected)
-  },
-)
+  t.deepEqual(ret, expected)
+})
 
-// TODO: Is this correct?
-test.failing(
-  'should not use default values when noDefault is provided on initial state',
-  (t) => {
-    const noDefaults = true
-    const def = {
-      $iterate: true,
-      title: { $alt: ['content.heading', { $value: 'Default heading' }] },
-    }
-    const data = [{ content: {} }, { content: { heading: 'From data' } }]
-    const expected = [undefined, { title: 'From data' }]
+test('should not use default values when noDefault is provided on initial state', (t) => {
+  const noDefaults = true
+  const def = {
+    $iterate: true,
+    title: { $alt: ['content.heading', { $value: 'Default heading' }] },
+  }
+  const data = [{ content: {} }, { content: { heading: 'From data' } }]
+  const expected = [undefined, { title: 'From data' }]
 
-    const ret = mapTransform(def)(data, { noDefaults })
+  const ret = mapTransform(def)(data, { noDefaults })
 
-    t.deepEqual(ret, expected)
-  },
-)
+  t.deepEqual(ret, expected)
+})
 
 test('should return undefined for undefined', (t) => {
   const def = {
@@ -376,28 +363,29 @@ test('should stay on the right context level when using $alt after a path that d
   t.deepEqual(ret, expected)
 })
 
-// TODO: Is this correct?
-test.failing(
-  'should apply default value from an operation object in reverse',
-  (t) => {
-    const def = [
-      '[]',
-      {
-        $iterate: true,
-        title: [{ $alt: ['content.heading', { $value: 'Default heading' }] }],
-      },
-    ]
-    const data = [{}, { title: 'From data' }]
-    const expected = [
-      { content: { heading: 'Default heading' } },
-      { content: { heading: 'From data' } },
-    ]
+test('should apply default value from an operation object in reverse', (t) => {
+  const def = [
+    '[]',
+    {
+      $iterate: true,
+      title: [
+        {
+          $alt: ['content.heading', { $value: 'Default heading' }],
+          useLastAsDefault: true,
+        },
+      ],
+    },
+  ]
+  const data = [{}, { title: 'From data' }]
+  const expected = [
+    { content: { heading: 'Default heading' } },
+    { content: { heading: 'From data' } },
+  ]
 
-    const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransform(def)(data, { rev: true })
 
-    t.deepEqual(ret, expected)
-  },
-)
+  t.deepEqual(ret, expected)
+})
 
 test('should apply default value from an operation object in flipped reverse', (t) => {
   const def = [
@@ -633,6 +621,7 @@ test.failing(
           'content.heading',
           { $value: 'Default heading', $direction: 'rev' },
         ],
+        useLastAsDefault: true,
       },
     }
     const dataFwd = { content: {} }

@@ -9,7 +9,7 @@ const getIsActiveAsync = async (value: unknown) =>
   isObject(value) ? value.isActive : undefined
 
 const state = { rev: false }
-// const stateRev = { rev: true }
+const stateRev = { rev: true }
 
 // Tests -- sync
 
@@ -97,6 +97,23 @@ test('should run else pipeline when no condition', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should always run condition pipeline as forward', (t) => {
+  const value = { isActive: false, title: 'The title', name: 'The name' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'if',
+      condition: ['isActive'],
+      then: ['>title'],
+      else: ['>name'],
+    },
+  ]
+  const expected = 'The name'
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- async
 
 test('should run then pipeline when async condition is true', async (t) => {
@@ -133,4 +150,19 @@ test('should run else pipeline when async condition is false', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.todo('should run in reverse ...')
+test('should always run async condition pipeline as forward', async (t) => {
+  const value = { isActive: false, title: 'The title', name: 'The name' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'if',
+      condition: ['isActive'],
+      then: ['>title'],
+      else: ['>name'],
+    },
+  ]
+  const expected = 'The name'
+
+  const ret = await runPipelineAsync(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})

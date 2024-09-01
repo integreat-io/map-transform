@@ -6,7 +6,7 @@ import {
 } from '../createDataMapper.js'
 import { ensureArray } from '../utils/array.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
-import { revFromState } from '../utils/stateHelpers.js'
+import { revFromState, goForward } from '../utils/stateHelpers.js'
 import State from '../state.js'
 import type { Options, TransformDefinition } from '../prep/index.js'
 import type {
@@ -31,9 +31,6 @@ const passOnSetState = (state: State, target: unknown) =>
   new State({
     ...state,
     target,
-    rev: false,
-    flip: true,
-    context: state.context,
   })
 
 // Do the logical operation. We yield the value return from the get or set

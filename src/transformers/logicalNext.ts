@@ -6,7 +6,7 @@ import {
 } from '../createDataMapper.js'
 import { ensureArray } from '../utils/array.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
-import { revFromState, goForward } from '../utils/stateHelpers.js'
+import { revFromState } from '../utils/stateHelpers.js'
 import State from '../state.js'
 import type { Options, TransformDefinition } from '../prep/index.js'
 import type {

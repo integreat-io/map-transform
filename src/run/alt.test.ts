@@ -191,6 +191,56 @@ test('should not let "loosing" pipelines polute the context', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should support parent in pipeline', (t) => {
+  const value = { id: 'ent1', name: 'Parent name', props: { title: 'Entry 1' } }
+  const pipeline: PreppedPipeline = [
+    'props',
+    {
+      type: 'alt',
+      pipelines: [['^', 'name'], ['title']],
+    },
+  ]
+  const state = {
+    context: [{ item: { id: 'ent1', props: { title: 'Entry 1' } } }],
+  }
+  const expected = 'Parent name'
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should support parent in iterating pipeline', (t) => {
+  const value = {
+    id: 'ent1',
+    name: 'Parent name',
+    props: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
+  }
+  const pipeline: PreppedPipeline = [
+    'props',
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        [
+          {
+            type: 'alt',
+            pipelines: [['^', '^', 'name'], ['title']],
+          },
+        ],
+      ],
+    },
+  ]
+  const state = {
+    context: [{ item: { id: 'ent1', props: { title: 'Entry 1' } } }],
+  }
+  const expected = ['Parent name', 'Parent name']
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use first pipeline when setting', (t) => {
   const value = 'The real name'
   const pipeline: PreppedPipeline = [
@@ -206,36 +256,11 @@ test('should use first pipeline when setting', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not try the other pipelines when setting', (t) => {
+test('should get a default value from the last pipeline', (t) => {
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
       type: 'alt',
-      pipelines: [
-        ['name'],
-        [
-          {
-            type: 'transform',
-            fn: () => 'Should not be used',
-          },
-        ],
-        ['title'],
-      ],
-    },
-  ]
-  const expected = { name: undefined }
-
-  const ret = runPipeline(value, pipeline, stateRev)
-
-  t.deepEqual(ret, expected)
-})
-
-test('should get a default value from the last pipeline when useLastAsDefault is true', (t) => {
-  const value = undefined
-  const pipeline: PreppedPipeline = [
-    {
-      type: 'alt',
-      useLastAsDefault: true,
       pipelines: [
         ['name'],
         ['title'],
@@ -250,12 +275,11 @@ test('should get a default value from the last pipeline when useLastAsDefault is
   t.deepEqual(ret, expected)
 })
 
-test('should not get a default value from the last pipeline when useLastAsDefault is not true', (t) => {
+test('should not get a default value from the last pipeline', (t) => {
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
       type: 'alt',
-      // No useLastAsDefault
       pipelines: [
         ['name'],
         ['title'],
@@ -263,14 +287,50 @@ test('should not get a default value from the last pipeline when useLastAsDefaul
       ],
     },
   ]
-  const expected = { name: undefined }
+  const expected = { name: 'Default name' }
 
   const ret = runPipeline(value, pipeline, stateRev)
 
   t.deepEqual(ret, expected)
 })
 
-test('should not run alt step in rev', (t) => {
+test('should skip pipelines with wrong direction when getting default value', (t) => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [
+        ['name'],
+        ['title'],
+        [{ type: 'value', value: 'Default name' }],
+        [{ type: 'value', value: 'Wrong name', dir: 1 }], // Only run when going forward
+      ],
+    },
+  ]
+  const expected = { name: 'Default name' }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+// TODO: Change the behavior here? We are only continuing how we did it in the old version, but it is odd.
+test('should skip not provide special case when no default pipeline in reverse', (t) => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], ['title']],
+    },
+  ]
+  const expected = { name: { title: undefined } } // This is probably not what we wanted, but it is how the $alt operation has been working so far
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not run alt step in rev when dir is 1 (fwd)', (t) => {
   const value = 'The real name'
   const pipeline: PreppedPipeline = [
     {
@@ -314,8 +374,7 @@ test('should set a default value with async pipelines', async (t) => {
   const pipeline: PreppedPipeline = [
     {
       type: 'alt',
-      useLastAsDefault: true,
-      pipelines: [['name'], ['title'], [{ type: 'transform' as const, fn }]],
+      pipelines: [['name'], ['title'], [{ type: 'value', value: fn }]],
     },
   ]
   const expected = { name: 'From async' }

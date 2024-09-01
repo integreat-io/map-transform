@@ -64,7 +64,6 @@ test('should run $alt in reverse', (t) => {
         'content.heading',
         { $value: 'Default heading', $direction: 'rev' },
       ],
-      useLastAsDefault: true,
     },
   }
   const data = [{}, { title: 'From data' }]
@@ -189,7 +188,6 @@ test('should use directional default value - reverse', (t) => {
         { $value: 'Wrong way', $direction: 'fwd' },
         { $value: 'Default heading', $direction: 'rev' },
       ],
-      useLastAsDefault: true,
     },
   }
   const data = [{}, { title: 'From data' }]
@@ -371,7 +369,6 @@ test('should apply default value from an operation object in reverse', (t) => {
       title: [
         {
           $alt: ['content.heading', { $value: 'Default heading' }],
-          useLastAsDefault: true,
         },
       ],
     },
@@ -542,29 +539,26 @@ test('should provide correct context for parent during alt paths with different 
   t.deepEqual(ret, expected)
 })
 
-test.failing(
-  'should provide correct context for parent when all alt pipelines return undefined',
-  (t) => {
-    const def = [
-      'items[]',
-      {
-        $iterate: true,
-        title: [
-          { $alt: ['original.heading', 'content.title', 'content.headline'] },
-          '^.id', // The reason for this odd looking use of parent, is that the $alt operation will push the context to the pipeline when getting `undefined`, so we need to go up again one level to get the id
-        ],
-      },
-    ]
-    const data = {
-      items: [{ id: '12345' }, { id: '12346' }],
-    }
-    const expected = [{ title: '12345' }, { title: '12346' }]
+test('should provide correct context for parent when all alt pipelines return undefined', (t) => {
+  const def = [
+    'items[]',
+    {
+      $iterate: true,
+      title: [
+        { $alt: ['original.heading', 'content.title', 'content.headline'] },
+        '^.id', // The reason for this odd looking use of parent, is that the $alt operation will push the pipeline value to the context when getting `undefined`, so we need to go up again one level to get the id
+      ],
+    },
+  ]
+  const data = {
+    items: [{ id: '12345' }, { id: '12346' }],
+  }
+  const expected = [{ title: '12345' }, { title: '12346' }]
 
-    const ret = mapTransform(def)(data)
+  const ret = mapTransform(def)(data)
 
-    t.deepEqual(ret, expected)
-  },
-)
+  t.deepEqual(ret, expected)
+})
 
 test('should provide correct context for parent during alt paths that moves us further down', (t) => {
   const def = [
@@ -591,12 +585,14 @@ test('should provide correct context for parent during alt paths that moves us f
   t.deepEqual(ret, expected)
 })
 
-test('should provide correct context for parent during alt with only one pipeline', (t) => {
+// Note: This is a breaking change from the old way, as we do not support the
+// special case for alt with only one pipeline.
+test('should provide correct context for parent when alt yields no value', (t) => {
   const def = [
     'items[]',
     {
       $iterate: true,
-      title: ['title', { $alt: ['heading'] }, '^.id'], // This path doesn't make sense, but does the job of testing the context
+      title: ['title', { $alt: ['heading'] }, '^.^.id'], // This path doesn't make sense, but does the job of testing the context
     },
   ]
   const data = {
@@ -612,30 +608,26 @@ test('should provide correct context for parent during alt with only one pipelin
   t.deepEqual(ret, expected)
 })
 
-test.failing(
-  'should apply default value from an operation object going in reverse only',
-  (t) => {
-    const def = {
-      title: {
-        $alt: [
-          'content.heading',
-          { $value: 'Default heading', $direction: 'rev' },
-        ],
-        useLastAsDefault: true,
-      },
-    }
-    const dataFwd = { content: {} }
-    const expectedFwd = { title: undefined }
-    const dataRev = { content: {} }
-    const expectedRev = { content: { heading: 'Default heading' } }
+test('should apply default value from an operation object going in reverse only', (t) => {
+  const def = {
+    title: {
+      $alt: [
+        'content.heading',
+        { $value: 'Default heading', $direction: 'rev' },
+      ],
+    },
+  }
+  const dataFwd = { content: {} }
+  const expectedFwd = { title: undefined }
+  const dataRev = { content: {} }
+  const expectedRev = { content: { heading: 'Default heading' } }
 
-    const retFwd = mapTransform(def)(dataFwd)
-    const retRev = mapTransform(def)(dataRev, { rev: true })
+  const retFwd = mapTransform(def)(dataFwd)
+  const retRev = mapTransform(def)(dataRev, { rev: true })
 
-    t.deepEqual(retFwd, expectedFwd)
-    t.deepEqual(retRev, expectedRev)
-  },
-)
+  t.deepEqual(retFwd, expectedFwd)
+  t.deepEqual(retRev, expectedRev)
+})
 
 // TODO?
 // test('should apply default in iterated deep structure', (t) => {

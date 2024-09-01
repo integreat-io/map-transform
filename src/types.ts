@@ -141,7 +141,6 @@ export interface AltOperation extends TransformerProps {
 
 export interface AltOperationNext extends AltOperation {
   $alt: TransformDefinitionNext[]
-  useLastAsDefault?: boolean
 }
 
 export interface ConcatOperation extends TransformerProps {

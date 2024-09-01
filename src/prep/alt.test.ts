@@ -65,21 +65,6 @@ test('should pass on $direction as dir', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should pass on useLastAsDefault', (t) => {
-  const def = { $alt: [['title'], 'props.name'], useLastAsDefault: true }
-  const expected = [
-    {
-      type: 'alt' as const,
-      useLastAsDefault: true,
-      pipelines: [['title'], ['props', 'name']],
-    },
-  ]
-
-  const ret = preparePipeline(def, options)
-
-  t.deepEqual(ret, expected)
-})
-
 test('should return no step when no pipelines', (t) => {
   const def = { $alt: [] }
   const expected: PreppedPipeline = []

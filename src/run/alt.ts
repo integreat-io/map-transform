@@ -12,9 +12,20 @@ import type { PreppedPipeline } from './index.js'
 
 export interface AltStep extends OperationStepBase {
   type: 'alt'
-  useLastAsDefault?: boolean
   pipelines: PreppedPipeline[]
 }
+
+// Will check whether the original value is the same as the next value. If it
+// is and we don't have an empty pipeline (which would tell us that this is
+// what we want), we return `true`.
+//
+// TODO: We might want to limit this comparison to only objects, as plain
+// values may be equal after the pipeline even though they have been modified.
+const isUntouchedValue = (
+  value: unknown,
+  nextValue: unknown,
+  pipeline: PreppedPipeline,
+) => value === nextValue && pipeline.length > 0
 
 // Run each pipeline until we get a value -- or return undefined.
 function* getWithAltPipelines(
@@ -31,7 +42,10 @@ function* getWithAltPipelines(
     const next = yield isAsync
       ? runOneLevelAsync(value, pipeline, nextState)
       : runOneLevel(value, pipeline, nextState)
-    if (!isNonvalue(next, state.nonvalues)) {
+    if (
+      !isUntouchedValue(value, next, pipeline) &&
+      !isNonvalue(next, state.nonvalues)
+    ) {
       // We have a value -- update the state context from this pipeline and
       // return the value.
       state.context = nextState.context
@@ -40,30 +54,43 @@ function* getWithAltPipelines(
   }
 
   // No pipeline returned a value -- return undefined.
+  state.context.push(value)
   return undefined
 }
 
-// Retrurn `true` if the value is non-value, `useLastAsDefault` is `true`, and
-// there are more than one pipline, we should get a default value from the last
-// pipeline.
+// Return `true` if the value is non-value and there are more than one pipline.
 const shouldUseDefault = (
   value: unknown,
   pipelines: PreppedPipeline[],
   state: State,
-  useLastAsDefault: boolean,
-) =>
-  useLastAsDefault && pipelines.length > 1 && isNonvalue(value, state.nonvalues)
+) => pipelines.length > 1 && isNonvalue(value, state.nonvalues)
 
-// Get a default value from the last pipeline.
-function getDefaultValue(
+// Get a default value from the pipelines, starting with the last. We skip the
+// first one since this is only used in rev, and we'll then set with the first
+// one.
+//
+// TODO: Is it correct to pass these pipelines `undefined`? It would make sense
+// as we are looking for default values, but could there be cases where a
+// default value is still dependant on the original pipeline value? In that
+// case, we would also have to check for directions or that the value has
+// changed, as a pipeline with a value operator for the other direction, would
+// yield the original pipeline value and that is not what we want.
+function* getDefaultValue(
   pipelines: PreppedPipeline[],
   state: State,
   isAsync = false,
-) {
-  const lastPipeline = pipelines[pipelines.length - 1]
-  return isAsync
-    ? runPipelineAsync(undefined, lastPipeline, state)
-    : runPipeline(undefined, lastPipeline, state)
+): Generator<unknown, unknown, unknown> {
+  const defaultPipelines = pipelines.slice(1).reverse()
+
+  for (const pipeline of defaultPipelines) {
+    const value = yield isAsync
+      ? runPipelineAsync(undefined, pipeline, state)
+      : runPipeline(undefined, pipeline, state)
+    if (!isUntouchedValue(undefined, value, pipeline) && !isNonvalue(value)) {
+      return value
+    }
+  }
+  return undefined
 }
 
 // Use the first pipeline to set the value.
@@ -83,22 +110,22 @@ function setWithAltPipelines(
  * updated as if only the "winning" pipeline ran.
  *
  * In reverse, the first pipeline will be used to set the `value`, as this is
- * most likely to be the wanted reverse version.
+ * most likely to be the wanted reverse version. If any of the other pipelines
+ * contains a $value operator, we will attempt to get a default value from
+ * them, starting with the last pipeline and going backwards.
  *
- * There is a special case when `useLastAsDefault` is `true` and we have a
- * non-value in reverse. In this case assume that the last pipeline will return
- * a default value, so we run it forward and give the resulting value to the
- * first pipeline. This is a way to use a default value in both directions.
+ * This version does not support async pipelines.
  */
 export default function runAltStep(
   value: unknown,
-  { pipelines, useLastAsDefault = false }: AltStep,
+  { pipelines }: AltStep,
   state: State,
 ) {
   const isRev = revFromState(state)
   if (isRev) {
-    if (shouldUseDefault(value, pipelines, state, useLastAsDefault)) {
-      value = getDefaultValue(pipelines, state)
+    if (shouldUseDefault(value, pipelines, state)) {
+      const it = getDefaultValue(pipelines, state)
+      value = runIterator(it)
     }
     return setWithAltPipelines(value, pipelines, state)
   } else {
@@ -117,24 +144,22 @@ export default function runAltStep(
  * updated as if only the "winning" pipeline ran.
  *
  * In reverse, the first pipeline will be used to set the `value`, as this is
- * most likely to be the wanted reverse version.
+ * most likely to be the wanted reverse version. If any of the other pipelines
+ * contains a $value operator, we will attempt to get a default value from
+ * them, starting with the last pipeline and going backwards.
  *
- * There is a special case when `useLastAsDefault` is `true` and we have a
- * non-value in reverse. In this case assume that the last pipeline will return
- * a default value, so we run it forward and give the resulting value to the
- * first pipeline. This is a way to use a default value in both directions.
- *
- * This is an async version of `runAltStep()`.
+ * This version supports async pipelines.
  */
 export async function runAltStepAsync(
   value: unknown,
-  { pipelines, useLastAsDefault = false }: AltStep,
+  { pipelines }: AltStep,
   state: State,
 ) {
   const isRev = revFromState(state)
   if (isRev) {
-    if (shouldUseDefault(value, pipelines, state, useLastAsDefault)) {
-      value = await getDefaultValue(pipelines, state, true)
+    if (shouldUseDefault(value, pipelines, state)) {
+      const it = getDefaultValue(pipelines, state, true)
+      value = await runIteratorAsync(it)
     }
     return await setWithAltPipelines(value, pipelines, state)
   } else {

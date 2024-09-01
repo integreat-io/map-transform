@@ -185,7 +185,7 @@ test('should support $and - not matching', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test.failing('should support $and - matching in reverse', (t) => {
+test('should support $and - matching in reverse', (t) => {
   const def = [
     'content',
     {

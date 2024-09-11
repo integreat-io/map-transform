@@ -1,6 +1,6 @@
 import test from 'ava'
 import { isObject } from '../utils/is.js'
-import mapTransform, { mapTransformAsync } from '../mapTransform.js'
+import { mapTransformSync, mapTransformAsync } from '../index.js'
 
 // Setup
 
@@ -30,7 +30,7 @@ test('should filter out item', (t) => {
   }
   const expected = undefined
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -62,7 +62,7 @@ test('should filter out items in array', (t) => {
   ]
   const expected = [{ title: 'Just this' }]
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -84,7 +84,7 @@ test('should filter with several filters', (t) => {
   ]
   const expected = [{ title: 'Just this' }]
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -106,7 +106,7 @@ test('should set filtered items on path', (t) => {
     items: [{ title: 'Just this' }],
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -127,7 +127,7 @@ test('should filter items from parent mapping for reverse mapping', (t) => {
   }
   const expected = [{ content: { heading: 'Just this' } }]
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -149,7 +149,7 @@ test('should filter on reverse mapping', (t) => {
   ]
   const expected = [{ content: { heading: 'Just this' } }]
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -175,7 +175,7 @@ test('should use directional filters - going forward', (t) => {
     { title: 'Another heading' },
   ]
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -200,7 +200,7 @@ test('should use directional filters - going reverse', (t) => {
     { content: { heading: 'Also this' } },
   ]
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -210,7 +210,7 @@ test('should filter before mapping', (t) => {
   const data = { content: { title: 'The heading' } }
   const expected = undefined
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -220,7 +220,7 @@ test('should filter with filter before mapping on reverse mapping', (t) => {
   const data = { heading: 'The heading' }
   const expected = { content: undefined }
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -236,7 +236,7 @@ test('should filter with compare transformer', (t) => {
   const data = { heading: 'The heading', section: 'fashion' }
   const expected = undefined
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -262,7 +262,7 @@ test('should filter after a lookup', (t) => {
   }
   const expected = [{ title: 'Just this' }]
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -275,7 +275,7 @@ test('should apply filter from operation object with Symbol id', (t) => {
   const data = { content: { heading: 'The heading' } }
   const expected = undefined
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -286,7 +286,7 @@ test('should throw when filter is given an unknown transformer id', (t) => {
     content: { heading: 'The heading' },
   }
 
-  const error = t.throws(() => mapTransform(def, options)(data))
+  const error = t.throws(() => mapTransformSync(def, options)(data))
 
   t.true(error instanceof Error)
   t.is(
@@ -301,7 +301,7 @@ test('should throw when filter is given an unknown transformer id as symbol', (t
     content: { heading: 'The heading' },
   }
 
-  const error = t.throws(() => mapTransform(def, options)(data))
+  const error = t.throws(() => mapTransformSync(def, options)(data))
 
   t.true(error instanceof Error)
   t.is(
@@ -317,7 +317,7 @@ test('should throw when filter operator is missing a transformer id', (t) => {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = t.throws(() => mapTransform(def as any, options)(data))
+  const error = t.throws(() => mapTransformSync(def as any, options)(data))
 
   t.true(error instanceof Error)
   t.is(error?.message, 'Filter operation is missing transformer id')

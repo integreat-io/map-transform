@@ -1,6 +1,6 @@
 import test from 'ava'
 import { isObject } from '../utils/is.js'
-import mapTransform, { mapTransformAsync } from '../mapTransform.js'
+import { mapTransformSync, mapTransformAsync } from '../index.js'
 
 // Tests
 
@@ -20,7 +20,7 @@ test('should map with object path', (t) => {
   }
   const expected = { title: 'Heading 1' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -43,7 +43,7 @@ test('should map to sub paths', (t) => {
   }
   const expected = { article: { id: 'ent1', title: 'Heading 1' } }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -70,7 +70,7 @@ test('should replace prop with transform object', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -81,7 +81,7 @@ test('should map to target', (t) => {
   const target = { id: 'ent1', title: 'Default title' }
   const expected = { id: 'ent1', title: 'Heading 1' }
 
-  const ret = mapTransform(def)(data, { target })
+  const ret = mapTransformSync(def)(data, { target })
 
   t.deepEqual(ret, expected)
 })
@@ -104,7 +104,7 @@ test('should map to target with sub-objects', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { target })
+  const ret = mapTransformSync(def)(data, { target })
 
   t.deepEqual(ret, expected)
 })
@@ -125,7 +125,7 @@ test('should get object from alt path', (t) => {
   }
   const expected = { title: 'Heading 1' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -154,7 +154,7 @@ test('should map with object shape', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -176,7 +176,7 @@ test('should skip transform object with $direction: rev', (t) => {
   }
   const expected = data
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -201,7 +201,7 @@ test('should skip transform object when $direction is revAlias', (t) => {
   }
   const expected = data
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -222,7 +222,7 @@ test('should map null values path', (t) => {
   }
   const expected = { title: null }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -236,7 +236,7 @@ test('should allow colons in paths', (t) => {
   const data = { content: { 'a:heading': 'Heading 1' } }
   const expected = { 'b:title': 'Heading 1' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -258,7 +258,7 @@ test('should allow escaped chars in target paths', (t) => {
     $modify: true,
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -278,7 +278,7 @@ test('should allow escaped chars in source paths', (t) => {
     payload: { updatedAfter: new Date('2022-05-01T00:18:14Z'), type: 'entry' },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -302,7 +302,7 @@ test('should skip slashed properties going forward', (t) => {
   }
   const expected = { title: 'Heading 1' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -326,7 +326,7 @@ test('should fetch item from array within bigger mutation', (t) => {
     response: { data: { id: 'ent1', $type: 'entry' } },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -351,7 +351,7 @@ test('should map with root path', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -376,7 +376,7 @@ test('should map with root path in pipeline', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -396,7 +396,7 @@ test('should set on array index', (t) => {
     props: [{ value: 'Value 1' }, { value: 'Value 2' }],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -441,7 +441,7 @@ test('should set on array index when iterating to an array prop', (t) => {
     ],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -499,7 +499,7 @@ test('should map several layers of arrays with bracket notation in set path', (t
     ],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -528,7 +528,7 @@ test('should map with lookup', (t) => {
     authors: ['User 1', 'User 3'],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -552,7 +552,7 @@ test('should treat lookdown as get going forward', (t) => {
     content: { heading: 'The heading', authors: ['user1', 'user3'] },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -580,7 +580,7 @@ test('should map with lookup as transform object', (t) => {
     authors: ['User 1', 'User 3'],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -607,7 +607,7 @@ test('should set all props from source object and override some', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -623,7 +623,7 @@ test('should disregard pipeline with no get', (t) => {
   }
   const expected = { title: 'New article' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -641,7 +641,7 @@ test('should spread array to mapping objects', (t) => {
   }
   const expected = [{ id: 'ent1' }, { id: 'ent2' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -650,7 +650,7 @@ test('should map undefined to undefined', (t) => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
   const data = { items: undefined }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.is(ret, undefined)
 })
@@ -659,7 +659,7 @@ test('should treat nonvalues as undefined', (t) => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
   const data = { items: null }
 
-  const ret = mapTransform(def, { nonvalues: [undefined, null] })(data)
+  const ret = mapTransformSync(def, { nonvalues: [undefined, null] })(data)
 
   t.is(ret, undefined)
 })
@@ -689,7 +689,7 @@ test('should map with root operation', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -705,7 +705,7 @@ test('should modify object even when it has no other props', (t) => {
   const data = { key: 'ent1', heading: 'The heading' }
   const expected = { id: 'ent1', title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -748,7 +748,7 @@ test('should provide root in $if condition', (t) => {
   }
   const expected = data
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -789,7 +789,7 @@ test('should use root as $transform path', (t) => {
     meta: { ident: { id: 'johnf' } },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.is(
     ((ret as typeof data).response.data[0] as Record<string, unknown>).isEvent,
@@ -810,7 +810,7 @@ test('should not map fields without pipeline', (t) => {
     author: 'johnf',
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -824,7 +824,7 @@ test('should map data as is when no mapping', (t) => {
     heading: 'The heading',
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -852,7 +852,7 @@ test('should map with nested mappings', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -869,7 +869,7 @@ test('should not iterate when $iterate is not set', (t) => {
     articles: [{ title: ['Heading 1', 'Heading 2'] }],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -950,7 +950,7 @@ test('should shallow merge (modify) original object with transformed object', (t
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -1000,7 +1000,7 @@ test('should shallow merge (modify) original object with transformed object on s
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -1013,7 +1013,7 @@ test('should return data when no mapping def', (t) => {
   ]
   const expected = data
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -1025,7 +1025,7 @@ test('should return empty object when mapping def is empty object', (t) => {
     { content: { heading: 'Heading 2' } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, {})
 })
@@ -1048,7 +1048,7 @@ test('should set empty transform object to empty object on a path', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -1061,7 +1061,7 @@ test('should try to map even when no data is given', (t) => {
     title: undefined,
   }
 
-  const ret = mapTransform(def)(null)
+  const ret = mapTransformSync(def)(null)
 
   t.deepEqual(ret, expected)
 })
@@ -1104,7 +1104,7 @@ test('should map with parent', (t) => {
     ],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -1152,7 +1152,7 @@ test('should map with parent through several iterations', (t) => {
     ],
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -1219,7 +1219,7 @@ test('should map with parent when parents yielded undefined', (t) => {
     status: 'ok',
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })

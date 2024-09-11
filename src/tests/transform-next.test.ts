@@ -1,5 +1,5 @@
 import test from 'ava'
-import mapTransform, { mapTransformAsync } from '../mapTransform.js'
+import { mapTransformSync, mapTransformAsync } from '../index.js'
 import { isObject } from '../utils/is.js'
 import type { TransformDefinition } from '../prep/index.js'
 import type { TransformerProps } from '../types.js'
@@ -74,7 +74,7 @@ test('should map simple object with one transform function', (t) => {
     author: 'johnf',
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -98,7 +98,7 @@ test('should map simple object with several transforms', (t) => {
     active: true,
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -145,7 +145,7 @@ test('should reverse map simple object with rev transform', (t) => {
     meta: { writer: { username: 'johnf', name: 'Johnf.' } },
   }
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -176,7 +176,7 @@ test('should transform before data is set on outer path', (t) => {
     },
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -197,7 +197,7 @@ test('should transform before mapping', (t) => {
     enabled: true,
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -219,7 +219,7 @@ test('should apply transforms from left to right', (t) => {
     titleLength: 15,
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -240,7 +240,7 @@ test('should interate transform from an operation object', (t) => {
     titleLengths: [11, 16],
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -259,7 +259,7 @@ test('should apply transform from an operation object with arguments', (t) => {
     title: 'The heading - archived',
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -271,7 +271,7 @@ test('should use built in fixed function', (t) => {
   const data = { content: { heading: 'The heading' } }
   const expected = { title: "I'm always here" }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -286,7 +286,7 @@ test('should use built in fixed function with value function', (t) => {
   const data = { content: { heading: 'The heading' } }
   const expected = { title: "I'm from the function!" }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -298,7 +298,7 @@ test('should use built in fixed function in reverse', (t) => {
   const data = { title: 'The heading' }
   const expected = { content: "I'm always here" }
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -320,7 +320,7 @@ test('should use built in map function', (t) => {
   const data = { status: 404 }
   const expected = { result: 'notfound' }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -345,7 +345,7 @@ test('should use built in map function with named dictionary', (t) => {
   const data = { status: 404 }
   const expected = { result: 'notfound' }
 
-  const ret = mapTransform(def, { ...options, dictionaries })(data)
+  const ret = mapTransformSync(def, { ...options, dictionaries })(data)
 
   t.deepEqual(ret, expected)
 })
@@ -364,7 +364,7 @@ test('should use built in explode function', (t) => {
   }
   const expected = { rate: 0.1 }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -377,7 +377,7 @@ test('should use built in implode function', (t) => {
   ]
   const expected = { properties: { value: 32, unit: 'KG' } }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -393,8 +393,8 @@ test('should only use transform going forward', (t) => {
   const expectedFwd = { title: "I'm always here" }
   const expectedRev = { content: undefined }
 
-  const retFwd = mapTransform(def, options)(data)
-  const retRev = mapTransform(def, options)(data, { rev: true })
+  const retFwd = mapTransformSync(def, options)(data)
+  const retRev = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -411,8 +411,8 @@ test('should only use transform going in reverse', (t) => {
   const expectedFwd = { title: undefined }
   const expectedRev = { content: "I'm always here" }
 
-  const retFwd = mapTransform(def, options)(data)
-  const retRev = mapTransform(def, options)(data, { rev: true })
+  const retFwd = mapTransformSync(def, options)(data)
+  const retRev = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -430,8 +430,8 @@ test('should only use transform going in reverse when flipped', (t) => {
   const expectedFwd = { title: undefined }
   const expectedRev = { content: "I'm always here" }
 
-  const retFwd = mapTransform(def, options)(data)
-  const retRev = mapTransform(def, options)(data, { rev: true })
+  const retFwd = mapTransformSync(def, options)(data)
+  const retRev = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)
@@ -455,7 +455,7 @@ test('should provide index when iterating', (t) => {
     { title: 'The other', sequence: 1 },
   ]
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -489,7 +489,7 @@ test('should provide index deep down when iterating', (t) => {
     { title: 'The other', meta: { sectionId: 'sports-1' } },
   ]
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -510,7 +510,7 @@ test('should apply transform function to array with iteration', (t) => {
 
   const expected = { tags: ['news-1', 'sports-2'] }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -545,7 +545,7 @@ test('should provide index through apply when iterating', (t) => {
     { title: 'The other', meta: { sectionId: 'sports-1' } },
   ]
 
-  const ret = mapTransform(def, {
+  const ret = mapTransformSync(def, {
     ...options,
     pipelines: { sectionId: sectionIdDef },
   })(data)
@@ -571,7 +571,7 @@ test('should provide index when iterating in reverse', (t) => {
     ],
   }
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -589,7 +589,7 @@ test('should support $value shorthand', (t) => {
     views: 0,
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -606,7 +606,7 @@ test('should concat arrays with $concat', (t) => {
   }
   const expected = ['johnf', 'maryk', 'theboss']
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -623,7 +623,7 @@ test('should treat one path given to $concat as an array of one', (t) => {
   }
   const expected = ['johnf', 'maryk']
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -640,7 +640,7 @@ test('should concat arrays with $concatRev in reverse', (t) => {
   }
   const expected = ['johnf', 'maryk', 'theboss']
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -672,7 +672,7 @@ test('should shallow merge object with $merge', (t) => {
     tags: ['sports'],
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -705,7 +705,7 @@ test('should shallow merge object with $merge in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -723,7 +723,7 @@ test('should apply transform from an operation object with Symbol as key', (t) =
     titleLength: 11,
   }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -735,7 +735,7 @@ test('should throw when transform is given an unknown transformer id', (t) => {
     },
   ]
 
-  const error = t.throws(() => mapTransform(def, options))
+  const error = t.throws(() => mapTransformSync(def, options))
 
   t.true(error instanceof Error)
   t.is(
@@ -751,7 +751,7 @@ test('should throw when transform is given an unknown transformer id symbol', (t
     },
   ]
 
-  const error = t.throws(() => mapTransform(def, options))
+  const error = t.throws(() => mapTransformSync(def, options))
 
   t.true(error instanceof Error)
   t.is(
@@ -769,7 +769,7 @@ test('should throw when transform operation is missing a transformer id', (t) =>
     },
   ] as unknown as TransformDefinition
 
-  const error = t.throws(() => mapTransform(def, options))
+  const error = t.throws(() => mapTransformSync(def, options))
 
   t.true(error instanceof Error)
   t.is(error?.message, 'Transform operation is missing transformer id')
@@ -784,7 +784,7 @@ test('should throw when transform operation has invalid transformer id', (t) => 
     },
   ] as unknown as TransformDefinition
 
-  const error = t.throws(() => mapTransform(def, options))
+  const error = t.throws(() => mapTransformSync(def, options))
 
   t.true(error instanceof Error)
   t.is(
@@ -814,7 +814,7 @@ test('should run operation objects trought modifyOperationObject', (t) => {
     title: 'The heading - archived',
   }
 
-  const ret = mapTransform(def, { ...options, modifyOperationObject })(data)
+  const ret = mapTransformSync(def, { ...options, modifyOperationObject })(data)
 
   t.deepEqual(ret, expected)
 })

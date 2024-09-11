@@ -1,5 +1,5 @@
 import test from 'ava'
-import mapTransform from '../mapTransform.js'
+import { mapTransformSync } from '../index.js'
 
 // Tests
 
@@ -21,7 +21,7 @@ test('should map specified array over transform object', (t) => {
   }
   const expected = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -44,7 +44,7 @@ test('should map specified array over transform object in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -67,7 +67,7 @@ test('should iterate with iterate operation', (t) => {
   }
   const expected = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -90,7 +90,7 @@ test('should map array in transform object', (t) => {
     authors: ['johnf', 'lucyk'],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -137,7 +137,7 @@ test('should map several layers of arrays', (t) => {
     },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -166,7 +166,7 @@ test('should flatten arrays', (t) => {
     { attributes: { title: 'Heading 2' } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -179,7 +179,7 @@ test('should map empty array as empty array', (t) => {
   const data: unknown[] = []
   const expected: unknown[] = []
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -207,7 +207,7 @@ test('should map with object array path', (t) => {
     { title: 'Heading 3' },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -226,7 +226,7 @@ test('should handle array paths in object mappings', (t) => {
     { id: 'ent2', relationships: { sections: [] } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -248,7 +248,7 @@ test('should map with array index path', (t) => {
   }
   const expected = { title: 'Heading 2' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -265,7 +265,7 @@ test('should map with array index in middle of path', (t) => {
   }
   const expected = 'Heading 1'
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -290,7 +290,7 @@ test('should set several props in array', (t) => {
     ],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -319,7 +319,7 @@ test('should set several props in array with depth', (t) => {
     ],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -337,7 +337,7 @@ test('should return undefined from non-matching path with array index in middle'
   }
   const expected = undefined
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -356,7 +356,7 @@ test('should map with root array path', (t) => {
   ]
   const expected = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -388,7 +388,7 @@ test('should map array of objects', (t) => {
     },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -406,7 +406,7 @@ test('should set empty data array', (t) => {
     items: [],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -431,7 +431,7 @@ test('should not hijack array', (t) => {
     { content: { title: 'Entry 2' }, meta: { sections: [{ id: 'news' }] } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })

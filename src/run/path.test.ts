@@ -642,6 +642,18 @@ test('should set pipeline with array notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should flatten with array notation', (t) => {
+  const pipeline = ['responses', 'data', 'item', '>[]', '>values']
+  const value = {
+    responses: [{ data: [{ item: { id: 'ent1' } }, { item: { id: 'ent2' } }] }],
+  }
+  const expected = { values: [{ id: 'ent1' }, { id: 'ent2' }] }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set pipeline with array notation in the middle of a path', (t) => {
   const pipeline = ['response', 'data', 'item', '>item', '>[]', '>values']
   const value = {
@@ -851,12 +863,31 @@ test('should set pipeline several levels into target', (t) => {
 test('should set pipeline on target with set array notation', (t) => {
   const pipeline = ['meta', 'keywords', '>id', '>[]', '>topics']
   const value = {
-    meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
+    meta: { keywords: ['news', 'latest'], userId: 'johnf' },
   }
-  const target = {}
+  const target = { topics: [{ name: 'News' }, { name: 'Latest' }] }
   const state = { target }
   const expected = {
-    topics: [{ id: 'news' }, { id: 'latest' }],
+    topics: [
+      { id: 'news', name: 'News' },
+      { id: 'latest', name: 'Latest' },
+    ],
+  }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set pipeline on target with set array notation when target has an object in the array position', (t) => {
+  const pipeline = ['meta', 'keywords', '>id', '>[]', '>topics']
+  const value = {
+    meta: { keywords: ['news', 'latest'], userId: 'johnf' },
+  }
+  const target = { topics: { name: 'News' } }
+  const state = { target }
+  const expected = {
+    topics: [{ id: 'news', name: 'News' }, { id: 'latest' }],
   }
 
   const ret = runPipeline(value, pipeline, state)
@@ -868,7 +899,7 @@ test('should set pipeline on target with set array notation and more levels in i
   const pipeline = ['meta', 'keywords', '>id', '>item', '>[]', '>topics']
   const value = {
     content: { heading: 'Heading 1' },
-    meta: { keywords: ['news', 'latest'], ['user_id']: 'johnf' },
+    meta: { keywords: ['news', 'latest'], userId: 'johnf' },
   }
   const target = {}
   const state = { target }
@@ -965,6 +996,18 @@ test('should set pipeline on target with array notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set pipeline on target with array notation and inner workings', (t) => {
+  const pipeline = ['response', 'data', 'items', 'id', '>[]', '>values']
+  const value = { response: { data: { items: [{ id: 'ent1' }] } } }
+  const target = { count: 0, values: null }
+  const state = { target }
+  const expected = { values: ['ent1'], count: 0 }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should merge with target when we reach a set dot step', (t) => {
   const pipeline = ['response', 'data', 'item', '>.']
   const value = { response: { data: { item: { id: 'ent1' } } } }
@@ -1016,9 +1059,3 @@ test('should return target when we reach a forward plug', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should set pipeline on target inside array')
-test.todo('should flatten array when setting')
-test.todo(
-  'should support parent through iterations based on mutation prop array notation',
-)

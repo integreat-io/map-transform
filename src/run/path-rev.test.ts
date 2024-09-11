@@ -485,6 +485,25 @@ test('should set pipeline on target with array notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set pipeline on target with iteration', (t) => {
+  const pipeline = ['topics', '[]', 'id', '>keywords', '>meta']
+  const value = {
+    meta: { keywords: ['news', 'latest'], userId: 'johnf' },
+  }
+  const target = { topics: [{ name: 'News' }, { name: 'Latest' }] }
+  const state = { target, rev: true }
+  const expected = {
+    topics: [
+      { id: 'news', name: 'News' },
+      { id: 'latest', name: 'Latest' },
+    ],
+  }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should merge with target when we reach a get dot step', (t) => {
   const pipeline = ['.', '>data']
   const value = { data: { id: 'ent1' } }
@@ -508,5 +527,3 @@ test('should return target when we reach a reverse plug', (t) => {
 
   t.deepEqual(ret, expected)
 })
-
-test.todo('should set pipeline on target inside array')

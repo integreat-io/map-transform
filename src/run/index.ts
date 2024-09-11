@@ -183,6 +183,7 @@ function* runOneLevelGen(
     const step = pipeline[index++]
     if (typeof step === 'string') {
       // This is a path step -- handle it for both get and set
+      // console.log('*** Path step', step, targets)
       ;[next, index] = runPath(
         next,
         pipeline,

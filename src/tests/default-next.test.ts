@@ -1,5 +1,5 @@
 import test from 'ava'
-import mapTransform from '../mapTransform.js'
+import { mapTransformSync } from '../index.js'
 
 // Tests
 
@@ -11,7 +11,7 @@ test('should use $alt to provide a default value', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -21,7 +21,7 @@ test('should use $alt with only one pipeline', (t) => {
   const data = undefined
   const expected = 'No value'
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -38,7 +38,7 @@ test('should treat null as a non-value', (t) => {
   ]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def, optionsWithNullAsNoValue)(data)
+  const ret = mapTransformSync(def, optionsWithNullAsNoValue)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -51,7 +51,7 @@ test('should run $alt in iteration', (t) => {
   const data = [{ id: 'id1', key: 'key1' }, { key: 'key2' }]
   const expected = [{ id: 'id1' }, { id: 'key2' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -72,7 +72,7 @@ test('should run $alt in reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -87,7 +87,7 @@ test('should run function in $value', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default from function' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -100,7 +100,7 @@ test('should use alternative path', (t) => {
   const data = [{ heading: 'Entry 1' }, { headline: 'Entry 2' }]
   const expected = [{ title: 'Entry 1' }, { title: 'Entry 2' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -121,7 +121,7 @@ test('should use alternative path with dot notation', (t) => {
     { attributes: { title: 'Entry 2' } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -142,7 +142,7 @@ test('should not set on alternative path in reverse', (t) => {
     { content: { heading: 'Entry 2' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -155,7 +155,7 @@ test('should set missing values to undefined when no default', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: undefined }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -174,7 +174,7 @@ test('should use directional default value - forward', (t) => {
   const data = [{}, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -196,7 +196,7 @@ test('should use directional default value - reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -210,7 +210,7 @@ test('should not use default values', (t) => {
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [undefined, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -228,7 +228,7 @@ test('should not set missing data when $noDefaults is true', (t) => {
   const data = { data: { id: 'item', type: 'other' } }
   const expected = { id: 'item' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -242,7 +242,7 @@ test('should not set undefined on prop in array when $noDefaults is true', (t) =
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [undefined, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -258,7 +258,7 @@ test('should not force nonvalue to empty array when $noDefaults is true', (t) =>
   const data = { id: 'ent1', content: null }
   const expected = { id: 'ent1' }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -275,7 +275,7 @@ test('should not force nonvalue to empty array when $noDefaults is true - flippe
   const data = { id: 'ent1', content: null }
   const expected = { id: 'ent1' }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -289,7 +289,7 @@ test('should not use default values on rev', (t) => {
   const data = [{}, { title: 'From data' }]
   const expected = [undefined, { content: { heading: 'From data' } }]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -305,7 +305,7 @@ test('should not force nonvalue to empty array when $noDefaults is true in rever
   const data = { id: 'ent1', items: null }
   const expected = { id: 'ent1' }
 
-  const ret = mapTransform(def, options)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -319,7 +319,7 @@ test('should not force non-value to empty array when $noDefaults is true and app
   const data = { id: 'ent1', content: null }
   const expected = { id: 'ent1' }
 
-  const ret = mapTransform(def, options)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -333,7 +333,7 @@ test('should not use default values when noDefault is provided on initial state'
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [undefined, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data, { noDefaults })
+  const ret = mapTransformSync(def)(data, { noDefaults })
 
   t.deepEqual(ret, expected)
 })
@@ -346,7 +346,7 @@ test('should return undefined for undefined', (t) => {
   const data = undefined
   const expected = undefined
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -356,7 +356,7 @@ test('should stay on the right context level when using $alt after a path that d
   const data = { other: 'Do not include' }
   const expected = undefined
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -379,7 +379,7 @@ test('should apply default value from an operation object in reverse', (t) => {
     { content: { heading: 'From data' } },
   ]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -396,7 +396,7 @@ test('should apply default value from an operation object in flipped reverse', (
   const data = [{ content: {} }, { content: { heading: 'From data' } }]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -418,7 +418,7 @@ test('should apply default value to null from an operation object', (t) => {
   ]
   const expected = [{ title: 'Default heading' }, { title: 'From data' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -431,7 +431,7 @@ test('should apply default value through iteration of operation object', (t) => 
   const data = [{}, { heading: 'From data' }]
   const expected = ['Default heading', 'From data']
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -453,7 +453,7 @@ test('should preserve context during alt paths', (t) => {
   }
   const expected = [{ title: '12345' }, { title: '12345' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -475,7 +475,7 @@ test('should preserve context during alt paths when not in a root pipeline', (t)
     ids: ['12345'],
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -502,7 +502,7 @@ test('should provide correct context for parent during alt paths', (t) => {
     { article: { id: '12346', title: 'Entry 12346', note: 'Marvelous' } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -534,7 +534,7 @@ test('should provide correct context for parent during alt paths with different 
     { article: { id: '12346', title: 'Entry 12346', note: 'Marvelous' } },
   ]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -555,7 +555,7 @@ test('should provide correct context for parent when all alt pipelines return un
   }
   const expected = [{ title: '12345' }, { title: '12346' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -580,7 +580,7 @@ test('should provide correct context for parent during alt paths that moves us f
   }
   const expected = [{ title: '12345' }, { title: '12346' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -603,7 +603,7 @@ test('should provide correct context for parent when alt yields no value', (t) =
   }
   const expected = [{ title: '12345' }, { title: '12346' }]
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -622,8 +622,8 @@ test('should apply default value from an operation object going in reverse only'
   const dataRev = { content: {} }
   const expectedRev = { content: { heading: 'Default heading' } }
 
-  const retFwd = mapTransform(def)(dataFwd)
-  const retRev = mapTransform(def)(dataRev, { rev: true })
+  const retFwd = mapTransformSync(def)(dataFwd)
+  const retRev = mapTransformSync(def)(dataRev, { rev: true })
 
   t.deepEqual(retFwd, expectedFwd)
   t.deepEqual(retRev, expectedRev)

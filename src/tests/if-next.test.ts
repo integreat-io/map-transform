@@ -1,5 +1,5 @@
 import test from 'ava'
-import mapTransform, { mapTransformAsync } from '../mapTransform.js'
+import { mapTransformSync, mapTransformAsync } from '../index.js'
 
 // Tests
 
@@ -17,7 +17,7 @@ test('should run `then` pipeline when transform returns true', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -36,7 +36,7 @@ test('should run `else` pipeline when transform returns false', (t) => {
   }
   const expected = { title: 'The title' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -81,7 +81,7 @@ test('should run with set pipeline', (t) => {
   }
   const expected = { drafts: [{ title: 'Heading 1', published: false }] }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -99,7 +99,7 @@ test('should return undefined from else pipeline', (t) => {
     content: { heading: 'The heading', title: 'The title', section: 'sports' },
   }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.is(ret, undefined)
 })
@@ -122,7 +122,7 @@ test('should run $if deeper in the structure', (t) => {
   }
   const expected = { articles: [{ title: 'The heading' }] }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -151,7 +151,7 @@ test('should support $and - matching', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -180,7 +180,7 @@ test('should support $and - not matching', (t) => {
   }
   const expected = { title: 'The title' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -211,7 +211,7 @@ test('should support $and - matching in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -242,7 +242,7 @@ test('should support $and - not matching in reverse', (t) => {
     },
   }
 
-  const ret = mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def)(data, { rev: true })
 
   t.deepEqual(ret, expected)
 })
@@ -271,7 +271,7 @@ test('should support $or - matching', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -301,7 +301,7 @@ test('should support $or - matching with root', (t) => {
   }
   const expected = { title: 'The heading' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -330,7 +330,7 @@ test('should support $or - not matching', (t) => {
   }
   const expected = { title: 'The title' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })
@@ -356,7 +356,7 @@ test('should support $not', (t) => {
   }
   const expected = { title: 'The title' }
 
-  const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
   t.deepEqual(ret, expected)
 })

@@ -9,6 +9,7 @@ import { prepareOptions, preparePipelines } from './utils/prepareOptions.js'
 import { populateState, getStateValue, noopNext } from './utils/stateHelpers.js'
 import transformers from './transformers/index.js'
 import iterate from './operations/iterate.js'
+import mapTransformSync, { mapTransformAsync } from './mapTransform.js'
 
 export { default as apply } from './operations/apply.js'
 export { concat, concatRev } from './operations/concat.js'
@@ -25,6 +26,9 @@ export { default as plug } from './operations/plug.js'
 export { default as root } from './operations/root.js'
 export { default as transform } from './operations/transform.js'
 export { iterate, transformers }
+
+// The next methods
+export { mapTransformSync, mapTransformAsync }
 
 /**
  * Return a function that will transform data according to the given transform

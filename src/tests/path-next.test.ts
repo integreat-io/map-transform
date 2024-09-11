@@ -75,11 +75,34 @@ test('should replace prop with transform object', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should map with target', (t) => {
+test('should map to target', (t) => {
   const def = ['content.article.content.heading', '>title']
   const data = { content: { article: { content: { heading: 'Heading 1' } } } }
   const target = { id: 'ent1', title: 'Default title' }
   const expected = { id: 'ent1', title: 'Heading 1' }
+
+  const ret = mapTransform(def)(data, { target })
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map to target with sub-objects', (t) => {
+  const def = ['content.article.content.heading', '>attributes.title']
+  const data = { content: { article: { content: { heading: 'Heading 1' } } } }
+  const target = {
+    id: 'ent1',
+    attributes: {
+      title: 'Default title',
+      text: 'What a great article!',
+    },
+  }
+  const expected = {
+    id: 'ent1',
+    attributes: {
+      title: 'Heading 1',
+      text: 'What a great article!',
+    },
+  }
 
   const ret = mapTransform(def)(data, { target })
 

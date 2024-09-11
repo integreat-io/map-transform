@@ -209,8 +209,8 @@ function* runOneLevelGen(
           const items = []
           state.context.push(next) // Push the array to the context
           for (let i = 0; i < next.length; i++) {
-            // eslint-disable-next-line security/detect-object-injection
-            items.push(yield runStep(runner, next[i], step, state, i))
+            const item = next[i] // eslint-disable-line security/detect-object-injection
+            items.push(yield runStep(runner, item, step, state, i))
           }
           state.context.pop() // Remove the array from the context after iteration
           next = items

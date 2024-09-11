@@ -21,6 +21,9 @@ function cleanStep(step: Path) {
   }
 }
 
+const isLastStep = (pipeline: PreppedPipeline, index: number) =>
+  index === pipeline.length - 1
+
 /**
  * Extract the levels of a target object according to the set paths in the
  * pipeline. Will return an array of all the target levels, with the
@@ -48,6 +51,12 @@ export default function unwindTarget(
   for (let index = 0; index < setPipeline.length; index++) {
     const step = setPipeline[index] // eslint-disable-line security/detect-object-injection
     if (step === '[]' || step === '>[]') {
+      if (!isLastStep(setPipeline, index)) {
+        // There are still more steps, so push to targets. We don't have to
+        // ensure that the target value is an array, as this is handled when
+        // the target is iterated.
+        targets.push(target)
+      }
       break
     }
     const path = cleanStep(step)
@@ -58,7 +67,7 @@ export default function unwindTarget(
     ) {
       // Push this target before getting the next
       targets.push(target)
-      if (index < setPipeline.length - 1) {
+      if (!isLastStep(setPipeline, index)) {
         // We have not reached the last step yet -- fetch the next one
         target = target[path as keyof typeof target] // We know that a numeric key will only be applied to an array
       }

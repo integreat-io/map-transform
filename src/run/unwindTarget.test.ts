@@ -171,20 +171,23 @@ test('should unwind with an array in the middle', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should skip array notation', (t) => {
-  const pipeline = ['>id', '>[]', '>values']
-  const target = { values: { title: 'Entry 1' } }
-  const expected = [{ values: { title: 'Entry 1' } }]
+test('should unwind to array notation', (t) => {
+  const pipeline = ['meta', 'keywords', '>id', '>[]', '>topics']
+  const target = { topics: [{ name: 'News' }, { name: 'Latest' }] }
+  const expected = [
+    { topics: [{ name: 'News' }, { name: 'Latest' }] },
+    [{ name: 'News' }, { name: 'Latest' }],
+  ]
 
   const ret = unwindTarget(target, pipeline)
 
   t.deepEqual(ret, expected)
 })
 
-test('should skip array notation with array already in data', (t) => {
-  const pipeline = ['>id', '>[]', '>values']
-  const target = { values: [{ title: 'Entry 1' }] }
-  const expected = [{ values: [{ title: 'Entry 1' }] }]
+test('should unwind to array notation with an object at the array position', (t) => {
+  const pipeline = ['meta', 'keywords', '>id', '>[]', '>topics']
+  const target = { topics: { name: 'News' } }
+  const expected = [{ topics: { name: 'News' } }, { name: 'News' }]
 
   const ret = unwindTarget(target, pipeline)
 

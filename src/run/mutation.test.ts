@@ -307,7 +307,26 @@ test('should not mutate non-values when iterating', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should merge mutated object with target ($modify)', (t) => {
+test.skip('should set pipelines on the given target', (t) => {
+  const value = { key: 'ent1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['>...'], // $modify
+      ],
+    },
+  ]
+  const stateWithTarget = { ...state, target: { name: 'Entry 1' } }
+  const expected = { key: 'ent1', name: 'Entry 1', slug: 'ENT1' }
+
+  const ret = runPipeline(value, pipeline, stateWithTarget)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge mutated object with pipeline value ($modify)', (t) => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {

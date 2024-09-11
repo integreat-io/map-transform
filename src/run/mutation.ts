@@ -39,7 +39,7 @@ export default function runMutationStep(
   return pipelines.reduce(
     (target, pipeline) =>
       runPipeline(value, pipeline, handOffState(state, target, flip)),
-    (state.noDefaults ? undefined : {}) as unknown,
+    state.noDefaults ? undefined : ({} as unknown),
   )
 }
 

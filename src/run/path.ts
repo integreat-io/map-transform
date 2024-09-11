@@ -101,6 +101,36 @@ function getNextSetArrayOrSetIndex(
 const extractPathStep = (step: string, isRev: boolean): [string, boolean] =>
   step[0] === '>' ? [step.slice(1), !isRev] : [step, isRev]
 
+// Return true if the given pipeline has one or more set steps. We take into
+// account whether we are going forward or in reverse.
+const hasSetSteps = (pipeline: PreppedPipeline, isRev: boolean) =>
+  pipeline.some(
+    (step) => typeof step === 'string' && xor(step.startsWith('>'), isRev),
+  )
+
+// Run the `pipline` on each item in the `value` array. The resulting array
+// will be flattened. Will also iterate the `target`, to allow sets on the
+// target items where appropriate. If the target is not an array, we force it
+// to array with the target at index 0.
+function iteratePartOfPipeline(
+  value: unknown[],
+  targets: unknown[],
+  pipeline: PreppedPipeline,
+  state: State,
+  isRev: boolean,
+) {
+  const target = hasSetSteps(pipeline, isRev) ? targets.pop() : undefined
+
+  const targetArr = ensureArray(target, state.nonvalues) // Make sure we have a target array
+  return value.flatMap((item, index) =>
+    runOneLevel(
+      item,
+      pipeline,
+      new State({ ...state, target: targetArr[index] }, item), // eslint-disable-line security/detect-object-injection
+    ),
+  )
+}
+
 /**
  * Run a path step. The step will start with '>' when it's a set step.
  * When we're going in reverse, a get step will be treated as set, and
@@ -181,12 +211,13 @@ export default function runPathStep(
     // array notation when setting.
     if (setArrayIndex >= index) {
       // Hand off to the next level for each of the items in the array
-      const next = value.flatMap((item) =>
-        runOneLevel(
-          item,
-          pipeline.slice(index - 1, setArrayIndex), // Iteration from this step to a qualified set operation
-          new State({ ...state, target: undefined }, item),
-        ),
+      // TODO: Should we push array to context?
+      const next = iteratePartOfPipeline(
+        value,
+        targets,
+        pipeline.slice(index - 1, setArrayIndex), // Iteration from this step to a qualified set operation
+        state,
+        isRev,
       )
       return [next, setArrayIndex] // Return index of the iteration left off, to continue from there
     }

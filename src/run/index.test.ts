@@ -50,6 +50,30 @@ test('should iterate with an operation and make index available on state', (t) =
   t.deepEqual(ret, expected)
 })
 
+test.skip('should iterate target', (t) => {
+  const fn = (_value: unknown, state: State) => state.index ?? 0
+  const value = [{ name: 'Entry 1' }, { name: 'Entry 2' }]
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        ['name', '>title'],
+        [{ type: 'transform', fn }, '>order'],
+      ],
+    },
+  ]
+  const stateWithTarget = { ...state, target: [{ id: 'ent1' }, { id: 'ent2' }] }
+  const expected = [
+    { id: 'ent1', title: 'Entry 1', order: 0 },
+    { id: 'ent2', title: 'Entry 2', order: 1 },
+  ]
+
+  const ret = runPipeline(value, pipeline, stateWithTarget)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not touch value when empty pipeline', (t) => {
   const pipeline: PreppedPipeline = []
   const value = { id: 'ent1' }

@@ -41,7 +41,7 @@ export interface Options {
   fwdAlias?: string
   revAlias?: string
   modifyOperationObject?: (
-    operation: Record<string, unknown>
+    operation: Record<string, unknown>,
   ) => Record<string, unknown>
   modifyGetValue?: (value: unknown, state: State, options: Options) => unknown
 }
@@ -99,7 +99,11 @@ export interface AsyncTransformer<T = TransformerProps> {
 export type Path = string
 
 export interface TransformOperation extends TransformerProps {
-  $transform: string | symbol
+  $transform:
+    | string
+    | symbol
+    | DataMapperWithOptions
+    | AsyncDataMapperWithOptions
   $iterate?: boolean
   $direction?: string
 }

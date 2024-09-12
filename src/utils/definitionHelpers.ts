@@ -123,26 +123,32 @@ const createOperation =
   ): Operation =>
   (options) => {
     const { [fnProp]: fnId, ...props } = def
-    if (typeof fnId !== 'string' && typeof fnId !== 'symbol') {
-      throw new Error(
-        `${humanizeOperatorName(
-          fnProp,
-        )} operator was given no transformer id or an invalid transformer id`,
-      )
+    let transformFn
+    if (typeof fnId === 'function') {
+      transformFn = fnId as DataMapperWithOptions | AsyncDataMapperWithOptions
+    } else {
+      if (typeof fnId !== 'string' && typeof fnId !== 'symbol') {
+        throw new Error(
+          `${humanizeOperatorName(
+            fnProp,
+          )} operator was given no transformer id or an invalid transformer id`,
+        )
+      }
+
+      // eslint-disable-next-line security/detect-object-injection
+      const fn = options.transformers && options.transformers[fnId]
+      if (typeof fn !== 'function') {
+        throw new Error(
+          `${humanizeOperatorName(
+            fnProp,
+          )} operator was given the unknown transformer id '${String(fnId)}'`,
+        )
+      }
+      transformFn = fn(props)
     }
 
-    // eslint-disable-next-line security/detect-object-injection
-    const fn = options.transformers && options.transformers[fnId]
-    if (typeof fn !== 'function') {
-      throw new Error(
-        `${humanizeOperatorName(
-          fnProp,
-        )} operator was given the unknown transformer id '${String(fnId)}'`,
-      )
-    }
-
-    return typeof fn === 'function'
-      ? wrapFromDefinition(operationFn(fn(props)), def)(options)
+    return typeof transformFn === 'function'
+      ? wrapFromDefinition(operationFn(transformFn), def)(options)
       : passStateThroughNext
   }
 
@@ -252,12 +258,12 @@ export const defToOperations = (
   isPipeline(def)
     ? def.flatMap((def) => defToOperations(def, options))
     : isObject(def)
-    ? operationFromObject(def, options)
-    : isPath(def)
-    ? get(def)
-    : isOperation(def)
-    ? def
-    : () => () => async (value) => value
+      ? operationFromObject(def, options)
+      : isPath(def)
+        ? get(def)
+        : isOperation(def)
+          ? def
+          : () => () => async (value) => value
 
 export function defToOperation(
   def: TransformDefinition | undefined,

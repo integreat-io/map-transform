@@ -130,3 +130,16 @@ test('should prepare transform operation with direction revAlias', (t) => {
 
   t.deepEqual(ret, expected)
 })
+
+test('should throw when pipeline has a function (old operation)', (t) => {
+  const def = [
+    'data.name',
+    () => () => () => undefined,
+    '>items[].title',
+  ] as unknown as TransformDefinition // We know we are providing something invalid, but need to override the typing errors
+
+  const error = t.throws(() => preparePipeline(def, options))
+
+  t.true(error instanceof Error)
+  t.is(error.message, 'Operation functions are not supported anymore')
+})

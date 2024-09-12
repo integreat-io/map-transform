@@ -162,6 +162,8 @@ const prepareStep = (options: Options) =>
     } else if (typeof step === 'string') {
       // A path pipeline
       return preparePathStep(step)
+    } else if (typeof step === 'function') {
+      throw new Error('Operation functions are not supported anymore')
     } else if (step) {
       // An operation or mutation object step
       const [props, operation] = extractStepProps(

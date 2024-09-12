@@ -96,7 +96,11 @@ export interface AsyncTransformer<T = TransformerProps> {
 export type Path = string
 
 export interface TransformOperation extends TransformerProps {
-  $transform: string | symbol
+  $transform:
+    | string
+    | symbol
+    | DataMapperWithOptions
+    | AsyncDataMapperWithOptions
   $iterate?: boolean
   $direction?: string
 }

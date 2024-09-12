@@ -14,7 +14,7 @@ import mapTransform, {
   transformers,
 } from '../index.js'
 const { value } = transformers
-import type { Options, State } from '../types.js'
+import type { Options, State, TransformDefinition } from '../types.js'
 
 // Tests
 
@@ -144,6 +144,22 @@ test('should map with object shape', async (t) => {
       author: 'johnf',
     },
   }
+
+  const ret = await mapTransform(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should map with empty pipeline', async (t) => {
+  const def: TransformDefinition = []
+  const data = {
+    content: {
+      article: {
+        content: { heading: 'Heading 1' },
+      },
+    },
+  }
+  const expected = data
 
   const ret = await mapTransform(def)(data)
 

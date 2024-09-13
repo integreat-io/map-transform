@@ -312,7 +312,7 @@ test('should support async pipelines', async (t) => {
   ]
   const value = 'user2'
   const state = { rev: false, value, context }
-  const arrayPath = '^^related.users[]'
+  const arrayPath = [{ $transform: 'passThrough' }, '^^related.users[]']
   const propPath = [{ $transform: 'passThrough' }, 'id']
   const expected = { id: 'user2', name: 'User 2' }
 

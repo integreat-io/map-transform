@@ -135,6 +135,22 @@ test('should use value from second pipeline when first returns non-value', (t) =
   t.is(ret, expected)
 })
 
+test('should return value from last pipeline even when it returns a non-value', (t) => {
+  const value = { id: 'ent1', title: '' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], ['title']],
+    },
+  ]
+  const state = { nonvalues: [undefined, ''] }
+  const expected = ''
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
 test('should use non-values provided on the operation', (t) => {
   const value = { id: 'ent1', title: 'Entry 1', name: '' }
   const pipeline: PreppedPipeline = [

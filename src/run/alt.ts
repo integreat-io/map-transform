@@ -34,7 +34,7 @@ function* getWithAltPipelines(
   state: State,
   isAsync = false,
 ): Generator<unknown, unknown, unknown> {
-  for (const pipeline of pipelines) {
+  for (const [index, pipeline] of pipelines.entries()) {
     // Run a pipeline on the value. We create a cloned state for every pipeline
     // so they won't interfere with each other. We do the cloning here, to be
     // able to retrieve the context from the "winner".
@@ -44,10 +44,11 @@ function* getWithAltPipelines(
       : runOneLevel(value, pipeline, nextState)
     if (
       !isUntouchedValue(value, next, pipeline) &&
-      !isNonvalue(next, state.nonvalues)
+      (!isNonvalue(next, state.nonvalues) || index === pipelines.length - 1)
     ) {
-      // We have a value -- update the state context from this pipeline and
-      // return the value.
+      // We have a value, or we have reached the last pipeline. Update the
+      // state context from this pipeline and return the value, even it is a
+      // non-value.
       state.context = nextState.context
       return next
     }

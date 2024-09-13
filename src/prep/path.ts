@@ -1,5 +1,21 @@
 import type { Path } from '../types.js'
 
+// We check if the bracket is escaped. If it is, we check if the escape is
+// escaped, in which case the bracket is not escaped after all.
+function isEscaped(part: string, index: number) {
+  if (part[index - 1] === '\\') {
+    let count = 1
+    while (part[index - 1 - count] === '\\') {
+      // Count how many escapes we have in-front of our bracket
+      count++
+    }
+    return count % 2 === 1 // If the number is odd, we have an escape
+  } else {
+    return false
+  }
+  // && part[index - 2] !== '\\'
+}
+
 function splitPart(part: string): string[] {
   if (part === '$modify') {
     return ['...']
@@ -13,7 +29,7 @@ function splitPart(part: string): string[] {
     ]
   } else {
     const indexOfBracket = part.indexOf('[')
-    if (indexOfBracket >= 0 && part[indexOfBracket - 1] !== '\\') {
+    if (indexOfBracket >= 0 && !isEscaped(part, indexOfBracket)) {
       const indexOfClosingBracket = part.indexOf(']', indexOfBracket)
       return [
         part.slice(0, indexOfBracket), // Any path before the bracket
@@ -26,8 +42,8 @@ function splitPart(part: string): string[] {
   }
 }
 
-const escapeRegex = /\\(?!\\)/g
-const unescape = (path: Path) => path.replace(escapeRegex, '')
+const escapeRegex = /\\(.)/g
+const unescape = (path: Path) => path.replace(escapeRegex, '$1') // Replace an escaped value with the value
 
 const removeGetIndicator = (path: Path) =>
   path[0] === '<' ? path.slice(1) : path

@@ -1,6 +1,6 @@
 {
   "name": "map-transform",
-  "version": "1.6.0-alpha.7",
+  "version": "1.6.0-beta.0",
   "description": "Map and transform objects with mapping definitions",
   "author": "Kjell-Morten Bratsberg Thorsen <kjellmorten@integreat.io>",
   "license": "ISC",

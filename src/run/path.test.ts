@@ -1048,6 +1048,32 @@ test('should merge and prioritize target over value', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should merge and return target when value is not an object', (t) => {
+  const pipeline = ['response', 'data', 'item', '>...']
+  const value = undefined
+  const target = { count: 1, title: 'But this' }
+  const state = { target }
+  const expected = { title: 'But this', count: 1 }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge and return value when target is not an object', (t) => {
+  const pipeline = ['response', 'data', 'item', '>...']
+  const value = {
+    response: { data: { item: { id: 'ent1', title: 'Actually use this' } } },
+  }
+  const target = undefined
+  const state = { target }
+  const expected = { id: 'ent1', title: 'Actually use this' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should return target when we reach a forward plug', (t) => {
   const pipeline = ['|', 'response', 'data', 'item']
   const value = { response: { data: { item: { id: 'ent1' } } } }

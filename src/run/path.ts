@@ -10,9 +10,6 @@ const getProp = (prop: string, value: unknown) =>
 
 // Set on a prop
 function setProp(prop: string, value: unknown, target: unknown, state: State) {
-  if (isNonvalue(value, state.nonvalues)) {
-    value = undefined
-  }
   if (state.noDefaults && value === undefined) {
     return target
   } else if (target === undefined) {

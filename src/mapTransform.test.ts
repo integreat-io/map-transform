@@ -143,11 +143,11 @@ test('should include built-in transformers', (t) => {
 })
 
 test('should pass on nonvalues to the run function', (t) => {
-  const def = { id: 'key', title: 'name' }
-  const value = { key: 'ent1', name: '' }
+  const def = { id: 'key', title: { $alt: ['name', 'nickname'] } }
+  const value = { key: 'ent1', name: '', nickname: 'jf' }
   const state = {}
   const options = { nonvalues: [undefined, ''] }
-  const expected = { id: 'ent1', title: undefined }
+  const expected = { id: 'ent1', title: 'jf' }
 
   const ret = mapTransform(def, options)(value, state)
 

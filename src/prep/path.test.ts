@@ -202,6 +202,33 @@ test('should prepare path with escaped array notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should allow escaped slashes', (t) => {
+  const def = 'response.data.items\\\\_1'
+  const expected = ['response', 'data', 'items\\_1']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should allow escaped slashes in front of brackets', (t) => {
+  const def = 'response.data.items\\\\[]'
+  const expected = ['response', 'data', 'items\\', '[]']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should recognize several escaped slashes', (t) => {
+  const def = 'response.data.items\\\\\\[]'
+  const expected = ['response', 'data', 'items\\[]']
+
+  const ret = prep(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- parent and root
 
 test('should prepare path with parent', (t) => {

@@ -8,6 +8,11 @@ import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
 const getIsActiveAsync = async (value: unknown) =>
   isObject(value) ? value.isActive : undefined
 
+const notFn = async (value: unknown) => !value
+
+const uppercaseAsync = async (value: unknown) =>
+  typeof value === 'string' ? value.toUpperCase() : value
+
 const state = { rev: false }
 const stateRev = { rev: true }
 
@@ -116,12 +121,15 @@ test('should always run condition pipeline as forward', (t) => {
 
 // Tests -- async
 
-test('should run then pipeline when async condition is true', async (t) => {
-  const value = { isActive: true }
+test('should run then-pipeline when async condition is true', async (t) => {
+  const value = { isActive: false }
   const pipeline: PreppedPipeline = [
     {
       type: 'if',
-      condition: [{ type: 'transform', fn: getIsActiveAsync }],
+      condition: [
+        { type: 'transform', fn: getIsActiveAsync },
+        { type: 'transform', fn: notFn },
+      ],
       then: [{ type: 'value', value: 'active' }, '>state'],
       else: [{ type: 'value', value: 'inactive' }, '>state'],
     },
@@ -133,17 +141,62 @@ test('should run then pipeline when async condition is true', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should run else pipeline when async condition is false', async (t) => {
-  const value = { isActive: false }
+test('should run else-pipeline when async condition is false', async (t) => {
+  const value = { isActive: true }
   const pipeline: PreppedPipeline = [
     {
       type: 'if',
-      condition: [{ type: 'transform', fn: getIsActiveAsync }],
+      condition: [
+        { type: 'transform', fn: getIsActiveAsync },
+        { type: 'transform', fn: notFn },
+      ],
       then: [{ type: 'value', value: 'active' }, '>state'],
       else: [{ type: 'value', value: 'inactive' }, '>state'],
     },
   ]
   const expected = { state: 'inactive' }
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run async then-pipeline', async (t) => {
+  const value = { isActive: true }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'if',
+      condition: ['isActive'],
+      then: [
+        { type: 'value', value: 'active' },
+        { type: 'transform', fn: uppercaseAsync },
+        '>state',
+      ],
+      else: [{ type: 'value', value: 'inactive' }, '>state'],
+    },
+  ]
+  const expected = { state: 'ACTIVE' }
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run async else-pipeline', async (t) => {
+  const value = { isActive: false }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'if',
+      condition: ['isActive'],
+      then: [{ type: 'value', value: 'active' }, '>state'],
+      else: [
+        { type: 'value', value: 'inactive' },
+        { type: 'transform', fn: uppercaseAsync },
+        '>state',
+      ],
+    },
+  ]
+  const expected = { state: 'INACTIVE' }
 
   const ret = await runPipelineAsync(value, pipeline, state)
 

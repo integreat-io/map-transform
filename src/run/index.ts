@@ -14,6 +14,8 @@ import unwindTarget from './unwindTarget.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { isObject } from '../utils/is.js'
 import { revFromState } from '../utils/stateHelpers.js'
+import xor from '../utils/xor.js'
+import { ensureArray } from '../utils/array.js'
 import type { Path } from '../types.js'
 
 export interface StepProps {
@@ -79,6 +81,13 @@ export interface PreppedOptions {
 
 const isOperationObject = (step: PreppedStep): step is OperationStep =>
   isObject(step) && typeof step.type === 'string'
+
+// Return true if the given pipeline has one or more set steps. We take into
+// account whether we are going forward or in reverse.
+const hasSetSteps = (pipeline: PreppedPipeline, isRev: boolean) =>
+  pipeline.some(
+    (step) => typeof step === 'string' && xor(step.startsWith('>'), isRev),
+  )
 
 // Return true if the step should be run based on the direction set on the
 // operation object. If `dir` is negative, it should only be run in reverse, if
@@ -152,6 +161,21 @@ const runStep = (
     handOffState(state, value, step.nonvalues, step.noDefaults, index),
   )
 
+function* iterateOverArray(
+  value: unknown[],
+  target: unknown[],
+  state: State,
+  processor: (item: unknown, state: State, index: number) => unknown,
+) {
+  const items: unknown[] = []
+  for (let i = 0; i < value.length; i++) {
+    const item = value[i] // eslint-disable-line security/detect-object-injection
+    const nextState = new State({ ...state, target: target[i] }, item) // eslint-disable-line security/detect-object-injection
+    items.push(yield processor(item, nextState, i))
+  }
+  return items.flat()
+}
+
 /**
  * Run each step of a pipeline and return the resulting value. Path steps are
  * handled here, but for operation and mutation steps we yield the value to the
@@ -170,6 +194,11 @@ function* runOneLevelGen(
   pipeline: PreppedPipeline,
   state: State,
   stepFunctions: StepFunctions,
+  runOneLevel: (
+    value: unknown,
+    pipeline: PreppedPipeline,
+    state: State,
+  ) => unknown,
 ): Generator<unknown, unknown, unknown> {
   // Set the actual rev, based on flip and what not
   const isRev = revFromState(state)
@@ -177,14 +206,15 @@ function* runOneLevelGen(
   const targets = unwindTarget(state.target, pipeline, isRev)
   let next = value
   let index = 0
+  let doIterate: boolean | undefined = false
 
   // We go through each step in the pipeline one by one until we're done
   while (index < pipeline.length) {
     const step = pipeline[index++]
     if (typeof step === 'string') {
-      // This is a path step -- handle it for both get and set
-      // console.log('*** Path step', step, targets)
-      ;[next, index] = runPath(
+      // This is a path step -- handle it for both get and set.
+      const prevIndex = index
+      ;[next, index, doIterate] = runPath(
         next,
         pipeline,
         step,
@@ -193,6 +223,21 @@ function* runOneLevelGen(
         handOffState(state, next),
         isRev,
       )
+
+      if (doIterate && Array.isArray(next)) {
+        // The path step returned with the `doIterate` flag set, so we'll
+        // iterate of a subset of the pipeline -- from this step to the index
+        // set to `index`. We'll also iterate over the target if there are set
+        // steps in the pipeline.
+        const subPipeline = pipeline.slice(prevIndex - 1, index) // Iteration from this step to a qualified set operation
+        const target = hasSetSteps(subPipeline, isRev)
+          ? targets.pop()
+          : undefined
+        const targetArr = ensureArray(target, state.nonvalues) // Make sure we have a target array
+        const processor = (item: unknown, state: State) =>
+          runOneLevel(item, subPipeline, state)
+        next = yield* iterateOverArray(next, targetArr, state, processor)
+      }
     } else if (isOperationObject(step)) {
       if (shouldRun(step, state.rev)) {
         // This is an operation step and we are not being stopped by the
@@ -206,14 +251,11 @@ function* runOneLevelGen(
           // transformers.We push the array to the context before iterating,
           // and remove it afterwards, so that the array is available to parent
           // paths during iteration.
-          const items = []
           state.context.push(next) // Push the array to the context
-          for (let i = 0; i < next.length; i++) {
-            const item = next[i] // eslint-disable-line security/detect-object-injection
-            items.push(yield runStep(runner, item, step, state, i))
-          }
+          const processor = (item: unknown, state: State, index: number) =>
+            runStep(runner, item, step, state, index)
+          next = yield* iterateOverArray(next, [], state, processor)
           state.context.pop() // Remove the array from the context after iteration
-          next = items
         } else {
           // This is a single value, so just pass it to the operation runner.
           next = yield runStep(runner, next, step, state)
@@ -239,7 +281,13 @@ export function runOneLevel(
   // that would need to be awaited if we were to run them asynchronously. We
   // don't need to await anything here, but we still need to run the generator
   // to get the result.
-  const it = runOneLevelGen(value, pipeline, state, syncStepFunctions)
+  const it = runOneLevelGen(
+    value,
+    pipeline,
+    state,
+    syncStepFunctions,
+    runOneLevel,
+  )
   return runIterator(it)
 }
 
@@ -257,7 +305,13 @@ export async function runOneLevelAsync(
 ) {
   // The runing of the steps is handled by a generator, that will yield values
   // that need to be awaited. This is done in the `runIteratorAsync()` method.
-  const it = runOneLevelGen(value, pipeline, state, asyncStepFunctions)
+  const it = runOneLevelGen(
+    value,
+    pipeline,
+    state,
+    asyncStepFunctions,
+    runOneLevelAsync,
+  )
   return runIteratorAsync(it)
 }
 

@@ -1,8 +1,8 @@
 import State from '../state.js'
 import { isObject, isNonvalue } from '../utils/is.js'
-import { runOneLevel, PreppedPipeline } from './index.js'
 import xor from '../utils/xor.js'
 import { ensureArray } from '../utils/array.js'
+import type { PreppedPipeline } from './index.js'
 
 // Get from a prop
 const getProp = (prop: string, value: unknown) =>
@@ -98,36 +98,6 @@ function getNextSetArrayOrSetIndex(
 const extractPathStep = (step: string, isRev: boolean): [string, boolean] =>
   step[0] === '>' ? [step.slice(1), !isRev] : [step, isRev]
 
-// Return true if the given pipeline has one or more set steps. We take into
-// account whether we are going forward or in reverse.
-const hasSetSteps = (pipeline: PreppedPipeline, isRev: boolean) =>
-  pipeline.some(
-    (step) => typeof step === 'string' && xor(step.startsWith('>'), isRev),
-  )
-
-// Run the `pipline` on each item in the `value` array. The resulting array
-// will be flattened. Will also iterate the `target`, to allow sets on the
-// target items where appropriate. If the target is not an array, we force it
-// to array with the target at index 0.
-function iteratePartOfPipeline(
-  value: unknown[],
-  targets: unknown[],
-  pipeline: PreppedPipeline,
-  state: State,
-  isRev: boolean,
-) {
-  const target = hasSetSteps(pipeline, isRev) ? targets.pop() : undefined
-
-  const targetArr = ensureArray(target, state.nonvalues) // Make sure we have a target array
-  return value.flatMap((item, index) =>
-    runOneLevel(
-      item,
-      pipeline,
-      new State({ ...state, target: targetArr[index] }, item), // eslint-disable-line security/detect-object-injection
-    ),
-  )
-}
-
 /**
  * Run a path step. The step will start with '>' when it's a set step.
  * When we're going in reverse, a get step will be treated as set, and
@@ -141,14 +111,14 @@ export default function runPathStep(
   targets: unknown[],
   state: State,
   isRev: boolean, // We get the actual rev from the pipeline, to not derive it from state for each step
-): [unknown, number] {
+): [unknown, number, boolean?] {
   // Normalize the path and set the `isSet` flag based on whether we are
   // in reverse or not.
   const [path, isSet] = extractPathStep(step, isRev)
 
   if (path === '[]') {
     // Ensure that the value is an array -- regardless of direction. We won't
-    // turn nonvalues into empty arrays when `noDefaults` is `true`, though.
+    // turn non-values into empty arrays when `noDefaults` is `true`, though.
     return [ensureArrayIfDefaultsAreAllowed(value, state), index]
   } else if (path === '^') {
     // Get the parent value. This is never run in rev, as we remove it from the
@@ -202,21 +172,15 @@ export default function runPathStep(
   if (Array.isArray(value)) {
     // We have an array -- consider if we should iterate
     const setArrayIndex = isSet
-      ? getNextSetArrayIndex(pipeline, isRev) // For set
-      : getNextSetArrayOrSetIndex(pipeline, index, isRev) // For get
-    // We always iterate when getting, and for pipelines with a set
-    // array notation when setting.
+      ? getNextSetArrayIndex(pipeline, isRev) // For set -- iterate if there's a set array notation
+      : getNextSetArrayOrSetIndex(pipeline, index, isRev) // For get -- always iterate
     if (setArrayIndex >= index) {
-      // Hand off to the next level for each of the items in the array
-      // TODO: Should we push array to context?
-      const next = iteratePartOfPipeline(
-        value,
-        targets,
-        pipeline.slice(index - 1, setArrayIndex), // Iteration from this step to a qualified set operation
-        state,
-        isRev,
-      )
-      return [next, setArrayIndex] // Return index of the iteration left off, to continue from there
+      // Ok, so we should iterate, and as this may involve async steps, we'll
+      // hand this off to the caller. We return the value untouched, provide
+      // the index of the point in the pipeline we should iterate to, and set
+      // the third position in the return tupple to `true` to signal that we
+      // need to iterate.
+      return [value, setArrayIndex, true] // Return index of the iteration left off, to continue from there
     }
   }
 

@@ -7,6 +7,8 @@ import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
 
 const uppercase = (val: unknown, _state: State) =>
   typeof val === 'string' ? val.toUpperCase() : val
+const uppercaseAsync = async (val: unknown, state: State) =>
+  uppercase(val, state)
 
 const state = { rev: false }
 const stateRev = { rev: true }
@@ -141,6 +143,24 @@ test('should run a pipeline with an async transformer', async (t) => {
   const pipeline = [{ type: 'transform' as const, fn }, '>value']
   const value = { id: 'ent1' }
   const expected = { value: 'From async' }
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should run a pipeline with an async transformer when iterating', async (t) => {
+  const fn = async () => 'From async'
+  const pipeline = [
+    'items',
+    '[]',
+    'id',
+    { type: 'transform' as const, fn },
+    { type: 'transform' as const, fn: uppercaseAsync },
+    '>value',
+  ]
+  const value = { items: [{ id: 'ent1' }, { id: 'ent2' }] }
+  const expected = { value: ['FROM ASYNC', 'FROM ASYNC'] }
 
   const ret = await runPipelineAsync(value, pipeline, state)
 

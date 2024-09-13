@@ -546,7 +546,7 @@ test('should provide correct context for parent when all alt pipelines return un
       $iterate: true,
       title: [
         { $alt: ['original.heading', 'content.title', 'content.headline'] },
-        '^.id', // The reason for this odd looking use of parent, is that the $alt operation will push the pipeline value to the context when getting `undefined`, so we need to go up again one level to get the id
+        '^.^.id', // The reason for this odd looking use of parent, is that the $alt operation will push the pipeline value to the context when getting `undefined`, so we need to go up again one level to get the id
       ],
     },
   ]

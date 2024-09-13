@@ -540,11 +540,11 @@ test('should set undefined value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set a non-value as undefined', (t) => {
+test('should keep the original value of a non-value', (t) => {
   const pipeline = ['>value']
   const value = ''
   const state = { nonvalues: [undefined, ''] }
-  const expected = { value: undefined }
+  const expected = { value: '' }
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -562,11 +562,11 @@ test('should not set undefined value when noDefaults is true', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not set a non-value when noDefaults is true', (t) => {
+test('should still set a non-value when noDefaults is true', (t) => {
   const pipeline = ['>value']
   const value = ''
   const state = { nonvalues: [undefined, ''], noDefaults: true }
-  const expected = undefined
+  const expected = { value: '' }
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -924,12 +924,12 @@ test('should set undefined on target', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set a non-value as undefined on target', (t) => {
+test('should set the original value of a non-value on target', (t) => {
   const pipeline = ['>value']
   const value = ''
   const target = { count: 1 }
   const state = { target, nonvalues: [undefined, ''] }
-  const expected = { count: 1, value: undefined }
+  const expected = { count: 1, value: '' }
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -948,12 +948,12 @@ test('should not set undefined on target when noDefaults is true', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should not set a non-value on target when noDefaults is true', (t) => {
+test('should still set a non-value on target when noDefaults is true', (t) => {
   const pipeline = ['>value']
   const value = ''
   const target = { count: 1 }
   const state = { target, nonvalues: [undefined, ''], noDefaults: true }
-  const expected = { count: 1 }
+  const expected = { count: 1, value: '' }
 
   const ret = runPipeline(value, pipeline, state)
 

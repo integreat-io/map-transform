@@ -98,7 +98,7 @@ test('should set undefined value', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should set a non-value to undefined', (t) => {
+test('should keep the value of a non-value', (t) => {
   const value = { key: 'ent1', name: 'Entry 1', empty: '' }
   const pipeline: PreppedPipeline = [
     {
@@ -106,12 +106,12 @@ test('should set a non-value to undefined', (t) => {
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
-        ['unknown', '>age'],
+        ['empty', '>age'],
       ],
     },
   ]
   const state = { nonvalues: [undefined, ''] }
-  const expected = { id: 'ent1', title: 'Entry 1', age: undefined }
+  const expected = { id: 'ent1', title: 'Entry 1', age: '' }
 
   const ret = runPipeline(value, pipeline, state)
 

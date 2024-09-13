@@ -129,10 +129,9 @@ export default function runAltStep(
     }
     return setWithAltPipelines(value, pipelines, state)
   } else {
-    // The piplines are run with a generator that yields each value so that we
-    // could have await it if this was an async method. We still need to run
-    // through the iterator to get the result, and this is handled by
-    // `runIteratorAsync()`.
+    // The piplines are run with a generator that yields each value. The sync
+    // version simply returns the value to the generator in the
+    // `runIterator()`.
     const it = getWithAltPipelines(value, pipelines, state)
     return runIterator(it)
   }

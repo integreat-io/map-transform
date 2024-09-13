@@ -45,14 +45,23 @@ function setIndex(prop: string, value: unknown, target?: unknown) {
   return arr
 }
 
-// Merge the value and the target if they are both objects. If not, return the
-// value.
-function merge(value: unknown, target: unknown) {
-  if (isObject(value) && isObject(target)) {
-    return { ...target, ...value }
-  } else {
-    return value
+// Merge the `value` and the `target` when they are both objects. If not,
+// return the `value`. When `targetWhenNoObject` is `true`, `target` will be
+// returned when `value` is not an object
+function merge(value: unknown, target: unknown, targetWhenNoObject: boolean) {
+  if (isObject(value)) {
+    if (isObject(target)) {
+      // Both are objects -- merge
+      return { ...target, ...value }
+    }
+    // `target` is not an object so fall through to returning `value`
+  } else if (targetWhenNoObject) {
+    // `value` is not an object and we are told to return `target` in this case
+    return target
   }
+
+  // Always fall back to returning the value
+  return value
 }
 
 // Return value as an array. Nonvalues become an empty array, unless
@@ -136,12 +145,12 @@ export default function runPathStep(
     }
   } else if (path === '.') {
     // Merge value and target, and prioritize value on conflicts
-    return isSet ? [merge(value, targets.pop()), index] : [value, index]
+    return isSet ? [merge(value, targets.pop(), false), index] : [value, index]
   } else if (path === '...') {
     // Merge value and target, and prioritize target on conflicts. When we're
     // getting, threat as a plug and return target.
     return isSet
-      ? [merge(targets.pop(), value), index]
+      ? [merge(targets.pop(), value, true), index]
       : [state.target, pipeline.length]
   } else if (path === '|') {
     // We have reached a plug step -- skip it if we are setting or return the

@@ -233,6 +233,20 @@ test('should not set missing data when $noDefaults is true', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not mess up target when $noDefaults is true', (t) => {
+  const def = {
+    $modify: true,
+    $noDefaults: true,
+    users: 'users',
+  }
+  const data = { name: 'Should remain' }
+  const expected = { name: 'Should remain' }
+
+  const ret = mapTransformSync(def)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not set undefined on prop in array when $noDefaults is true', (t) => {
   const def = {
     $iterate: true,

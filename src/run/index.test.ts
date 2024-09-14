@@ -250,3 +250,28 @@ test('should iterate with an operation and make index available on state for asy
 
   t.deepEqual(ret, expected)
 })
+
+test('should not flatten arrays returned by an operation when iterating', async (t) => {
+  const value = [
+    { key: 'ent1', name: 'Entry 1' },
+    { key: 'ent2', name: 'Entry 2' },
+  ]
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        ['key', '>[0]'],
+        ['name', '>[1]'],
+      ],
+    },
+  ]
+  const expected = [
+    ['ent1', 'Entry 1'],
+    ['ent2', 'Entry 2'],
+  ]
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})

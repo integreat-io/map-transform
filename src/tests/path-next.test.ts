@@ -504,6 +504,91 @@ test('should map several layers of arrays with bracket notation in set path', (t
   t.deepEqual(ret, expected)
 })
 
+test('should flatten array with several levels and iterating operations', (t) => {
+  const def = {
+    payload: {
+      $modify: 'payload',
+      id: [
+        '^^getClients.response.data[].integrations[].tables[]',
+        { $apply: 'getIds', $iterate: true },
+      ],
+    },
+  }
+  const data = {
+    payload: { type: 'date' },
+    getClients: {
+      response: {
+        status: 'ok',
+        data: [
+          {
+            id: 'client2',
+            integrations: [
+              {
+                id: 'int1',
+                source: { id: 'src1' },
+                tables: [
+                  { id: 'transaction', name: 'Hovedbok' },
+                  { id: 'vat', name: 'MVA-oppsett' },
+                ],
+              },
+              {
+                id: 'int2',
+                source: { id: 'src2' },
+                tables: [{ id: 'salesItem', name: 'Salg varer' }],
+              },
+              {
+                id: 'int3',
+                source: { id: 'src3' },
+                tables: [
+                  { id: 'transaction', name: 'Hovedbok' },
+                  { id: 'workingOrder', name: 'Arbeidsordrer' },
+                ],
+              },
+              {
+                id: 'int4',
+                source: { id: 'src4' },
+                tables: [{ id: 'transaction', name: 'Hovedbok' }],
+              },
+            ],
+          },
+          {
+            id: 'client3',
+            integrations: [],
+          },
+        ],
+      },
+    },
+  }
+  const combineIds = () => (value: Record<string, unknown>) =>
+    `${value.clientId}:lastSyncedAt:${value.sourceId}:${value.tableId}`
+  const getIds = [
+    {
+      tableId: 'id',
+      sourceId: '^.^.source.id',
+      clientId: '^.^.^.^.id',
+    },
+    { $transform: combineIds },
+  ]
+  const options = { pipelines: { getIds } }
+  const expected = {
+    payload: {
+      type: 'date',
+      id: [
+        'client2:lastSyncedAt:src1:transaction',
+        'client2:lastSyncedAt:src1:vat',
+        'client2:lastSyncedAt:src2:salesItem',
+        'client2:lastSyncedAt:src3:transaction',
+        'client2:lastSyncedAt:src3:workingOrder',
+        'client2:lastSyncedAt:src4:transaction',
+      ],
+    },
+  }
+
+  const ret = mapTransformSync(def, options)(data)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should map with lookup', (t) => {
   const def = {
     title: 'content.heading',

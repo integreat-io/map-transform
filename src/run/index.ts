@@ -173,7 +173,7 @@ function* iterateOverArray(
     const nextState = new State({ ...state, target: target[i] }, item) // eslint-disable-line security/detect-object-injection
     items.push(yield processor(item, nextState, i))
   }
-  return items.flat()
+  return items
 }
 
 /**
@@ -236,7 +236,8 @@ function* runOneLevelGen(
         const targetArr = ensureArray(target, state.nonvalues) // Make sure we have a target array
         const processor = (item: unknown, state: State) =>
           runOneLevel(item, subPipeline, state)
-        next = yield* iterateOverArray(next, targetArr, state, processor)
+        const arr = yield* iterateOverArray(next, targetArr, state, processor)
+        next = arr.flat()
       }
     } else if (isOperationObject(step)) {
       if (shouldRun(step, state.rev)) {

@@ -126,6 +126,20 @@ test('should unwind with index notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should unwind with negative index notation', (t) => {
+  const pipeline = ['response', '>id', '>[-2]', '>data']
+  const target = { data: [{ id: 'ent1' }, {}] }
+  const expected = [
+    { data: [{ id: 'ent1' }, {}] },
+    [{ id: 'ent1' }, {}],
+    { id: 'ent1' },
+  ]
+
+  const ret = unwindTarget(target, pipeline)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should unwind with an array', (t) => {
   const pipeline = ['>id', '>values']
   const target = { values: [{ title: 'Entry 1' }, { title: 'Entry 2' }] }

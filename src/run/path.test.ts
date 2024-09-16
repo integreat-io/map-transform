@@ -593,9 +593,6 @@ test('should set pipeline with array index greater than 0', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: This will only ever set on index 0, as it does not make sense
-// to set on a negative index on an empty array. This will start having
-// an effect when we set on targets, so make sure to revist this then.
 test('should set pipeline with negative array index', (t) => {
   const pipeline = ['response', 'data', 'item', '>[-2]', '>values']
   const value = { response: { data: { item: { id: 'ent1' } } } }
@@ -978,6 +975,26 @@ test('should set pipeline with array index on target', (t) => {
   const target = { props: [{ value: 'Value 1' }] }
   const state = { target }
   const expected = { props: [{ value: 'Value 1' }, { value: 'Value 2' }] }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should set pipeline with negative array index on target', (t) => {
+  const pipeline = ['response', 'data', 'item', 'id', '>id', '>[-2]', '>values']
+  const value = { response: { data: { item: { id: 'ent2' } } } }
+  const target = {
+    values: [{ value: 'Value 1' }, { value: 'Value 2' }, { value: 'Value 3' }],
+  }
+  const state = { target }
+  const expected = {
+    values: [
+      { value: 'Value 1' },
+      { id: 'ent2', value: 'Value 2' },
+      { value: 'Value 3' },
+    ],
+  }
 
   const ret = runPipeline(value, pipeline, state)
 

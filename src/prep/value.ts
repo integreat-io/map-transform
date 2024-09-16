@@ -6,9 +6,11 @@ const unescape = (value: unknown) =>
 
 export default function prepareValueStep({
   $value: value,
+  fixed = false,
 }: ValueOperation): ValueStep {
   return {
     type: 'value',
     value: unescape(value),
+    fixed,
   }
 }

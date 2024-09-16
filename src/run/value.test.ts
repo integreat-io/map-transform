@@ -58,3 +58,24 @@ test('should not return a value when noDefaults is true', (t) => {
 
   t.is(ret, expected)
 })
+
+test('should return fixed value', (t) => {
+  const pipeline = [{ type: 'value' as const, value: 'Hello', fixed: true }]
+  const value = { id: 'ent1' }
+  const expected = 'Hello'
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})
+
+test('should return fixed value even when noDefaults is true', (t) => {
+  const pipeline = [{ type: 'value' as const, value: 'Hello', fixed: true }]
+  const value = { id: 'ent1' }
+  const state = { noDefaults: true }
+  const expected = 'Hello'
+
+  const ret = runPipeline(value, pipeline, state)
+
+  t.is(ret, expected)
+})

@@ -156,7 +156,7 @@ test('should plug pipelines with no set in reverse', (t) => {
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
-        [{ type: 'value', value: true }, '>archived', '>|'],
+        [{ type: 'value', value: true, fixed: false }, '>archived', '>|'],
       ],
     },
   ]

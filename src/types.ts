@@ -112,6 +112,7 @@ export interface FilterOperation extends TransformerProps {
 
 export interface ValueOperation extends TransformerProps {
   $value: unknown
+  fixed?: boolean
   $iterate?: boolean
   $direction?: string
 }

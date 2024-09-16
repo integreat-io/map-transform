@@ -278,9 +278,6 @@ test('should set with parents throught array notation', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO: I'm not at all sure this is correct behavior. I'm also not
-// sure we every defined an expected behavior for a parent directly
-// after a set.
 test('should set from parent after set', (t) => {
   const pipeline = ['response', 'data', 'item', '>value', '^', 'count']
   const value = 1

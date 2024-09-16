@@ -4,6 +4,11 @@ import xor from '../utils/xor.js'
 import { ensureArray } from '../utils/array.js'
 import type { PreppedPipeline } from './index.js'
 
+// If index is negative, we add it to the length of the array to count from the
+// end, but we'll return 0 if it goes past the beginnning of the array.
+export const calculateIndex = (index: number, arr: unknown[]) =>
+  index < 0 ? Math.max(arr.length + index, 0) : index
+
 // Get from a prop
 const getProp = (prop: string, value: unknown) =>
   isObject(value) ? value[prop] : undefined // eslint-disable-line security/detect-object-injection
@@ -23,10 +28,9 @@ function setProp(prop: string, value: unknown, target: unknown, state: State) {
 }
 
 // Get from an array index
-function getIndex(prop: string, value: unknown) {
+function getIndex(index: number, value: unknown) {
   if (Array.isArray(value)) {
     // We have an index and an array -- return the item at the index
-    const index = Number.parseInt(prop, 10)
     // eslint-disable-next-line security/detect-object-injection
     return index < 0 ? value[value.length + index] : value[index]
   } else {
@@ -36,12 +40,11 @@ function getIndex(prop: string, value: unknown) {
 }
 
 // Set on an array index
-function setIndex(prop: string, value: unknown, target?: unknown) {
-  const index = Number.parseInt(prop, 10)
+function setIndex(index: number, value: unknown, target?: unknown) {
   const arr = Array.isArray(target) ? target : []
   // Set on the given index. If the index is negative, we always set
   // index 0 for now
-  arr[index < 0 ? 0 : index] = value
+  arr[calculateIndex(index, arr)] = value
   return arr
 }
 
@@ -169,7 +172,7 @@ export default function runPathStep(
 
   if (path[0] === '[') {
     // This is an index path
-    const stepIndex = path.slice(1)
+    const stepIndex = Number.parseInt(path.slice(1), 10)
     return [
       isSet
         ? setIndex(stepIndex, value, targets.pop()) // Set to index

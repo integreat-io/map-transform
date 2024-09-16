@@ -1,3 +1,4 @@
+import { calculateIndex } from './path.js'
 import { isObject } from '../utils/is.js'
 import type { PreppedPipeline, PreppedStep } from './index.js'
 import type { Path } from '../types.js'
@@ -69,7 +70,9 @@ export default function unwindTarget(
       targets.push(target)
       if (!isLastStep(setPipeline, index)) {
         // We have not reached the last step yet -- fetch the next one
-        target = target[path as keyof typeof target] // We know that a numeric key will only be applied to an array
+        const key =
+          typeof path === 'number' ? calculateIndex(path, target) : path
+        target = target[key as keyof typeof target] // We know that a numeric key will only be applied to an array
       }
     } else if (Array.isArray(target)) {
       // For an array, push and stop

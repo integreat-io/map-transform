@@ -643,30 +643,29 @@ test('should apply default value from an operation object going in reverse only'
   t.deepEqual(retRev, expectedRev)
 })
 
-// TODO?
-// test('should apply default in iterated deep structure', (t) => {
-//   const def = [
-//     'data',
-//     {
-//       $iterate: true,
-//       attributes: {
-//         title: 'heading',
-//         num: { $alt: ['values.first', fwd('values.second')] },
-//       },
-//     },
-//   ]
-//   const data = {
-//     data: [
-//       { values: { first: 1 }, heading: 'First' },
-//       { values: { second: 2 }, heading: 'Second' },
-//     ],
-//   }
-//   const expected = [
-//     { attributes: { title: 'First', num: 1 } },
-//     { attributes: { title: 'Second', num: 2 } },
-//   ]
+test('should apply default in iterated deep structure', (t) => {
+  const def = [
+    'data',
+    {
+      $iterate: true,
+      attributes: {
+        title: 'heading',
+        num: { $alt: ['values.first', 'values.second'] },
+      },
+    },
+  ]
+  const data = {
+    data: [
+      { values: { first: 1 }, heading: 'First' },
+      { values: { second: 2 }, heading: 'Second' },
+    ],
+  }
+  const expected = [
+    { attributes: { title: 'First', num: 1 } },
+    { attributes: { title: 'Second', num: 2 } },
+  ]
 
-//   const ret = mapTransform(def)(data)
+  const ret = mapTransformSync(def)(data)
 
-//   t.deepEqual(ret, expected)
-// })
+  t.deepEqual(ret, expected)
+})

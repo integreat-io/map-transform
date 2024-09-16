@@ -674,35 +674,6 @@ test('should reverse map with nested mapping', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO:
-// test('should reverse map with directional paths', (t) => {
-//   const def = [
-//     fwd(get('wrong.path[]')),
-//     rev(get('content.articles[]')),
-//     {
-//       $iterate: true,
-//       title: 'content.heading',
-//     },
-//     fwd(set('wrong.path[]')),
-//     rev(set('items[]')),
-//   ]
-//   const data = {
-//     items: [{ title: 'Heading 1' }, { title: 'Heading 2' }],
-//   }
-//   const expected = {
-//     content: {
-//       articles: [
-//         { content: { heading: 'Heading 1' } },
-//         { content: { heading: 'Heading 2' } },
-//       ],
-//     },
-//   }
-
-//   const ret = mapTransform(def)(data, { rev: true })
-
-//   t.deepEqual(ret, expected)
-// })
-
 test('should reverse map with root path', (t) => {
   const def = [
     {

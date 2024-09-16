@@ -959,60 +959,6 @@ test('should not iterate when $iterate is not set', (t) => {
   t.deepEqual(ret, expected)
 })
 
-// TODO:
-// test('should forward map with directional paths', (t) => {
-//   const def = [
-//     fwd(get('content.articles[]')),
-//     rev(get('wrong.path[]')),
-//     {
-//       $iterate: true,
-//       title: 'content.heading',
-//     },
-//     fwd(set('items[]')),
-//     rev(set('wrong.path[]')),
-//   ]
-//   const data = {
-//     content: {
-//       articles: [
-//         { content: { heading: 'Heading 1' } },
-//         { content: { heading: 'Heading 2' } },
-//       ],
-//     },
-//   }
-//   const expected = {
-//     items: [{ title: 'Heading 1' }, { title: 'Heading 2' }],
-//   }
-
-//   const ret = mapTransform(def)(data)
-
-//   t.deepEqual(ret, expected)
-// })
-
-// TODO:
-// test('should set to undefined when moving forward', (t) => {
-//   const def = {
-//     title: [fwd(plug()), rev('content.heading')],
-//   }
-//   const data = { content: { heading: 'Heading 1' } }
-//   const expected = { title: undefined }
-
-//   const ret = mapTransform(def)(data)
-
-//   t.deepEqual(ret, expected)
-// })
-
-// test('should map with sub pipeline', (t) => {
-//   const def = ['content', ['articles']]
-//   const data = {
-//     content: { articles: [{ id: 'ent1' }, { id: 'ent2' }] },
-//   }
-//   const expected = [{ id: 'ent1' }, { id: 'ent2' }]
-
-//   const ret = mapTransform(def)(data)
-
-//   t.deepEqual(ret, expected)
-// })
-
 test('should shallow merge (modify) original object with transformed object', (t) => {
   const def = {
     article: {

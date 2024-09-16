@@ -4,14 +4,15 @@ import type { OperationStepBase } from './index.js'
 export interface ValueStep extends OperationStepBase {
   type: 'value'
   value: unknown
+  fixed?: boolean
 }
 
 export default function runValueStep(
   _value: unknown,
-  { value }: ValueStep,
+  { value, fixed }: ValueStep,
   state: State,
 ) {
-  if (state.noDefaults) {
+  if (state.noDefaults && !fixed) {
     return undefined
   } else {
     return typeof value === 'function' ? value() : value

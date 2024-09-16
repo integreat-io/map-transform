@@ -10,7 +10,7 @@ const options = {}
 
 test('should prepare value step', (t) => {
   const def = { $value: 'Hello' }
-  const expected = [{ type: 'value', value: 'Hello' }]
+  const expected = [{ type: 'value', value: 'Hello', fixed: false }]
 
   const ret = preparePipline(def, options)
 
@@ -19,7 +19,7 @@ test('should prepare value step', (t) => {
 
 test('should unescape **undefined**', (t) => {
   const def = { $value: '**undefined**' }
-  const expected = [{ type: 'value', value: undefined }]
+  const expected = [{ type: 'value', value: undefined, fixed: false }]
 
   const ret = preparePipline(def, options)
 
@@ -28,7 +28,7 @@ test('should unescape **undefined**', (t) => {
 
 test('should support value step with undefined value', (t) => {
   const def = { $value: undefined }
-  const expected = [{ type: 'value', value: undefined }]
+  const expected = [{ type: 'value', value: undefined, fixed: false }]
 
   const ret = preparePipline(def, options)
 
@@ -38,7 +38,25 @@ test('should support value step with undefined value', (t) => {
 test('should support value step with value function', (t) => {
   const fn = () => 'Hello'
   const def = { $value: fn }
-  const expected = [{ type: 'value', value: fn }]
+  const expected = [{ type: 'value', value: fn, fixed: false }]
+
+  const ret = preparePipline(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should prepare fixed value step', (t) => {
+  const def = { $value: 'Hello', fixed: true }
+  const expected = [{ type: 'value', value: 'Hello', fixed: true }]
+
+  const ret = preparePipline(def, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should prepare fixed step', (t) => {
+  const def = { $fixed: 'Hello' }
+  const expected = [{ type: 'value', value: 'Hello', fixed: true }]
 
   const ret = preparePipline(def, options)
 

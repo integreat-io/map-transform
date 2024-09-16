@@ -56,6 +56,12 @@ const createLookdownTransform = ({
   propPath: path,
 })
 
+const createFixedValue = ({ $fixed, ...rest }: Record<string, unknown>) => ({
+  $value: $fixed,
+  ...rest,
+  fixed: true,
+})
+
 export default function modifyOperation(
   operation: MutationObject | OperationObject,
   options: Options,
@@ -80,6 +86,8 @@ export default function modifyOperation(
     return createLookupTransform(operation)
   } else if (operation.hasOwnProperty('$lookdown')) {
     return createLookdownTransform(operation)
+  } else if (operation.hasOwnProperty('$fixed')) {
+    return createFixedValue(operation)
   } else {
     return operation
   }

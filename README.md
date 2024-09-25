@@ -26,6 +26,10 @@ Some highlighted features:
 
 Requires node v14.
 
+**Note:** This package is native [ESM](https://nodejs.org/api/esm.html). See this
+guide on how to
+[convert to or use ESM packages](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c).
+
 ### Installing
 
 Install from npm:

@@ -19,9 +19,6 @@
     "skipLibCheck": true,
     "removeComments": true,
     "baseUrl": ".",
-    "paths": {
-      "*": ["node_modules/*"]
-    },
     "outDir": "./dist"
   },
   "include": ["src/**/*"]

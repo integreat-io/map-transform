@@ -1361,8 +1361,7 @@ in all cases.
 
 #### `lookdown({ arrayPath, propPath, matchSeveral })` operation
 
-The `lookdown` operation is the exact oposite of `lookup`, and the name is
-marelly word-play on that. See
+The `lookdown` operation works the same as `lookup` but in the opposite direction. See
 [the `lookup` operation](#lookup-arraypath-proppath-matchseveral-operation)
 for more on how it works, just reverse the directions.
 

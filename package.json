@@ -54,9 +54,9 @@
   "devDependencies": {
     "@integreat/ts-dev-setup": "^6.0.4",
     "@types/deep-freeze": "^0.1.5",
-    "@types/node": "^20.16.5",
+    "@types/node": "^22.10.1",
     "@types/sinon": "^17.0.3",
     "deep-freeze": "0.0.1",
-    "sinon": "^18.0.1"
+    "sinon": "^19.0.2"
   }
 }

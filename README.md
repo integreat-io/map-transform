@@ -88,10 +88,10 @@ const def = {
 
 // You feed it to mapTransform and get a function that will transform data
 // according to your defintion
-const mapper = await mapTransform(def)
+const mapper = mapTransform(def)
 
 // Now, run the source object through the mapper and get what you want
-const target = mapper(source)
+const target = await mapper(source)
 // --> {
 //   title: 'An interesting piece',
 //   author: 'fredj',

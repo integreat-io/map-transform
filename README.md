@@ -101,18 +101,18 @@ const target = mapper(source)
 // And run it in reverse to get to what you started with:
 const source2 = mapper(target, { rev: true })
 // -> {
-  data: [
-    {
-      content: {
-        name: 'An interesting piece'
-      },
-      meta: {
-        author: 'fredj',
-        date: 1533750490952
-      }
-    },
-  ]
-}
+//   data: [
+//     {
+//       content: {
+//         name: 'An interesting piece'
+//       },
+//       meta: {
+//         author: 'fredj',
+//         date: 1533750490952
+//       }
+//     },
+//   ]
+// }
 ```
 
 You may improve this with pipelines, expressed through arrays. For instance,

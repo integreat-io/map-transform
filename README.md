@@ -99,7 +99,7 @@ const target = await mapper(source)
 // }
 
 // And run it in reverse to get to what you started with:
-const source2 = mapper(target, { rev: true })
+const source2 = await mapper(target, { rev: true })
 // -> {
 //   data: [
 //     {

@@ -45,9 +45,14 @@ export interface Options {
 
 // Data mapper types
 
-export interface DataMapper<T extends InitialState | undefined = State> {
+export interface AsyncDataMapper<T extends InitialState | undefined = State> {
   (data: unknown, state?: T): Promise<unknown>
 }
+
+export interface SyncDataMapper<T extends InitialState | undefined = State> {
+  (data: unknown, state?: T): unknown
+}
+export type DataMapper = AsyncDataMapper
 
 export interface AsyncDataMapperWithState {
   (data: unknown, state: State): Promise<unknown>

@@ -13,21 +13,6 @@ import {
 import { defToNextStateMapper } from '../utils/definitionHelpers.js'
 import { isObject } from '../utils/is.js'
 
-export function mergeExisting<T, U>(
-  target: T[],
-  source: U[],
-): U | (U | T | (U & T))[] {
-  if (Array.isArray(target)) {
-    const arr = source.slice()
-    target.forEach((value, index) => {
-      // eslint-disable-next-line security/detect-object-injection
-      arr[index] = deepmerge(source[index], value) as U // TODO: Is this ok? , { arrayMerge: mergeExisting }
-    })
-    return arr
-  }
-  return target
-}
-
 export function mergeStates(state: State, thisState: State) {
   const target = getStateValue(state)
   const source = getStateValue(thisState)
@@ -36,7 +21,7 @@ export function mergeStates(state: State, thisState: State) {
     ? target
     : !isObject(target)
       ? source
-      : deepmerge(target, source) // TODO: Is this ok? , { arrayMerge: mergeExisting }
+      : deepmerge(target, source)
 
   return setStateValue(state, value)
 }

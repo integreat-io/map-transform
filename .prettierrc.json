@@ -1,6 +1,5 @@
 {
   "semi": false,
   "singleQuote": true,
-  "jsxSingleQuote": true,
-  "editorconfig": true
+  "jsxSingleQuote": true
 }

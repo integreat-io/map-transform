@@ -3,7 +3,7 @@
 Map and transform objects with mapping definitions.
 
 [![npm Version](https://img.shields.io/npm/v/map-transform.svg)](https://www.npmjs.com/package/map-transform)
-[![Maintainability](https://api.codeclimate.com/v1/badges/fe35a58dd457837b457c/maintainability)](https://codeclimate.com/github/integreat-io/map-transform/maintainability)
+[![Maintainability](https://qlty.sh/gh/integreat-io/projects/map-transform/maintainability.svg)](https://qlty.sh/gh/integreat-io/projects/map-transform)
 
 Behind this rather boring name hides a powerful JavaScript object transformer.
 
@@ -24,7 +24,16 @@ Some highlighted features:
 
 ### Prerequisits
 
-Requires node v14.
+Requires node v14, but note that we are not actively testing older versions than
+v18.19 anymore. We recommend using node v22 or v24.
+
+We're working towards a v2.0 of `map-transform`, that will drop support for
+older node versions, among other breaking changes.
+
+> [!NOTE]
+> This package is native [ESM](https://nodejs.org/api/esm.html). See this guide
+> on how to
+> [convert to or use ESM packages](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c).
 
 **Note:** This package is native [ESM](https://nodejs.org/api/esm.html). See this
 guide on how to

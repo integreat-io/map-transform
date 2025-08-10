@@ -26,15 +26,17 @@
     }
   },
   "scripts": {
-    "test": "npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.js",
+    "test": "node --import tsx --test --enable-source-maps --experimental-test-coverage --test-reporter node-test-reporter 'src/**/*.test.ts'",
+    "test:legacy": "node --import tsx --no-deprecation --test --enable-source-maps src/*.test.ts src/**/*.test.ts",
     "test:watch": "npm run dev",
-    "dev": "ava --watch",
-    "perf": "ava --watch --config ./ava-perf.config.js",
+    "dev": "node --import tsx --test --enable-source-maps --test-reporter node-test-reporter --watch 'src/**/*.test.ts' || exit 0",
+    "test:perf": "node --import tsx --test --enable-source-maps --test-reporter node-test-reporter --watch 'src/tests/performance/**/*.ts' || exit 0",
     "build": "tsc",
-    "prepublish": "npm run build",
-    "coverage": "c8 report",
-    "lint": "eslint --ext .ts src",
-    "verify": "npm run lint && npm test"
+    "prepublishOnly": "npm run build",
+    "lint": "eslint src",
+    "format": "prettier src/**/*.ts *.md -w",
+    "check-types": "tsc --noEmit --strict",
+    "verify": "npm run lint && npm run check-types && npm test"
   },
   "repository": {
     "type": "git",
@@ -48,11 +50,11 @@
   },
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
-    "deepmerge": "^4.3.1",
+    "deepmerge-ts": "^7.1.5",
     "map-any": "^1.0.0"
   },
   "devDependencies": {
-    "@integreat/ts-dev-setup": "^6.0.4",
+    "@integreat/ts-dev-setup": "^8.2.0",
     "@types/deep-freeze": "^0.1.5",
     "@types/node": "^24.2.1",
     "@types/sinon": "^17.0.4",

@@ -1,0 +1,4 @@
+config_version = "0"
+
+exclude_patterns = ['**/*.test.ts', 'node_modules/', 'coverage/', 'dist/']
+test_patterns = ['**/*.test.ts']

@@ -71,7 +71,9 @@ export default function unwindTarget(
       if (!isLastStep(setPipeline, index)) {
         // We have not reached the last step yet -- fetch the next one
         const key =
-          typeof path === 'number' ? calculateIndex(path, target) : path
+          typeof path === 'number'
+            ? calculateIndex(path, target as unknown[]) // We know that if path is number, target is array, so force type
+            : path
         target = target[key as keyof typeof target] // We know that a numeric key will only be applied to an array
       }
     } else if (Array.isArray(target)) {

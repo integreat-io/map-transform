@@ -11,6 +11,7 @@ import type {
   TransformDefinition,
 } from '../types.js'
 import { unescapeValue } from '../utils/escape.js'
+import { isDate } from '../utils/is.js'
 
 interface Comparer {
   (value: unknown, match: unknown): boolean
@@ -40,6 +41,14 @@ const compareArrayOrValue =
       : comparer(value, match)
 
 const isNumeric = (value: unknown): value is number => typeof value === 'number'
+
+function prepareValue(value: unknown) {
+  if (isDate(value)) {
+    return value.getTime()
+  } else {
+    return value
+  }
+}
 
 const compareArrayOrValueNumeric = (comparer: NumericComparer) =>
   compareArrayOrValue(
@@ -116,15 +125,15 @@ const transformer: Transformer<Props> | AsyncTransformer<Props> =
       if (typeof path === 'string' || !path) {
         const getValue = pathGetter(path)
         return (data, state) => {
-          const value = getValue(data, state)
-          const match = getMatch(data, state)
+          const value = prepareValue(getValue(data, state))
+          const match = prepareValue(getMatch(data, state))
           return xor(comparer(value, match), not)
         }
       } else {
         const getValue = defToDataMapper(path, options)
         return async (data, state) => {
-          const value = await getValue(data, goForward(state))
-          const match = getMatch(data, state)
+          const value = prepareValue(await getValue(data, goForward(state)))
+          const match = prepareValue(getMatch(data, state))
           return xor(comparer(value, match), not)
         }
       }

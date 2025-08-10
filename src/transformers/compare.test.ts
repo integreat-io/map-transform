@@ -33,6 +33,16 @@ test('should return true when object has match value at path', (t) => {
   t.true(ret)
 })
 
+test('should match dates with ms values', (t) => {
+  const match = new Date('2025-05-18T00:43:51+02:00')
+  const path = 'date'
+  const data = { date: new Date('2025-05-18T00:43:51+02:00') }
+
+  const ret = compare({ path, operator: '=', match })(options)(data, state)
+
+  t.true(ret)
+})
+
 test('should return true when matching null', (t) => {
   const match = null
   const path = 'meta.role'
@@ -295,6 +305,15 @@ test('should support require numeric value and match', (t) => {
   t.false(
     compare({ path: 'age', operator: '<=', match: '35' })(options)(data, state),
   )
+})
+
+test('should match dates with ms values with greater or less than operators', (t) => {
+  const match = new Date('2025-05-18T00:43:51+02:00')
+  const path = 'date'
+  const data = { date: new Date('2025-05-18T01:11:37+02:00') }
+
+  t.true(compare({ path, operator: '>', match })(options)(data, state))
+  t.false(compare({ path, operator: '<', match })(options)(data, state))
 })
 
 test('should return true when the value at path is not undefined', (t) => {

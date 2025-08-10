@@ -1575,6 +1575,9 @@ The default is to check wheter the values resulting from `path` and `match` or
 `'<='`, `in`, or `exists`. `in` requires equality to at least one of the
 elements in an array, and `exists` requires any value besides `undefined`.
 
+Dates are compared using their milliseconds since epoc (1970-01-01) numeric
+values.
+
 If the `path` points to an array, the value is expected to be one of the values
 in the array.
 

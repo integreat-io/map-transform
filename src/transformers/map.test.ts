@@ -87,7 +87,7 @@ test('should flip the direction of map in reverse', async () => {
   assert.equal(await mapping('0', stateRev), undefined)
 })
 
-test('should map with several alternatives and defaults', async (t) => {
+test('should map with several alternatives and defaults', async () => {
   const mapping = map({ dictionary: complex })(options)
 
   assert.equal(await mapping('200', state), 'ok')

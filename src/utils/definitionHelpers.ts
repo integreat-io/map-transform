@@ -93,171 +93,165 @@ const wrapInNoDefaults =
 function wrapFromDefinition(
   ops: Operation | Operation[],
   def: OperationObject,
-): Operation {
+  options: Options,
+): NextStateMapper {
   const opsWithNoDefaults =
     def.$noDefaults === true ? wrapInNoDefaults(pipeIfArray(ops)) : ops
   const fn =
     def.$iterate === true ? iterate(opsWithNoDefaults) : opsWithNoDefaults
-  return (options) => {
-    const dir = def.$direction
-    if (typeof dir === 'string') {
-      if (dir === 'rev' || dir === options.revAlias) {
-        return rev(fn)(options)
-      } else if (dir === 'fwd' || dir === options.fwdAlias) {
-        return fwd(fn)(options)
-      }
+  const dir = def.$direction
+  if (typeof dir === 'string') {
+    if (dir === 'rev' || dir === options.revAlias) {
+      return rev(fn)(options)
+    } else if (dir === 'fwd' || dir === options.fwdAlias) {
+      return fwd(fn)(options)
     }
-    return Array.isArray(fn) ? pipe(fn, true)(options) : fn(options)
   }
+  return Array.isArray(fn) ? pipe(fn, true)(options) : fn(options)
 }
 
 const humanizeOperatorName = (operatorProp: string) =>
   `${operatorProp[1].toUpperCase()}${operatorProp.slice(2)}`
 
-const createOperation =
-  <U extends OperationObject>(
-    operationFn: (
-      fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
-    ) => Operation,
-    fnProp: string,
-    def: U,
-  ): Operation =>
-  (options) => {
-    const { [fnProp]: fnId, ...props } = def
-    let transformFn
-    if (typeof fnId === 'function') {
-      transformFn = fnId as DataMapperWithOptions | AsyncDataMapperWithOptions
-    } else {
-      if (typeof fnId !== 'string' && typeof fnId !== 'symbol') {
-        throw new Error(
-          `${humanizeOperatorName(
-            fnProp,
-          )} operator was given no transformer id or an invalid transformer id`,
-        )
-      }
-
-      // eslint-disable-next-line security/detect-object-injection
-      const fn = options.transformers && options.transformers[fnId]
-      if (typeof fn !== 'function') {
-        throw new Error(
-          `${humanizeOperatorName(
-            fnProp,
-          )} operator was given the unknown transformer id '${String(fnId)}'`,
-        )
-      }
-      transformFn = fn(props)
-    }
-
-    return typeof transformFn === 'function'
-      ? wrapFromDefinition(operationFn(transformFn), def)(options)
-      : passStateThroughNext
+function createOperation<U extends OperationObject>(
+  operationFn: (
+    fn: DataMapperWithOptions | AsyncDataMapperWithOptions,
+  ) => Operation,
+  fnProp: string,
+  def: U,
+  options: Options,
+): NextStateMapper {
+  const { [fnProp]: fnId, ...props } = def
+  if (typeof fnId !== 'string' && typeof fnId !== 'symbol') {
+    throw new Error(
+      `${humanizeOperatorName(
+        fnProp,
+      )} operator was given no transformer id or an invalid transformer id`,
+    )
   }
 
-const createTransformOperation = (def: TransformOperation): Operation =>
-  createOperation(transform, '$transform', def)
+  // eslint-disable-next-line security/detect-object-injection
+  const fn = options.transformers && options.transformers[fnId]
+  if (typeof fn !== 'function') {
+    throw new Error(
+      `${humanizeOperatorName(
+        fnProp,
+      )} operator was given the unknown transformer id '${String(fnId)}'`,
+    )
+  }
 
-const createFilterOperation = (def: FilterOperation): Operation =>
-  createOperation(filter, '$filter', def)
+  return typeof fn === 'function'
+    ? wrapFromDefinition(operationFn(fn(props)), def, options)
+    : passStateThroughNext
+}
+
+const createTransformOperation = (
+  def: TransformOperation,
+  options: Options,
+): NextStateMapper => createOperation(transform, '$transform', def, options)
+
+const createFilterOperation = (
+  def: FilterOperation,
+  options: Options,
+): NextStateMapper => createOperation(filter, '$filter', def, options)
 
 const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
   Array.isArray(nonvalues)
     ? { ...options, nonvalues: nonvalues.map(unescapeValue) }
     : options
 
-const createAltOperation =
-  (
-    operationFn: (...defs: TransformDefinition[]) => Operation[],
-    def: AltOperation,
-  ): Operation | Operation[] =>
-  (options) => {
-    const { $alt: defs, $undefined: nonvalues } = def
-    return Array.isArray(defs)
-      ? wrapFromDefinition(
-          operationFn(...defs),
-          def,
-        )(setNoneValuesOnOptions(options, nonvalues))
-      : passStateThroughNext
-  }
+const createAltOperation = (
+  operationFn: (...defs: TransformDefinition[]) => Operation[],
+  def: AltOperation,
+  options: Options,
+): NextStateMapper | NextStateMapper[] => {
+  const { $alt: defs, $undefined: nonvalues } = def
+  return Array.isArray(defs)
+    ? wrapFromDefinition(
+        operationFn(...defs),
+        def,
+        setNoneValuesOnOptions(options, nonvalues),
+      )
+    : passStateThroughNext
+}
 
-const createIfOperation =
-  (def: IfOperation): Operation =>
-  (options) => {
-    const {
-      $if: conditionPipeline,
-      then: thenPipeline,
-      else: elsePipeline,
-    } = def
-    return wrapFromDefinition(
-      ifelse(conditionPipeline, thenPipeline, elsePipeline),
-      def,
-    )(options)
-  }
+function createIfOperation(
+  def: IfOperation,
+  options: Options,
+): NextStateMapper {
+  const { $if: conditionPipeline, then: thenPipeline, else: elsePipeline } = def
+  return wrapFromDefinition(
+    ifelse(conditionPipeline, thenPipeline, elsePipeline),
+    def,
+    options,
+  )
+}
 
 function createApplyOperation(
   operationFn: (pipelineId: string | symbol) => Operation,
   def: ApplyOperation,
+  options: Options,
 ) {
   const pipelineId = def.$apply
-  return wrapFromDefinition(operationFn(pipelineId), def)
+  return wrapFromDefinition(operationFn(pipelineId), def, options)
 }
 
 function createConcatOperation(
   operationFn: (...fn: TransformDefinition[]) => Operation,
   pipeline: TransformDefinition[],
+  options: Options,
 ) {
   const pipelines = ensureArray(pipeline)
-  return operationFn(...pipelines)
+  return operationFn(...pipelines)(options)
 }
 
 function createLookupOperation(
   operationFn: (props: LookupProps) => Operation,
   def: LookupOperation | LookdownOperation,
   arrayPath: string,
+  options: Options,
 ) {
   const { path: propPath, ...props } = def
-  return wrapFromDefinition(operationFn({ ...props, arrayPath, propPath }), def)
+  return wrapFromDefinition(
+    operationFn({ ...props, arrayPath, propPath }),
+    def,
+    options,
+  )
 }
 
-function operationFromObject(
+function nextStateMapperFromObject(
   defRaw: OperationObject | TransformObject,
-  customModifyOpFn?: (
-    operation: Record<string, unknown>,
-  ) => Record<string, unknown>,
-): Operation | Operation[] {
-  const def = modifyOperationObject(defRaw, customModifyOpFn)
+  options: Options,
+): NextStateMapper | NextStateMapper[] {
+  const def = modifyOperationObject(defRaw, options.modifyOperationObject)
 
   if (isOperationObject(def)) {
     if (isOperationType<TransformOperation>(def, '$transform')) {
-      return createTransformOperation(def)
+      return createTransformOperation(def, options)
     } else if (isOperationType<FilterOperation>(def, '$filter')) {
-      return createFilterOperation(def)
+      return createFilterOperation(def, options)
     } else if (isOperationType<IfOperation>(def, '$if')) {
-      return createIfOperation(def)
+      return createIfOperation(def, options)
     } else if (isOperationType<ApplyOperation>(def, '$apply')) {
-      return createApplyOperation(apply, def)
+      return createApplyOperation(apply, def, options)
     } else if (isOperationType<AltOperation>(def, '$alt')) {
-      return createAltOperation(alt, def)
+      return createAltOperation(alt, def, options)
     } else if (isOperationType<ConcatOperation>(def, '$concat')) {
-      return createConcatOperation(concat, def.$concat)
+      return createConcatOperation(concat, def.$concat, options)
     } else if (isOperationType<ConcatRevOperation>(def, '$concatRev')) {
-      return createConcatOperation(concatRev, def.$concatRev)
+      return createConcatOperation(concatRev, def.$concatRev, options)
     } else if (isOperationType<LookupOperation>(def, '$lookup')) {
-      return createLookupOperation(lookup, def, def.$lookup)
+      return createLookupOperation(lookup, def, def.$lookup, options)
     } else if (isOperationType<LookdownOperation>(def, '$lookdown')) {
-      return createLookupOperation(lookdown, def, def.$lookdown)
+      return createLookupOperation(lookdown, def, def.$lookdown, options)
     } else {
       // Not a known operation
-      return () => () => async (value) => value
+      return () => async (value) => value
     }
   } else {
-    return props(def as TransformObject)
+    return props(def as TransformObject)(options)
   }
 }
-
-const callOptions = (operations: Operation | Operation[], options: Options) =>
-  Array.isArray(operations)
-    ? operations.map((op) => op(options))
-    : operations(options)
 
 export function defToNextStateMappers(
   def: TransformDefinition | undefined,
@@ -266,10 +260,7 @@ export function defToNextStateMappers(
   if (isPipeline(def)) {
     return def.flatMap((def) => defToNextStateMappers(def, options))
   } else if (isObject(def)) {
-    return callOptions(
-      operationFromObject(def, options.modifyOperationObject),
-      options,
-    )
+    return nextStateMapperFromObject(def, options)
   } else if (isPath(def)) {
     return get(def).map((op) => op(options)) // Use `getNext` when we have it
   } else if (isOperation(def)) {

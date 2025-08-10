@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import index from './indexFn.js'
 
@@ -17,7 +18,7 @@ const options = {}
 
 // Test
 
-test('should return index from state', async (t) => {
+test('should return index from state', async () => {
   const stateWithIndex = {
     ...state,
     index: 5,
@@ -25,11 +26,11 @@ test('should return index from state', async (t) => {
 
   const ret = await index({})(options)(data, stateWithIndex)
 
-  t.is(ret, 5)
+  assert.equal(ret, 5)
 })
 
-test('should return 0 when state has no index', async (t) => {
+test('should return 0 when state has no index', async () => {
   const ret = await index({})(options)(data, state)
 
-  t.is(ret, 0)
+  assert.equal(ret, 0)
 })

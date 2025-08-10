@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { set } from './getSet.js'
 import iterate from './iterate.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -36,7 +37,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should run pipelines and merge the result', async (t) => {
+test('should run pipelines and merge the result', async () => {
   const pipelines = [
     ['heading', set('title')],
     ['createdBy', set('author')],
@@ -50,10 +51,10 @@ test('should run pipelines and merge the result', async (t) => {
 
   const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should merge with existing object', async (t) => {
+test('should merge with existing object', async () => {
   const pipelines = [
     ['.'],
     ['createdBy', set('heading')],
@@ -69,10 +70,10 @@ test('should merge with existing object', async (t) => {
 
   const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should run pipelines and merge the result with several levels', async (t) => {
+test('should run pipelines and merge the result with several levels', async () => {
   const pipelines = [
     ['heading', set('content.title')],
     ['createdBy', set('meta.author')],
@@ -88,10 +89,10 @@ test('should run pipelines and merge the result with several levels', async (t) 
 
   const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should clone Date to new Date', async (t) => {
+test('should clone Date to new Date', async () => {
   const pipelines = [
     ['heading', set('content.title')],
     ['createdAt', set('meta.date')],
@@ -107,12 +108,12 @@ test('should clone Date to new Date', async (t) => {
 
   const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t.true((ret.value as any).meta.date instanceof Date)
+  assert.ok((ret.value as any).meta.date instanceof Date)
 })
 
-test('should run pipelines and merge arrays', async (t) => {
+test('should run pipelines and merge arrays', async () => {
   const pipelines = [
     ['heading', set('title')],
     ['createdBy', set('author')],
@@ -129,13 +130,13 @@ test('should run pipelines and merge arrays', async (t) => {
   ]
 
   const ret = await iterate(merge(...pipelines))(options)(noopNext)(
-    stateWithArray
+    stateWithArray,
   )
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should run one pipeline', async (t) => {
+test('should run one pipeline', async () => {
   const pipelines = [['heading', set('title')]]
   const expectedValue = {
     title: 'Entry 1',
@@ -143,38 +144,38 @@ test('should run one pipeline', async (t) => {
 
   const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should run no pipeline', async (t) => {
+test('should run no pipeline', async () => {
   const pipelines = [] as string[][]
   const expectedValue = undefined
 
   const ret = await merge(...pipelines)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should not run pipelines on undefined value', async (t) => {
+test('should not run pipelines on undefined value', async () => {
   const pipelines = [['heading', set('title')]]
   const state = { ...stateWithObject, value: undefined }
 
   const ret = await merge(...pipelines)(options)(noopNext)(state)
 
-  t.is(ret.value, undefined)
+  assert.equal(ret.value, undefined)
 })
 
-test('should not run pipelines on null value when null is included in nonvalues', async (t) => {
+test('should not run pipelines on null value when null is included in nonvalues', async () => {
   const pipelines = [set('title')]
   const state = { ...stateWithObject, value: null }
   const optionsNullAsNone = { ...options, nonvalues: [undefined, null] }
 
   const ret = await merge(...pipelines)(optionsNullAsNone)(noopNext)(state)
 
-  t.is(ret.value, undefined)
+  assert.equal(ret.value, undefined)
 })
 
-test('should run pipelines on null value when null is notincluded in nonvalues', async (t) => {
+test('should run pipelines on null value when null is notincluded in nonvalues', async () => {
   const pipelines = [set('title')]
   const state = { ...stateWithObject, value: null }
   const optionsMutateNull = { ...options, nonvalues: [undefined] }
@@ -182,22 +183,22 @@ test('should run pipelines on null value when null is notincluded in nonvalues',
 
   const ret = await merge(...pipelines)(optionsMutateNull)(noopNext)(state)
 
-  t.deepEqual(ret.value, expected)
+  assert.deepEqual(ret.value, expected)
 })
 
-test('should run pipelines on null value as default', async (t) => {
+test('should run pipelines on null value as default', async () => {
   const pipelines = [[set('title')]]
   const state = { ...stateWithObject, value: null }
   const expected = { title: null }
 
   const ret = await merge(...pipelines)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expected)
+  assert.deepEqual(ret.value, expected)
 })
 
 // Tests -- reverse
 
-test('should run pipelines and merge the result in reverse', async (t) => {
+test('should run pipelines and merge the result in reverse', async () => {
   const state = {
     context: [],
     value: {
@@ -220,5 +221,5 @@ test('should run pipelines and merge the result in reverse', async (t) => {
 
   const ret = await merge(...pipelines)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })

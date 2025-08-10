@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { createDataMapper } from './createDataMapper.js'
 import type StateNext from './state.js'
 import type { Options as OptionsNext } from './prep/index.js'
@@ -8,24 +9,24 @@ import mapTransform, { mapTransformAsync } from './mapTransform.js'
 
 // Tests -- sync
 
-test('should create mapper', (t) => {
+test('should create mapper', () => {
   const def = { id: 'key', title: 'name' }
   const options = {}
 
   const ret = mapTransform(def, options)
 
-  t.is(typeof ret, 'function')
+  assert.equal(typeof ret, 'function')
 })
 
-test('should create mapper without options', (t) => {
+test('should create mapper without options', () => {
   const def = { id: 'key', title: 'name' }
 
   const ret = mapTransform(def)
 
-  t.is(typeof ret, 'function')
+  assert.equal(typeof ret, 'function')
 })
 
-test('should map data with created mapper', (t) => {
+test('should map data with created mapper', () => {
   const def = { id: 'key', title: 'name' }
   const value = { key: 'ent1', name: 'Entry 1' }
   const state = {}
@@ -34,10 +35,10 @@ test('should map data with created mapper', (t) => {
 
   const ret = mapTransform(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare needed pipelines', (t) => {
+test('should prepare needed pipelines', () => {
   const def = { $apply: 'entry' }
   const pipelines = {
     entry: { id: 'key', title: 'name', props: { $apply: 'props' } },
@@ -51,10 +52,10 @@ test('should prepare needed pipelines', (t) => {
 
   const ret = mapTransform(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not prepare uneeded pipelines', (t) => {
+test('should not prepare uneeded pipelines', () => {
   const def = {
     item: { $apply: 'entry' },
     pipelines: { $transform: 'countPipelines' },
@@ -78,10 +79,10 @@ test('should not prepare uneeded pipelines', (t) => {
 
   const ret = mapTransform(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on prepared pipelines to a data mapper in transformer', (t) => {
+test('should pass on prepared pipelines to a data mapper in transformer', () => {
   const def = { $apply: 'entry' }
   const pipelines = {
     entry: { id: 'key', title: 'name', props: { $transform: 'props' } },
@@ -99,10 +100,10 @@ test('should pass on prepared pipelines to a data mapper in transformer', (t) =>
 
   const ret = mapTransform(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on context to a data mapper in transformer', (t) => {
+test('should pass on context to a data mapper in transformer', () => {
   const def = ['name', { $transform: 'props' }]
   const transformers = {
     props: () => (options: Options) =>
@@ -115,10 +116,10 @@ test('should pass on context to a data mapper in transformer', (t) => {
 
   const ret = mapTransform(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should include built-in transformers', (t) => {
+test('should include built-in transformers', () => {
   const uppercase: Transformer = () => () => (value) =>
     typeof value === 'string' ? value.toUpperCase() : value
   const def = {
@@ -139,10 +140,10 @@ test('should include built-in transformers', (t) => {
 
   const ret = mapTransform(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on nonvalues to the run function', (t) => {
+test('should pass on nonvalues to the run function', () => {
   const def = { id: 'key', title: { $alt: ['name', 'nickname'] } }
   const value = { key: 'ent1', name: '', nickname: 'jf' }
   const state = {}
@@ -151,12 +152,12 @@ test('should pass on nonvalues to the run function', (t) => {
 
   const ret = mapTransform(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- async
 
-test('should create async mapper', async (t) => {
+test('should create async mapper', async () => {
   const fn = () => () => async () => 'From async'
   const def = { id: 'key', title: 'name', asyncValue: { $transform: 'async' } }
   const value = { key: 'ent1', name: 'Entry 1' }
@@ -166,18 +167,18 @@ test('should create async mapper', async (t) => {
 
   const ret = await mapTransformAsync(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should create async mapper without options', (t) => {
+test('should create async mapper without options', () => {
   const def = { id: 'key', title: 'name' }
 
   const ret = mapTransformAsync(def)
 
-  t.is(typeof ret, 'function')
+  assert.equal(typeof ret, 'function')
 })
 
-test('should include built-in transformers async', async (t) => {
+test('should include built-in transformers async', async () => {
   const uppercase: AsyncTransformer = () => () => async (value) =>
     typeof value === 'string' ? value.toUpperCase() : value
   const def = {
@@ -198,5 +199,5 @@ test('should include built-in transformers async', async (t) => {
 
   const ret = await mapTransformAsync(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

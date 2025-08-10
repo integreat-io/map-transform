@@ -1,10 +1,11 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
 import { mapTransformSync, mapTransformAsync } from '../index.js'
 
 // Tests
 
-test('should map with object path', (t) => {
+test('should map with object path', () => {
   const def = [
     'content.article',
     {
@@ -22,10 +23,10 @@ test('should map with object path', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map to sub paths', (t) => {
+test('should map to sub paths', () => {
   const def = [
     'content',
     {
@@ -45,10 +46,10 @@ test('should map to sub paths', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should replace prop with transform object', (t) => {
+test('should replace prop with transform object', () => {
   const def = {
     content: 'content',
     'content.article': {
@@ -72,10 +73,10 @@ test('should replace prop with transform object', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map to target', (t) => {
+test('should map to target', () => {
   const def = ['content.article.content.heading', '>title']
   const data = { content: { article: { content: { heading: 'Heading 1' } } } }
   const target = { id: 'ent1', title: 'Default title' }
@@ -83,10 +84,10 @@ test('should map to target', (t) => {
 
   const ret = mapTransformSync(def)(data, { target })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map to target with sub-objects', (t) => {
+test('should map to target with sub-objects', () => {
   const def = ['content.article.content.heading', '>attributes.title']
   const data = { content: { article: { content: { heading: 'Heading 1' } } } }
   const target = {
@@ -106,10 +107,10 @@ test('should map to target with sub-objects', (t) => {
 
   const ret = mapTransformSync(def)(data, { target })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get object from alt path', (t) => {
+test('should get object from alt path', () => {
   const def = [
     { $alt: ['Content.Article', 'content.article'] },
     {
@@ -127,10 +128,10 @@ test('should get object from alt path', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with object shape', (t) => {
+test('should map with object shape', () => {
   const def = {
     attributes: {
       title: 'content.heading',
@@ -156,10 +157,10 @@ test('should map with object shape', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip transform object with $direction: rev', (t) => {
+test('should skip transform object with $direction: rev', () => {
   const def = {
     $direction: 'rev',
     attributes: {
@@ -178,10 +179,10 @@ test('should skip transform object with $direction: rev', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip transform object when $direction is revAlias', (t) => {
+test('should skip transform object when $direction is revAlias', () => {
   const options = {
     revAlias: 'to',
   }
@@ -203,10 +204,10 @@ test('should skip transform object when $direction is revAlias', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map null values path', (t) => {
+test('should map null values path', () => {
   const def = [
     'content.article',
     {
@@ -224,10 +225,10 @@ test('should map null values path', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should allow colons in paths', (t) => {
+test('should allow colons in paths', () => {
   const def = [
     {
       'b:title': 'content.a:heading',
@@ -238,10 +239,10 @@ test('should allow colons in paths', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should allow escaped chars in target paths', (t) => {
+test('should allow escaped chars in target paths', () => {
   const def = [
     {
       'created\\[gt]': 'payload.updatedAfter',
@@ -260,10 +261,10 @@ test('should allow escaped chars in target paths', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should allow escaped chars in source paths', (t) => {
+test('should allow escaped chars in source paths', () => {
   const def = [
     {
       'payload.updatedAfter': 'created\\[gt]',
@@ -280,10 +281,10 @@ test('should allow escaped chars in source paths', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip slashed properties going forward', (t) => {
+test('should skip slashed properties going forward', () => {
   const def = [
     'content.article',
     {
@@ -304,10 +305,10 @@ test('should skip slashed properties going forward', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should fetch item from array within bigger mutation', (t) => {
+test('should fetch item from array within bigger mutation', () => {
   const def = [
     '$action',
     {
@@ -328,10 +329,10 @@ test('should fetch item from array within bigger mutation', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with root path', (t) => {
+test('should map with root path', () => {
   const def = [
     {
       attributes: {
@@ -353,10 +354,10 @@ test('should map with root path', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with root path in pipeline', (t) => {
+test('should map with root path in pipeline', () => {
   const def = [
     {
       attributes: {
@@ -378,10 +379,10 @@ test('should map with root path in pipeline', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set on array index', (t) => {
+test('should set on array index', () => {
   const def = {
     'props[0].value': 'content.prop1',
     'props[1].value': 'content.prop2',
@@ -398,10 +399,10 @@ test('should set on array index', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set on array index when iterating to an array prop', (t) => {
+test('should set on array index when iterating to an array prop', () => {
   const def = {
     'data[]': [
       'values',
@@ -443,10 +444,10 @@ test('should set on array index when iterating to an array prop', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map several layers of arrays with bracket notation in set path', (t) => {
+test('should map several layers of arrays with bracket notation in set path', () => {
   const def = {
     'data[]': [
       'content.articles',
@@ -501,10 +502,10 @@ test('should map several layers of arrays with bracket notation in set path', (t
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should flatten array with several levels and iterating operations', (t) => {
+test('should flatten array with several levels and iterating operations', () => {
   const def = {
     payload: {
       $modify: 'payload',
@@ -586,10 +587,10 @@ test('should flatten array with several levels and iterating operations', (t) =>
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with lookup', (t) => {
+test('should map with lookup', () => {
   const def = {
     title: 'content.heading',
     authors: [
@@ -615,10 +616,10 @@ test('should map with lookup', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should treat lookdown as get going forward', (t) => {
+test('should treat lookdown as get going forward', () => {
   const def = {
     'content.heading': 'title',
     'content.authors': [
@@ -639,10 +640,10 @@ test('should treat lookdown as get going forward', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with lookup as transform object', (t) => {
+test('should map with lookup as transform object', () => {
   const def = {
     title: 'content.heading',
     authors: [
@@ -667,10 +668,10 @@ test('should map with lookup as transform object', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set all props from source object and override some', (t) => {
+test('should set all props from source object and override some', () => {
   const def = {
     article: {
       '.': 'content',
@@ -694,10 +695,10 @@ test('should set all props from source object and override some', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should disregard pipeline with no get', (t) => {
+test('should disregard pipeline with no get', () => {
   const def = {
     title: 'content.heading',
     '/1': ['meta', { $value: { tags: ['news'] } }], // We're setting an object here, as that would replace the target object
@@ -710,10 +711,10 @@ test('should disregard pipeline with no get', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should spread array to mapping objects', (t) => {
+test('should spread array to mapping objects', () => {
   const def = [
     'ids[]',
     {
@@ -728,28 +729,28 @@ test('should spread array to mapping objects', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map undefined to undefined', (t) => {
+test('should map undefined to undefined', () => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
   const data = { items: undefined }
 
   const ret = mapTransformSync(def)(data)
 
-  t.is(ret, undefined)
+  assert.equal(ret, undefined)
 })
 
-test('should treat nonvalues as undefined', (t) => {
+test('should treat nonvalues as undefined', () => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
   const data = { items: null }
 
   const ret = mapTransformSync(def, { nonvalues: [undefined, null] })(data)
 
-  t.is(ret, undefined)
+  assert.equal(ret, undefined)
 })
 
-test('should map with root operation', (t) => {
+test('should map with root operation', () => {
   const def = [
     'content',
     {
@@ -776,10 +777,10 @@ test('should map with root operation', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should modify object even when it has no other props', (t) => {
+test('should modify object even when it has no other props', () => {
   const def = [
     {
       id: 'key',
@@ -792,10 +793,10 @@ test('should modify object even when it has no other props', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should provide root in $if condition', (t) => {
+test('should provide root in $if condition', () => {
   const def = {
     $modify: true,
     response: {
@@ -835,10 +836,10 @@ test('should provide root in $if condition', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use root as $transform path', (t) => {
+test('should use root as $transform path', () => {
   const def = {
     $modify: true,
     response: {
@@ -876,13 +877,13 @@ test('should use root as $transform path', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.is(
+  assert.equal(
     ((ret as typeof data).response.data[0] as Record<string, unknown>).isEvent,
     true,
   )
 })
 
-test('should not map fields without pipeline', (t) => {
+test('should not map fields without pipeline', () => {
   const def = {
     title: null,
     author: 'meta.writer.username',
@@ -897,10 +898,10 @@ test('should not map fields without pipeline', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map data as is when no mapping', (t) => {
+test('should map data as is when no mapping', () => {
   const def = ['content']
   const data = {
     content: { heading: 'The heading' },
@@ -911,10 +912,10 @@ test('should map data as is when no mapping', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with nested mappings', (t) => {
+test('should map with nested mappings', () => {
   const def = [
     {
       content: {
@@ -939,10 +940,10 @@ test('should map with nested mappings', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not iterate when $iterate is not set', (t) => {
+test('should not iterate when $iterate is not set', () => {
   const def = {
     'articles[]': [{ title: 'content.heading' }],
   }
@@ -956,10 +957,10 @@ test('should not iterate when $iterate is not set', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge (modify) original object with transformed object', (t) => {
+test('should shallow merge (modify) original object with transformed object', () => {
   const def = {
     article: {
       $modify: 'content',
@@ -983,10 +984,10 @@ test('should shallow merge (modify) original object with transformed object', (t
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge (modify) original object with transformed object on several levels', (t) => {
+test('should shallow merge (modify) original object with transformed object on several levels', () => {
   const def = {
     $modify: '.',
     payload: {
@@ -1033,10 +1034,10 @@ test('should shallow merge (modify) original object with transformed object on s
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return data when no mapping def', (t) => {
+test('should return data when no mapping def', () => {
   const def = null
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -1046,10 +1047,10 @@ test('should return data when no mapping def', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty object when mapping def is empty object', (t) => {
+test('should return empty object when mapping def is empty object', () => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
@@ -1058,10 +1059,10 @@ test('should return empty object when mapping def is empty object', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, {})
+  assert.deepEqual(ret, {})
 })
 
-test('should set empty transform object to empty object on a path', (t) => {
+test('should set empty transform object to empty object on a path', () => {
   const def = {
     'content.article': {},
   }
@@ -1081,10 +1082,10 @@ test('should set empty transform object to empty object on a path', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should try to map even when no data is given', (t) => {
+test('should try to map even when no data is given', () => {
   const def = {
     title: 'content.heading',
   }
@@ -1094,10 +1095,10 @@ test('should try to map even when no data is given', (t) => {
 
   const ret = mapTransformSync(def)(null)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with parent', (t) => {
+test('should map with parent', () => {
   const def = {
     items: [
       'response.data.invoices[].lines[]',
@@ -1137,10 +1138,10 @@ test('should map with parent', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with parent through several iterations', (t) => {
+test('should map with parent through several iterations', () => {
   const generateId = () => () => (value: unknown) =>
     isObject(value) ? `${value.invoiceNo}-${value.rowId}` : undefined
   const options = { transformers: { generateId } }
@@ -1185,10 +1186,10 @@ test('should map with parent through several iterations', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with parent through several iterations async', async (t) => {
+test('should map with parent through several iterations async', async () => {
   const generateId = () => () => async (value: unknown) =>
     isObject(value) ? `${value.invoiceNo}-${value.rowId}` : undefined
   const options = { transformers: { generateId } }
@@ -1233,10 +1234,10 @@ test('should map with parent through several iterations async', async (t) => {
 
   const ret = await mapTransformAsync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with parent when parents yielded undefined', (t) => {
+test('should map with parent when parents yielded undefined', () => {
   const def = {
     status: ['response.data.invoices', '^.^.status'], // A contrived example, but it tests the parent path
   }
@@ -1252,5 +1253,5 @@ test('should map with parent when parents yielded undefined', (t) => {
 
   const ret = mapTransformSync(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

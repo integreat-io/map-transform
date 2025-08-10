@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import type { State } from '../types.js'
 
 import runPipeline from './index.js'
@@ -19,82 +20,82 @@ const size = (val: unknown) => (Array.isArray(val) ? val.length : 0)
 
 // Tests
 
-test('should run transformer function', (t) => {
+test('should run transformer function', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase }]
   const expected = 'HELLO'
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on state to transformer function', (t) => {
+test('should pass on state to transformer function', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase }]
   const expected = 'hello' // Does lowercase in rev
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run transformer function on array', (t) => {
+test('should run transformer function on array', () => {
   const value = ['Hello', 'Hello again']
   const pipeline = [{ type: 'transform' as const, fn: size }]
   const expected = 2
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should iterate transformer function on array when it is true', (t) => {
+test('should iterate transformer function on array when it is true', () => {
   const value = ['Hello', 'Hello again']
   const pipeline = [{ type: 'transform' as const, fn: uppercase, it: true }]
   const expected = ['HELLO', 'HELLO AGAIN']
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run transformer function going forward', (t) => {
+test('should run transformer function going forward', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
   const expected = 'HELLO'
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not run transformer function going in reverse', (t) => {
+test('should not run transformer function going in reverse', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
   const expected = 'Hello'
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run transformer function going in reverse', (t) => {
+test('should run transformer function going in reverse', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: -1 }]
   const expected = 'hello'
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not run transformer function going forward', (t) => {
+test('should not run transformer function going forward', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: -1 }]
   const expected = 'Hello'
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

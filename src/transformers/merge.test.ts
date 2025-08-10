@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import { merge, mergeRev } from './merge.js'
 
@@ -22,7 +23,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should merge two objects', async (t) => {
+test('should merge two objects', async () => {
   const path = ['original', 'modified']
   const data = {
     original: {
@@ -51,10 +52,10 @@ test('should merge two objects', async (t) => {
 
   const ret = await merge({ path })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge three objects', async (t) => {
+test('should merge three objects', async () => {
   const path = ['original', 'modified', 'final']
   const data = {
     original: {
@@ -87,10 +88,10 @@ test('should merge three objects', async (t) => {
 
   const ret = await merge({ path })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return one object', async (t) => {
+test('should return one object', async () => {
   const path = ['original']
   const data = {
     original: {
@@ -113,10 +114,10 @@ test('should return one object', async (t) => {
 
   const ret = await merge({ path })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge array of objects', async (t) => {
+test('should merge array of objects', async () => {
   const path = 'all'
   const data = {
     all: [
@@ -151,10 +152,10 @@ test('should merge array of objects', async (t) => {
 
   const ret = await merge({ path })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge object and array of objects', async (t) => {
+test('should merge object and array of objects', async () => {
   const path = ['original', 'therest']
   const data = {
     original: {
@@ -189,10 +190,10 @@ test('should merge object and array of objects', async (t) => {
 
   const ret = await merge({ path })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip non-objects', async (t) => {
+test('should skip non-objects', async () => {
   const path = ['original', 'unknown', 'somethingelse', 'arr', 'perhaps']
   const data = {
     original: {
@@ -218,10 +219,10 @@ test('should skip non-objects', async (t) => {
 
   const ret = await merge({ path })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set object on paths in reverse', async (t) => {
+test('should set object on paths in reverse', async () => {
   const path = ['original', 'modified']
   const data = {
     id: 'ent1',
@@ -252,10 +253,10 @@ test('should set object on paths in reverse', async (t) => {
 
   const ret = await merge({ path })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run pipelines and merge the result', async (t) => {
+test('should run pipelines and merge the result', async () => {
   const path = [
     ['heading', '>title'],
     ['createdBy', '>author'],
@@ -275,10 +276,10 @@ test('should run pipelines and merge the result', async (t) => {
 
   const ret = await merge({ path })(options)(data, state)
 
-  t.deepEqual(ret, expectedValue)
+  assert.deepEqual(ret, expectedValue)
 })
 
-test('should merge with existing object', async (t) => {
+test('should merge with existing object', async () => {
   const path = [['.'], ['createdBy', '>heading'], ['heading', '>title']]
   const data = {
     heading: 'Entry 1',
@@ -296,12 +297,12 @@ test('should merge with existing object', async (t) => {
 
   const ret = await merge({ path })(options)(data, state)
 
-  t.deepEqual(ret, expectedValue)
+  assert.deepEqual(ret, expectedValue)
 })
 
 // Tests -- reverse
 
-test('mergeRev should merge two objects in reverse', async (t) => {
+test('mergeRev should merge two objects in reverse', async () => {
   const path = ['original', 'modified']
   const data = {
     original: {
@@ -330,10 +331,10 @@ test('mergeRev should merge two objects in reverse', async (t) => {
 
   const ret = await mergeRev({ path })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('mergeRev should set object on paths going forward', async (t) => {
+test('mergeRev should set object on paths going forward', async () => {
   const path = ['original', 'modified']
   const data = {
     id: 'ent1',
@@ -364,5 +365,5 @@ test('mergeRev should set object on paths going forward', async (t) => {
 
   const ret = await mergeRev({ path })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

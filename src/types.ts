@@ -45,58 +45,51 @@ export interface Options {
 
 // Data mapper types
 
-export interface AsyncDataMapper<T extends InitialState | undefined = State> {
-  (data: unknown, state?: T): Promise<unknown>
-}
+export type AsyncDataMapper<T extends InitialState | undefined = State> = (
+  data: unknown,
+  state?: T,
+) => Promise<unknown>
 
-export interface SyncDataMapper<T extends InitialState | undefined = State> {
-  (data: unknown, state?: T): unknown
-}
+export type SyncDataMapper<T extends InitialState | undefined = State> = (
+  data: unknown,
+  state?: T,
+) => unknown
 export type DataMapper<T extends InitialState | undefined = State> =
   | AsyncDataMapper<T>
   | SyncDataMapper<T>
 
-export interface AsyncDataMapperWithState {
-  (data: unknown, state: State): Promise<unknown>
-}
+export type AsyncDataMapperWithState = (
+  data: unknown,
+  state: State,
+) => Promise<unknown>
 
-export interface DataMapperWithState {
-  (data: unknown, state: State): unknown
-}
+export type DataMapperWithState = (data: unknown, state: State) => unknown
 
-export interface AsyncDataMapperWithOptions {
-  (options: Options): AsyncDataMapperWithState
-}
+export type AsyncDataMapperWithOptions = (
+  options: Options,
+) => AsyncDataMapperWithState
 
-export interface DataMapperWithOptions {
-  (options: Options): DataMapperWithState
-}
+export type DataMapperWithOptions = (options: Options) => DataMapperWithState
 
 // Operation types
 
-export interface StateMapper {
-  (state: State): Promise<State>
-}
+export type StateMapper = (state: State) => Promise<State>
 
-export interface NextStateMapper {
-  (next: StateMapper): StateMapper
-}
+export type NextStateMapper = (next: StateMapper) => StateMapper
 
-export interface Operation {
-  (options: Options): NextStateMapper
-}
+export type Operation = (options: Options) => NextStateMapper
 
 // Transformer types
 
 export type TransformerProps = Record<string, unknown>
 
-export interface Transformer<T = TransformerProps> {
-  (props: T): DataMapperWithOptions
-}
+export type Transformer<T = TransformerProps> = (
+  props: T,
+) => DataMapperWithOptions
 
-export interface AsyncTransformer<T = TransformerProps> {
-  (props: T): AsyncDataMapperWithOptions
-}
+export type AsyncTransformer<T = TransformerProps> = (
+  props: T,
+) => AsyncDataMapperWithOptions
 
 // Transform definition types
 

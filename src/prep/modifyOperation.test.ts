@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import sinon from 'sinon'
 
 import preparePipeline from './index.js'
@@ -16,7 +17,7 @@ const lookdownFn = () => ({}) // The implementation doesn't matter
 
 // Tests
 
-test('should change $and to $transform', (t) => {
+test('should change $and to $transform', () => {
   const logicalStub = sinon.stub().callsFake(() => () => logicalFn)
   const def = { $and: ['this', 'that'] }
   const options = { transformers: { logical: logicalStub } }
@@ -33,12 +34,12 @@ test('should change $and to $transform', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(logicalStub.callCount, 1)
-  t.deepEqual(logicalStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(logicalStub.callCount, 1)
+  assert.deepEqual(logicalStub.args[0][0], expectedProps)
 })
 
-test('should change $or to $transform', (t) => {
+test('should change $or to $transform', () => {
   const logicalStub = sinon.stub().callsFake(() => () => logicalFn)
   const def = { $or: ['this', 'that'] }
   const options = { transformers: { logical: logicalStub } }
@@ -55,12 +56,12 @@ test('should change $or to $transform', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(logicalStub.callCount, 1)
-  t.deepEqual(logicalStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(logicalStub.callCount, 1)
+  assert.deepEqual(logicalStub.args[0][0], expectedProps)
 })
 
-test('should change $not to $transform', (t) => {
+test('should change $not to $transform', () => {
   const notStub = sinon.stub().callsFake(() => () => notFn)
   const def = { $not: 'this' }
   const options = { transformers: { not: notStub } }
@@ -76,12 +77,12 @@ test('should change $not to $transform', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(notStub.callCount, 1)
-  t.deepEqual(notStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(notStub.callCount, 1)
+  assert.deepEqual(notStub.args[0][0], expectedProps)
 })
 
-test('should change $merge to $transform', (t) => {
+test('should change $merge to $transform', () => {
   const mergeStub = sinon.stub().callsFake(() => () => mergeFn)
   const def = { $merge: ['this', 'that'] }
   const options = { transformers: { merge: mergeStub } }
@@ -97,12 +98,12 @@ test('should change $merge to $transform', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(mergeStub.callCount, 1)
-  t.deepEqual(mergeStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(mergeStub.callCount, 1)
+  assert.deepEqual(mergeStub.args[0][0], expectedProps)
 })
 
-test('should change $concat to $transform', (t) => {
+test('should change $concat to $transform', () => {
   const concatStub = sinon.stub().callsFake(() => () => concatFn)
   const def = { $concat: ['this', 'that'] }
   const options = { transformers: { concat: concatStub } }
@@ -118,12 +119,12 @@ test('should change $concat to $transform', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(concatStub.callCount, 1)
-  t.deepEqual(concatStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(concatStub.callCount, 1)
+  assert.deepEqual(concatStub.args[0][0], expectedProps)
 })
 
-test('should change $concatRev to $transform', (t) => {
+test('should change $concatRev to $transform', () => {
   const concatRevStub = sinon.stub().callsFake(() => () => concatRevFn)
   const def = { $concatRev: ['this', 'that'] }
   const options = { transformers: { concatRev: concatRevStub } }
@@ -139,12 +140,12 @@ test('should change $concatRev to $transform', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(concatRevStub.callCount, 1)
-  t.deepEqual(concatRevStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(concatRevStub.callCount, 1)
+  assert.deepEqual(concatRevStub.args[0][0], expectedProps)
 })
 
-test('should change $lookup to $transform', (t) => {
+test('should change $lookup to $transform', () => {
   const lookupStub = sinon.stub().callsFake(() => () => lookupFn)
   const def = { $lookup: 'array.path', path: 'prop.path' }
   const options = { transformers: { lookup: lookupStub } }
@@ -161,12 +162,12 @@ test('should change $lookup to $transform', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(lookupStub.callCount, 1)
-  t.deepEqual(lookupStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(lookupStub.callCount, 1)
+  assert.deepEqual(lookupStub.args[0][0], expectedProps)
 })
 
-test('should change $lookdown to $transform', (t) => {
+test('should change $lookdown to $transform', () => {
   const lookdownStub = sinon.stub().callsFake(() => () => lookdownFn)
   const def = { $lookdown: 'array.path', path: 'prop.path' }
   const options = { transformers: { lookdown: lookdownStub } }
@@ -183,12 +184,12 @@ test('should change $lookdown to $transform', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(lookdownStub.callCount, 1)
-  t.deepEqual(lookdownStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(lookdownStub.callCount, 1)
+  assert.deepEqual(lookdownStub.args[0][0], expectedProps)
 })
 
-test('should apply modifyOperationObject to operation', (t) => {
+test('should apply modifyOperationObject to operation', () => {
   const modifyOperationObject = (op: Record<string, unknown>) =>
     op.$cast ? { $transform: `cast_${op.$cast}` } : op
   const def = { $cast: 'string' }
@@ -200,10 +201,10 @@ test('should apply modifyOperationObject to operation', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply modifyOperationObject to before built-in modify', (t) => {
+test('should apply modifyOperationObject to before built-in modify', () => {
   const logicalStub = sinon.stub().callsFake(() => () => logicalFn)
   const modifyOperationObject = (op: Record<string, unknown>) =>
     op.$every ? { $and: op.$every } : op
@@ -220,7 +221,7 @@ test('should apply modifyOperationObject to before built-in modify', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expectedPipeline)
-  t.is(logicalStub.callCount, 1)
-  t.deepEqual(logicalStub.args[0][0], expectedProps)
+  assert.deepEqual(ret, expectedPipeline)
+  assert.equal(logicalStub.callCount, 1)
+  assert.deepEqual(logicalStub.args[0][0], expectedProps)
 })

@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import { explode, implode } from './explode.js'
 
@@ -21,7 +22,7 @@ const options = {}
 
 // Tests -- explode
 
-test('should explode object to array of key value objects', async (t) => {
+test('should explode object to array of key value objects', async () => {
   const data = { NOK: 1, USD: 0.125, EUR: 0.1 }
   const expected = [
     { key: 'NOK', value: 1 },
@@ -31,10 +32,10 @@ test('should explode object to array of key value objects', async (t) => {
 
   const ret = await explode({})(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not explode properties with undefined value', async (t) => {
+test('should not explode properties with undefined value', async () => {
   const data = { NOK: 1, USD: 0.125, EUR: undefined }
   const expected = [
     { key: 'NOK', value: 1 },
@@ -43,19 +44,19 @@ test('should not explode properties with undefined value', async (t) => {
 
   const ret = await explode({})(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should explode empty object to empty array', async (t) => {
+test('should explode empty object to empty array', async () => {
   const data = {}
   const expected: unknown[] = []
 
   const ret = await explode({})(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should explode array to array of key value objects', async (t) => {
+test('should explode array to array of key value objects', async () => {
   const data = ['lock', 'stock', 'two smoking barrels']
   const expected = [
     { key: 0, value: 'lock' },
@@ -65,19 +66,19 @@ test('should explode array to array of key value objects', async (t) => {
 
   const ret = await explode({})(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not explode non-objects', async (t) => {
-  t.deepEqual(await explode({})(options)(undefined, state), undefined)
-  t.deepEqual(await explode({})(options)(null, state), undefined)
-  t.deepEqual(await explode({})(options)('The text', state), undefined)
-  t.deepEqual(await explode({})(options)(3, state), undefined)
-  t.deepEqual(await explode({})(options)(true, state), undefined)
-  t.deepEqual(await explode({})(options)(new Date(), state), undefined)
+test('should not explode non-objects', async () => {
+  assert.deepEqual(await explode({})(options)(undefined, state), undefined)
+  assert.deepEqual(await explode({})(options)(null, state), undefined)
+  assert.deepEqual(await explode({})(options)('The text', state), undefined)
+  assert.deepEqual(await explode({})(options)(3, state), undefined)
+  assert.deepEqual(await explode({})(options)(true, state), undefined)
+  assert.deepEqual(await explode({})(options)(new Date(), state), undefined)
 })
 
-test('should implode array of key value objects to object in reverse', async (t) => {
+test('should implode array of key value objects to object in reverse', async () => {
   const data = [
     { key: 'NOK', value: 1 },
     { key: 'USD', value: 0.125 },
@@ -87,29 +88,24 @@ test('should implode array of key value objects to object in reverse', async (t)
 
   const ret = await explode({})(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should implode array of key value objects to array in reverse', async (t) => {
+test('should implode array of key value objects to array in reverse', async () => {
   const data = [
     { key: 0, value: 'lock' },
     { key: 1, value: 'stock' },
     { key: 4, value: 'two smoking barrels' },
   ]
-  const expected = [
-    'lock',
-    'stock',
-    undefined,
-    undefined,
-    'two smoking barrels',
-  ]
+  // eslint-disable-next-line no-sparse-arrays
+  const expected = ['lock', 'stock', , , 'two smoking barrels']
 
   const ret = await explode({})(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip non-object value when imploding in reverse', async (t) => {
+test('should skip non-object value when imploding in reverse', async () => {
   const data = [
     { key: 'NOK', value: 1 },
     'String',
@@ -124,21 +120,21 @@ test('should skip non-object value when imploding in reverse', async (t) => {
 
   const ret = await explode({})(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not implode non-arrays in revers', async (t) => {
-  t.deepEqual(await explode({})(options)(undefined, stateRev), undefined)
-  t.deepEqual(await explode({})(options)(null, stateRev), undefined)
-  t.deepEqual(await explode({})(options)('The text', stateRev), undefined)
-  t.deepEqual(await explode({})(options)(3, stateRev), undefined)
-  t.deepEqual(await explode({})(options)(true, stateRev), undefined)
-  t.deepEqual(await explode({})(options)(new Date(), stateRev), undefined)
+test('should not implode non-arrays in revers', async () => {
+  assert.deepEqual(await explode({})(options)(undefined, stateRev), undefined)
+  assert.deepEqual(await explode({})(options)(null, stateRev), undefined)
+  assert.deepEqual(await explode({})(options)('The text', stateRev), undefined)
+  assert.deepEqual(await explode({})(options)(3, stateRev), undefined)
+  assert.deepEqual(await explode({})(options)(true, stateRev), undefined)
+  assert.deepEqual(await explode({})(options)(new Date(), stateRev), undefined)
 })
 
 // Tests -- implode
 
-test('should implode array of key value objects to object ', async (t) => {
+test('should implode array of key value objects to object ', async () => {
   const data = [
     { key: 'NOK', value: 1 },
     { key: 'USD', value: 0.125 },
@@ -148,19 +144,19 @@ test('should implode array of key value objects to object ', async (t) => {
 
   const ret = await implode({})(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should implode empty array to empty object object ', async (t) => {
+test('should implode empty array to empty object object ', async () => {
   const data: unknown[] = []
   const expected = {}
 
   const ret = await implode({})(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should explode object to array of key value objects in reverse', async (t) => {
+test('should explode object to array of key value objects in reverse', async () => {
   const data = { NOK: 1, USD: 0.125, EUR: 0.1 }
   const expected = [
     { key: 'NOK', value: 1 },
@@ -170,5 +166,5 @@ test('should explode object to array of key value objects in reverse', async (t)
 
   const ret = await implode({})(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

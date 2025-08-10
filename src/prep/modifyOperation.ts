@@ -70,23 +70,23 @@ export default function modifyOperation(
     operation = options.modifyOperationObject(operation)
   }
 
-  if (operation.hasOwnProperty('$and')) {
+  if (Object.prototype.hasOwnProperty.call(operation, '$and')) {
     return createAndTransform(operation)
-  } else if (operation.hasOwnProperty('$or')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$or')) {
     return createOrTransform(operation)
-  } else if (operation.hasOwnProperty('$not')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$not')) {
     return createNotTransform(operation)
-  } else if (operation.hasOwnProperty('$merge')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$merge')) {
     return createMergeTransform(operation)
-  } else if (operation.hasOwnProperty('$concat')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$concat')) {
     return createConcatTransform(operation)
-  } else if (operation.hasOwnProperty('$concatRev')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$concatRev')) {
     return createConcatRevTransform(operation)
-  } else if (operation.hasOwnProperty('$lookup')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$lookup')) {
     return createLookupTransform(operation)
-  } else if (operation.hasOwnProperty('$lookdown')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$lookdown')) {
     return createLookdownTransform(operation)
-  } else if (operation.hasOwnProperty('$fixed')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$fixed')) {
     return createFixedValue(operation)
   } else {
     return operation

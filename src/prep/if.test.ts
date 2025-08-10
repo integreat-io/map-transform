@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import preparePipeline from './index.js'
 
@@ -8,7 +9,7 @@ const options = {}
 
 // Tests
 
-test('should prepare if operation', (t) => {
+test('should prepare if operation', () => {
   const def = { $if: 'isActive', then: '>ok', else: '>err' }
   const expected = [
     { type: 'if', condition: ['isActive'], then: ['>ok'], else: ['>err'] },
@@ -16,10 +17,10 @@ test('should prepare if operation', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare if operation without else pipeline', (t) => {
+test('should prepare if operation without else pipeline', () => {
   const def = { $if: 'isActive', then: '>ok' }
   const expected = [
     { type: 'if', condition: ['isActive'], then: ['>ok'], else: [] },
@@ -27,10 +28,10 @@ test('should prepare if operation without else pipeline', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare if operation without then pipeline', (t) => {
+test('should prepare if operation without then pipeline', () => {
   const def = { $if: 'isActive', else: '>err' }
   const expected = [
     { type: 'if', condition: ['isActive'], then: [], else: ['>err'] },
@@ -38,5 +39,5 @@ test('should prepare if operation without then pipeline', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

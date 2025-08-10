@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { set } from './getSet.js'
 import iterate from './iterate.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -28,7 +29,7 @@ const createOptions = (): Options => ({
 
 // Tests
 
-test('should run pipeline by id', async (t) => {
+test('should run pipeline by id', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -43,11 +44,11 @@ test('should run pipeline by id', async (t) => {
   preparePipelines(options)
   const ret = await stateMapper(state)
 
-  t.deepEqual(ret, expected)
-  t.true(options.neededPipelineIds?.has('extractTitle'))
+  assert.deepEqual(ret, expected)
+  assert.ok(options.neededPipelineIds?.has('extractTitle'))
 })
 
-test('should run pipeline by id - in rev', async (t) => {
+test('should run pipeline by id - in rev', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -64,10 +65,10 @@ test('should run pipeline by id - in rev', async (t) => {
   preparePipelines(options)
   const ret = await stateMapper(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run object pipeline by id', async (t) => {
+test('should run object pipeline by id', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -82,10 +83,10 @@ test('should run object pipeline by id', async (t) => {
   preparePipelines(options)
   const ret = await stateMapper(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run object pipeline by id - in rev', async (t) => {
+test('should run object pipeline by id - in rev', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -102,10 +103,10 @@ test('should run object pipeline by id - in rev', async (t) => {
   preparePipelines(options)
   const ret = await stateMapper(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not pass on flip', async (t) => {
+test('should not pass on flip', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -121,10 +122,10 @@ test('should not pass on flip', async (t) => {
   preparePipelines(options)
   const ret = await stateMapper(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not pass on flip - in rev', async (t) => {
+test('should not pass on flip - in rev', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -142,10 +143,10 @@ test('should not pass on flip - in rev', async (t) => {
   preparePipelines(options)
   const ret = await stateMapper(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run pipeline on undefined', async (t) => {
+test('should run pipeline on undefined', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -160,10 +161,10 @@ test('should run pipeline on undefined', async (t) => {
   preparePipelines(options)
   const ret = await stateMapper(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run recursive pipeline', async (t) => {
+test('should run recursive pipeline', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -178,10 +179,10 @@ test('should run recursive pipeline', async (t) => {
   preparePipelines(options)
   const ret = await stateMapper(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should mark pipeline as needed', async (t) => {
+test('should mark pipeline as needed', async () => {
   const options = createOptions()
   const state = {
     context: [],
@@ -192,11 +193,11 @@ test('should mark pipeline as needed', async (t) => {
   preparePipelines(options)
   await stateMapper(state)
 
-  t.is(options.neededPipelineIds?.size, 1)
-  t.true(options.neededPipelineIds?.has('extractTitle'))
+  assert.equal(options.neededPipelineIds?.size, 1)
+  assert.ok(options.neededPipelineIds?.has('extractTitle'))
 })
 
-test('should mark pipeline as needed when others has already been marked', async (t) => {
+test('should mark pipeline as needed when others has already been marked', async () => {
   const state = {
     context: [],
     value: { title: 'Entry 1' },
@@ -211,33 +212,35 @@ test('should mark pipeline as needed when others has already been marked', async
   preparePipelines(options)
   await stateMapper(state)
 
-  t.is(options.neededPipelineIds?.size, 2)
-  t.true(options.neededPipelineIds?.has('extractTitle'))
-  t.true(options.neededPipelineIds?.has('setTitle'))
+  assert.equal(options.neededPipelineIds?.size, 2)
+  assert.ok(options.neededPipelineIds?.has('extractTitle'))
+  assert.ok(options.neededPipelineIds?.has('setTitle'))
 })
 
-test('should throw when given an unknown pipeline id', (t) => {
+test('should throw when given an unknown pipeline id', () => {
   const options = createOptions()
-  const error = t.throws(() => apply('unknown')(options))
-
-  t.true(error instanceof Error)
-  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
-})
-
-test('should throw when not given a pipeline id', (t) => {
-  const options = createOptions()
-  const error = t.throws(
-    () => apply(undefined as any)(options), // eslint-disable-line @typescript-eslint/no-explicit-any
+  const expectedError = new Error(
+    "Failed to apply pipeline 'unknown'. Unknown pipeline",
   )
 
-  t.true(error instanceof Error)
-  t.is(error?.message, 'Failed to apply pipeline. No id provided')
+  assert.throws(() => apply('unknown')(options), expectedError)
 })
 
-test('should throw when no pipelines', (t) => {
-  const options = {}
-  const error = t.throws(() => apply('unknown')(options))
+test('should throw when not given a pipeline id', () => {
+  const options = createOptions()
+  const expectedError = new Error('Failed to apply pipeline. No id provided')
 
-  t.true(error instanceof Error)
-  t.is(error?.message, "Failed to apply pipeline 'unknown'. No pipelines")
+  assert.throws(
+    () => apply(undefined as any)(options), // eslint-disable-line @typescript-eslint/no-explicit-any
+    expectedError,
+  )
+})
+
+test('should throw when no pipelines', () => {
+  const options = {}
+  const expectedError = new Error(
+    "Failed to apply pipeline 'unknown'. No pipelines",
+  )
+
+  assert.throws(() => apply('unknown')(options), expectedError)
 })

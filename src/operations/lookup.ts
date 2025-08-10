@@ -25,13 +25,14 @@ export interface Props extends TransformerProps {
   flip?: boolean
 }
 
-interface GetPropFn {
-  (val: unknown, state: State): unknown
-}
+type GetPropFn = (val: unknown, state: State) => unknown
 
-interface MatchFn {
-  (value: unknown, state: State, arr: unknown[], getProp: GetPropFn): unknown
-}
+type MatchFn = (
+  value: unknown,
+  state: State,
+  arr: unknown[],
+  getProp: GetPropFn,
+) => unknown
 
 const FLATTEN_DEPTH = 1
 

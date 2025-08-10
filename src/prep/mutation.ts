@@ -65,6 +65,7 @@ function prepProp(
     if (isSlashed(setPath)) {
       // We have a slashed property. Unslash it and plug the pipeline to only run it in reverse
       setPath = removeSlash(setPath)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       pipeline = ['|', pipeline!].flat() // We know this is not null or undefined, but TS doesn't seem to know that
     }
 

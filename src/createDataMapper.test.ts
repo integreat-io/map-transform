@@ -1,20 +1,21 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import State from './state.js'
 
 import { createDataMapper, createDataMapperAsync } from './createDataMapper.js'
 
 // Tests -- sync
 
-test('should create mapper', (t) => {
+test('should create mapper', () => {
   const def = { id: 'key', title: 'name' }
   const options = {}
 
   const ret = createDataMapper(def, options)
 
-  t.is(typeof ret, 'function')
+  assert.equal(typeof ret, 'function')
 })
 
-test('should map data with created mapper', (t) => {
+test('should map data with created mapper', () => {
   const def = { id: 'key', title: 'name' }
   const value = { key: 'ent1', name: 'Entry 1' }
   const state = new State()
@@ -23,10 +24,10 @@ test('should map data with created mapper', (t) => {
 
   const ret = createDataMapper(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use context provided in state', (t) => {
+test('should use context provided in state', () => {
   const def = ['^', { id: 'key', title: 'name' }]
   const value = 'Entry 1'
   const context = [{ key: 'ent1', name: 'Entry 1' }]
@@ -36,12 +37,12 @@ test('should use context provided in state', (t) => {
 
   const ret = createDataMapper(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- async
 
-test('should create async mapper', async (t) => {
+test('should create async mapper', async () => {
   const fn = () => () => async () => 'From async'
   const def = { id: 'key', title: 'name', asyncValue: { $transform: 'async' } }
   const value = { key: 'ent1', name: 'Entry 1' }
@@ -51,5 +52,5 @@ test('should create async mapper', async (t) => {
 
   const ret = await createDataMapperAsync(def, options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

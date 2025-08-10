@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { not } from './notNext.js'
 import type { Transformer, AsyncTransformer } from '../types.js'
 
@@ -23,43 +24,43 @@ const options = {}
 
 // Test -- forward
 
-test('should do a logical AND on the given paths -- and return false', (t) => {
+test('should do a logical AND on the given paths -- and return false', () => {
   const path = ['visible', 'meta.published', 'public']
   const data = { visible: true, meta: { published: false }, public: true }
 
   const ret = logical({ path, operator: 'AND' })(options)(data, state)
 
-  t.false(ret)
+  assert.equal(ret, false)
 })
 
-test('should do a logical AND on the given paths -- and return true', (t) => {
+test('should do a logical AND on the given paths -- and return true', () => {
   const path = ['visible', 'meta.published', 'public']
   const data = { visible: true, meta: { published: true }, public: true }
 
   const ret = logical({ path, operator: 'AND' })(options)(data, state)
 
-  t.true(ret)
+  assert.equal(ret, true)
 })
 
-test('should do a logical OR on the given paths -- and return false', (t) => {
+test('should do a logical OR on the given paths -- and return false', () => {
   const path = ['visible', 'meta.published', 'public']
   const data = { visible: false, meta: { published: false }, public: false }
 
   const ret = logical({ path, operator: 'OR' })(options)(data, state)
 
-  t.false(ret)
+  assert.equal(ret, false)
 })
 
-test('should do a logical OR on the given paths -- and return true', (t) => {
+test('should do a logical OR on the given paths -- and return true', () => {
   const path = ['visible', 'meta.published', 'public']
   const data = { visible: false, meta: { published: true }, public: false }
 
   const ret = logical({ path, operator: 'OR' })(options)(data, state)
 
-  t.true(ret)
+  assert.equal(ret, true)
 })
 
-test('should force values to boolean -- going forward', (t) => {
+test('should force values to boolean -- going forward', () => {
   const path = ['visible', 'meta.published', 'public']
   const data = {
     visible: false,
@@ -69,20 +70,20 @@ test('should force values to boolean -- going forward', (t) => {
 
   const ret = logical({ path, operator: 'OR' })(options)(data, state)
 
-  t.true(ret)
+  assert.equal(ret, true)
 })
 
-test('should do a logical OR on the given paths -- using the root', (t) => {
+test('should do a logical OR on the given paths -- using the root', () => {
   const stateWithRoot = { ...state, context: [{ acceptAll: true }] }
   const path = ['^^.acceptAll', 'visible', 'meta.published', 'public']
   const data = { visible: false, meta: { published: false }, public: false }
 
   const ret = logical({ path, operator: 'OR' })(options)(data, stateWithRoot)
 
-  t.true(ret)
+  assert.equal(ret, true)
 })
 
-test('should support full pipelines', (t) => {
+test('should support full pipelines', () => {
   const getFalse: Transformer = () => () => () => false
   const path = ['visible', 'public', { $transform: 'getFalse' }]
   const data = { visible: true, public: true }
@@ -90,50 +91,50 @@ test('should support full pipelines', (t) => {
 
   const ret = logical({ path, operator: 'AND' })(options)(data, state)
 
-  t.false(ret)
+  assert.equal(ret, false)
 })
 
-test('should return the boolean as is from AND with only one path', (t) => {
+test('should return the boolean as is from AND with only one path', () => {
   const path = 'visible'
   const data = { visible: true }
 
   const ret = logical({ path, operator: 'AND' })(options)(data, state)
 
-  t.true(ret)
+  assert.equal(ret, true)
 })
 
-test('should return the boolean as is from OR with only one path', (t) => {
+test('should return the boolean as is from OR with only one path', () => {
   const path = 'visible'
   const data = { visible: true }
 
   const ret = logical({ path, operator: 'OR' })(options)(data, state)
 
-  t.true(ret)
+  assert.equal(ret, true)
 })
 
 // Tests -- reverse
 
-test('should set all paths to the given boolean value', (t) => {
+test('should set all paths to the given boolean value', () => {
   const path = ['visible', 'meta.published', 'public']
   const data = true
   const expected = { visible: true, meta: { published: true }, public: true }
 
   const ret = logical({ path, operator: 'AND' })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should force value to boolean -- in reverse', (t) => {
+test('should force value to boolean -- in reverse', () => {
   const path = ['visible', 'meta.published', 'public']
   const data = { what: false }
   const expected = { visible: true, meta: { published: true }, public: true }
 
   const ret = logical({ path, operator: 'AND' })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support full pipelines in reverse', (t) => {
+test('should support full pipelines in reverse', () => {
   const getFalse: Transformer = () => () => () => false
   const path = ['visible', { $transform: 'getFalse' }, 'public']
   const data = true
@@ -142,12 +143,12 @@ test('should support full pipelines in reverse', (t) => {
 
   const ret = logical({ path, operator: 'AND' })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- async
 
-test('should do a logical AND on the given paths async', async (t) => {
+test('should do a logical AND on the given paths async', async () => {
   const path = ['visible', 'meta.published', 'public']
   const data = { visible: true, meta: { published: false }, public: true }
 
@@ -156,19 +157,19 @@ test('should do a logical AND on the given paths async', async (t) => {
     state,
   )
 
-  t.false(ret)
+  assert.equal(ret, false)
 })
 
-test('should do a logical OR on the given paths async', async (t) => {
+test('should do a logical OR on the given paths async', async () => {
   const path = ['visible', 'meta.published', 'public']
   const data = { visible: false, meta: { published: false }, public: false }
 
   const ret = await logicalAsync({ path, operator: 'OR' })(options)(data, state)
 
-  t.false(ret)
+  assert.equal(ret, false)
 })
 
-test('should set all paths to the given boolean value async', async (t) => {
+test('should set all paths to the given boolean value async', async () => {
   const path = ['visible', 'meta.published', 'public']
   const data = true
   const expected = { visible: true, meta: { published: true }, public: true }
@@ -178,10 +179,10 @@ test('should set all paths to the given boolean value async', async (t) => {
     stateRev,
   )
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support full async pipelines', async (t) => {
+test('should support full async pipelines', async () => {
   const getFalse: AsyncTransformer = () => () => async () => false
   const path = [
     'visible',
@@ -196,5 +197,5 @@ test('should support full async pipelines', async (t) => {
     state,
   )
 
-  t.true(ret)
+  assert.equal(ret, true)
 })

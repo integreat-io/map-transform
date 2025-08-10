@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import type { State } from '../types.js'
 
 import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
@@ -15,17 +16,17 @@ const stateRev = { rev: true }
 
 // Tests -- sync
 
-test('should run a simple pipeline', (t) => {
+test('should run a simple pipeline', () => {
   const pipeline = ['items']
   const value = { items: [{ id: 'ent1' }, { id: 'ent2' }] }
   const expected = [{ id: 'ent1' }, { id: 'ent2' }]
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate with an operation and make index available on state', (t) => {
+test('should iterate with an operation and make index available on state', () => {
   const fn = (_value: unknown, state: State) => state.index ?? 0
   const value = [
     { key: 'ent1', name: 'Entry 1' },
@@ -49,10 +50,10 @@ test('should iterate with an operation and make index available on state', (t) =
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test.skip('should iterate target', (t) => {
+test.skip('should iterate target', () => {
   const fn = (_value: unknown, state: State) => state.index ?? 0
   const value = [{ name: 'Entry 1' }, { name: 'Entry 2' }]
   const pipeline: PreppedPipeline = [
@@ -73,39 +74,39 @@ test.skip('should iterate target', (t) => {
 
   const ret = runPipeline(value, pipeline, stateWithTarget)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not touch value when empty pipeline', (t) => {
+test('should not touch value when empty pipeline', () => {
   const pipeline: PreppedPipeline = []
   const value = { id: 'ent1' }
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, value)
+  assert.equal(ret, value)
 })
 
-test('should run operation going forward', (t) => {
+test('should run operation going forward', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
   const expected = 'HELLO'
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not run operation function going in reverse', (t) => {
+test('should not run operation function going in reverse', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
   const expected = 'Hello'
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should ignore flip when checking direction', (t) => {
+test('should ignore flip when checking direction', () => {
   const value = 'Hello'
   const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
   const stateFlipped = { ...state, flip: true }
@@ -113,32 +114,30 @@ test('should ignore flip when checking direction', (t) => {
 
   const ret = runPipeline(value, pipeline, stateFlipped)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw when an operation step has an unknown type', (t) => {
+test('should throw when an operation step has an unknown type', () => {
   const pipeline = ['items', { type: 'unknown' }] as PreppedPipeline
   const value = { items: [] }
+  const expectedError = new Error("Unknown operation type 'unknown'")
 
-  const error = t.throws(() => runPipeline(value, pipeline, state))
-
-  t.true(error instanceof Error)
-  t.is(error.message, "Unknown operation type 'unknown'")
+  assert.throws(() => runPipeline(value, pipeline, state), expectedError)
 })
 
 // Tests -- async
 
-test('should run a simple pipeline asynchronously', async (t) => {
+test('should run a simple pipeline asynchronously', async () => {
   const pipeline = ['items']
   const value = { items: [{ id: 'ent1' }, { id: 'ent2' }] }
   const expected = [{ id: 'ent1' }, { id: 'ent2' }]
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run a pipeline with an async transformer', async (t) => {
+test('should run a pipeline with an async transformer', async () => {
   const fn = async () => 'From async'
   const pipeline = [{ type: 'transform' as const, fn }, '>value']
   const value = { id: 'ent1' }
@@ -146,10 +145,10 @@ test('should run a pipeline with an async transformer', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run a pipeline with an async transformer when iterating', async (t) => {
+test('should run a pipeline with an async transformer when iterating', async () => {
   const fn = async () => 'From async'
   const pipeline = [
     'items',
@@ -164,10 +163,10 @@ test('should run a pipeline with an async transformer when iterating', async (t)
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run a pipeline with an async transformer in a mutation object', async (t) => {
+test('should run a pipeline with an async transformer in a mutation object', async () => {
   const fn = async () => 'From async'
   const pipeline = [
     {
@@ -183,10 +182,10 @@ test('should run a pipeline with an async transformer in a mutation object', asy
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run a pipeline applying an async pipline', async (t) => {
+test('should run a pipeline applying an async pipline', async () => {
   const fn = async () => 'From async'
   const pipeline = [{ type: 'apply' as const, id: 'entry' }]
   const pipelines = new Map()
@@ -205,10 +204,10 @@ test('should run a pipeline applying an async pipline', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run a pipeline with async alt pipelines', async (t) => {
+test('should run a pipeline with async alt pipelines', async () => {
   const fn = async () => 'From async'
   const pipeline = [
     {
@@ -221,10 +220,10 @@ test('should run a pipeline with async alt pipelines', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate with an operation and make index available on state for async', async (t) => {
+test('should iterate with an operation and make index available on state for async', async () => {
   const fn = async (_value: unknown, state: State) => state.index ?? 0
   const value = [
     { key: 'ent1', name: 'Entry 1' },
@@ -248,10 +247,10 @@ test('should iterate with an operation and make index available on state for asy
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not flatten arrays returned by an operation when iterating', async (t) => {
+test('should not flatten arrays returned by an operation when iterating', async () => {
   const value = [
     { key: 'ent1', name: 'Entry 1' },
     { key: 'ent2', name: 'Entry 2' },
@@ -273,5 +272,5 @@ test('should not flatten arrays returned by an operation when iterating', async 
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

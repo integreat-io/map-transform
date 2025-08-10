@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
 import { mapTransformSync, mapTransformAsync } from '../index.js'
 
@@ -23,7 +24,7 @@ const options = {
 
 // Tests
 
-test('should filter out item', (t) => {
+test('should filter out item', () => {
   const def = [{ title: 'content.heading' }, { $filter: 'noHeadingTitle' }]
   const data = {
     content: { heading: 'The heading' },
@@ -32,10 +33,10 @@ test('should filter out item', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter out item with async transform function', async (t) => {
+test('should filter out item with async transform function', async () => {
   const def = [{ title: 'content.heading' }, { $filter: 'noHeadingTitleAsync' }]
   const data = {
     content: { heading: 'The heading' },
@@ -44,10 +45,10 @@ test('should filter out item with async transform function', async (t) => {
 
   const ret = await mapTransformAsync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter out items in array', (t) => {
+test('should filter out items in array', () => {
   const def = [
     {
       $iterate: true,
@@ -64,10 +65,10 @@ test('should filter out items in array', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter with several filters', (t) => {
+test('should filter with several filters', () => {
   const def = [
     {
       $iterate: true,
@@ -86,10 +87,10 @@ test('should filter with several filters', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set filtered items on path', (t) => {
+test('should set filtered items on path', () => {
   const def = [
     {
       $iterate: true,
@@ -108,10 +109,10 @@ test('should set filtered items on path', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter items from parent mapping for reverse mapping', (t) => {
+test('should filter items from parent mapping for reverse mapping', () => {
   const def = {
     'items[]': [
       {
@@ -119,7 +120,6 @@ test('should filter items from parent mapping for reverse mapping', (t) => {
         title: 'content.heading',
       },
       { $filter: 'noHeadingTitle' },
-      ,
     ],
   }
   const data = {
@@ -129,10 +129,10 @@ test('should filter items from parent mapping for reverse mapping', (t) => {
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter on reverse mapping', (t) => {
+test('should filter on reverse mapping', () => {
   const def = [
     {
       $iterate: true,
@@ -151,10 +151,10 @@ test('should filter on reverse mapping', (t) => {
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use directional filters - going forward', (t) => {
+test('should use directional filters - going forward', () => {
   const def = [
     {
       $iterate: true,
@@ -177,10 +177,10 @@ test('should use directional filters - going forward', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use directional filters - going reverse', (t) => {
+test('should use directional filters - going reverse', () => {
   const def = [
     {
       $iterate: true,
@@ -202,30 +202,30 @@ test('should use directional filters - going reverse', (t) => {
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter before mapping', (t) => {
+test('should filter before mapping', () => {
   const def = ['content', { $filter: 'noHeadingTitle' }, { heading: 'title' }]
   const data = { content: { title: 'The heading' } }
   const expected = undefined
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter with filter before mapping on reverse mapping', (t) => {
+test('should filter with filter before mapping on reverse mapping', () => {
   const def = ['content', { $filter: 'noHeadingTitle' }, { heading: 'title' }]
   const data = { heading: 'The heading' }
   const expected = { content: undefined }
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter with compare transformer', (t) => {
+test('should filter with compare transformer', () => {
   const def = [
     {
       title: 'heading',
@@ -238,10 +238,10 @@ test('should filter with compare transformer', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter after a lookup', (t) => {
+test('should filter after a lookup', () => {
   const def = [
     'ids',
     { $lookup: '^^.content', path: 'id' },
@@ -264,10 +264,10 @@ test('should filter after a lookup', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply filter from operation object with Symbol id', (t) => {
+test('should apply filter from operation object with Symbol id', () => {
   const def = [
     { title: 'content.heading' },
     { $filter: Symbol.for('noHeadingTitle') },
@@ -277,48 +277,43 @@ test('should apply filter from operation object with Symbol id', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw when filter is given an unknown transformer id', (t) => {
+test('should throw when filter is given an unknown transformer id', () => {
   const def = [{ title: 'content.heading' }, { $filter: 'unknown' }]
   const data = {
     content: { heading: 'The heading' },
   }
-
-  const error = t.throws(() => mapTransformSync(def, options)(data))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
+  const expectedError = new Error(
     "Transformer 'unknown' was not found for filter operation",
   )
+
+  assert.throws(() => mapTransformSync(def, options)(data), expectedError)
 })
 
-test('should throw when filter is given an unknown transformer id as symbol', (t) => {
+test('should throw when filter is given an unknown transformer id as symbol', () => {
   const def = [{ title: 'content.heading' }, { $filter: Symbol.for('unknown') }]
   const data = {
     content: { heading: 'The heading' },
   }
-
-  const error = t.throws(() => mapTransformSync(def, options)(data))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
+  const expectedError = new Error(
     "Transformer 'Symbol(unknown)' was not found for filter operation",
   )
+
+  assert.throws(() => mapTransformSync(def, options)(data), expectedError)
 })
 
-test('should throw when filter operator is missing a transformer id', (t) => {
+test('should throw when filter operator is missing a transformer id', () => {
   const def = [{ title: 'content.heading' }, { $filter: null }] // Missing transformer id
   const data = {
     content: { heading: 'The heading' },
   }
+  const expectedError = new Error('Filter operation is missing transformer id')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = t.throws(() => mapTransformSync(def as any, options)(data))
-
-  t.true(error instanceof Error)
-  t.is(error?.message, 'Filter operation is missing transformer id')
+  assert.throws(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => mapTransformSync(def as any, options)(data),
+    expectedError,
+  )
 })

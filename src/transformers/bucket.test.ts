@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import transform from '../operations/transform.js'
 import compare from './compare.js'
 import { value } from './value.js'
@@ -24,7 +25,7 @@ const options = { nonvalues: [undefined, null, ''], transformers: { value } }
 
 // Tests -- forward
 
-test('should sort array into buckets based on condition', async (t) => {
+test('should sort array into buckets based on condition', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -61,10 +62,10 @@ test('should sort array into buckets based on condition', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set empty bucket', async (t) => {
+test('should not set empty bucket', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -99,10 +100,10 @@ test('should not set empty bucket', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get array from path', async (t) => {
+test('should get array from path', async () => {
   const data = {
     content: {
       users: [
@@ -132,10 +133,10 @@ test('should get array from path', async (t) => {
 
   const ret = await bucket({ path, buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort array into buckets based on size', async (t) => {
+test('should sort array into buckets based on size', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -160,10 +161,10 @@ test('should sort array into buckets based on size', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort array into buckets based on size several times', async (t) => {
+test('should sort array into buckets based on size several times', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -190,11 +191,11 @@ test('should sort array into buckets based on size several times', async (t) => 
   const ret1 = await mapper(data, state)
   const ret2 = await mapper(data, state)
 
-  t.deepEqual(ret1, expected)
-  t.deepEqual(ret2, expected)
+  assert.deepEqual(ret1, expected)
+  assert.deepEqual(ret2, expected)
 })
 
-test('should sort array into buckets based on condition and sizes', async (t) => {
+test('should sort array into buckets based on condition and sizes', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: 'editor' },
@@ -232,10 +233,10 @@ test('should sort array into buckets based on condition and sizes', async (t) =>
 
   const ret = await bucket({ buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should treat single object as array', async (t) => {
+test('should treat single object as array', async () => {
   const data = { id: 'user2', name: 'User 2' }
   const buckets = [
     {
@@ -252,10 +253,10 @@ test('should treat single object as array', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip buckets without key', async (t) => {
+test('should skip buckets without key', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: 'unknown' },
@@ -284,10 +285,10 @@ test('should skip buckets without key', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge bucket arrays into one array when going forward and flipped', async (t) => {
+test('should merge bucket arrays into one array when going forward and flipped', async () => {
   const stateFlipped = { ...state, flip: true }
   const data = {
     // We've moved arround the order of the buckets
@@ -314,10 +315,10 @@ test('should merge bucket arrays into one array when going forward and flipped',
 
   const ret = await bucket({ buckets })(options)(data, stateFlipped)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort array into buckets based on groupByPath', async (t) => {
+test('should sort array into buckets based on groupByPath', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -337,10 +338,10 @@ test('should sort array into buckets based on groupByPath', async (t) => {
 
   const ret = await bucket({ groupByPath })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should force values from groupByPath to string', async (t) => {
+test('should force values from groupByPath to string', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 1 },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -361,10 +362,10 @@ test('should force values from groupByPath to string', async (t) => {
 
   const ret = await bucket({ groupByPath })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort array into buckets based on a pipeline', async (t) => {
+test('should sort array into buckets based on a pipeline', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -389,10 +390,10 @@ test('should sort array into buckets based on a pipeline', async (t) => {
 
   const ret = await bucket({ groupByPath })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return an empty object when no buckets or groupByPath are defined', async (t) => {
+test('should return an empty object when no buckets or groupByPath are defined', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -406,12 +407,12 @@ test('should return an empty object when no buckets or groupByPath are defined',
 
   const ret = await bucket({ buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- rev
 
-test('should merge bucket arrays into one array in the order of the defined buckets', async (t) => {
+test('should merge bucket arrays into one array in the order of the defined buckets', async () => {
   const data = {
     // We've moved arround the order of the buckets
     users: [
@@ -449,10 +450,10 @@ test('should merge bucket arrays into one array in the order of the defined buck
 
   const ret = await bucket({ buckets })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip buckets that are not defined', async (t) => {
+test('should skip buckets that are not defined', async () => {
   const data = {
     admin: [{ id: 'user4', name: 'User 4', role: 'admin' }],
     editor: [{ id: 'user1', name: 'User 1', role: 'editor' }],
@@ -484,10 +485,10 @@ test('should skip buckets that are not defined', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge bucket arrays into one array on path', async (t) => {
+test('should merge bucket arrays into one array on path', async () => {
   const data = {
     admin: [{ id: 'user4', name: 'User 4', role: 'admin' }],
     editor: [
@@ -529,10 +530,10 @@ test('should merge bucket arrays into one array on path', async (t) => {
 
   const ret = await bucket({ path, buckets })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge bucket values into one array even with non-arrays', async (t) => {
+test('should merge bucket values into one array even with non-arrays', async () => {
   const data = {
     admin: { id: 'user4', name: 'User 4', role: 'admin' },
     editor: [
@@ -563,10 +564,10 @@ test('should merge bucket values into one array even with non-arrays', async (t)
 
   const ret = await bucket({ buckets })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge buckets based on groupByPath into on array in reverse', async (t) => {
+test('should merge buckets based on groupByPath into on array in reverse', async () => {
   const data = {
     editor: [
       { id: 'user1', name: 'User 1', role: 'editor' },
@@ -583,10 +584,10 @@ test('should merge buckets based on groupByPath into on array in reverse', async
 
   const ret = await bucket({ groupByPath })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty array when no buckets', async (t) => {
+test('should return empty array when no buckets', async () => {
   const data = {}
   const buckets = [
     {
@@ -601,10 +602,10 @@ test('should return empty array when no buckets', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty array when we have no buckets object', async (t) => {
+test('should return empty array when we have no buckets object', async () => {
   const data = undefined
   const buckets = [
     {
@@ -619,10 +620,10 @@ test('should return empty array when we have no buckets object', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty array when no buckets are defined', async (t) => {
+test('should return empty array when no buckets are defined', async () => {
   const data = {
     users: [
       { id: 'user2', name: 'User 2', role: undefined },
@@ -640,10 +641,10 @@ test('should return empty array when no buckets are defined', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort array into buckets in rev when flipped', async (t) => {
+test('should sort array into buckets in rev when flipped', async () => {
   const stateRevFlipped = { ...stateRev, flip: true }
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
@@ -669,10 +670,10 @@ test('should sort array into buckets in rev when flipped', async (t) => {
 
   const ret = await bucket({ buckets })(options)(data, stateRevFlipped)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support pipeline as an alias of condition (but will be removed in next major version)', async (t) => {
+test('should support pipeline as an alias of condition (but will be removed in next major version)', async () => {
   const data = [
     { id: 'user1', name: 'User 1', role: 'editor' },
     { id: 'user2', name: 'User 2', role: undefined },
@@ -709,5 +710,5 @@ test('should support pipeline as an alias of condition (but will be removed in n
 
   const ret = await bucket({ buckets })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

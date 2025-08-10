@@ -1,10 +1,11 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
 import mapTransform, { set, ifelse } from '../index.js'
 
 // Tests
 
-test('should map with ifelse', async (t) => {
+test('should map with ifelse', async () => {
   const isPublished = async (data: unknown) =>
     isObject(data) && !!data.published
   const def = [
@@ -27,10 +28,10 @@ test('should map with ifelse', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run `then` pipeline when transform returns true', async (t) => {
+test('should run `then` pipeline when transform returns true', async () => {
   const def = [
     'content',
     {
@@ -46,10 +47,10 @@ test('should run `then` pipeline when transform returns true', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run `else` pipeline when transform returns false', async (t) => {
+test('should run `else` pipeline when transform returns false', async () => {
   const def = [
     'content',
     {
@@ -65,10 +66,10 @@ test('should run `else` pipeline when transform returns false', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined from else pipeline', async (t) => {
+test('should return undefined from else pipeline', async () => {
   const def = [
     'content',
     {
@@ -83,10 +84,10 @@ test('should return undefined from else pipeline', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.is(ret, undefined)
+  assert.equal(ret, undefined)
 })
 
-test('should run $if deeper in the structure', async (t) => {
+test('should run $if deeper in the structure', async () => {
   const def = [
     'content',
     {
@@ -106,10 +107,10 @@ test('should run $if deeper in the structure', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $and - matching', async (t) => {
+test('should support $and - matching', async () => {
   const def = [
     'content',
     {
@@ -135,10 +136,10 @@ test('should support $and - matching', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $and - not matching', async (t) => {
+test('should support $and - not matching', async () => {
   const def = [
     'content',
     {
@@ -164,10 +165,10 @@ test('should support $and - not matching', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $and - matching in reverse', async (t) => {
+test('should support $and - matching in reverse', async () => {
   const def = [
     'content',
     {
@@ -195,10 +196,10 @@ test('should support $and - matching in reverse', async (t) => {
 
   const ret = await mapTransform(def)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $and - not matching in reverse', async (t) => {
+test('should support $and - not matching in reverse', async () => {
   const def = [
     'content',
     {
@@ -226,10 +227,10 @@ test('should support $and - not matching in reverse', async (t) => {
 
   const ret = await mapTransform(def)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $or - matching', async (t) => {
+test('should support $or - matching', async () => {
   const def = [
     'content',
     {
@@ -255,10 +256,10 @@ test('should support $or - matching', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $or - matching with root', async (t) => {
+test('should support $or - matching with root', async () => {
   const def = [
     'content',
     {
@@ -285,10 +286,10 @@ test('should support $or - matching with root', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $or - not matching', async (t) => {
+test('should support $or - not matching', async () => {
   const def = [
     'content',
     {
@@ -314,10 +315,10 @@ test('should support $or - not matching', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $not', async (t) => {
+test('should support $not', async () => {
   const def = [
     'content',
     {
@@ -340,5 +341,5 @@ test('should support $not', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

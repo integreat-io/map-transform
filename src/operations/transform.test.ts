@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { noopNext } from '../utils/stateHelpers.js'
 
@@ -10,13 +11,14 @@ const upper = () => async (str: unknown) =>
   typeof str === 'string' ? str.toUpperCase() : str
 const lower = () => async (str: unknown) =>
   typeof str === 'string' ? str.toLowerCase() : str
-const length = () => async (arr: unknown) => Array.isArray(arr) ? arr.length : 0
+const length = () => async (arr: unknown) =>
+  Array.isArray(arr) ? arr.length : 0
 
 const options = {}
 
 // Tests
 
-test('should run transform function on value', async (t) => {
+test('should run transform function on value', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -28,10 +30,10 @@ test('should run transform function on value', async (t) => {
 
   const ret = await transform(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run transform function on array value', async (t) => {
+test('should run transform function on array value', async () => {
   const state = {
     context: [[{ title: 'Entry 1' }, { title: 'Entry 2' }]],
     value: ['Entry 1', 'Entry 2'],
@@ -43,10 +45,10 @@ test('should run transform function on array value', async (t) => {
 
   const ret = await transform(length)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run transform in reverse', async (t) => {
+test('should run transform in reverse', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -60,10 +62,10 @@ test('should run transform in reverse', async (t) => {
 
   const ret = await transform(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run dedicated transform in reverse', async (t) => {
+test('should run dedicated transform in reverse', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -77,10 +79,10 @@ test('should run dedicated transform in reverse', async (t) => {
 
   const ret = await transform(upper, lower)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not mind reverse transform going forward', async (t) => {
+test('should not mind reverse transform going forward', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -94,10 +96,10 @@ test('should not mind reverse transform going forward', async (t) => {
 
   const ret = await transform(upper, lower)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run reverse transform going forward when flip is true', async (t) => {
+test('should run reverse transform going forward when flip is true', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -113,10 +115,10 @@ test('should run reverse transform going forward when flip is true', async (t) =
 
   const ret = await transform(upper, lower)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass state to transform function', async (t) => {
+test('should pass state to transform function', async () => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
     context: [{ title: 'Entry 1' }],
@@ -128,10 +130,10 @@ test('should pass state to transform function', async (t) => {
 
   await transform(() => fn)(options)(noopNext)(state)
 
-  t.deepEqual(fn.args[0][1], expected)
+  assert.deepEqual(fn.args[0][1], expected)
 })
 
-test('should pass state to rev transform function', async (t) => {
+test('should pass state to rev transform function', async () => {
   const fn = sinon.stub().returnsArg(0)
   const state = {
     context: [{ title: 'Entry 1' }],
@@ -143,22 +145,20 @@ test('should pass state to rev transform function', async (t) => {
 
   await transform(upper, () => fn)(options)(noopNext)(state)
 
-  t.deepEqual(fn.args[0][1], expected)
+  assert.deepEqual(fn.args[0][1], expected)
 })
 
-test('should throw when given something other than a function', (t) => {
+test('should throw when given something other than a function', () => {
   const state = {
     context: [{}],
     value: 'Entry 1',
   }
-
-  const error = t.throws(
-    () => transform('wrong' as any)(options)(noopNext)(state) // eslint-disable-line @typescript-eslint/no-explicit-any
+  const expectedError = new Error(
+    'Transform operation was called without a valid transformer function',
   )
 
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
-    'Transform operation was called without a valid transformer function'
+  assert.throws(
+    () => transform('wrong' as any)(options)(noopNext)(state), // eslint-disable-line @typescript-eslint/no-explicit-any
+    expectedError,
   )
 })

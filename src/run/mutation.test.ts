@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import type { PreppedPipeline } from './index.js'
 import type { State } from '../types.js'
 
@@ -14,7 +15,7 @@ const stateRev = { rev: true }
 
 // Tests -- sync
 
-test('should run mutation object', (t) => {
+test('should run mutation object', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -29,10 +30,10 @@ test('should run mutation object', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate in pipeline', (t) => {
+test('should iterate in pipeline', () => {
   const value = {
     key: 'ent1',
     name: 'Entry 1',
@@ -56,10 +57,10 @@ test('should iterate in pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should keep the order of the pipelines on the target object', (t) => {
+test('should keep the order of the pipelines on the target object', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -76,10 +77,10 @@ test('should keep the order of the pipelines on the target object', (t) => {
   const ret = runPipeline(value, pipeline, state)
 
   const keys = Object.keys(ret as Record<string, unknown>)
-  t.deepEqual(keys, expected)
+  assert.deepEqual(keys, expected)
 })
 
-test('should set undefined value', (t) => {
+test('should set undefined value', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -95,10 +96,10 @@ test('should set undefined value', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should keep the value of a non-value', (t) => {
+test('should keep the value of a non-value', () => {
   const value = { key: 'ent1', name: 'Entry 1', empty: '' }
   const pipeline: PreppedPipeline = [
     {
@@ -115,10 +116,10 @@ test('should keep the value of a non-value', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not run mutation object on undefined', (t) => {
+test('should not run mutation object on undefined', () => {
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
@@ -133,10 +134,10 @@ test('should not run mutation object on undefined', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not run mutation object on a non-value', (t) => {
+test('should not run mutation object on a non-value', () => {
   const value = ''
   const pipeline: PreppedPipeline = [
     {
@@ -152,10 +153,10 @@ test('should not run mutation object on a non-value', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run mutation object with sub-mutations', (t) => {
+test('should run mutation object with sub-mutations', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -170,10 +171,10 @@ test('should run mutation object with sub-mutations', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support parent steps in pipelines', (t) => {
+test('should support parent steps in pipelines', () => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
     'item',
@@ -190,10 +191,10 @@ test('should support parent steps in pipelines', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support parent steps through iteration', (t) => {
+test('should support parent steps through iteration', () => {
   const value = { items: [{ key: 'ent1', name: 'Entry 1' }], count: 1 }
   const pipeline: PreppedPipeline = [
     'items',
@@ -211,10 +212,10 @@ test('should support parent steps through iteration', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run several mutation objects in a pipeline', (t) => {
+test('should run several mutation objects in a pipeline', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -233,10 +234,10 @@ test('should run several mutation objects in a pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support parent step through a previous mutation step', (t) => {
+test('should support parent step through a previous mutation step', () => {
   const value = { props: { key: 'ent1', name: 'Entry 1' }, index: 1 }
   const pipeline: PreppedPipeline = [
     'props',
@@ -259,10 +260,10 @@ test('should support parent step through a previous mutation step', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate mutation object', (t) => {
+test('should iterate mutation object', () => {
   const value = [
     { key: 'ent1', name: 'Entry 1' },
     { key: 'ent2', name: 'Entry 2' },
@@ -284,10 +285,10 @@ test('should iterate mutation object', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not mutate non-values when iterating', (t) => {
+test('should not mutate non-values when iterating', () => {
   const value = [undefined, { key: 'ent1', name: 'Entry 1' }, '']
   const pipeline: PreppedPipeline = [
     {
@@ -304,10 +305,10 @@ test('should not mutate non-values when iterating', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test.skip('should set pipelines on the given target', (t) => {
+test.skip('should set pipelines on the given target', () => {
   const value = { key: 'ent1' }
   const pipeline: PreppedPipeline = [
     {
@@ -323,10 +324,10 @@ test.skip('should set pipelines on the given target', (t) => {
 
   const ret = runPipeline(value, pipeline, stateWithTarget)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge mutated object with pipeline value ($modify)', (t) => {
+test('should merge mutated object with pipeline value ($modify)', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -341,10 +342,10 @@ test('should merge mutated object with pipeline value ($modify)', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should modify pipeline value with a pipeline', (t) => {
+test('should modify pipeline value with a pipeline', () => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
     {
@@ -359,10 +360,10 @@ test('should modify pipeline value with a pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should modify pipeline value with parent step in mod pipeline', (t) => {
+test('should modify pipeline value with parent step in mod pipeline', () => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
     'item',
@@ -379,10 +380,10 @@ test('should modify pipeline value with parent step in mod pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use modify pipelines on several levels', (t) => {
+test('should use modify pipelines on several levels', () => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
     {
@@ -410,10 +411,10 @@ test('should use modify pipelines on several levels', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge with flip ($modify)', (t) => {
+test('should merge with flip ($modify)', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -429,10 +430,10 @@ test('should merge with flip ($modify)', (t) => {
 
   const ret = runPipeline(value, pipeline, stateWithFlip)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip reverse merge going forward ($modify)', (t) => {
+test('should skip reverse merge going forward ($modify)', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -447,10 +448,10 @@ test('should skip reverse merge going forward ($modify)', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not return empty object when noDefaults is true', (t) => {
+test('should not return empty object when noDefaults is true', () => {
   const value = { item: {} }
   const pipeline: PreppedPipeline = [
     {
@@ -463,10 +464,10 @@ test('should not return empty object when noDefaults is true', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should not include value from value operation when noDefaults is true', (t) => {
+test('should not include value from value operation when noDefaults is true', () => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
     {
@@ -497,10 +498,10 @@ test('should not include value from value operation when noDefaults is true', (t
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should override noDefaults in a sub-mutation', (t) => {
+test('should override noDefaults in a sub-mutation', () => {
   const value = { item: { key: 'ent1', props: { name: 'Entry 1' } } }
   const pipeline: PreppedPipeline = [
     {
@@ -532,10 +533,10 @@ test('should override noDefaults in a sub-mutation', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run mutation object in reverse', (t) => {
+test('should run mutation object in reverse', () => {
   const value = { id: 'ent1', title: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -550,10 +551,10 @@ test('should run mutation object in reverse', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run mutation object with sub-mutations in reverse', (t) => {
+test('should run mutation object with sub-mutations in reverse', () => {
   const value = { id: 'ent1', attributes: { title: 'Entry 1' } }
   const pipeline: PreppedPipeline = [
     {
@@ -572,10 +573,10 @@ test('should run mutation object with sub-mutations in reverse', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run mutation object as in reverse when flip is true', (t) => {
+test('should run mutation object as in reverse when flip is true', () => {
   const value = { id: 'ent1', title: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -591,10 +592,10 @@ test('should run mutation object as in reverse when flip is true', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on flip to sub-mutation', (t) => {
+test('should pass on flip to sub-mutation', () => {
   const value = { id: 'ent1', title: 'Entry 1', props: { archived: true } }
   const pipeline: PreppedPipeline = [
     {
@@ -615,10 +616,10 @@ test('should pass on flip to sub-mutation', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should override flip on sub-mutation', (t) => {
+test('should override flip on sub-mutation', () => {
   const value = { id: 'ent1', title: 'Entry 1', props: { archived: true } }
   const pipeline: PreppedPipeline = [
     {
@@ -639,10 +640,10 @@ test('should override flip on sub-mutation', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip pipeline with forward plug', (t) => {
+test('should skip pipeline with forward plug', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -658,10 +659,10 @@ test('should skip pipeline with forward plug', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not skip pipeline with forward plug in reverse', (t) => {
+test('should not skip pipeline with forward plug in reverse', () => {
   const value = { id: 'ent1', title: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -677,10 +678,10 @@ test('should not skip pipeline with forward plug in reverse', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge in reverse ($modify)', (t) => {
+test('should merge in reverse ($modify)', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -695,10 +696,10 @@ test('should merge in reverse ($modify)', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge with flip in reverse ($modify)', (t) => {
+test('should merge with flip in reverse ($modify)', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -714,10 +715,10 @@ test('should merge with flip in reverse ($modify)', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRevWithFlip)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip forward merge in reverse ($modify)', (t) => {
+test('should skip forward merge in reverse ($modify)', () => {
   const value = { key: 'ent1', name: 'Entry 1', slug: 'ENT1' }
   const pipeline: PreppedPipeline = [
     {
@@ -732,12 +733,12 @@ test('should skip forward merge in reverse ($modify)', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- async
 
-test('should run mutation object asynchronously', async (t) => {
+test('should run mutation object asynchronously', async () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const fn = async () => 'From async'
   const pipeline: PreppedPipeline = [
@@ -754,5 +755,5 @@ test('should run mutation object asynchronously', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

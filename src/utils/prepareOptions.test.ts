@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { isObject } from './is.js'
 import type { Dictionary, State, Options } from '../types.js'
 
@@ -6,35 +7,39 @@ import { prepareOptions, preparePipelines } from './prepareOptions.js'
 
 // Tests -- prepareOptions
 
-test('should set default values for minimal incoming options', (t) => {
+test('should set default values for minimal incoming options', () => {
   const options = {}
 
   const ret = prepareOptions(options)
 
-  t.truthy(ret)
-  t.true(isObject(ret.transformers))
-  t.true(isObject(ret.pipelines))
-  t.true(isObject(ret.dictionaries))
-  t.deepEqual(ret.nonvalues, [undefined])
-  t.is(ret.fwdAlias, undefined)
-  t.is(ret.revAlias, undefined)
-  t.is(ret.modifyOperationObject, undefined)
-  t.is(ret.modifyGetValue, undefined)
+  assert.ok(ret)
+  assert.equal(isObject(ret.transformers), true)
+  assert.equal(isObject(ret.pipelines), true)
+  assert.equal(isObject(ret.dictionaries), true)
+  assert.deepEqual(ret.nonvalues, [undefined])
+  assert.equal(ret.fwdAlias, undefined)
+  assert.equal(ret.revAlias, undefined)
+  assert.equal(ret.modifyOperationObject, undefined)
+  assert.equal(ret.modifyGetValue, undefined)
 })
 
-test('should include internal transformers in the internal options', (t) => {
+test('should include internal transformers in the internal options', () => {
   const options = {}
 
   const ret = prepareOptions(options)
 
-  t.is(typeof ret.transformers?.flatten, 'function')
-  t.is(typeof ret.transformers?.map, 'function')
-  t.is(typeof ret.transformers?.value, 'function') // We're just checking for a few of these
+  assert.equal(typeof ret.transformers?.flatten, 'function')
+  assert.equal(typeof ret.transformers?.map, 'function')
+  assert.equal(typeof ret.transformers?.value, 'function') // We're just checking for a few of these
 })
 
-test('should include provided transformers in the internal options', (t) => {
-  const customTrans1 = () => () => async () => {}
-  const customTrans2 = () => () => async () => {}
+test('should include provided transformers in the internal options', () => {
+  const customTrans1 = () => () => async () => {
+    return
+  }
+  const customTrans2 = () => () => async () => {
+    return
+  }
 
   const options = {
     transformers: {
@@ -45,16 +50,20 @@ test('should include provided transformers in the internal options', (t) => {
 
   const ret = prepareOptions(options)
 
-  t.is(ret.transformers?.custom1, customTrans1)
-  t.is(ret.transformers?.custom2, customTrans2)
-  t.is(typeof ret.transformers?.map, 'function')
-  t.is(typeof ret.transformers?.value, 'function') // We're just checking for a few of these
-  t.not(ret.transformers, options.transformers) // Make sure we have created a new object
+  assert.equal(ret.transformers?.custom1, customTrans1)
+  assert.equal(ret.transformers?.custom2, customTrans2)
+  assert.equal(typeof ret.transformers?.map, 'function')
+  assert.equal(typeof ret.transformers?.value, 'function') // We're just checking for a few of these
+  assert.notEqual(ret.transformers, options.transformers) // Make sure we have created a new object
 })
 
-test('should include transformers with symbol key', (t) => {
-  const customTrans1 = () => () => async () => {}
-  const customTrans2 = () => () => async () => {}
+test('should include transformers with symbol key', () => {
+  const customTrans1 = () => () => async () => {
+    return
+  }
+  const customTrans2 = () => () => async () => {
+    return
+  }
   const symbol1 = Symbol.for('customTrans1')
 
   const options = {
@@ -66,14 +75,16 @@ test('should include transformers with symbol key', (t) => {
 
   const ret = prepareOptions(options)
 
-  t.is(ret.transformers?.[symbol1], customTrans1) // eslint-disable-line security/detect-object-injection
-  t.is(ret.transformers?.custom2, customTrans2)
-  t.is(typeof ret.transformers?.map, 'function')
-  t.is(typeof ret.transformers?.value, 'function') // We're just checking for a few of these
+  assert.equal(ret.transformers?.[symbol1], customTrans1) // eslint-disable-line security/detect-object-injection
+  assert.equal(ret.transformers?.custom2, customTrans2)
+  assert.equal(typeof ret.transformers?.map, 'function')
+  assert.equal(typeof ret.transformers?.value, 'function') // We're just checking for a few of these
 })
 
-test('should override internal transform with incoming', (t) => {
-  const customFlatten = () => () => async () => {}
+test('should override internal transform with incoming', () => {
+  const customFlatten = () => () => async () => {
+    return
+  }
 
   const options = {
     transformers: {
@@ -83,10 +94,10 @@ test('should override internal transform with incoming', (t) => {
 
   const ret = prepareOptions(options)
 
-  t.is(ret.transformers?.flatten, customFlatten) // Is overridden
+  assert.equal(ret.transformers?.flatten, customFlatten) // Is overridden
 })
 
-test('should pass on incoming pipelines', (t) => {
+test('should pass on incoming pipelines', () => {
   const customPipeline = ['data', { $transform: 'fixEverything' }]
   const options = {
     pipelines: {
@@ -97,12 +108,12 @@ test('should pass on incoming pipelines', (t) => {
 
   const ret = prepareOptions(options)
 
-  t.is(ret.pipelines?.customPath, 'path.to.something')
-  t.is(ret.pipelines?.customPipeline, customPipeline)
-  t.not(ret.pipelines, options.pipelines) // Make sure we have created a new object
+  assert.equal(ret.pipelines?.customPath, 'path.to.something')
+  assert.equal(ret.pipelines?.customPipeline, customPipeline)
+  assert.notEqual(ret.pipelines, options.pipelines) // Make sure we have created a new object
 })
 
-test('should pass on incoming dictionaries', (t) => {
+test('should pass on incoming dictionaries', () => {
   const dict1: Dictionary = [
     ['1', true],
     ['0', false],
@@ -117,22 +128,22 @@ test('should pass on incoming dictionaries', (t) => {
 
   const ret = prepareOptions(options)
 
-  t.is(ret.dictionaries?.dict1, dict1)
-  t.is(ret.dictionaries?.dict2, dict2)
-  t.not(ret.dictionaries, options.dictionaries) // Make sure we have created a new object
+  assert.equal(ret.dictionaries?.dict1, dict1)
+  assert.equal(ret.dictionaries?.dict2, dict2)
+  assert.notEqual(ret.dictionaries, options.dictionaries) // Make sure we have created a new object
 })
 
-test('should use incoming nonvalue', (t) => {
+test('should use incoming nonvalue', () => {
   const options = {
     nonvalues: ['empty', null],
   }
 
   const ret = prepareOptions(options)
 
-  t.deepEqual(ret.nonvalues, ['empty', null])
+  assert.deepEqual(ret.nonvalues, ['empty', null])
 })
 
-test('should pass on other incoming options', (t) => {
+test('should pass on other incoming options', () => {
   const options = {
     fwdAlias: 'from',
     revAlias: 'to',
@@ -142,16 +153,16 @@ test('should pass on other incoming options', (t) => {
 
   const ret = prepareOptions(options)
 
-  t.truthy(ret)
-  t.is(ret.fwdAlias, 'from')
-  t.is(ret.revAlias, 'to')
-  t.is(ret.modifyOperationObject, options.modifyOperationObject)
-  t.is(ret.modifyGetValue, options.modifyGetValue)
+  assert.ok(ret)
+  assert.equal(ret.fwdAlias, 'from')
+  assert.equal(ret.revAlias, 'to')
+  assert.equal(ret.modifyOperationObject, options.modifyOperationObject)
+  assert.equal(ret.modifyGetValue, options.modifyGetValue)
 })
 
 // Tests -- preparePipelines
 
-test('preparePipelines should include only needed pipelines and resolve it to an operation', (t) => {
+test('preparePipelines should include only needed pipelines and resolve it to an operation', () => {
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe1')
   neededPipelineIds.add('pipe3')
@@ -172,18 +183,19 @@ test('preparePipelines should include only needed pipelines and resolve it to an
 
   preparePipelines(options)
 
-  t.deepEqual(Reflect.ownKeys(options.pipelines!), [
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  assert.deepEqual(Reflect.ownKeys(options.pipelines!), [
     'pipe1',
     'pipe3',
     Symbol.for('pipe4'),
   ])
-  t.is(typeof options.pipelines?.pipe1, 'function')
-  t.is(typeof options.pipelines?.pipe3, 'function')
-  t.is(typeof options.pipelines?.[Symbol.for('pipe4')], 'function')
-  t.is(options.pipelines, originalPipelines)
+  assert.equal(typeof options.pipelines?.pipe1, 'function')
+  assert.equal(typeof options.pipelines?.pipe3, 'function')
+  assert.equal(typeof options.pipelines?.[Symbol.for('pipe4')], 'function')
+  assert.equal(options.pipelines, originalPipelines)
 })
 
-test('preparePipelines should also resolve pipelines applied by a pipeline', (t) => {
+test('preparePipelines should also resolve pipelines applied by a pipeline', () => {
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe1')
   neededPipelineIds.add('pipe3')
@@ -200,13 +212,18 @@ test('preparePipelines should also resolve pipelines applied by a pipeline', (t)
 
   preparePipelines(options)
 
-  t.deepEqual(Reflect.ownKeys(options.pipelines!), ['pipe1', 'pipe2', 'pipe3'])
-  t.is(typeof options.pipelines?.pipe1, 'function')
-  t.is(typeof options.pipelines?.pipe2, 'function')
-  t.is(typeof options.pipelines?.pipe3, 'function')
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  assert.deepEqual(Reflect.ownKeys(options.pipelines!), [
+    'pipe1',
+    'pipe2',
+    'pipe3',
+  ])
+  assert.equal(typeof options.pipelines?.pipe1, 'function')
+  assert.equal(typeof options.pipelines?.pipe2, 'function')
+  assert.equal(typeof options.pipelines?.pipe3, 'function')
 })
 
-test('preparePipelines should also resolve pipelines applied by a pipeline in a pipeline', (t) => {
+test('preparePipelines should also resolve pipelines applied by a pipeline in a pipeline', () => {
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe3')
   const options: Options = {
@@ -222,13 +239,18 @@ test('preparePipelines should also resolve pipelines applied by a pipeline in a 
 
   preparePipelines(options)
 
-  t.deepEqual(Reflect.ownKeys(options.pipelines!), ['pipe1', 'pipe2', 'pipe3'])
-  t.is(typeof options.pipelines?.pipe1, 'function')
-  t.is(typeof options.pipelines?.pipe2, 'function')
-  t.is(typeof options.pipelines?.pipe3, 'function')
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  assert.deepEqual(Reflect.ownKeys(options.pipelines!), [
+    'pipe1',
+    'pipe2',
+    'pipe3',
+  ])
+  assert.equal(typeof options.pipelines?.pipe1, 'function')
+  assert.equal(typeof options.pipelines?.pipe2, 'function')
+  assert.equal(typeof options.pipelines?.pipe3, 'function')
 })
 
-test('preparePipelines should not be tripped by recurring pipelines', (t) => {
+test('preparePipelines should not be tripped by recurring pipelines', () => {
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe3')
   const options: Options = {
@@ -244,8 +266,9 @@ test('preparePipelines should not be tripped by recurring pipelines', (t) => {
 
   preparePipelines(options)
 
-  t.deepEqual(Reflect.ownKeys(options.pipelines!), ['pipe2', 'pipe3'])
-  t.not(typeof options.pipelines?.pipe1, 'function')
-  t.is(typeof options.pipelines?.pipe2, 'function')
-  t.is(typeof options.pipelines?.pipe3, 'function')
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  assert.deepEqual(Reflect.ownKeys(options.pipelines!), ['pipe2', 'pipe3'])
+  assert.notEqual(typeof options.pipelines?.pipe1, 'function')
+  assert.equal(typeof options.pipelines?.pipe2, 'function')
+  assert.equal(typeof options.pipelines?.pipe3, 'function')
 })

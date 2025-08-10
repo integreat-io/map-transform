@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import sort from './sort.js'
 
@@ -21,34 +22,34 @@ const options = {}
 
 // Tests
 
-test('should sort numbers in ascending order', (t) => {
+test('should sort numbers in ascending order', () => {
   const data = [5, 3, 15]
   const expected = [3, 5, 15]
 
   const ret = sort({ asc: true })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort strings in ascending order', (t) => {
+test('should sort strings in ascending order', () => {
   const data = ['John', 'Alice', 'Bob']
   const expected = ['Alice', 'Bob', 'John']
 
   const ret = sort({ asc: true })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort booleans in ascending order', (t) => {
+test('should sort booleans in ascending order', () => {
   const data = [true, false, true]
   const expected = [false, true, true]
 
   const ret = sort({ asc: true })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort dates in ascending order', (t) => {
+test('should sort dates in ascending order', () => {
   const data = [
     new Date('2020-09-11T00:00:00Z'),
     new Date('2022-03-04T18:43:11Z'),
@@ -62,37 +63,37 @@ test('should sort dates in ascending order', (t) => {
 
   const ret = sort({ asc: true })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort null and undefined last', (t) => {
+test('should sort null and undefined last', () => {
   const data = [null, 5, 'zero', undefined, 3, 'Alice', 15, 'Bob']
   const expected = [3, 5, 15, 'Alice', 'Bob', 'zero', null, undefined]
 
   const ret = sort({ asc: true })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort numbers in descending order', (t) => {
+test('should sort numbers in descending order', () => {
   const data = [5, 3, 15]
   const expected = [15, 5, 3]
 
   const ret = sort({ asc: false })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort strings in descending order', (t) => {
+test('should sort strings in descending order', () => {
   const data = ['John', 'Alice', 'Bob']
   const expected = ['John', 'Bob', 'Alice']
 
   const ret = sort({ asc: false })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort dates in descending order', (t) => {
+test('should sort dates in descending order', () => {
   const data = [
     new Date('2020-09-11T00:00:00Z'),
     new Date('2022-03-04T18:43:11Z'),
@@ -106,64 +107,64 @@ test('should sort dates in descending order', (t) => {
 
   const ret = sort({ asc: false })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort null and undefined last in descending order', (t) => {
+test('should sort null and undefined last in descending order', () => {
   const data = [null, 5, 'zero', undefined, 3, 'Alice', 15, 'Bob']
   const expected = ['zero', 'Bob', 'Alice', 15, 5, 3, null, undefined]
 
   const ret = sort({ asc: false })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not sort objects', (t) => {
+test('should not sort objects', () => {
   const data = [{ id: '3' }, { id: '1' }, { id: '2' }]
   const expected = [{ id: '3' }, { id: '1' }, { id: '2' }]
 
   const ret = sort({ asc: true })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort with a path', (t) => {
+test('should sort with a path', () => {
   const data = [{ value: 5 }, { value: 3 }, { value: 15 }]
   const expected = [{ value: 3 }, { value: 5 }, { value: 15 }]
 
   const ret = sort({ asc: true, path: 'value' })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort in reverse', (t) => {
+test('should sort in reverse', () => {
   const data = [5, 3, 15]
   const expected = [3, 5, 15]
 
   const ret = sort({ asc: true })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should sort with path in reverse', (t) => {
+test('should sort with path in reverse', () => {
   const data = [{ value: 5 }, { value: 3 }, { value: 15 }]
   const expected = [{ value: 3 }, { value: 5 }, { value: 15 }]
 
   const ret = sort({ asc: true, path: 'value' })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw when path is a pipeline', (t) => {
+test('should throw when path is a pipeline', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const path = ['value', { $transform: 'string' }] as any
   const data = [{ value: 5 }, { value: 3 }, { value: 15 }]
-
-  const error = t.throws(() => sort({ asc: true, path })(options)(data, state))
-
-  t.true(error instanceof TypeError)
-  t.is(
-    error?.message,
+  const expectedError = new TypeError(
     "The 'sort' transformer does not allow `path` to be a pipeline",
+  )
+
+  assert.throws(
+    () => sort({ asc: true, path })(options)(data, state),
+    expectedError,
   )
 })

@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import transform from './transform.js'
 import { value } from '../transformers/value.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -11,7 +12,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should just pass on state when given one pipeline', async (t) => {
+test('should just pass on state when given one pipeline', async () => {
   const state = {
     context: [],
     value: { users: ['johnf', 'maryk'], admins: ['theboss'] },
@@ -24,10 +25,10 @@ test('should just pass on state when given one pipeline', async (t) => {
 
   const ret = await concat('users[]')(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge arrays from several pipelines', async (t) => {
+test('should merge arrays from several pipelines', async () => {
   const state = {
     context: [],
     value: { users: ['johnf', 'maryk'], admins: ['theboss'] },
@@ -36,10 +37,10 @@ test('should merge arrays from several pipelines', async (t) => {
 
   const ret = await concat('users[]', 'admins[]')(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should merge strings from several pipelines into array', async (t) => {
+test('should merge strings from several pipelines into array', async () => {
   const state = {
     context: [],
     value: { group: 'bergen', user: 'johnf' },
@@ -47,13 +48,13 @@ test('should merge strings from several pipelines into array', async (t) => {
   const expectedValue = ['bergen', '-', 'johnf']
 
   const ret = await concat('group', transform(value('-')), 'user')(options)(
-    noopNext
+    noopNext,
   )(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should return empty array when no pipelines', async (t) => {
+test('should return empty array when no pipelines', async () => {
   const state = {
     context: [],
     value: { users: ['johnf', 'maryk'], admins: ['theboss'] },
@@ -65,10 +66,10 @@ test('should return empty array when no pipelines', async (t) => {
 
   const ret = await concat()(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should strip away undefined', async (t) => {
+test('should strip away undefined', async () => {
   const state = {
     context: [],
     value: { group: 'bergen', user: 'johnf', team: null },
@@ -76,13 +77,13 @@ test('should strip away undefined', async (t) => {
   const expectedValue = ['bergen', 'johnf', null]
 
   const ret = await concat('group', 'unknown', 'user', 'team')(options)(
-    noopNext
+    noopNext,
   )(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should honor flip', async (t) => {
+test('should honor flip', async () => {
   const state = {
     context: [],
     value: ['johnf', 'maryk'],
@@ -98,12 +99,12 @@ test('should honor flip', async (t) => {
 
   const ret = await concat('users[]')(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- reverse
 
-test('should set array on one prop in reverse', async (t) => {
+test('should set array on one prop in reverse', async () => {
   const state = {
     context: [],
     value: ['johnf', 'maryk'],
@@ -118,10 +119,10 @@ test('should set array on one prop in reverse', async (t) => {
 
   const ret = await concat('users[]')(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set array on first prop in reverse', async (t) => {
+test('should set array on first prop in reverse', async () => {
   const state = {
     context: [],
     value: ['johnf', 'maryk', 'theboss'],
@@ -134,10 +135,10 @@ test('should set array on first prop in reverse', async (t) => {
 
   const ret = await concat('users[]', 'admins[]')(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should return an empty object when no pipelines in reverse', async (t) => {
+test('should return an empty object when no pipelines in reverse', async () => {
   const state = {
     context: [],
     value: ['johnf', 'maryk'],
@@ -151,10 +152,10 @@ test('should return an empty object when no pipelines in reverse', async (t) => 
 
   const ret = await concat()(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should honor flip in reverse', async (t) => {
+test('should honor flip in reverse', async () => {
   const state = {
     context: [],
     value: { users: ['johnf', 'maryk'], admins: ['theboss'] },
@@ -165,12 +166,12 @@ test('should honor flip in reverse', async (t) => {
 
   const ret = await concat('users[]', 'admins[]')(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
 // Tests -- concatRev
 
-test('concatRev should set array on first prop', async (t) => {
+test('concatRev should set array on first prop', async () => {
   const state = {
     context: [],
     value: ['johnf', 'maryk', 'theboss'],
@@ -182,10 +183,10 @@ test('concatRev should set array on first prop', async (t) => {
 
   const ret = await concatRev('users[]', 'admins[]')(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('concatRev should merge arrays from several pipelines in reverse', async (t) => {
+test('concatRev should merge arrays from several pipelines in reverse', async () => {
   const state = {
     context: [],
     value: { users: ['johnf', 'maryk'], admins: ['theboss'] },
@@ -195,5 +196,5 @@ test('concatRev should merge arrays from several pipelines in reverse', async (t
 
   const ret = await concatRev('users[]', 'admins[]')(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })

@@ -1,25 +1,26 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import State from './state.js'
 
 // Tests
 
-test('should create a new empty state', (t) => {
+test('should create a new empty state', () => {
   const state = new State()
 
-  t.is(state.value, undefined)
-  t.deepEqual(state.context, [])
-  t.is(state.target, undefined)
-  t.deepEqual(state.nonvalues, [undefined])
-  t.true(state.pipelines instanceof Map)
-  t.is(state.pipelines.size, 0)
-  t.is(state.rev, false)
-  t.is(state.flip, false)
-  t.is(state.noDefaults, false)
-  t.is(state.index, undefined)
+  assert.equal(state.value, undefined)
+  assert.deepEqual(state.context, [])
+  assert.equal(state.target, undefined)
+  assert.deepEqual(state.nonvalues, [undefined])
+  assert.ok(state.pipelines instanceof Map)
+  assert.equal(state.pipelines.size, 0)
+  assert.equal(state.rev, false)
+  assert.equal(state.flip, false)
+  assert.equal(state.noDefaults, false)
+  assert.equal(state.index, undefined)
 })
 
-test('should create a new state with prefilled properties', (t) => {
+test('should create a new state with prefilled properties', () => {
   const target = { item: { id: 'ent1' } }
   const initialState = {
     target,
@@ -30,41 +31,41 @@ test('should create a new state with prefilled properties', (t) => {
 
   const state = new State(initialState)
 
-  t.is(state.value, undefined)
-  t.deepEqual(state.context, [])
-  t.deepEqual(state.target, target)
-  t.deepEqual(state.nonvalues, [undefined, null])
-  t.true(state.pipelines instanceof Map)
-  t.is(state.pipelines.size, 0)
-  t.is(state.rev, true)
-  t.is(state.flip, false)
-  t.is(state.noDefaults, true)
-  t.is(state.index, undefined)
+  assert.equal(state.value, undefined)
+  assert.deepEqual(state.context, [])
+  assert.deepEqual(state.target, target)
+  assert.deepEqual(state.nonvalues, [undefined, null])
+  assert.ok(state.pipelines instanceof Map)
+  assert.equal(state.pipelines.size, 0)
+  assert.equal(state.rev, true)
+  assert.equal(state.flip, false)
+  assert.equal(state.noDefaults, true)
+  assert.equal(state.index, undefined)
 })
 
-test('should clone context when creating state from prefilled values', (t) => {
+test('should clone context when creating state from prefilled values', () => {
   const context = [{ item: { id: 'ent1' } }]
   const initialState = { context }
 
   const state = new State(initialState)
 
-  t.deepEqual(state.context, context)
-  t.not(state.context, context)
+  assert.deepEqual(state.context, context)
+  assert.notEqual(state.context, context)
 })
 
-test('should pass on pipelines when creating state from prefilled values', (t) => {
+test('should pass on pipelines when creating state from prefilled values', () => {
   const pipelines = new Map()
   pipelines.set('items', ['items'])
   const initialState = { pipelines }
 
   const state = new State(initialState)
 
-  t.is(state.pipelines, pipelines)
-  t.is(state.pipelines.size, 1)
-  t.true(state.pipelines.has('items'))
+  assert.equal(state.pipelines, pipelines)
+  assert.equal(state.pipelines.size, 1)
+  assert.ok(state.pipelines.has('items'))
 })
 
-test('should accept a separate value when creating state', (t) => {
+test('should accept a separate value when creating state', () => {
   const target = { item: { id: 'ent1' } }
   const initialState = {
     value: 'Not our',
@@ -76,10 +77,10 @@ test('should accept a separate value when creating state', (t) => {
 
   const state = new State(initialState, value)
 
-  t.is(state.value, 'Our value')
+  assert.equal(state.value, 'Our value')
 })
 
-test('should accept undefined as a separate value', (t) => {
+test('should accept undefined as a separate value', () => {
   const target = { item: { id: 'ent1' } }
   const initialState = {
     value: 'Not our',
@@ -91,5 +92,5 @@ test('should accept undefined as a separate value', (t) => {
 
   const state = new State(initialState, value)
 
-  t.is(state.value, undefined)
+  assert.equal(state.value, undefined)
 })

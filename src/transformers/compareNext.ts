@@ -20,13 +20,9 @@ import type {
   State,
 } from '../types.js'
 
-interface Comparer {
-  (value: unknown, match: unknown): boolean
-}
+type Comparer = (value: unknown, match: unknown) => boolean
 
-interface NumericComparer {
-  (value: number, match: number): boolean
-}
+type NumericComparer = (value: number, match: number) => boolean
 
 export interface Props extends TransformerProps {
   path?: TransformDefinition

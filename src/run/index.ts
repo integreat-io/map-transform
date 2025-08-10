@@ -29,9 +29,11 @@ export interface OperationStepBase extends StepProps {
   type: string
 }
 
-interface StepFunction<T extends OperationStepBase> {
-  (value: unknown, step: T, state: State): unknown
-}
+type StepFunction<T extends OperationStepBase> = (
+  value: unknown,
+  step: T,
+  state: State,
+) => unknown
 
 type StepFunctions = {
   [K in OperationStep['type']]: StepFunction<

@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import mapTransform, { transform, apply, fwd, rev, filter } from '../index.js'
 import type { Operation } from '../types.js'
@@ -53,7 +54,7 @@ const options = { pipelines }
 
 // Tests
 
-test('should apply pipeline by id', async (t) => {
+test('should apply pipeline by id', async () => {
   const def = [
     {
       title: 'content.heading',
@@ -73,10 +74,10 @@ test('should apply pipeline by id', async (t) => {
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply path pipeline by id', async (t) => {
+test('should apply path pipeline by id', async () => {
   const def = [
     apply('getItems'),
     {
@@ -96,10 +97,10 @@ test('should apply path pipeline by id', async (t) => {
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply path pipeline by id as Symbol', async (t) => {
+test('should apply path pipeline by id as Symbol', async () => {
   const def = [
     apply(Symbol.for('getItems')),
     {
@@ -119,10 +120,10 @@ test('should apply path pipeline by id as Symbol', async (t) => {
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply pipeline by id in reverse', async (t) => {
+test('should apply pipeline by id in reverse', async () => {
   const def = [
     apply('getItems'),
     {
@@ -142,10 +143,10 @@ test('should apply pipeline by id in reverse', async (t) => {
 
   const ret = await mapTransform(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply pipeline as operation object', async (t) => {
+test('should apply pipeline as operation object', async () => {
   const def = [
     {
       title: 'content.heading',
@@ -165,10 +166,10 @@ test('should apply pipeline as operation object', async (t) => {
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate applied pipeline', async (t) => {
+test('should iterate applied pipeline', async () => {
   const def = [{ $apply: 'hitsOnly', $iterate: true }]
   const data = [
     {
@@ -191,10 +192,10 @@ test('should iterate applied pipeline', async (t) => {
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply pipeline from array path', async (t) => {
+test('should apply pipeline from array path', async () => {
   const def = { data: ['content.data[].createOrMutate', apply('entry')] }
   const data = {
     content: {
@@ -225,10 +226,10 @@ test('should apply pipeline from array path', async (t) => {
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply pipeline from array path in reverse', async (t) => {
+test('should apply pipeline from array path in reverse', async () => {
   const def = {
     data: ['content.data[].createOrMutate', apply('entry')],
   }
@@ -261,10 +262,10 @@ test('should apply pipeline from array path in reverse', async (t) => {
 
   const ret = await mapTransform(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply pipeline as operation object going forward only', async (t) => {
+test('should apply pipeline as operation object going forward only', async () => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
     { $apply: 'cast_entry', $direction: 'fwd' },
@@ -280,11 +281,11 @@ test('should apply pipeline as operation object going forward only', async (t) =
   const retFwd = await mapTransform(def, options)(dataFwd)
   const retRev = await mapTransform(def, options)(dataRev, { rev: true })
 
-  t.deepEqual(retFwd, expectedFwd)
-  t.deepEqual(retRev, expectedRev)
+  assert.deepEqual(retFwd, expectedFwd)
+  assert.deepEqual(retRev, expectedRev)
 })
 
-test('should apply pipeline as operation object going in reverse only', async (t) => {
+test('should apply pipeline as operation object going in reverse only', async () => {
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
     { $apply: 'cast_entry', $direction: 'rev' },
@@ -300,11 +301,11 @@ test('should apply pipeline as operation object going in reverse only', async (t
   const retFwd = await mapTransform(def, options)(dataFwd)
   const retRev = await mapTransform(def, options)(dataRev, { rev: true })
 
-  t.deepEqual(retFwd, expectedFwd)
-  t.deepEqual(retRev, expectedRev)
+  assert.deepEqual(retFwd, expectedFwd)
+  assert.deepEqual(retRev, expectedRev)
 })
 
-test('should use forward alias', async (t) => {
+test('should use forward alias', async () => {
   const optionsWithAlias = { ...options, fwdAlias: 'from' }
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
@@ -323,11 +324,11 @@ test('should use forward alias', async (t) => {
     rev: true,
   })
 
-  t.deepEqual(retFwd, expectedFwd)
-  t.deepEqual(retRev, expectedRev)
+  assert.deepEqual(retFwd, expectedFwd)
+  assert.deepEqual(retRev, expectedRev)
 })
 
-test('should use reverse alias', async (t) => {
+test('should use reverse alias', async () => {
   const optionsWithAlias = { ...options, revAlias: 'to' }
   const def = [
     { title: 'content.heading', viewCount: 'meta.hits' },
@@ -346,11 +347,11 @@ test('should use reverse alias', async (t) => {
     rev: true,
   })
 
-  t.deepEqual(retFwd, expectedFwd)
-  t.deepEqual(retRev, expectedRev)
+  assert.deepEqual(retFwd, expectedFwd)
+  assert.deepEqual(retRev, expectedRev)
 })
 
-test('should apply path pipeline through operaion object with id as Symbol', async (t) => {
+test('should apply path pipeline through operaion object with id as Symbol', async () => {
   const def = [
     { $apply: Symbol.for('getItems') },
     {
@@ -370,10 +371,10 @@ test('should apply path pipeline through operaion object with id as Symbol', asy
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should handle pipelines that applies themselves', async (t) => {
+test('should handle pipelines that applies themselves', async () => {
   const def = [{ $apply: 'recursive' }]
   const data = {
     key: 'ent1',
@@ -408,11 +409,12 @@ test('should handle pipelines that applies themselves', async (t) => {
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should remove all unused pipelines before running pipeline', async (t) => {
+test('should remove all unused pipelines before running pipeline', async () => {
   const getPipelineIds: Operation = (options) => (next) => async (state) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return { ...(await next(state)), value: Object.keys(options.pipelines!) }
   }
   const def = {
@@ -431,10 +433,10 @@ test('should remove all unused pipelines before running pipeline', async (t) => 
 
   const ret = await mapTransform(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw when applying an unknown pipeline id', (t) => {
+test('should throw when applying an unknown pipeline id', () => {
   const def = [
     {
       title: 'content.heading',
@@ -442,14 +444,14 @@ test('should throw when applying an unknown pipeline id', (t) => {
     },
     apply('unknown'),
   ]
+  const expectedError = new Error(
+    "Failed to apply pipeline 'unknown'. Unknown pipeline",
+  )
 
-  const error = t.throws(() => mapTransform(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+  assert.throws(() => mapTransform(def, options), expectedError)
 })
 
-test('should throw when applying an unknown pipeline id as Symbol', (t) => {
+test('should throw when applying an unknown pipeline id as Symbol', () => {
   const def = [
     {
       title: 'content.heading',
@@ -457,17 +459,14 @@ test('should throw when applying an unknown pipeline id as Symbol', (t) => {
     },
     apply(Symbol.for('unknown')),
   ]
-
-  const error = t.throws(() => mapTransform(def, options))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
+  const expectedError = new Error(
     "Failed to apply pipeline 'Symbol(unknown)'. Unknown pipeline",
   )
+
+  assert.throws(() => mapTransform(def, options), expectedError)
 })
 
-test('should throw when applying an unknown pipeline as operation object', (t) => {
+test('should throw when applying an unknown pipeline as operation object', () => {
   const def = [
     {
       title: 'content.heading',
@@ -475,14 +474,14 @@ test('should throw when applying an unknown pipeline as operation object', (t) =
     },
     { $apply: 'unknown' },
   ]
+  const expectedError = new Error(
+    "Failed to apply pipeline 'unknown'. Unknown pipeline",
+  )
 
-  const error = t.throws(() => mapTransform(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+  assert.throws(() => mapTransform(def, options), expectedError)
 })
 
-test('should throw when applying an unknown pipeline in a provided pipeline', (t) => {
+test('should throw when applying an unknown pipeline in a provided pipeline', () => {
   const def = [
     {
       title: 'content.heading',
@@ -492,17 +491,14 @@ test('should throw when applying an unknown pipeline in a provided pipeline', (t
   ]
   const ourPipeline = [{ $apply: 'unknownInPipeline' }]
   const options = { pipelines: { ourPipeline } }
-
-  const error = t.throws(() => mapTransform(def, options))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
+  const expectedError = new Error(
     "Failed to apply pipeline 'unknownInPipeline'. Unknown pipeline",
   )
+
+  assert.throws(() => mapTransform(def, options), expectedError)
 })
 
-test('should throw when applying an unknown pipeline inside an operation', (t) => {
+test('should throw when applying an unknown pipeline inside an operation', () => {
   const def = [
     {
       title: 'content.heading',
@@ -510,23 +506,23 @@ test('should throw when applying an unknown pipeline inside an operation', (t) =
     },
     fwd({ $apply: 'unknown' }),
   ]
+  const expectedError = new Error(
+    "Failed to apply pipeline 'unknown'. Unknown pipeline",
+  )
 
-  const error = t.throws(() => mapTransform(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+  assert.throws(() => mapTransform(def, options), expectedError)
 })
 
-test('should throw when applying an unknown pipeline inside a transform object', (t) => {
+test('should throw when applying an unknown pipeline inside a transform object', () => {
   const def = [
     {
       title: ['content.heading', { $apply: 'unknown' }],
       viewCount: 'meta.hits',
     },
   ]
+  const expectedError = new Error(
+    "Failed to apply pipeline 'unknown'. Unknown pipeline",
+  )
 
-  const error = t.throws(() => mapTransform(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+  assert.throws(() => mapTransform(def, options), expectedError)
 })

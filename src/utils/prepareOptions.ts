@@ -46,6 +46,7 @@ export function preparePipelines(options: Options): void {
     // Remove unneeded pipelines
     for (const key of Reflect.ownKeys(pipelines)) {
       if (!neededPipelineIds.has(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete pipelines[key] // eslint-disable-line security/detect-object-injection
       }
     }

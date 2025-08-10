@@ -62,7 +62,7 @@ const isOperationObject = (def: unknown): def is OperationObject =>
 export const isOperationType = <T extends OperationObject>(
   def: TransformObject | OperationObject,
   prop: string,
-): def is T => (def as object).hasOwnProperty(prop)
+): def is T => Object.prototype.hasOwnProperty.call(def as object, prop)
 
 export const isPath = (def: unknown): def is Path => typeof def === 'string'
 export const isTransformObject = (def: unknown): def is TransformObject =>

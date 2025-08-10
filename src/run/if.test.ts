@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
 
 import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
@@ -18,7 +19,7 @@ const stateRev = { rev: true }
 
 // Tests -- sync
 
-test('should run then pipeline when condition is true', (t) => {
+test('should run then pipeline when condition is true', () => {
   const value = { isActive: true }
   const pipeline: PreppedPipeline = [
     {
@@ -32,10 +33,10 @@ test('should run then pipeline when condition is true', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run else pipeline when condition is false', (t) => {
+test('should run else pipeline when condition is false', () => {
   const value = { isActive: false }
   const pipeline: PreppedPipeline = [
     {
@@ -49,10 +50,10 @@ test('should run else pipeline when condition is false', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should do nothing when condition is true and empty then pipeline', (t) => {
+test('should do nothing when condition is true and empty then pipeline', () => {
   const value = { isActive: true }
   const pipeline: PreppedPipeline = [
     {
@@ -66,10 +67,10 @@ test('should do nothing when condition is true and empty then pipeline', (t) => 
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should do nothing when condition is false and empty else pipeline', (t) => {
+test('should do nothing when condition is false and empty else pipeline', () => {
   const value = { isActive: false }
   const pipeline: PreppedPipeline = [
     {
@@ -83,10 +84,10 @@ test('should do nothing when condition is false and empty else pipeline', (t) =>
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run else pipeline when no condition', (t) => {
+test('should run else pipeline when no condition', () => {
   const value = { isActive: true }
   const pipeline: PreppedPipeline = [
     {
@@ -99,10 +100,10 @@ test('should run else pipeline when no condition', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should always run condition pipeline as forward', (t) => {
+test('should always run condition pipeline as forward', () => {
   const value = { isActive: false, title: 'The title', name: 'The name' }
   const pipeline: PreppedPipeline = [
     {
@@ -116,12 +117,12 @@ test('should always run condition pipeline as forward', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- async
 
-test('should run then-pipeline when async condition is true', async (t) => {
+test('should run then-pipeline when async condition is true', async () => {
   const value = { isActive: false }
   const pipeline: PreppedPipeline = [
     {
@@ -138,10 +139,10 @@ test('should run then-pipeline when async condition is true', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run else-pipeline when async condition is false', async (t) => {
+test('should run else-pipeline when async condition is false', async () => {
   const value = { isActive: true }
   const pipeline: PreppedPipeline = [
     {
@@ -158,10 +159,10 @@ test('should run else-pipeline when async condition is false', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run async then-pipeline', async (t) => {
+test('should run async then-pipeline', async () => {
   const value = { isActive: true }
   const pipeline: PreppedPipeline = [
     {
@@ -179,10 +180,10 @@ test('should run async then-pipeline', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run async else-pipeline', async (t) => {
+test('should run async else-pipeline', async () => {
   const value = { isActive: false }
   const pipeline: PreppedPipeline = [
     {
@@ -200,10 +201,10 @@ test('should run async else-pipeline', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should always run async condition pipeline as forward', async (t) => {
+test('should always run async condition pipeline as forward', async () => {
   const value = { isActive: false, title: 'The title', name: 'The name' }
   const pipeline: PreppedPipeline = [
     {
@@ -217,5 +218,5 @@ test('should always run async condition pipeline as forward', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

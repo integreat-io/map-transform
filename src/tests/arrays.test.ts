@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import merge from '../operations/merge.js'
 import iterate from '../operations/iterate.js'
 
@@ -7,7 +8,7 @@ const { value } = transformers
 
 // Tests
 
-test('should map specified array over transform object', async (t) => {
+test('should map specified array over transform object', async () => {
   const def = [
     'content.articles[]',
     {
@@ -27,10 +28,10 @@ test('should map specified array over transform object', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map specified array over transform object in reverse', async (t) => {
+test('should map specified array over transform object in reverse', async () => {
   const def = [
     'content.articles[]',
     {
@@ -50,10 +51,10 @@ test('should map specified array over transform object in reverse', async (t) =>
 
   const ret = await mapTransform(def)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate with iterate operation', async (t) => {
+test('should iterate with iterate operation', async () => {
   const def = [
     'content.articles',
     {
@@ -73,10 +74,10 @@ test('should iterate with iterate operation', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map array in transform object', async (t) => {
+test('should map array in transform object', async () => {
   const def = [
     {
       'entries[]': {
@@ -96,10 +97,10 @@ test('should map array in transform object', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map several layers of arrays', async (t) => {
+test('should map several layers of arrays', async () => {
   const def = [
     'content.articles[]',
     {
@@ -143,18 +144,18 @@ test('should map several layers of arrays', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map several layers of arrays - seperate pipelines', async (t) => {
+test('should map several layers of arrays - seperate pipelines', async () => {
   const def = [
     'content.articles[]',
     iterate(
       merge(
         ['content.heading', set('attributes.title')],
         ['meta.keywords', set('relationships.topics[].id')],
-        ['meta.user_id', set('relationships.author.id')]
-      )
+        ['meta.user_id', set('relationships.author.id')],
+      ),
     ),
   ]
   const data = {
@@ -187,10 +188,10 @@ test('should map several layers of arrays - seperate pipelines', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should flatten arrays', async (t) => {
+test('should flatten arrays', async () => {
   const def = [
     'content.articles[].content[]',
     {
@@ -216,10 +217,10 @@ test('should flatten arrays', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map empty array as empty array', async (t) => {
+test('should map empty array as empty array', async () => {
   const def = {
     $iterate: true,
     title: 'content.heading',
@@ -229,10 +230,10 @@ test('should map empty array as empty array', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with object array path', async (t) => {
+test('should map with object array path', async () => {
   const def = [
     'content.articles[]',
     {
@@ -257,10 +258,10 @@ test('should map with object array path', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should handle array paths in object mappings', async (t) => {
+test('should handle array paths in object mappings', async () => {
   const def = {
     $iterate: true,
     id: 'key',
@@ -276,10 +277,10 @@ test('should handle array paths in object mappings', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with array index path', async (t) => {
+test('should map with array index path', async () => {
   const def = [
     'content.articles[1]',
     {
@@ -298,10 +299,10 @@ test('should map with array index path', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with array index in middle of path', async (t) => {
+test('should map with array index in middle of path', async () => {
   const def = ['content.articles[0].content.heading']
   const data = {
     content: {
@@ -315,10 +316,10 @@ test('should map with array index in middle of path', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set several props in array', async (t) => {
+test('should set several props in array', async () => {
   const def = {
     'props[0].key': transform(value('prop1')),
     'props[0].value': 'content.prop1',
@@ -340,10 +341,10 @@ test('should set several props in array', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set several props in array with depth', async (t) => {
+test('should set several props in array with depth', async () => {
   const def = {
     'items[0].props[0].key': transform(value('prop1')),
     'items[0].props[0].value': 'content.prop1',
@@ -369,10 +370,10 @@ test('should set several props in array with depth', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined from non-matching path with array index in middle', async (t) => {
+test('should return undefined from non-matching path with array index in middle', async () => {
   const def = ['content.articles[0].content.heading']
   const data = {
     content: {
@@ -387,10 +388,10 @@ test('should return undefined from non-matching path with array index in middle'
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with root array path', async (t) => {
+test('should map with root array path', async () => {
   const def = [
     '[]',
     {
@@ -406,10 +407,10 @@ test('should map with root array path', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map array of objects', async (t) => {
+test('should map array of objects', async () => {
   const def = {
     $iterate: true,
     content: {
@@ -438,10 +439,10 @@ test('should map array of objects', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set empty data array', async (t) => {
+test('should set empty data array', async () => {
   const def = [
     {
       'items[]': {
@@ -456,10 +457,10 @@ test('should set empty data array', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not hijack array', async (t) => {
+test('should not hijack array', async () => {
   const def = {
     $iterate: true,
     content: { title: 'heading' },
@@ -481,5 +482,5 @@ test('should not hijack array', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

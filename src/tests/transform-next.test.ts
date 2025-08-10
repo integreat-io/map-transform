@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { mapTransformSync, mapTransformAsync } from '../index.js'
 import { isObject } from '../utils/is.js'
 import type { TransformDefinition } from '../prep/index.js'
@@ -57,7 +58,7 @@ const options = { transformers }
 
 // Tests
 
-test('should map simple object with one transform function', (t) => {
+test('should map simple object with one transform function', () => {
   const def = [
     {
       title: 'content.heading',
@@ -76,10 +77,10 @@ test('should map simple object with one transform function', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map simple object with several transforms', (t) => {
+test('should map simple object with several transforms', () => {
   const def = [
     {
       title: 'content.heading',
@@ -100,10 +101,10 @@ test('should map simple object with several transforms', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map with async transforms', async (t) => {
+test('should map with async transforms', async () => {
   const def = [
     {
       title: 'content.heading',
@@ -124,10 +125,10 @@ test('should map with async transforms', async (t) => {
 
   const ret = await mapTransformAsync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should reverse map simple object with rev transform', (t) => {
+test('should reverse map simple object with rev transform', () => {
   const def = [
     {
       title: 'content.heading',
@@ -147,10 +148,10 @@ test('should reverse map simple object with rev transform', (t) => {
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should transform before data is set on outer path', (t) => {
+test('should transform before data is set on outer path', () => {
   const def = {
     attributes: [
       'result.data',
@@ -178,10 +179,10 @@ test('should transform before data is set on outer path', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should transform before mapping', (t) => {
+test('should transform before mapping', () => {
   const def = [
     { $transform: 'setActive' },
     {
@@ -199,10 +200,10 @@ test('should transform before mapping', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply transforms from left to right', (t) => {
+test('should apply transforms from left to right', () => {
   const def = [
     {
       titleLength: [
@@ -221,10 +222,10 @@ test('should apply transforms from left to right', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should interate transform from an operation object', (t) => {
+test('should interate transform from an operation object', () => {
   const def = [
     {
       titleLengths: [
@@ -242,10 +243,10 @@ test('should interate transform from an operation object', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object with arguments', (t) => {
+test('should apply transform from an operation object with arguments', () => {
   const def = [
     {
       title: 'content.heading',
@@ -261,10 +262,10 @@ test('should apply transform from an operation object with arguments', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function', (t) => {
+test('should use built in fixed function', () => {
   const def = {
     title: ['content', { $transform: 'fixed', value: "I'm always here" }],
   }
@@ -273,10 +274,10 @@ test('should use built in fixed function', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function with value function', (t) => {
+test('should use built in fixed function with value function', () => {
   const def = {
     title: [
       'content',
@@ -288,10 +289,10 @@ test('should use built in fixed function with value function', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function in reverse', (t) => {
+test('should use built in fixed function in reverse', () => {
   const def = {
     title: ['content', { $transform: 'fixed', value: "I'm always here" }],
   }
@@ -300,10 +301,10 @@ test('should use built in fixed function in reverse', (t) => {
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use built in map function', (t) => {
+test('should use built in map function', () => {
   const def = {
     result: [
       'status',
@@ -322,10 +323,10 @@ test('should use built in map function', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use built in map function with named dictionary', (t) => {
+test('should use built in map function with named dictionary', () => {
   const def = {
     result: [
       'status',
@@ -347,10 +348,10 @@ test('should use built in map function with named dictionary', (t) => {
 
   const ret = mapTransformSync(def, { ...options, dictionaries })(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use built in explode function', (t) => {
+test('should use built in explode function', () => {
   const def = {
     rate: [
       'currencies',
@@ -366,10 +367,10 @@ test('should use built in explode function', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use built in implode function', (t) => {
+test('should use built in implode function', () => {
   const def = { properties: { $transform: 'implode' } }
   const data = [
     { key: 'value', value: 32 },
@@ -379,10 +380,10 @@ test('should use built in implode function', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should only use transform going forward', (t) => {
+test('should only use transform going forward', () => {
   const def = {
     title: [
       'content',
@@ -396,11 +397,11 @@ test('should only use transform going forward', (t) => {
   const retFwd = mapTransformSync(def, options)(data)
   const retRev = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(retFwd, expectedFwd)
-  t.deepEqual(retRev, expectedRev)
+  assert.deepEqual(retFwd, expectedFwd)
+  assert.deepEqual(retRev, expectedRev)
 })
 
-test('should only use transform going in reverse', (t) => {
+test('should only use transform going in reverse', () => {
   const def = {
     title: [
       'content',
@@ -414,11 +415,11 @@ test('should only use transform going in reverse', (t) => {
   const retFwd = mapTransformSync(def, options)(data)
   const retRev = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(retFwd, expectedFwd)
-  t.deepEqual(retRev, expectedRev)
+  assert.deepEqual(retFwd, expectedFwd)
+  assert.deepEqual(retRev, expectedRev)
 })
 
-test('should only use transform going in reverse when flipped', (t) => {
+test('should only use transform going in reverse when flipped', () => {
   const def = {
     $flip: true,
     content: [
@@ -433,11 +434,11 @@ test('should only use transform going in reverse when flipped', (t) => {
   const retFwd = mapTransformSync(def, options)(data)
   const retRev = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(retFwd, expectedFwd)
-  t.deepEqual(retRev, expectedRev)
+  assert.deepEqual(retFwd, expectedFwd)
+  assert.deepEqual(retRev, expectedRev)
 })
 
-test('should provide index when iterating', (t) => {
+test('should provide index when iterating', () => {
   const def = [
     'content',
     {
@@ -457,10 +458,10 @@ test('should provide index when iterating', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should provide index deep down when iterating', (t) => {
+test('should provide index deep down when iterating', () => {
   const def = [
     'content',
     {
@@ -491,10 +492,10 @@ test('should provide index deep down when iterating', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply transform function to array with iteration', (t) => {
+test('should apply transform function to array with iteration', () => {
   const def = [
     'content',
     {
@@ -512,10 +513,10 @@ test('should apply transform function to array with iteration', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should provide index through apply when iterating', (t) => {
+test('should provide index through apply when iterating', () => {
   const sectionIdDef = [
     {
       sequence: { $transform: 'index' },
@@ -550,10 +551,10 @@ test('should provide index through apply when iterating', (t) => {
     pipelines: { sectionId: sectionIdDef },
   })(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should provide index when iterating in reverse', (t) => {
+test('should provide index when iterating in reverse', () => {
   const def = [
     'content',
     {
@@ -573,10 +574,10 @@ test('should provide index when iterating in reverse', (t) => {
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $value shorthand', (t) => {
+test('should support $value shorthand', () => {
   const def = [
     {
       title: ['content.heading', { $value: 'Default title' }],
@@ -591,10 +592,10 @@ test('should support $value shorthand', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should concat arrays with $concat', (t) => {
+test('should concat arrays with $concat', () => {
   const def = [
     'org',
     {
@@ -608,10 +609,10 @@ test('should concat arrays with $concat', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should treat one path given to $concat as an array of one', (t) => {
+test('should treat one path given to $concat as an array of one', () => {
   const def = [
     'org',
     {
@@ -625,10 +626,10 @@ test('should treat one path given to $concat as an array of one', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should concat arrays with $concatRev in reverse', (t) => {
+test('should concat arrays with $concatRev in reverse', () => {
   const def = [
     {
       $concatRev: ['users', 'admins'],
@@ -642,10 +643,10 @@ test('should concat arrays with $concatRev in reverse', (t) => {
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge object with $merge', (t) => {
+test('should shallow merge object with $merge', () => {
   const def = {
     $merge: ['original', 'modified'],
   }
@@ -674,10 +675,10 @@ test('should shallow merge object with $merge', (t) => {
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge object with $merge in reverse', (t) => {
+test('should shallow merge object with $merge in reverse', () => {
   const def = {
     $merge: ['original', 'modified'],
   }
@@ -707,10 +708,10 @@ test('should shallow merge object with $merge in reverse', (t) => {
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply transform from an operation object with Symbol as key', (t) => {
+test('should apply transform from an operation object with Symbol as key', () => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: Symbol.for('getLength') }],
@@ -725,42 +726,36 @@ test('should apply transform from an operation object with Symbol as key', (t) =
 
   const ret = mapTransformSync(def, options)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw when transform is given an unknown transformer id', (t) => {
+test('should throw when transform is given an unknown transformer id', () => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: 'unknown' }],
     },
   ]
-
-  const error = t.throws(() => mapTransformSync(def, options))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
+  const expectedError = new Error(
     "Transformer 'unknown' was not found for transform operation",
   )
+
+  assert.throws(() => mapTransformSync(def, options), expectedError)
 })
 
-test('should throw when transform is given an unknown transformer id symbol', (t) => {
+test('should throw when transform is given an unknown transformer id symbol', () => {
   const def = [
     {
       titleLength: ['content.heading', { $transform: Symbol.for('unknown') }],
     },
   ]
-
-  const error = t.throws(() => mapTransformSync(def, options))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
+  const expectedError = new Error(
     "Transformer 'Symbol(unknown)' was not found for transform operation",
   )
+
+  assert.throws(() => mapTransformSync(def, options), expectedError)
 })
 
-test('should throw when transform operation is missing a transformer id', (t) => {
+test('should throw when transform operation is missing a transformer id', () => {
   const def = [
     'content',
     {
@@ -768,14 +763,14 @@ test('should throw when transform operation is missing a transformer id', (t) =>
       title: ['heading', { $transform: null }], // No transformer id
     },
   ] as unknown as TransformDefinition
+  const expectedError = new Error(
+    'Transform operation is missing transformer id',
+  )
 
-  const error = t.throws(() => mapTransformSync(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error?.message, 'Transform operation is missing transformer id')
+  assert.throws(() => mapTransformSync(def, options), expectedError)
 })
 
-test('should throw when transform operation has invalid transformer id', (t) => {
+test('should throw when transform operation has invalid transformer id', () => {
   const def = [
     'content',
     {
@@ -783,17 +778,14 @@ test('should throw when transform operation has invalid transformer id', (t) => 
       title: ['heading', { $transform: { id: 13 } }], // Just something invalid
     },
   ] as unknown as TransformDefinition
-
-  const error = t.throws(() => mapTransformSync(def, options))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
+  const expectedError = new Error(
     'Transform operation was given a transformer id that is not a string or symbol',
   )
+
+  assert.throws(() => mapTransformSync(def, options), expectedError)
 })
 
-test('should run operation objects trought modifyOperationObject', (t) => {
+test('should run operation objects trought modifyOperationObject', () => {
   const modifyOperationObject = (op: Record<string, unknown>) =>
     op.$append
       ? {
@@ -816,5 +808,5 @@ test('should run operation objects trought modifyOperationObject', (t) => {
 
   const ret = mapTransformSync(def, { ...options, modifyOperationObject })(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

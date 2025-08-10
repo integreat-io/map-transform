@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import type { State } from '../types.js'
 import type { PreppedPipeline } from '../run/index.js'
 
@@ -16,7 +17,7 @@ const options = {
 
 // Tests
 
-test('should prepare mutation object', (t) => {
+test('should prepare mutation object', () => {
   const def = {
     id: 'key',
     title: 'name',
@@ -33,10 +34,10 @@ test('should prepare mutation object', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare mutation object with pipelines', (t) => {
+test('should prepare mutation object with pipelines', () => {
   const def = {
     id: ['key'],
     title: ['name', { $transform: 'uppercase' }],
@@ -53,10 +54,10 @@ test('should prepare mutation object with pipelines', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should forward plug slashed properties', (t) => {
+test('should forward plug slashed properties', () => {
   const def = {
     id: 'key',
     title: 'name',
@@ -75,10 +76,10 @@ test('should forward plug slashed properties', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should forward plug slashed property without a path', (t) => {
+test('should forward plug slashed property without a path', () => {
   const def = {
     id: 'key',
     title: 'name',
@@ -97,10 +98,10 @@ test('should forward plug slashed property without a path', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should unescape escaped slash', (t) => {
+test('should unescape escaped slash', () => {
   const def = {
     id: 'key',
     title: 'name',
@@ -119,10 +120,10 @@ test('should unescape escaped slash', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should unescape a slashed property', (t) => {
+test('should unescape a slashed property', () => {
   const def = {
     id: 'key',
     title: 'name',
@@ -141,10 +142,10 @@ test('should unescape a slashed property', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should plug pipelines with no set in reverse', (t) => {
+test('should plug pipelines with no set in reverse', () => {
   const def = {
     id: 'key',
     title: 'name',
@@ -163,10 +164,10 @@ test('should plug pipelines with no set in reverse', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip props without a pipeline', (t) => {
+test('should skip props without a pipeline', () => {
   const def = {
     id: 'key',
     title: null,
@@ -180,10 +181,10 @@ test('should skip props without a pipeline', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip unknown dollar props', (t) => {
+test('should skip unknown dollar props', () => {
   const def = {
     id: 'key',
     $title: 'name',
@@ -197,10 +198,10 @@ test('should skip unknown dollar props', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should unescape escaped dollar props', (t) => {
+test('should unescape escaped dollar props', () => {
   const def = {
     id: 'key',
     '\\$title': 'name',
@@ -217,19 +218,19 @@ test('should unescape escaped dollar props', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return no pipelines when no props', (t) => {
+test('should return no pipelines when no props', () => {
   const def = {}
   const expected = [{ type: 'mutation', pipelines: [] }]
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare mutation object with more levels', (t) => {
+test('should prepare mutation object with more levels', () => {
   const def = {
     id: 'key',
     props: {
@@ -259,10 +260,10 @@ test('should prepare mutation object with more levels', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support dot notation in props', (t) => {
+test('should support dot notation in props', () => {
   const def = {
     id: 'key',
     'content.title': 'name',
@@ -279,10 +280,10 @@ test('should support dot notation in props', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support index notation in props', (t) => {
+test('should support index notation in props', () => {
   const def = {
     id: 'key',
     'names[0]': 'name',
@@ -299,10 +300,10 @@ test('should support index notation in props', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on $iterate', (t) => {
+test('should pass on $iterate', () => {
   const def = {
     $iterate: true,
     id: 'key',
@@ -321,12 +322,12 @@ test('should pass on $iterate', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // TODO: Do we really need to set this, or is it handled by the presence of the
 // array bracket step?
-test('should iterate sub-objects on array path', (t) => {
+test('should iterate sub-objects on array path', () => {
   const def = {
     'items[]': {
       id: 'key',
@@ -356,10 +357,10 @@ test('should iterate sub-objects on array path', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $modify prop', (t) => {
+test('should support $modify prop', () => {
   const def = {
     $modify: true,
     slug: 'key',
@@ -373,10 +374,10 @@ test('should support $modify prop', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $modify prop with dot path', (t) => {
+test('should support $modify prop with dot path', () => {
   const def = {
     $modify: '.',
     slug: 'key',
@@ -390,10 +391,10 @@ test('should support $modify prop with dot path', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support reverse $modify prop', (t) => {
+test('should support reverse $modify prop', () => {
   const def = {
     '.': '$modify',
     slug: 'key',
@@ -407,10 +408,10 @@ test('should support reverse $modify prop', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $modify prop with a dot notation path', (t) => {
+test('should support $modify prop with a dot notation path', () => {
   const def = {
     $modify: 'data.props',
     slug: 'key',
@@ -427,10 +428,10 @@ test('should support $modify prop with a dot notation path', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip props with $modify in both directions', (t) => {
+test('should skip props with $modify in both directions', () => {
   const def = {
     $modify: 'data.$modify',
     slug: 'key',
@@ -444,10 +445,10 @@ test('should skip props with $modify in both directions', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not treat prop starting with $modify as modify', (t) => {
+test('should not treat prop starting with $modify as modify', () => {
   const def = {
     $modifySomething: 'props',
     slug: 'key',
@@ -461,19 +462,19 @@ test('should not treat prop starting with $modify as modify', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return no step when mutation object has only a $modify prop', (t) => {
+test('should return no step when mutation object has only a $modify prop', () => {
   const def = { $modify: true }
   const expected: PreppedPipeline = []
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on $flip', (t) => {
+test('should pass on $flip', () => {
   const def = {
     $flip: true,
     key: 'id',
@@ -492,10 +493,10 @@ test('should pass on $flip', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on $noDefaults', (t) => {
+test('should pass on $noDefaults', () => {
   const def = {
     $noDefaults: true,
     id: 'key',
@@ -514,10 +515,10 @@ test('should pass on $noDefaults', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on $noDefaults when it is false', (t) => {
+test('should pass on $noDefaults when it is false', () => {
   const def = {
     $noDefaults: false,
     id: 'key',
@@ -536,5 +537,5 @@ test('should pass on $noDefaults when it is false', (t) => {
 
   const ret = prep(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

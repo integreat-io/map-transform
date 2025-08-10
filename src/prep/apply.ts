@@ -15,7 +15,7 @@ export default function prepareApplyStep(
   if (!options.pipelines) {
     throw new Error(`Failed to apply pipeline '${String(id)}'. No pipelines`)
   }
-  if (!options.pipelines.hasOwnProperty(id)) {
+  if (!Object.prototype.hasOwnProperty.call(options.pipelines, id)) {
     throw new Error(
       `Failed to apply pipeline '${String(id)}'. Unknown pipeline`,
     )

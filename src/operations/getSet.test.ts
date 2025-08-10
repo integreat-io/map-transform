@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import pipe from './pipe.js'
 import { noopNext } from '../utils/stateHelpers.js'
 import { isObject } from '../utils/is.js'
@@ -19,7 +20,7 @@ const options = {}
 
 // Tests -- get
 
-test('should return simple get function', async (t) => {
+test('should return simple get function', async () => {
   const path = 'name'
   const value = { name: 'Bohm' }
   const state = stateFromValue(value)
@@ -28,10 +29,10 @@ test('should return simple get function', async (t) => {
   const fn = get(path)[0] // Note: `get()` returns an array, but we'll run the first operation directly as there will be only one
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get dot path', async (t) => {
+test('should get dot path', async () => {
   const path = 'data.scientist.name'
   const value = { data: { scientist: { name: 'Bohm' } } }
   const state = stateFromValue(value)
@@ -43,10 +44,10 @@ test('should get dot path', async (t) => {
   const fn = pipe(get(path)) // Note: `get()` returns an array and needs to be run through pipe
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should split up path with array index', async (t) => {
+test('should split up path with array index', async () => {
   const path = 'data.scientists[1].name'
   const value = { data: { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] } }
   const state = stateFromValue(value)
@@ -58,10 +59,10 @@ test('should split up path with array index', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should split up path with negative array index', async (t) => {
+test('should split up path with negative array index', async () => {
   const path = 'data.scientists[-1].name'
   const value = {
     data: {
@@ -77,10 +78,10 @@ test('should split up path with negative array index', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get path with several array indeces', async (t) => {
+test('should get path with several array indeces', async () => {
   const path = 'data[0].scientists[1].name'
   const value = { data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }] }
   const state = stateFromValue(value)
@@ -92,10 +93,10 @@ test('should get path with several array indeces', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get with array index as first part', async (t) => {
+test('should get with array index as first part', async () => {
   const path = '[1].name'
   const value = [{ name: 'Bohr' }, { name: 'Bohm' }]
   const state = stateFromValue(value)
@@ -107,10 +108,10 @@ test('should get with array index as first part', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should handle array notation in path', async (t) => {
+test('should handle array notation in path', async () => {
   const path = 'data.scientists[].names.last'
   const value = {
     data: {
@@ -126,10 +127,10 @@ test('should handle array notation in path', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return a flattened array', async (t) => {
+test('should return a flattened array', async () => {
   const path = 'data[].scientists[].name'
   const value = { data: [{ scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] }] }
   const state = stateFromValue(value)
@@ -141,10 +142,10 @@ test('should return a flattened array', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not get from $modify', async (t) => {
+test('should not get from $modify', async () => {
   const path = 'data.scientist.$modify'
   const value = { data: { scientist: { name: 'Bohm' } } }
   const state = stateFromValue(value)
@@ -156,10 +157,10 @@ test('should not get from $modify', async (t) => {
   const fn = pipe(get(path)) // Note: `get()` returns an array and needs to be run through pipe
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not touch escaped brackets', async (t) => {
+test('should not touch escaped brackets', async () => {
   const path = 'data.scientists\\[].name'
   const value = { data: { 'scientists[]': { name: 'Bohr' } } }
   const state = stateFromValue(value)
@@ -171,10 +172,10 @@ test('should not touch escaped brackets', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should force array', async (t) => {
+test('should force array', async () => {
   const path = 'data.scientists[].name'
   const value = { data: { scientists: { name: 'Bohm' } } }
   const state = stateFromValue(value)
@@ -186,10 +187,10 @@ test('should force array', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get path starting with escaped $', async (t) => {
+test('should get path starting with escaped $', async () => {
   const path = '\\$type'
   const value = { id: '1', $type: 'scientist', name: 'Bohm' }
   const state = stateFromValue(value)
@@ -201,10 +202,10 @@ test('should get path starting with escaped $', async (t) => {
   const fn = pipe(get(path)) // Note: `get()` returns an array and needs to be run through pipe
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined when object is null', async (t) => {
+test('should return undefined when object is null', async () => {
   const path = 'name'
   const value = null
   const state = stateFromValue(value)
@@ -213,10 +214,10 @@ test('should return undefined when object is null', async (t) => {
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty array with null when value is null and expecting array', async (t) => {
+test('should return empty array with null when value is null and expecting array', async () => {
   const path = 'data.scientists[].name'
   const value = { data: { scientists: { name: null } } }
   const state = stateFromValue(value)
@@ -228,10 +229,10 @@ test('should return empty array with null when value is null and expecting array
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return value when path is empty', async (t) => {
+test('should return value when path is empty', async () => {
   const path = ''
   const value = { name: 'Bohm' }
   const state = stateFromValue(value)
@@ -240,10 +241,10 @@ test('should return value when path is empty', async (t) => {
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return value when path is dot', async (t) => {
+test('should return value when path is dot', async () => {
   const path = '.'
   const value = { name: 'Bohm' }
   const state = stateFromValue(value)
@@ -252,10 +253,10 @@ test('should return value when path is dot', async (t) => {
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should disregard spaces in path', async (t) => {
+test('should disregard spaces in path', async () => {
   const path = ' data.scientists [1]. name '
   const value = { data: { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] } }
   const state = stateFromValue(value)
@@ -267,10 +268,10 @@ test('should disregard spaces in path', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined when path does not match data', async (t) => {
+test('should return undefined when path does not match data', async () => {
   const path = 'data.unknown.scientists[1].name'
   const value = { data: { scientists: [{ name: 'Bohr' }, { name: 'Bohm' }] } }
   const state = stateFromValue(value)
@@ -282,10 +283,10 @@ test('should return undefined when path does not match data', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty array when path does not match, but expecting array', async (t) => {
+test('should return empty array when path does not match, but expecting array', async () => {
   const path = 'data.unknown.scientists[].name'
   const value = { data: { scientists: { name: 'Bohm' } } }
   const state = stateFromValue(value)
@@ -297,10 +298,10 @@ test('should return empty array when path does not match, but expecting array', 
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty array for missing array', async (t) => {
+test('should return empty array for missing array', async () => {
   const path = 'articles[]'
   const value = {}
   const state = stateFromValue(value)
@@ -313,10 +314,10 @@ test('should return empty array for missing array', async (t) => {
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return array with null by default', async (t) => {
+test('should return array with null by default', async () => {
   const path = 'articles[]'
   const value = { articles: null }
   const state = stateFromValue(value)
@@ -329,10 +330,10 @@ test('should return array with null by default', async (t) => {
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty array when value is null and null is a nonvalue', async (t) => {
+test('should return empty array when value is null and null is a nonvalue', async () => {
   const options = { nonvalues: [null, undefined] }
   const path = 'articles[]'
   const value = { articles: null }
@@ -346,10 +347,10 @@ test('should return empty array when value is null and null is a nonvalue', asyn
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not return empty array when noDefaults is true', async (t) => {
+test('should not return empty array when noDefaults is true', async () => {
   const path = 'articles[]'
   const value = {}
   const state = stateFromValue(value, undefined, true)
@@ -363,10 +364,10 @@ test('should not return empty array when noDefaults is true', async (t) => {
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should clear untouched flag when getting', async (t) => {
+test('should clear untouched flag when getting', async () => {
   const path = 'name'
   const value = { name: 'Bohm' }
   const state = { ...stateFromValue(value) }
@@ -376,12 +377,12 @@ test('should clear untouched flag when getting', async (t) => {
   const fn = get(path)[0] // Note: `get()` returns an array, but we'll run the first operation directly as there will be only one
   const ret = await fn(options)(noopNext)(stateWithUntouched)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- get path with parent
 
-test('should get path with parent', async (t) => {
+test('should get path with parent', async () => {
   const path = '^.meta.field'
   const state = {
     context: [
@@ -397,10 +398,10 @@ test('should get path with parent', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should get path with several parents', async (t) => {
+test('should get path with several parents', async () => {
   const path = '^.^.page'
   const state = {
     context: [
@@ -417,10 +418,10 @@ test('should get path with several parents', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should get path with parents from array index', async (t) => {
+test('should get path with parents from array index', async () => {
   const path = '^.^.^.^.page'
   const state = {
     context: [
@@ -439,10 +440,10 @@ test('should get path with parents from array index', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should get from parent outside array', async (t) => {
+test('should get from parent outside array', async () => {
   const path = '^.field'
   const state = {
     context: [
@@ -464,10 +465,10 @@ test('should get from parent outside array', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should get path with parent from array', async (t) => {
+test('should get path with parent from array', async () => {
   const path = '^[0].field'
   const state = {
     context: [
@@ -488,10 +489,10 @@ test('should get path with parent from array', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should get path with several parents from array', async (t) => {
+test('should get path with several parents from array', async () => {
   const path = '^.^.page'
   const state = {
     context: [
@@ -509,12 +510,12 @@ test('should get path with several parents from array', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
 // Tests -- get path with root
 
-test('should get path with root from context', async (t) => {
+test('should get path with root from context', async () => {
   const path = '^^.page'
   const state = {
     context: [
@@ -531,10 +532,10 @@ test('should get path with root from context', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should get path with root from value', async (t) => {
+test('should get path with root from value', async () => {
   const path = '^^.meta.page'
   const value = {
     data: { scientist: { name: 'Bohm' } },
@@ -549,10 +550,10 @@ test('should get path with root from value', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get path with root without dot', async (t) => {
+test('should get path with root without dot', async () => {
   const path = '^^page'
   const state = {
     context: [
@@ -569,10 +570,10 @@ test('should get path with root without dot', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should support obsolete root notation with one carret', async (t) => {
+test('should support obsolete root notation with one carret', async () => {
   const path = '^page'
   const state = {
     context: [
@@ -589,10 +590,10 @@ test('should support obsolete root notation with one carret', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should get root when value is root', async (t) => {
+test('should get root when value is root', async () => {
   const path = '^^page'
   const value = {
     data: { scientist: { name: 'Bohm' } },
@@ -607,10 +608,10 @@ test('should get root when value is root', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should clear context when getting root', async (t) => {
+test('should clear context when getting root', async () => {
   const path = '^^'
   const value = { scientist: { name: 'Bohm' } }
   const state = {
@@ -634,10 +635,10 @@ test('should clear context when getting root', async (t) => {
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply modifyGetValue to value from get', async (t) => {
+test('should apply modifyGetValue to value from get', async () => {
   const modifyGetValue = (value: unknown, _state: State, _options: Options) =>
     isObject(value) && value.$value ? value.$value : value // A simplified implementation
   const path = 'name'
@@ -652,12 +653,12 @@ test('should apply modifyGetValue to value from get', async (t) => {
   const fn = get(path)[0] // Note: `get()` returns an array, but we'll run the first operation directly as there will be only one
   const ret = await fn({ ...options, modifyGetValue })(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- set
 
-test('should set with simple path', async (t) => {
+test('should set with simple path', async () => {
   const path = 'name'
   const value = 'Bohm'
   const state = stateFromValue(value)
@@ -666,10 +667,10 @@ test('should set with simple path', async (t) => {
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set with dot path', async (t) => {
+test('should set with dot path', async () => {
   const path = 'data.scientist.name'
   const value = 'Bohm'
   const state = stateFromValue(value)
@@ -681,10 +682,10 @@ test('should set with dot path', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set undefined on path', async (t) => {
+test('should set undefined on path', async () => {
   const path = 'data.scientist.name'
   const value = undefined
   const state = stateFromValue(value)
@@ -697,10 +698,10 @@ test('should set undefined on path', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set empty object on path', async (t) => {
+test('should set empty object on path', async () => {
   const path = 'data.scientist.name'
   const value = {}
   const state = stateFromValue(value)
@@ -713,40 +714,42 @@ test('should set empty object on path', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set path with array index', async (t) => {
+test('should set path with array index', async () => {
   const path = 'data.scientists[1].name'
   const value = 'Bohm'
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    value: { data: { scientists: [undefined, { name: 'Bohm' }] } },
+    // eslint-disable-next-line no-sparse-arrays
+    value: { data: { scientists: [, { name: 'Bohm' }] } },
   }
 
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set path with several array indeces', async (t) => {
+test('should set path with several array indeces', async () => {
   const path = 'data[0].scientists[1].name'
   const value = 'Bohm'
   const state = stateFromValue(value)
   const expected = {
     ...state,
-    value: { data: [{ scientists: [undefined, { name: 'Bohm' }] }] },
+    // eslint-disable-next-line no-sparse-arrays
+    value: { data: [{ scientists: [, { name: 'Bohm' }] }] },
   }
 
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should treat path prefixed by > as set', async (t) => {
+test('should treat path prefixed by > as set', async () => {
   const path = '>name'
   const value = 'Bohm'
   const state = stateFromValue(value)
@@ -755,25 +758,23 @@ test('should treat path prefixed by > as set', async (t) => {
   const fn = get(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set array index as root', async (t) => {
+test('should set array index as root', async () => {
   const path = '[1].name'
   const value = 'Bohm'
   const state = stateFromValue(value)
-  const expected = {
-    ...state,
-    value: [undefined, { name: 'Bohm' }],
-  }
+  // eslint-disable-next-line no-sparse-arrays
+  const expected = { ...state, value: [, { name: 'Bohm' }] }
 
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate array at array notation', async (t) => {
+test('should iterate array at array notation', async () => {
   const path = 'data.scientists[].names.last'
   const value = ['Bohr', 'Bohm']
   const state = stateFromValue(value)
@@ -789,10 +790,10 @@ test('should iterate array at array notation', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate array at array notation with target', async (t) => {
+test('should iterate array at array notation with target', async () => {
   const path = 'data.scientists[].names.last'
   const value = ['Bohr', 'Bohm']
   const state = {
@@ -818,10 +819,10 @@ test('should iterate array at array notation with target', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set simple path in root array', async (t) => {
+test('should set simple path in root array', async () => {
   const path = '[].name'
   const value = ['Bohr', 'Bohm']
   const state = stateFromValue(value)
@@ -833,10 +834,10 @@ test('should set simple path in root array', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set array for path without array notation', async (t) => {
+test('should set array for path without array notation', async () => {
   const path = 'data.scientists'
   const value = [{ name: 'Bohm' }]
   const state = stateFromValue(value)
@@ -848,10 +849,10 @@ test('should set array for path without array notation', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set path with array notation in reverse', async (t) => {
+test('should set path with array notation in reverse', async () => {
   const path = 'data.scientists[].names.last'
   const value = ['Bohr', 'Bohm']
   const state = stateFromValue(value)
@@ -867,10 +868,10 @@ test('should set path with array notation in reverse', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set on sub target', async (t) => {
+test('should not set on sub target', async () => {
   const path = 'meta.user'
   const state = {
     context: [],
@@ -885,10 +886,10 @@ test('should not set on sub target', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set path with array notation when flipping', async (t) => {
+test('should set path with array notation when flipping', async () => {
   const path = 'data.scientists[].names.last'
   const value = ['Bohr', 'Bohm']
   const state = { ...stateFromValue(value), flip: true }
@@ -904,10 +905,10 @@ test('should set path with array notation when flipping', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set with when both rev and flipping', async (t) => {
+test('should not set with when both rev and flipping', async () => {
   const path = 'data.scientists[].names.last'
   const value = {
     data: {
@@ -920,10 +921,10 @@ test('should not set with when both rev and flipping', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should set path with several arrays', async (t) => {
+test('should set path with several arrays', async () => {
   const path = 'data[].scientists[].name'
   const value = ['Bohr', 'Bohm']
   const state = stateFromValue(value)
@@ -935,10 +936,10 @@ test('should set path with several arrays', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set with escaped brackets', async (t) => {
+test('should set with escaped brackets', async () => {
   const path = 'data.scientists\\[].name'
   const value = 'Bohr'
   const state = stateFromValue(value)
@@ -950,10 +951,10 @@ test('should set with escaped brackets', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not strip away star', async (t) => {
+test('should not strip away star', async () => {
   const path = 's:header.*tu:api-key'
   const value = 's3cr3t'
   const state = stateFromValue(value)
@@ -966,10 +967,10 @@ test('should not strip away star', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set with escaped $', async (t) => {
+test('should set with escaped $', async () => {
   const path = '\\$type'
   const value = 'scientist'
   const state = stateFromValue(value)
@@ -981,10 +982,10 @@ test('should set with escaped $', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set undefined when state.noDefaults is true', async (t) => {
+test('should not set undefined when state.noDefaults is true', async () => {
   const path = 'name'
   const value = undefined
   const state = stateFromValue(value, false, true) // noDefaults = true
@@ -993,10 +994,10 @@ test('should not set undefined when state.noDefaults is true', async (t) => {
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set nonvalue when state.noDefaults is true and bracket notation', async (t) => {
+test('should not set nonvalue when state.noDefaults is true and bracket notation', async () => {
   const path = 'name[]'
   const value = undefined
   const state = stateFromValue(value, false, true) // noDefaults = true
@@ -1005,10 +1006,10 @@ test('should not set nonvalue when state.noDefaults is true and bracket notation
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set null when state.noDefaults is true and null is in nonvalues', async (t) => {
+test('should not set null when state.noDefaults is true and null is in nonvalues', async () => {
   const options = { nonvalues: [null, undefined] }
   const path = 'name'
   const value = null
@@ -1018,10 +1019,10 @@ test('should not set null when state.noDefaults is true and null is in nonvalues
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set undefined on a target when state.noDefaults is true', async (t) => {
+test('should not set undefined on a target when state.noDefaults is true', async () => {
   const path = 'name'
   const value = undefined
   const state = {
@@ -1033,10 +1034,10 @@ test('should not set undefined on a target when state.noDefaults is true', async
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return value when path is empty - for set', async (t) => {
+test('should return value when path is empty - for set', async () => {
   const path = ''
   const value = { name: 'Bohm' }
   const state = stateFromValue(value)
@@ -1045,10 +1046,10 @@ test('should return value when path is empty - for set', async (t) => {
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return value when path is dot - for set', async (t) => {
+test('should return value when path is dot - for set', async () => {
   const path = '.'
   const value = { name: 'Bohm' }
   const state = stateFromValue(value)
@@ -1057,10 +1058,10 @@ test('should return value when path is dot - for set', async (t) => {
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set null value', async (t) => {
+test('should set null value', async () => {
   const path = 'scientists[].name'
   const value = null
   const state = stateFromValue(value)
@@ -1072,10 +1073,10 @@ test('should set null value', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set when parent path -- for now', async (t) => {
+test('should not set when parent path -- for now', async () => {
   const path = '^.meta.field'
   const value = 'physics'
   const state = stateFromValue(value)
@@ -1087,10 +1088,10 @@ test('should not set when parent path -- for now', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not set with root path -- for now', async (t) => {
+test('should not set with root path -- for now', async () => {
   const path = '^^.page'
   const value = 0
   const state = stateFromValue(value)
@@ -1102,12 +1103,12 @@ test('should not set with root path -- for now', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- set with target
 
-test('should set on target', async (t) => {
+test('should set on target', async () => {
   const path = 'name'
   const value = 'Bohm'
   const state = {
@@ -1122,10 +1123,10 @@ test('should set on target', async (t) => {
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set on target with depth', async (t) => {
+test('should set on target with depth', async () => {
   const path = 'data.personal.name'
   const value = 'Bohm'
   const state = {
@@ -1140,10 +1141,10 @@ test('should set on target with depth', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set array index on target', async (t) => {
+test('should set array index on target', async () => {
   const path = '[1]'
   const value = 'Bohm'
   const state = {
@@ -1158,10 +1159,10 @@ test('should set array index on target', async (t) => {
   const fn = set(path)[0]
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should merge with target', async (t) => {
+test('should merge with target', async () => {
   const path = 'data.personal.$modify'
   const value = { id: 'wrong', name: 'Bohm', published: true }
   const state = {
@@ -1178,12 +1179,12 @@ test('should merge with target', async (t) => {
   const fn = pipe(set(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- set in reverse
 
-test('should set on path in reverse', async (t) => {
+test('should set on path in reverse', async () => {
   const path = 'data.personal.name'
   const value = 'Bohm'
   const state = {
@@ -1200,10 +1201,10 @@ test('should set on path in reverse', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set on array path in reverse', async (t) => {
+test('should set on array path in reverse', async () => {
   const path = 'data[].personal.name'
   const value = 'Bohm'
   const state = {
@@ -1220,5 +1221,5 @@ test('should set on array path in reverse', async (t) => {
   const fn = pipe(get(path))
   const ret = await fn(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import type { PreppedPipeline } from '../run/index.js'
 
 import preparePipeline from './index.js'
@@ -9,7 +10,7 @@ const options = {}
 
 // Tests
 
-test('should prepare alt operation', (t) => {
+test('should prepare alt operation', () => {
   const def = { $alt: [['title'], 'props.name'] }
   const expected = [
     { type: 'alt' as const, pipelines: [['title'], ['props', 'name']] },
@@ -17,10 +18,10 @@ test('should prepare alt operation', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on $nonvalues as nonvalues', (t) => {
+test('should pass on $nonvalues as nonvalues', () => {
   const def = { $alt: [['title'], 'props.name'], $nonvalues: [undefined, ''] }
   const expected = [
     {
@@ -32,10 +33,10 @@ test('should pass on $nonvalues as nonvalues', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on $undefined as nonvalues', (t) => {
+test('should pass on $undefined as nonvalues', () => {
   const def = { $alt: [['title'], 'props.name'], $undefined: [undefined, ''] }
   const expected = [
     {
@@ -47,10 +48,10 @@ test('should pass on $undefined as nonvalues', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass on $direction as dir', (t) => {
+test('should pass on $direction as dir', () => {
   const def = { $alt: [['title'], 'props.name'], $direction: 'rev' }
   const expected = [
     {
@@ -62,14 +63,14 @@ test('should pass on $direction as dir', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return no step when no pipelines', (t) => {
+test('should return no step when no pipelines', () => {
   const def = { $alt: [] }
   const expected: PreppedPipeline = []
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

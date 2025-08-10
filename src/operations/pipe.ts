@@ -12,9 +12,7 @@ import type {
   NextStateMapper,
 } from '../types.js'
 
-interface Fn {
-  (next: StateMapper): StateMapper
-}
+type Fn = (next: StateMapper) => StateMapper
 
 const chain = (next: StateMapper, fn: Fn) => fn(next)
 

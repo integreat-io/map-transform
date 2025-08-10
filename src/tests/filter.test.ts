@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
 import mapTransform, {
   set,
@@ -24,7 +25,7 @@ const transformers = {
 
 // Tests
 
-test('should filter out item', async (t) => {
+test('should filter out item', async () => {
   const def = [
     {
       title: 'content.heading',
@@ -38,10 +39,10 @@ test('should filter out item', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter out item with synchronous transform function', async (t) => {
+test('should filter out item with synchronous transform function', async () => {
   const noHeadingTitle = () => () => (item: unknown) =>
     isObject(item) && !/heading/gi.test(item.title as string)
   const def = [
@@ -57,10 +58,10 @@ test('should filter out item with synchronous transform function', async (t) => 
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter out items in array', async (t) => {
+test('should filter out items in array', async () => {
   const def = [
     {
       $iterate: true,
@@ -77,10 +78,10 @@ test('should filter out items in array', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter with several filters', async (t) => {
+test('should filter with several filters', async () => {
   const def = [
     {
       $iterate: true,
@@ -99,10 +100,10 @@ test('should filter with several filters', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set filtered items on path', async (t) => {
+test('should set filtered items on path', async () => {
   const def = [
     {
       $iterate: true,
@@ -121,10 +122,10 @@ test('should set filtered items on path', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter items from parent mapping for reverse mapping', async (t) => {
+test('should filter items from parent mapping for reverse mapping', async () => {
   const def = {
     'items[]': [
       {
@@ -141,10 +142,10 @@ test('should filter items from parent mapping for reverse mapping', async (t) =>
 
   const ret = await mapTransform(def)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter on reverse mapping', async (t) => {
+test('should filter on reverse mapping', async () => {
   const def = [
     {
       $iterate: true,
@@ -163,10 +164,10 @@ test('should filter on reverse mapping', async (t) => {
 
   const ret = await mapTransform(def)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use directional filters - going forward', async (t) => {
+test('should use directional filters - going forward', async () => {
   const def = [
     {
       $iterate: true,
@@ -189,10 +190,10 @@ test('should use directional filters - going forward', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use directional filters - going reverse', async (t) => {
+test('should use directional filters - going reverse', async () => {
   const def = [
     {
       $iterate: true,
@@ -214,10 +215,10 @@ test('should use directional filters - going reverse', async (t) => {
 
   const ret = await mapTransform(def)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter before mapping', async (t) => {
+test('should filter before mapping', async () => {
   const def = [
     'content',
     filter(noHeadingTitle()),
@@ -232,10 +233,10 @@ test('should filter before mapping', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter with filter before mapping on reverse mapping', async (t) => {
+test('should filter with filter before mapping on reverse mapping', async () => {
   const def = [
     'content',
     filter(noHeadingTitle()),
@@ -250,10 +251,10 @@ test('should filter with filter before mapping on reverse mapping', async (t) =>
 
   const ret = await mapTransform(def)(data, { rev: true })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter with compare helper', async (t) => {
+test('should filter with compare helper', async () => {
   const def = [
     {
       title: 'heading',
@@ -268,10 +269,10 @@ test('should filter with compare helper', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should filter with not and compare helpers', async (t) => {
+test('should filter with not and compare helpers', async () => {
   const def = [
     {
       title: 'heading',
@@ -289,10 +290,10 @@ test('should filter with not and compare helpers', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply filter from operation object', async (t) => {
+test('should apply filter from operation object', async () => {
   const def = [
     {
       title: 'content.heading',
@@ -306,10 +307,10 @@ test('should apply filter from operation object', async (t) => {
 
   const ret = await mapTransform(def, { transformers })(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply filter with compare function from operation object', async (t) => {
+test('should apply filter with compare function from operation object', async () => {
   const def = [
     { title: 'content.heading' },
     {
@@ -326,10 +327,10 @@ test('should apply filter with compare function from operation object', async (t
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should only apply filter from operation object going forward', async (t) => {
+test('should only apply filter from operation object going forward', async () => {
   const def = [
     { title: 'content.heading' },
     { $filter: 'noHeadingTitle', $direction: 'fwd' },
@@ -342,11 +343,11 @@ test('should only apply filter from operation object going forward', async (t) =
     rev: true,
   })
 
-  t.is(retFwd, undefined)
-  t.deepEqual(retRev, dataFwd)
+  assert.equal(retFwd, undefined)
+  assert.deepEqual(retRev, dataFwd)
 })
 
-test('should only apply filter from operation object going in reverse', async (t) => {
+test('should only apply filter from operation object going in reverse', async () => {
   const def = [
     { title: 'content.heading' },
     { $filter: 'noHeadingTitle', $direction: 'rev' },
@@ -359,11 +360,11 @@ test('should only apply filter from operation object going in reverse', async (t
     rev: true,
   })
 
-  t.deepEqual(retFwd, dataRev)
-  t.is(retRev, undefined)
+  assert.deepEqual(retFwd, dataRev)
+  assert.equal(retRev, undefined)
 })
 
-test('should filter after a lookup', async (t) => {
+test('should filter after a lookup', async () => {
   const def = [
     'ids',
     { $lookup: '^^.content', path: 'id' },
@@ -386,10 +387,10 @@ test('should filter after a lookup', async (t) => {
 
   const ret = await mapTransform(def)(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply filter from operation object with Symbol id', async (t) => {
+test('should apply filter from operation object with Symbol id', async () => {
   const def = [
     {
       title: 'content.heading',
@@ -403,51 +404,45 @@ test('should apply filter from operation object with Symbol id', async (t) => {
 
   const ret = await mapTransform(def, { transformers })(data)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw when filter is given an unknown transformer id', (t) => {
+test('should throw when filter is given an unknown transformer id', () => {
   const def = [{ title: 'content.heading' }, { $filter: 'unknown' }]
   const data = {
     content: { heading: 'The heading' },
   }
-
-  const error = t.throws(() => mapTransform(def, { transformers })(data))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
-    "Filter operator was given the unknown transformer id 'unknown'"
+  const expectedError = new Error(
+    "Filter operator was given the unknown transformer id 'unknown'",
   )
+
+  assert.throws(() => mapTransform(def, { transformers })(data), expectedError)
 })
 
-test('should throw when filter is given an unknown transformer id as symbol', (t) => {
+test('should throw when filter is given an unknown transformer id as symbol', () => {
   const def = [{ title: 'content.heading' }, { $filter: Symbol.for('unknown') }]
   const data = {
     content: { heading: 'The heading' },
   }
-
-  const error = t.throws(() => mapTransform(def, { transformers })(data))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
-    "Filter operator was given the unknown transformer id 'Symbol(unknown)'"
+  const expectedError = new Error(
+    "Filter operator was given the unknown transformer id 'Symbol(unknown)'",
   )
+
+  assert.throws(() => mapTransform(def, { transformers })(data), expectedError)
 })
 
-test('should throw when filter operator is missing a transformer id', (t) => {
+test('should throw when filter operator is missing a transformer id', () => {
   const def = [{ title: 'content.heading' }, { $filter: null }] // Missing transformer id
   const data = {
     content: { heading: 'The heading' },
   }
+  const expectedError = new Error(
+    'Filter operator was given no transformer id or an invalid transformer id',
+  )
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const error = t.throws(() => mapTransform(def as any, { transformers })(data))
-
-  t.true(error instanceof Error)
-  t.is(
-    error?.message,
-    'Filter operator was given no transformer id or an invalid transformer id'
+  assert.throws(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => mapTransform(def as any, { transformers })(data),
+    expectedError,
   )
 })

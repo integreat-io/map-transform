@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import mapTransform from '../../index.js'
 import items from '../data/items.js'
 
@@ -10,7 +11,7 @@ interface Item {
 
 // Tests
 
-test('should do a lookup', async (t) => {
+test('should do a lookup', async () => {
   const def = [
     'items',
     {
@@ -30,9 +31,9 @@ test('should do a lookup', async (t) => {
   const ret = (await fn(data)) as Item[]
 
   const end = Date.now()
-  t.is(ret.length, 10000)
-  t.is(ret[0].customerId, '2')
-  t.is(ret[0].customerName, 'Customer 2')
+  assert.equal(ret.length, 10000)
+  assert.equal(ret[0].customerId, '2')
+  assert.equal(ret[0].customerName, 'Customer 2')
 
   console.log(`### Lookup took ${end - start} ms`)
 })

@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import not from './not.js'
 
@@ -16,25 +17,25 @@ const options = {}
 
 // Tests
 
-test('should return true for false', async (t) => {
+test('should return true for false', async () => {
   const data = false
 
   const ret = await not(returnIt)(options)(data, state)
-  t.true(ret)
+  assert.equal(ret, true)
 })
 
-test('should return false for true', async (t) => {
+test('should return false for true', async () => {
   const data = true
 
   const ret = await not(returnIt)(options)(data, state)
-  t.false(ret)
+  assert.equal(ret, false)
 })
 
-test('should return true for false from a path', async (t) => {
+test('should return true for false from a path', async () => {
   const data = { visible: false }
   const path = 'visible'
 
   const ret = await not({ path })(options)(data, state)
 
-  t.true(ret)
+  assert.equal(ret, true)
 })

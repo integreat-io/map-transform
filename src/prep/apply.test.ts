@@ -1,11 +1,12 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import type { Options } from './index.js'
 
 import preparePipeline from './index.js'
 
 // Tests
 
-test('should prepare apply step', (t) => {
+test('should prepare apply step', () => {
   const def = { $apply: 'entry' }
   const entryPipeline = { id: 'key', title: 'name' }
   const options = { pipelines: { entry: entryPipeline } }
@@ -13,10 +14,10 @@ test('should prepare apply step', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare apply step with symbol as id', (t) => {
+test('should prepare apply step with symbol as id', () => {
   const def = { $apply: Symbol.for('entry') }
   const entryPipeline = { id: 'key', title: 'name' }
   const options = { pipelines: { [Symbol.for('entry')]: entryPipeline } }
@@ -24,10 +25,10 @@ test('should prepare apply step with symbol as id', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should mark pipelines as needed', (t) => {
+test('should mark pipelines as needed', () => {
   const def = [{ $apply: 'entry' }, { $apply: 'comment' }]
   const pipeline = { id: 'key' }
   const options: Options = {
@@ -37,46 +38,45 @@ test('should mark pipelines as needed', (t) => {
 
   preparePipeline(def, options)
 
-  t.true(options.neededPipelineIds instanceof Set)
-  t.deepEqual([...options.neededPipelineIds!.values()], expected)
+  assert.ok(options.neededPipelineIds instanceof Set)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  assert.deepEqual([...options.neededPipelineIds!.values()], expected)
 })
 
-test('should throw when pipeline is not found', (t) => {
+test('should throw when pipeline is not found', () => {
   const def = { $apply: 'unknown' }
   const options = { pipelines: {} }
+  const expectedError = new Error(
+    "Failed to apply pipeline 'unknown'. Unknown pipeline",
+  )
 
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })
 
-test('should throw when no id', (t) => {
+test('should throw when no id', () => {
   const def = { $apply: null }
   const options = { pipelines: {} }
+  const expectedError = new Error('Failed to apply pipeline. No id provided')
 
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error.message, 'Failed to apply pipeline. No id provided')
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })
 
-test('should throw when no valid id', (t) => {
+test('should throw when no valid id', () => {
   const def = { $apply: { id: 'what?' } }
   const options = { pipelines: {} }
+  const expectedError = new Error(
+    'Failed to apply pipeline. Id is not string or symbol',
+  )
 
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error.message, 'Failed to apply pipeline. Id is not string or symbol')
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })
 
-test('should throw when no pipelines', (t) => {
+test('should throw when no pipelines', () => {
   const def = { $apply: 'entry' }
   const options = {} // No pipelines
+  const expectedError = new Error(
+    "Failed to apply pipeline 'entry'. No pipelines",
+  )
 
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error.message, "Failed to apply pipeline 'entry'. No pipelines")
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })

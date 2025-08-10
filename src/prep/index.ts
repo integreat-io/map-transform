@@ -50,17 +50,17 @@ export interface Options {
 }
 
 const isAltOperation = (step: ObjectStep): step is AltOperation =>
-  step.hasOwnProperty('$alt')
+  Object.prototype.hasOwnProperty.call(step, '$alt')
 const isApplyOperation = (step: ObjectStep): step is ApplyOperation =>
-  step.hasOwnProperty('$apply')
+  Object.prototype.hasOwnProperty.call(step, '$apply')
 const isFilterOperation = (step: ObjectStep): step is FilterOperation =>
-  step.hasOwnProperty('$filter')
+  Object.prototype.hasOwnProperty.call(step, '$filter')
 const isIfOperation = (step: ObjectStep): step is IfOperation =>
-  step.hasOwnProperty('$if')
+  Object.prototype.hasOwnProperty.call(step, '$if')
 const isTransformOperation = (step: ObjectStep): step is TransformOperation =>
-  step.hasOwnProperty('$transform')
+  Object.prototype.hasOwnProperty.call(step, '$transform')
 const isValueOperation = (step: ObjectStep): step is ValueOperation =>
-  step.hasOwnProperty('$value')
+  Object.prototype.hasOwnProperty.call(step, '$value')
 
 // Convert the direction string into a number where 1 is forward, -1 is
 // reverse, and 0 is no specified direction.

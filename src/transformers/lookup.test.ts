@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import { lookup, lookupAsync, lookdown, lookdownAsync } from './lookup.js'
 
@@ -11,7 +12,7 @@ const options = { transformers: { castString, passThrough } }
 
 // Tests -- forward
 
-test('should lookup and return first match', (t) => {
+test('should lookup and return first match', () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -32,10 +33,10 @@ test('should lookup and return first match', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should lookup and return all matches when matchSeveral is true', (t) => {
+test('should lookup and return all matches when matchSeveral is true', () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -63,10 +64,10 @@ test('should lookup and return all matches when matchSeveral is true', (t) => {
     state,
   )
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should force value at arrayPath to array', (t) => {
+test('should force value at arrayPath to array', () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -83,10 +84,10 @@ test('should force value at arrayPath to array', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined when no match', (t) => {
+test('should return undefined when no match', () => {
   const context = [
     {
       content: { author: 'user3' },
@@ -106,10 +107,10 @@ test('should return undefined when no match', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return undefined when arrayPath returns no data', (t) => {
+test('should return undefined when arrayPath returns no data', () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -124,10 +125,10 @@ test('should return undefined when arrayPath returns no data', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should lookup with array of props', (t) => {
+test('should lookup with array of props', () => {
   const context = [
     {
       content: { authors: ['user3', 'user1'] },
@@ -152,10 +153,10 @@ test('should lookup with array of props', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pick first when there are several matches', (t) => {
+test('should pick first when there are several matches', () => {
   const context = [
     {
       content: { authors: ['user1', 'user3'] },
@@ -181,10 +182,10 @@ test('should pick first when there are several matches', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should include all matches when matchSeveral is true', (t) => {
+test('should include all matches when matchSeveral is true', () => {
   const context = [
     {
       content: { authors: ['user1', 'user0', 'user3'] },
@@ -216,10 +217,10 @@ test('should include all matches when matchSeveral is true', (t) => {
     state,
   )
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined for values that does not match', (t) => {
+test('should return undefined for values that does not match', () => {
   const context = [
     {
       content: { authors: ['user0', 'user2'] },
@@ -241,10 +242,10 @@ test('should return undefined for values that does not match', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty array when arrayPath does not exist -- with array of props', (t) => {
+test('should return empty array when arrayPath does not exist -- with array of props', () => {
   const context = [
     {
       content: { authors: ['user1', 'user3'] },
@@ -260,10 +261,10 @@ test('should return empty array when arrayPath does not exist -- with array of p
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support pipeline in propPath', (t) => {
+test('should support pipeline in propPath', () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -283,10 +284,10 @@ test('should support pipeline in propPath', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get lookup prop going forward when flipped', (t) => {
+test('should get lookup prop going forward when flipped', () => {
   const value = { id: 'user2', name: 'User 2' }
   const state = { rev: false, value, context: [], flip: true }
   const arrayPath = '^^related.users[]'
@@ -295,10 +296,10 @@ test('should get lookup prop going forward when flipped', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support async pipelines', async (t) => {
+test('should support async pipelines', async () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -318,10 +319,10 @@ test('should support async pipelines', async (t) => {
 
   const ret = await lookupAsync({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get lookup prop going forward with lookdown', (t) => {
+test('should get lookup prop going forward with lookdown', () => {
   const value = { id: 'user2', name: 'User 2' }
   const state = { rev: false, value, context: [] }
   const arrayPath = '^^related.users[]'
@@ -330,12 +331,12 @@ test('should get lookup prop going forward with lookdown', (t) => {
 
   const ret = lookdown({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- reverse
 
-test('should get lookup prop in reverse', (t) => {
+test('should get lookup prop in reverse', () => {
   const value = { id: 'user2', name: 'User 2' }
   const state = { rev: true, value, context: [] }
   const arrayPath = '^^related.users[]'
@@ -344,10 +345,10 @@ test('should get lookup prop in reverse', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get lookup props from array in reverse', (t) => {
+test('should get lookup props from array in reverse', () => {
   const value = [
     { id: 'user1', name: 'User 1' },
     { id: 'user2', name: 'User 2' },
@@ -359,10 +360,10 @@ test('should get lookup props from array in reverse', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should lookup in reverse when flipped', (t) => {
+test('should lookup in reverse when flipped', () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -382,10 +383,10 @@ test('should lookup in reverse when flipped', (t) => {
 
   const ret = lookup({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should lookup data in reverse with lookdown', (t) => {
+test('should lookup data in reverse with lookdown', () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -405,10 +406,10 @@ test('should lookup data in reverse with lookdown', (t) => {
 
   const ret = lookdown({ arrayPath, propPath })(options)(value, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support async pipelines in reverse with lookdown', async (t) => {
+test('should support async pipelines in reverse with lookdown', async () => {
   const context = [
     {
       content: { author: 'user2' },
@@ -431,5 +432,5 @@ test('should support async pipelines in reverse with lookdown', async (t) => {
     state,
   )
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

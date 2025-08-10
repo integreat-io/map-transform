@@ -1,7 +1,7 @@
 const createTransformWithPath = (
   $transform: string,
   path: unknown,
-  operator?: string
+  operator?: string,
 ) => ({
   $transform,
   path,
@@ -42,20 +42,20 @@ const createMergeTransform = ({
 
 export default function modifyOperationObject(
   rawOperation: Record<string, unknown>,
-  modify?: (operation: Record<string, unknown>) => Record<string, unknown>
+  modify?: (operation: Record<string, unknown>) => Record<string, unknown>,
 ): Record<string, unknown> {
   const operation =
     typeof modify === 'function' ? modify(rawOperation) : rawOperation
 
-  if (operation.hasOwnProperty('$value')) {
+  if (Object.prototype.hasOwnProperty.call(operation, '$value')) {
     return createValueTransform(operation)
-  } else if (operation.hasOwnProperty('$and')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$and')) {
     return createAndTransform(operation)
-  } else if (operation.hasOwnProperty('$or')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$or')) {
     return createOrTransform(operation)
-  } else if (operation.hasOwnProperty('$not')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$not')) {
     return createNotTransform(operation)
-  } else if (operation.hasOwnProperty('$merge')) {
+  } else if (Object.prototype.hasOwnProperty.call(operation, '$merge')) {
     return createMergeTransform(operation)
   }
 

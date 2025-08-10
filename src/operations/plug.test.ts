@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { noopNext } from '../utils/stateHelpers.js'
 
 import plug from './plug.js'
@@ -9,7 +10,7 @@ const options = {}
 
 // Tests
 
-test('should set value to undefined', async (t) => {
+test('should set value to undefined', async () => {
   const state = {
     context: [],
     value: { data: { name: 'John F.' } },
@@ -21,10 +22,10 @@ test('should set value to undefined', async (t) => {
 
   const ret = await plug()(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set value to undefined when noDefaults', async (t) => {
+test('should set value to undefined when noDefaults', async () => {
   const state = {
     context: [],
     value: { data: { name: 'John F.' } },
@@ -38,10 +39,10 @@ test('should set value to undefined when noDefaults', async (t) => {
 
   const ret = await plug()(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set target as value when present', async (t) => {
+test('should set target as value when present', async () => {
   const state = {
     context: [],
     target: { data: { name: 'John F.', age: 32 } },
@@ -54,5 +55,5 @@ test('should set target as value when present', async (t) => {
 
   const ret = await plug()(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

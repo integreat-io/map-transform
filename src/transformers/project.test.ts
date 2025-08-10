@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import project from './project.js'
 
@@ -21,7 +22,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should keep only props specified by include', (t) => {
+test('should keep only props specified by include', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -33,10 +34,10 @@ test('should keep only props specified by include', (t) => {
 
   const ret = project({ include })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should exclude props specified by exclude', (t) => {
+test('should exclude props specified by exclude', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -48,10 +49,10 @@ test('should exclude props specified by exclude', (t) => {
 
   const ret = project({ exclude })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use include when exclude is also specified', (t) => {
+test('should use include when exclude is also specified', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -64,10 +65,10 @@ test('should use include when exclude is also specified', (t) => {
 
   const ret = project({ include, exclude })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use keys from includePath', (t) => {
+test('should use keys from includePath', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -82,10 +83,10 @@ test('should use keys from includePath', (t) => {
 
   const ret = project({ includePath })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should leave object untouched when no keys in includePath', (t) => {
+test('should leave object untouched when no keys in includePath', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -100,10 +101,10 @@ test('should leave object untouched when no keys in includePath', (t) => {
 
   const ret = project({ includePath })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use include keys as fall-back for includePath', (t) => {
+test('should use include keys as fall-back for includePath', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -119,10 +120,10 @@ test('should use include keys as fall-back for includePath', (t) => {
 
   const ret = project({ includePath, include })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use keys from excludePath', (t) => {
+test('should use keys from excludePath', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -137,10 +138,10 @@ test('should use keys from excludePath', (t) => {
 
   const ret = project({ excludePath })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should leave object untouched when no keys in excludePath', (t) => {
+test('should leave object untouched when no keys in excludePath', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -155,10 +156,10 @@ test('should leave object untouched when no keys in excludePath', (t) => {
 
   const ret = project({ excludePath })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use exclude keys as fall-back for excludePath', (t) => {
+test('should use exclude keys as fall-back for excludePath', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -174,10 +175,10 @@ test('should use exclude keys as fall-back for excludePath', (t) => {
 
   const ret = project({ excludePath, exclude })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return object as is when neither include nor exclude are defined', (t) => {
+test('should return object as is when neither include nor exclude are defined', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -188,10 +189,10 @@ test('should return object as is when neither include nor exclude are defined', 
 
   const ret = project({})(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip include props that are not strings', (t) => {
+test('should skip include props that are not strings', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -203,10 +204,10 @@ test('should skip include props that are not strings', (t) => {
 
   const ret = project({ include })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip exclude props that are not string', (t) => {
+test('should skip exclude props that are not string', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -218,10 +219,10 @@ test('should skip exclude props that are not string', (t) => {
 
   const ret = project({ exclude })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should include in array', (t) => {
+test('should include in array', () => {
   const data = [
     {
       id: 'ent1',
@@ -236,10 +237,10 @@ test('should include in array', (t) => {
 
   const ret = project({ include })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should exclude in array', (t) => {
+test('should exclude in array', () => {
   const data = [
     {
       id: 'ent1',
@@ -254,10 +255,10 @@ test('should exclude in array', (t) => {
 
   const ret = project({ exclude })(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return objects in array', (t) => {
+test('should return objects in array', () => {
   const data = [
     {
       id: 'ent1',
@@ -272,40 +273,40 @@ test('should return objects in array', (t) => {
 
   const ret = project({})(options)(data, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined for non-objects for include', (t) => {
+test('should return undefined for non-objects for include', () => {
   const include = ['id', 'title']
 
-  t.is(project({ include })(options)('nope', state), undefined)
-  t.is(project({ include })(options)(false, state), undefined)
-  t.is(project({ include })(options)(new Date(), state), undefined)
-  t.is(project({ include })(options)(null, state), undefined)
-  t.is(project({ include })(options)(undefined, state), undefined)
+  assert.equal(project({ include })(options)('nope', state), undefined)
+  assert.equal(project({ include })(options)(false, state), undefined)
+  assert.equal(project({ include })(options)(new Date(), state), undefined)
+  assert.equal(project({ include })(options)(null, state), undefined)
+  assert.equal(project({ include })(options)(undefined, state), undefined)
 })
 
-test('should return undefined for non-objects for exclude', (t) => {
+test('should return undefined for non-objects for exclude', () => {
   const exclude = ['$type', 'title']
 
-  t.is(project({ exclude })(options)('nope', state), undefined)
-  t.is(project({ exclude })(options)(false, state), undefined)
-  t.is(project({ exclude })(options)(new Date(), state), undefined)
-  t.is(project({ exclude })(options)(null, state), undefined)
-  t.is(project({ exclude })(options)(undefined, state), undefined)
+  assert.equal(project({ exclude })(options)('nope', state), undefined)
+  assert.equal(project({ exclude })(options)(false, state), undefined)
+  assert.equal(project({ exclude })(options)(new Date(), state), undefined)
+  assert.equal(project({ exclude })(options)(null, state), undefined)
+  assert.equal(project({ exclude })(options)(undefined, state), undefined)
 })
 
-test('should return undefined for non-objects for neither include nor exclude', (t) => {
-  t.is(project({})(options)('nope', state), undefined)
-  t.is(project({})(options)(false, state), undefined)
-  t.is(project({})(options)(new Date(), state), undefined)
-  t.is(project({})(options)(null, state), undefined)
-  t.is(project({})(options)(undefined, state), undefined)
+test('should return undefined for non-objects for neither include nor exclude', () => {
+  assert.equal(project({})(options)('nope', state), undefined)
+  assert.equal(project({})(options)(false, state), undefined)
+  assert.equal(project({})(options)(new Date(), state), undefined)
+  assert.equal(project({})(options)(null, state), undefined)
+  assert.equal(project({})(options)(undefined, state), undefined)
 })
 
 // Tests -- reverse
 
-test('should do include in reverse', (t) => {
+test('should do include in reverse', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -317,10 +318,10 @@ test('should do include in reverse', (t) => {
 
   const ret = project({ include })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should do exclude in reverse', (t) => {
+test('should do exclude in reverse', () => {
   const data = {
     id: 'ent1',
     title: 'Entry 1',
@@ -332,13 +333,13 @@ test('should do exclude in reverse', (t) => {
 
   const ret = project({ exclude })(options)(data, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined for non-objects in reverse', (t) => {
-  t.is(project({})(options)('nope', stateRev), undefined)
-  t.is(project({})(options)(false, stateRev), undefined)
-  t.is(project({})(options)(new Date(), stateRev), undefined)
-  t.is(project({})(options)(null, stateRev), undefined)
-  t.is(project({})(options)(undefined, stateRev), undefined)
+test('should return undefined for non-objects in reverse', () => {
+  assert.equal(project({})(options)('nope', stateRev), undefined)
+  assert.equal(project({})(options)(false, stateRev), undefined)
+  assert.equal(project({})(options)(new Date(), stateRev), undefined)
+  assert.equal(project({})(options)(null, stateRev), undefined)
+  assert.equal(project({})(options)(undefined, stateRev), undefined)
 })

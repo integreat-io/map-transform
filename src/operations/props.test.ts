@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { get, set } from './getSet.js'
 import transform from './transform.js'
 import { value } from '../transformers/value.js'
@@ -30,7 +31,7 @@ const options = { pipelines: {} }
 
 // Tests -- forward
 
-test('should mutate shallow object with map transformer', async (t) => {
+test('should mutate shallow object with map transformer', async () => {
   const def = {
     id: transform(value('ent1')),
     title: 'headline',
@@ -51,10 +52,10 @@ test('should mutate shallow object with map transformer', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should mutate object with depth', async (t) => {
+test('should mutate object with depth', async () => {
   const def = {
     item: {
       id: transform(value('ent1')),
@@ -86,10 +87,10 @@ test('should mutate object with depth', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should support root in value', async (t) => {
+test('should support root in value', async () => {
   const def = {
     attributes: {
       title: 'content.heading',
@@ -112,10 +113,10 @@ test('should support root in value', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should mutate object with map pipe', async (t) => {
+test('should mutate object with map pipe', async () => {
   const def = {
     item: {
       attributes: {
@@ -137,10 +138,10 @@ test('should mutate object with map pipe', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should mutate object with props in the given order', async (t) => {
+test('should mutate object with props in the given order', async () => {
   const def = {
     item: {
       id: transform(value('ent1')),
@@ -163,12 +164,12 @@ test('should mutate object with props in the given order', async (t) => {
   const item = (
     ret.value as Record<string, Record<string, Record<string, unknown>>>
   ).item
-  t.deepEqual(Object.keys(item), expectedPropsItem)
-  t.deepEqual(Object.keys(item.attributes), expectedPropsAttrs)
-  t.deepEqual(Object.keys(item.relationships), expectedPropsRels)
+  assert.deepEqual(Object.keys(item), expectedPropsItem)
+  assert.deepEqual(Object.keys(item.attributes), expectedPropsAttrs)
+  assert.deepEqual(Object.keys(item.relationships), expectedPropsRels)
 })
 
-test('should skip slashed properties going forward', async (t) => {
+test('should skip slashed properties going forward', async () => {
   const def = {
     title: 'headline',
     'title/1': 'headlineAgain',
@@ -183,10 +184,10 @@ test('should skip slashed properties going forward', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should mutate with set in pipeline', async (t) => {
+test('should mutate with set in pipeline', async () => {
   const def = {
     id: transform(value('ent1')),
     meta: ['user', set('user')],
@@ -201,10 +202,10 @@ test('should mutate with set in pipeline', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge original object and transformed object', async (t) => {
+test('should shallow merge original object and transformed object', async () => {
   const def = {
     $modify: true,
     id: transform(value('ent1')),
@@ -223,10 +224,10 @@ test('should shallow merge original object and transformed object', async (t) =>
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip rev $modify going forward', async (t) => {
+test('should skip rev $modify going forward', async () => {
   const def = {
     '.': '$modify',
     id: transform(value('ent1')),
@@ -242,10 +243,10 @@ test('should skip rev $modify going forward', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support reverse $modify going forward when flipped', async (t) => {
+test('should support reverse $modify going forward when flipped', async () => {
   const def = {
     $flip: true,
     '.': '$modify',
@@ -270,10 +271,10 @@ test('should support reverse $modify going forward when flipped', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should skip both direction $modify going forward', async (t) => {
+test('should skip both direction $modify going forward', async () => {
   const def = {
     $modify: 'content.$modify',
     title: 'content.headline',
@@ -290,10 +291,10 @@ test('should skip both direction $modify going forward', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge a path from original object and transformed object', async (t) => {
+test('should shallow merge a path from original object and transformed object', async () => {
   const def = {
     $modify: 'response',
     data: 'response.data.items',
@@ -312,10 +313,10 @@ test('should shallow merge a path from original object and transformed object', 
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge with $modify on a path', async (t) => {
+test('should shallow merge with $modify on a path', async () => {
   const def = {
     'content.$modify': 'response',
     'content.data': 'response.data.items',
@@ -336,10 +337,10 @@ test('should shallow merge with $modify on a path', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge in sub object and use $modify path', async (t) => {
+test('should shallow merge in sub object and use $modify path', async () => {
   const state = {
     context: [{ data, params: { source: 'news1' } }],
     value: { data: { article: data[0], tags: ['news', 'sports'] } },
@@ -372,10 +373,10 @@ test('should shallow merge in sub object and use $modify path', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should modify on several levels', async (t) => {
+test('should modify on several levels', async () => {
   const def = {
     $modify: '.',
     payload: {
@@ -423,10 +424,10 @@ test('should modify on several levels', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should not treat prop starting with $modify as $modify', async (t) => {
+test('should not treat prop starting with $modify as $modify', async () => {
   const def = {
     $modifySomething: true,
     id: transform(value('ent1')),
@@ -444,10 +445,10 @@ test('should not treat prop starting with $modify as $modify', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip prop with modify in both directions', async (t) => {
+test('should skip prop with modify in both directions', async () => {
   const def = {
     $modify: 'content.$modify',
     id: transform(value('ent1')),
@@ -465,10 +466,10 @@ test('should skip prop with modify in both directions', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return object untouched when there is no other prop than $modify', async (t) => {
+test('should return object untouched when there is no other prop than $modify', async () => {
   const def = {
     $modify: true,
   }
@@ -479,10 +480,10 @@ test('should return object untouched when there is no other prop than $modify', 
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should iterate when $iterate is true', async (t) => {
+test('should iterate when $iterate is true', async () => {
   const def = {
     $iterate: true,
     title: get('headline'),
@@ -494,10 +495,10 @@ test('should iterate when $iterate is true', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithArray)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not iterate when $iterate is false', async (t) => {
+test('should not iterate when $iterate is false', async () => {
   const def = {
     $iterate: false,
     title: get('headline'),
@@ -508,10 +509,10 @@ test('should not iterate when $iterate is false', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithArray)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should honor $iterate on sub objects', async (t) => {
+test('should honor $iterate on sub objects', async () => {
   const def = {
     articles: {
       $iterate: true,
@@ -524,10 +525,10 @@ test('should honor $iterate on sub objects', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithArray)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should iterate sub objects on brackets notation paths', async (t) => {
+test('should iterate sub objects on brackets notation paths', async () => {
   const def = {
     'articles[]': {
       title: get('headline'),
@@ -539,10 +540,10 @@ test('should iterate sub objects on brackets notation paths', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithArray)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should map missing array to empty array', async (t) => {
+test('should map missing array to empty array', async () => {
   const stateWithArray = {
     context: [],
     value: {},
@@ -562,10 +563,10 @@ test('should map missing array to empty array', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithArray)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should iterate pipelines on brackets notation paths', async (t) => {
+test('should iterate pipelines on brackets notation paths', async () => {
   const def = {
     'articles[]': ['headline'],
   }
@@ -575,10 +576,10 @@ test('should iterate pipelines on brackets notation paths', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithArray)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should not iterate sub pipeline on brackets notation paths', async (t) => {
+test('should not iterate sub pipeline on brackets notation paths', async () => {
   const def = {
     'articles[]': [
       {
@@ -592,10 +593,10 @@ test('should not iterate sub pipeline on brackets notation paths', async (t) => 
 
   const ret = await props(def)(options)(noopNext)(stateWithArray)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should not include values from value transformer when $noDefaults is true', async (t) => {
+test('should not include values from value transformer when $noDefaults is true', async () => {
   const def = {
     $noDefaults: true,
     id: transform(value('ent1')),
@@ -614,10 +615,10 @@ test('should not include values from value transformer when $noDefaults is true'
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not include values in iterations from value transformer when $noDefaults is true', async (t) => {
+test('should not include values in iterations from value transformer when $noDefaults is true', async () => {
   const def = {
     $iterate: true,
     $noDefaults: true,
@@ -631,10 +632,10 @@ test('should not include values in iterations from value transformer when $noDef
 
   const ret = await props(def)(options)(noopNext)(stateWithArray)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should include values from value transformer when $noDefaults is false', async (t) => {
+test('should include values from value transformer when $noDefaults is false', async () => {
   const def = {
     $noDefaults: false,
     id: transform(value('ent1')),
@@ -656,10 +657,10 @@ test('should include values from value transformer when $noDefaults is false', a
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not clear $noDefaults when not set', async (t) => {
+test('should not clear $noDefaults when not set', async () => {
   const stateWithNoDefaults = { ...stateWithObject, noDefaults: true }
   const def = {
     id: transform(value('ent1')),
@@ -679,10 +680,10 @@ test('should not clear $noDefaults when not set', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithNoDefaults)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should add array to context when iterating', async (t) => {
+test('should add array to context when iterating', async () => {
   const state = {
     context: [{ content: { items: data, section: 'news' } }],
     value: { items: data, section: 'news' },
@@ -709,10 +710,10 @@ test('should add array to context when iterating', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should add array to context when iterating through two arrays', async (t) => {
+test('should add array to context when iterating through two arrays', async () => {
   const state = {
     context: [
       { data: [{ items: data, section: 'news' }], author: 'johnf' },
@@ -740,10 +741,10 @@ test('should add array to context when iterating through two arrays', async (t) 
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should add array to context through two transform objects', async (t) => {
+test('should add array to context through two transform objects', async () => {
   const state = {
     context: [],
     value: { item: data[0], section: 'news' },
@@ -766,10 +767,10 @@ test('should add array to context through two transform objects', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should add array to context through two iterations', async (t) => {
+test('should add array to context through two iterations', async () => {
   const state = {
     context: [],
     value: { items: data, section: 'news' },
@@ -797,10 +798,10 @@ test('should add array to context through two iterations', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should set on index notation paths', async (t) => {
+test('should set on index notation paths', async () => {
   const def = {
     'articles[0]': { title: 'headline' },
   }
@@ -810,10 +811,10 @@ test('should set on index notation paths', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should flip and mutate object', async (t) => {
+test('should flip and mutate object', async () => {
   const def = {
     $flip: true,
     entry: {
@@ -845,10 +846,10 @@ test('should flip and mutate object', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should flip and mutate object in reverse', async (t) => {
+test('should flip and mutate object in reverse', async () => {
   const def = {
     $flip: true,
     item: {
@@ -881,10 +882,10 @@ test('should flip and mutate object in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map complex shape', async (t) => {
+test('should map complex shape', async () => {
   const def = {
     item: {
       id: transform(value('ent1')),
@@ -912,10 +913,10 @@ test('should map complex shape', async (t) => {
 
   const ret = await props(def)(options)(noopNext)({ ...stateWithObject })
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should skip unknown dollar props', async (t) => {
+test('should skip unknown dollar props', async () => {
   const def = {
     title: 'headline',
     text: transform(value('The text')),
@@ -931,10 +932,10 @@ test('should skip unknown dollar props', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip props without a pipeline', async (t) => {
+test('should skip props without a pipeline', async () => {
   const def = {
     title: 'headline',
     text: transform(value('The text')),
@@ -950,10 +951,10 @@ test('should skip props without a pipeline', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not mutate undefined value', async (t) => {
+test('should not mutate undefined value', async () => {
   const def = {
     id: transform(value('ent1')),
     title: get('headline'),
@@ -966,10 +967,10 @@ test('should not mutate undefined value', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not mutate null value when included in nonvalues', async (t) => {
+test('should not mutate null value when included in nonvalues', async () => {
   const optionsWithNullAsNone = { ...options, nonvalues: [undefined, null] }
   const def = {
     id: transform(value('ent1')),
@@ -983,10 +984,10 @@ test('should not mutate null value when included in nonvalues', async (t) => {
 
   const ret = await props(def)(optionsWithNullAsNone)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not mutate undefined value in array', async (t) => {
+test('should not mutate undefined value in array', async () => {
   const def = {
     $iterate: true,
     id: transform(value('ent1')),
@@ -1000,10 +1001,10 @@ test('should not mutate undefined value in array', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not mutate null value in array when included in nonvalues', async (t) => {
+test('should not mutate null value in array when included in nonvalues', async () => {
   const optionsWithNullAsNone = { ...options, nonvalues: [undefined, null] }
   const def = {
     $iterate: true,
@@ -1018,10 +1019,10 @@ test('should not mutate null value in array when included in nonvalues', async (
 
   const ret = await props(def)(optionsWithNullAsNone)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set value to empty object on empty transform object', async (t) => {
+test('should set value to empty object on empty transform object', async () => {
   const def = {}
   const state = {
     context: [{ data: { headline: 'The title' } }],
@@ -1034,10 +1035,10 @@ test('should set value to empty object on empty transform object', async (t) => 
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set value to empty object on empty, embeded transform object', async (t) => {
+test('should set value to empty object on empty, embeded transform object', async () => {
   const def = { content: {} }
   const state = {
     context: [{ data: { headline: 'The title' } }],
@@ -1050,10 +1051,10 @@ test('should set value to empty object on empty, embeded transform object', asyn
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set value to empty object on empty transform object within another object', async (t) => {
+test('should set value to empty object on empty transform object within another object', async () => {
   const def = {}
   const state = {
     context: [{ data: { headline: 'The title' } }],
@@ -1066,12 +1067,12 @@ test('should set value to empty object on empty transform object within another 
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- reverse
 
-test('should reverse map', async (t) => {
+test('should reverse map', async () => {
   const def = {
     content: {
       title: 'headline',
@@ -1090,10 +1091,10 @@ test('should reverse map', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should skip values with no set in reverse', async (t) => {
+test('should skip values with no set in reverse', async () => {
   const def = {
     id: transform(value('ent1')), // This value has no place to go
     content: {
@@ -1114,10 +1115,10 @@ test('should skip values with no set in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should set value in reverse', async (t) => {
+test('should set value in reverse', async () => {
   const def = {
     id: ['key', transform(value('ent1'))], // A value with both get and set
     content: {
@@ -1138,10 +1139,10 @@ test('should set value in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should reverse map with sub objects', async (t) => {
+test('should reverse map with sub objects', async () => {
   const def = {
     $iterate: true,
     attributes: {
@@ -1171,10 +1172,10 @@ test('should reverse map with sub objects', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should reverse map with sub objects flipped', async (t) => {
+test('should reverse map with sub objects flipped', async () => {
   const def = {
     $iterate: true,
     $flip: true,
@@ -1205,10 +1206,10 @@ test('should reverse map with sub objects flipped', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should set slashed properties in reverse', async (t) => {
+test('should set slashed properties in reverse', async () => {
   const def = {
     headline: 'title',
     'headline/1': 'titleAgain',
@@ -1226,10 +1227,10 @@ test('should set slashed properties in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support $modify in reverse', async (t) => {
+test('should support $modify in reverse', async () => {
   const def = {
     '.': '$modify',
     content: {
@@ -1254,10 +1255,10 @@ test('should support $modify in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should support $modify in a pipeline in reverse', async (t) => {
+test('should support $modify in a pipeline in reverse', async () => {
   const def = {
     '.': ['$modify'],
     content: {
@@ -1282,10 +1283,10 @@ test('should support $modify in a pipeline in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should skip forward $modify in reverse', async (t) => {
+test('should skip forward $modify in reverse', async () => {
   const def = {
     $modify: true, // This should do nothing in reverse
     content: {
@@ -1305,10 +1306,10 @@ test('should skip forward $modify in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should shallow merge original object and transformed object in reverse when flipped', async (t) => {
+test('should shallow merge original object and transformed object in reverse when flipped', async () => {
   const def = {
     $modify: true,
     $flip: true,
@@ -1332,10 +1333,10 @@ test('should shallow merge original object and transformed object in reverse whe
     rev: true,
   })
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip prop with $modify in both directions in reverse', async (t) => {
+test('should skip prop with $modify in both directions in reverse', async () => {
   const def = {
     'content.$modify': '$modify',
     content: {
@@ -1357,10 +1358,10 @@ test('should skip prop with $modify in both directions in reverse', async (t) =>
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should iterate in reverse', async (t) => {
+test('should iterate in reverse', async () => {
   const def = {
     $iterate: true,
     headline: 'title',
@@ -1370,10 +1371,10 @@ test('should iterate in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should iterate in reverse with get operation', async (t) => {
+test('should iterate in reverse with get operation', async () => {
   const def = {
     $iterate: true,
     headline: get('title'),
@@ -1383,10 +1384,10 @@ test('should iterate in reverse with get operation', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should reverse map with value array', async (t) => {
+test('should reverse map with value array', async () => {
   const def = {
     data: {
       'items[]': {
@@ -1407,10 +1408,10 @@ test('should reverse map with value array', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should reverse map with several sets', async (t) => {
+test('should reverse map with several sets', async () => {
   const def = {
     content: {
       title: 'headline',
@@ -1436,10 +1437,10 @@ test('should reverse map with several sets', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should skip root path in reverse', async (t) => {
+test('should skip root path in reverse', async () => {
   const data = {
     data: {
       items: [{ title: 'Entry 1' }, { title: 'Entry 2' }],
@@ -1462,12 +1463,12 @@ test('should skip root path in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
 // Tests -- $direction
 
-test('should skip transform object with $direction: rev going forward', async (t) => {
+test('should skip transform object with $direction: rev going forward', async () => {
   const def = {
     $direction: 'rev',
     id: transform(value('ent1')),
@@ -1477,10 +1478,10 @@ test('should skip transform object with $direction: rev going forward', async (t
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should transform object with $direction: rev in reverse', async (t) => {
+test('should transform object with $direction: rev in reverse', async () => {
   const def = {
     $direction: 'rev',
     content: {
@@ -1500,10 +1501,10 @@ test('should transform object with $direction: rev in reverse', async (t) => {
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should skip transform object with $direction: fwd in reverse', async (t) => {
+test('should skip transform object with $direction: fwd in reverse', async () => {
   const def = {
     $direction: 'fwd',
     content: {
@@ -1523,10 +1524,10 @@ test('should skip transform object with $direction: fwd in reverse', async (t) =
 
   const ret = await props(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should transform object with $direction: fwd going forward', async (t) => {
+test('should transform object with $direction: fwd going forward', async () => {
   const def = {
     $direction: 'fwd',
     id: transform(value('ent1')),
@@ -1542,10 +1543,10 @@ test('should transform object with $direction: fwd going forward', async (t) => 
 
   const ret = await props(def)(options)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use forward alias', async (t) => {
+test('should use forward alias', async () => {
   const optionsWithAlias = { ...options, fwdAlias: 'from' }
   const def = {
     $direction: 'from',
@@ -1566,10 +1567,10 @@ test('should use forward alias', async (t) => {
 
   const ret = await props(def)(optionsWithAlias)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use reverse alias', async (t) => {
+test('should use reverse alias', async () => {
   const optionsWithAlias = { ...options, revAlias: 'to' }
   const def = {
     $direction: 'to',
@@ -1580,17 +1581,17 @@ test('should use reverse alias', async (t) => {
 
   const ret = await props(def)(optionsWithAlias)(noopNext)(stateWithObject)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw on unknown pipeline in an $apply operation', (t) => {
+test('should throw on unknown pipeline in an $apply operation', () => {
   const def = {
     title: { $apply: 'unknown' },
     viewCount: 'meta.hits',
   }
+  const expectedError = new Error(
+    "Failed to apply pipeline 'unknown'. Unknown pipeline",
+  )
 
-  const error = t.throws(() => props(def)(options)(noopNext))
-
-  t.true(error instanceof Error)
-  t.is(error?.message, "Failed to apply pipeline 'unknown'. Unknown pipeline")
+  assert.throws(() => props(def)(options)(noopNext), expectedError)
 })

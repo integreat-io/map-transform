@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import type { State } from '../types.js'
 import type { PreppedPipeline } from '../run/index.js'
 
@@ -18,7 +19,7 @@ const options = {
 
 // Tests
 
-test('should prepare pipeline', (t) => {
+test('should prepare pipeline', () => {
   const def = ['data.name', { $transform: 'uppercase' }, '>items[].title']
   const expected = [
     'data',
@@ -31,10 +32,10 @@ test('should prepare pipeline', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare pipeline with sub-pipeline', (t) => {
+test('should prepare pipeline with sub-pipeline', () => {
   const def = ['data', ['name', { $transform: 'uppercase' }], '>items[].title']
   const expected = [
     'data',
@@ -47,28 +48,28 @@ test('should prepare pipeline with sub-pipeline', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return empty pipeline when no def', (t) => {
+test('should return empty pipeline when no def', () => {
   const def = null
   const expected: PreppedPipeline = []
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip null in pipeline', (t) => {
+test('should skip null in pipeline', () => {
   const def = [null] as unknown as TransformDefinition
   const expected: PreppedPipeline = []
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare transform operation with iteration', (t) => {
+test('should prepare transform operation with iteration', () => {
   const def = [
     {
       $transform: 'uppercase',
@@ -79,10 +80,10 @@ test('should prepare transform operation with iteration', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare transform operation with direction fwd', (t) => {
+test('should prepare transform operation with direction fwd', () => {
   const def = {
     $transform: 'uppercase',
     $direction: 'fwd',
@@ -92,10 +93,10 @@ test('should prepare transform operation with direction fwd', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare transform operation with direction rev', (t) => {
+test('should prepare transform operation with direction rev', () => {
   const def = {
     $transform: 'uppercase',
     $direction: 'rev',
@@ -104,10 +105,10 @@ test('should prepare transform operation with direction rev', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare transform operation with direction set to fwdAlias', (t) => {
+test('should prepare transform operation with direction set to fwdAlias', () => {
   const def = {
     $transform: 'uppercase',
     $direction: 'from',
@@ -116,10 +117,10 @@ test('should prepare transform operation with direction set to fwdAlias', (t) =>
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare transform operation with direction revAlias', (t) => {
+test('should prepare transform operation with direction revAlias', () => {
   const def = {
     $transform: 'uppercase',
     $direction: 'to',
@@ -128,18 +129,18 @@ test('should prepare transform operation with direction revAlias', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw when pipeline has a function (old operation)', (t) => {
+test('should throw when pipeline has a function (old operation)', () => {
   const def = [
     'data.name',
     () => () => () => undefined,
     '>items[].title',
   ] as unknown as TransformDefinition // We know we are providing something invalid, but need to override the typing errors
+  const expectedError = new Error(
+    'Operation functions are not supported anymore',
+  )
 
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error.message, 'Operation functions are not supported anymore')
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })

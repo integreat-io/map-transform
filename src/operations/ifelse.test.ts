@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import sinon from 'sinon'
 import { isObject } from '../utils/is.js'
 import { set } from './getSet.js'
@@ -15,7 +16,7 @@ const falsePipeline = set('inactive[]')
 
 // Tests
 
-test('should run truePipeline when true', async (t) => {
+test('should run truePipeline when true', async () => {
   const conditionFn = async (data: unknown) => isObject(data) && data.active
   const data = { active: true }
   const state = {
@@ -28,13 +29,13 @@ test('should run truePipeline when true', async (t) => {
   }
 
   const ret = await ifelse(conditionFn, truePipeline, falsePipeline)(options)(
-    noopNext
+    noopNext,
   )(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run falsePipeline when false', async (t) => {
+test('should run falsePipeline when false', async () => {
   const conditionFn = async (data: unknown) => isObject(data) && data.active
   const data = { active: false }
   const state = {
@@ -44,13 +45,13 @@ test('should run falsePipeline when false', async (t) => {
   const expectedValue = { inactive: [data] }
 
   const ret = await ifelse(conditionFn, truePipeline, falsePipeline)(options)(
-    noopNext
+    noopNext,
   )(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should do nothing when true and no truePipeline', async (t) => {
+test('should do nothing when true and no truePipeline', async () => {
   const conditionFn = async (data: unknown) => isObject(data) && data.active
   const data = { active: true }
   const state = {
@@ -59,13 +60,13 @@ test('should do nothing when true and no truePipeline', async (t) => {
   }
 
   const ret = await ifelse(conditionFn, undefined, falsePipeline)(options)(
-    noopNext
+    noopNext,
   )(state)
 
-  t.deepEqual(ret, state)
+  assert.deepEqual(ret, state)
 })
 
-test('should do nothing when false and no falsePipeline', async (t) => {
+test('should do nothing when false and no falsePipeline', async () => {
   const conditionFn = async (data: unknown) => isObject(data) && data.active
   const data = { active: false }
   const state = {
@@ -75,10 +76,10 @@ test('should do nothing when false and no falsePipeline', async (t) => {
 
   const ret = await ifelse(conditionFn, truePipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, state)
+  assert.deepEqual(ret, state)
 })
 
-test('should run falsePipeline when no conditionFn', async (t) => {
+test('should run falsePipeline when no conditionFn', async () => {
   const data = { active: true }
   const state = {
     context: [],
@@ -87,13 +88,13 @@ test('should run falsePipeline when no conditionFn', async (t) => {
   const expectedValue = { inactive: [data] }
 
   const ret = await ifelse(undefined, truePipeline, falsePipeline)(options)(
-    noopNext
+    noopNext,
   )(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should set primitive value', async (t) => {
+test('should set primitive value', async () => {
   const truePipeline = 'age'
   const conditionFn = async (data: unknown) =>
     isObject(data) && typeof data.age === 'number'
@@ -108,13 +109,13 @@ test('should set primitive value', async (t) => {
   }
 
   const ret = await ifelse(conditionFn, truePipeline, falsePipeline)(options)(
-    noopNext
+    noopNext,
   )(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set primitive value in reverse', async (t) => {
+test('should set primitive value in reverse', async () => {
   const truePipeline = 'age'
   const conditionFn = async (data: unknown) => typeof data === 'number'
   const data = 32
@@ -130,13 +131,13 @@ test('should set primitive value in reverse', async (t) => {
   }
 
   const ret = await ifelse(conditionFn, truePipeline, falsePipeline)(options)(
-    noopNext
+    noopNext,
   )(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run truePipeline with pipeline as condition', async (t) => {
+test('should run truePipeline with pipeline as condition', async () => {
   const conditionPipeline = 'active'
   const data = { active: true }
   const state = {
@@ -151,13 +152,13 @@ test('should run truePipeline with pipeline as condition', async (t) => {
   const ret = await ifelse(
     conditionPipeline,
     truePipeline,
-    falsePipeline
+    falsePipeline,
   )(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run falsePipeline with pipeline as condition', async (t) => {
+test('should run falsePipeline with pipeline as condition', async () => {
   const conditionPipeline = 'active'
   const data = { active: false }
   const state = {
@@ -169,13 +170,13 @@ test('should run falsePipeline with pipeline as condition', async (t) => {
   const ret = await ifelse(
     conditionPipeline,
     truePipeline,
-    falsePipeline
+    falsePipeline,
   )(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should run next only once', async (t) => {
+test('should run next only once', async () => {
   const next = sinon.stub().returnsArg(0)
   const conditionFn = async (data: unknown) => isObject(data) && data.active
   const data = { active: true }
@@ -186,5 +187,5 @@ test('should run next only once', async (t) => {
 
   await ifelse(conditionFn, truePipeline, falsePipeline)(options)(next)(state)
 
-  t.is(next.callCount, 1)
+  assert.equal(next.callCount, 1)
 })

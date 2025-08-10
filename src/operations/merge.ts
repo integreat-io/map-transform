@@ -1,4 +1,4 @@
-import deepmerge from 'deepmerge'
+import { deepmerge } from 'deepmerge-ts'
 import type {
   Operation,
   State,
@@ -21,9 +21,7 @@ export function mergeExisting<T, U>(
     const arr = source.slice()
     target.forEach((value, index) => {
       // eslint-disable-next-line security/detect-object-injection
-      arr[index] = deepmerge<U, T>(source[index], value, {
-        arrayMerge: mergeExisting,
-      })
+      arr[index] = deepmerge(source[index], value) as U // TODO: Is this ok? , { arrayMerge: mergeExisting }
     })
     return arr
   }
@@ -38,7 +36,7 @@ export function mergeStates(state: State, thisState: State) {
     ? target
     : !isObject(target)
       ? source
-      : deepmerge(target, source, { arrayMerge: mergeExisting })
+      : deepmerge(target, source) // TODO: Is this ok? , { arrayMerge: mergeExisting }
 
   return setStateValue(state, value)
 }

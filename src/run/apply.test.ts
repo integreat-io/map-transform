@@ -1,11 +1,12 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import State from '../state.js'
 
 import runPipeline, { runPipelineAsync } from './index.js'
 
 // Tests -- sync
 
-test('should run pipeline', (t) => {
+test('should run pipeline', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline = [{ type: 'apply' as const, id: 'entry' }]
   const entryPipeline = [
@@ -24,10 +25,10 @@ test('should run pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should continue pipeline with the same context', (t) => {
+test('should continue pipeline with the same context', () => {
   const value = 'Entry 1' // We pretend we have gotten this value ...
   const context = [{ key: 'ent1', name: 'Entry 1' }] // ... from this context
   const pipeline = [{ type: 'apply' as const, id: 'entry' }]
@@ -48,10 +49,10 @@ test('should continue pipeline with the same context', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not pass on flip to pipeline', (t) => {
+test('should not pass on flip to pipeline', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline = [{ type: 'apply' as const, id: 'entry' }]
   const entryPipeline = [
@@ -70,10 +71,10 @@ test('should not pass on flip to pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run pipeline on undefined', (t) => {
+test('should run pipeline on undefined', () => {
   const value = undefined
   const pipeline = [{ type: 'apply' as const, id: 'entry' }]
   const entryPipeline = [
@@ -89,10 +90,10 @@ test('should run pipeline on undefined', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run recursive pipeline', (t) => {
+test('should run recursive pipeline', () => {
   const value = {
     title: 'Comment 1',
     comments: [{ title: 'Comment 2' }, { title: 'Comment 3' }],
@@ -120,10 +121,10 @@ test('should run recursive pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should run pipeline in reverse', (t) => {
+test('should run pipeline in reverse', () => {
   const value = { id: 'ent1', title: 'Entry 1' }
   const pipeline = [{ type: 'apply' as const, id: 'entry' }]
   const entryPipeline = [
@@ -142,23 +143,21 @@ test('should run pipeline in reverse', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw if pipeline is not found', (t) => {
+test('should throw if pipeline is not found', () => {
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline = [{ type: 'apply' as const, id: 'unknown' }]
   const state = { pipelines: new Map() } // We set no pipeline
+  const expectedError = new Error("Pipeline 'unknown' does not exist")
 
-  const error = t.throws(() => runPipeline(value, pipeline, state))
-
-  t.true(error instanceof Error)
-  t.is(error.message, "Pipeline 'unknown' does not exist")
+  assert.throws(() => runPipeline(value, pipeline, state), expectedError)
 })
 
 // Tests -- async
 
-test('should run pipeline asynchronously', async (t) => {
+test('should run pipeline asynchronously', async () => {
   const fn = async () => 'From async'
   const value = { key: 'ent1', name: 'Entry 1' }
   const pipeline = [{ type: 'apply' as const, id: 'entry' }]
@@ -179,5 +178,5 @@ test('should run pipeline asynchronously', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

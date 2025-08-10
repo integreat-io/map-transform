@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import runPipeline, { runPipelineAsync, PreppedPipeline } from './index.js'
 
@@ -9,7 +10,7 @@ const stateRev = { rev: true }
 
 // Tests -- sync
 
-test('should use value from first pipeline', (t) => {
+test('should use value from first pipeline', () => {
   const value = { id: 'ent1', title: 'Entry 1', name: 'The real name' }
   const pipeline: PreppedPipeline = [
     {
@@ -21,10 +22,10 @@ test('should use value from first pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should use value from second pipeline when first returns undefined', (t) => {
+test('should use value from second pipeline when first returns undefined', () => {
   const value = { id: 'ent1', title: 'Entry 1' } // No `name` property, so first pipeline will return undefined
   const pipeline: PreppedPipeline = [
     {
@@ -36,10 +37,10 @@ test('should use value from second pipeline when first returns undefined', (t) =
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return undefined when no pipelines returns a value', (t) => {
+test('should return undefined when no pipelines returns a value', () => {
   const value = { id: 'ent1' } // No `title` or `name`
   const pipeline: PreppedPipeline = [
     {
@@ -51,10 +52,10 @@ test('should return undefined when no pipelines returns a value', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should use value from an empty pipeline', (t) => {
+test('should use value from an empty pipeline', () => {
   const value = { id: 'ent1', title: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -66,10 +67,10 @@ test('should use value from an empty pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not use value from a plugged pipeline', (t) => {
+test('should not use value from a plugged pipeline', () => {
   const value = { id: 'ent1', title: 'Entry 1', name: 'Not used' }
   const pipeline: PreppedPipeline = [
     {
@@ -81,10 +82,10 @@ test('should not use value from a plugged pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use alt operation in an iteration', (t) => {
+test('should use alt operation in an iteration', () => {
   const value = [
     { id: 'ent1', title: 'Entry 1' },
     { id: 'ent2', title: 'Entry 2', name: 'The second' },
@@ -100,10 +101,10 @@ test('should use alt operation in an iteration', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply alt operation to an array when not iterating', (t) => {
+test('should apply alt operation to an array when not iterating', () => {
   const value = [undefined, 'The second']
   const pipeline: PreppedPipeline = [
     {
@@ -116,10 +117,10 @@ test('should apply alt operation to an array when not iterating', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use value from second pipeline when first returns non-value', (t) => {
+test('should use value from second pipeline when first returns non-value', () => {
   const value = { id: 'ent1', title: 'Entry 1', name: '' }
   const pipeline: PreppedPipeline = [
     {
@@ -132,10 +133,10 @@ test('should use value from second pipeline when first returns non-value', (t) =
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return value from last pipeline even when it returns a non-value', (t) => {
+test('should return value from last pipeline even when it returns a non-value', () => {
   const value = { id: 'ent1', title: '' }
   const pipeline: PreppedPipeline = [
     {
@@ -148,10 +149,10 @@ test('should return value from last pipeline even when it returns a non-value', 
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should use non-values provided on the operation', (t) => {
+test('should use non-values provided on the operation', () => {
   const value = { id: 'ent1', title: 'Entry 1', name: '' }
   const pipeline: PreppedPipeline = [
     {
@@ -165,10 +166,10 @@ test('should use non-values provided on the operation', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should use context from the "winning" pipeline', (t) => {
+test('should use context from the "winning" pipeline', () => {
   const value = { id: 'ent1', props: { title: 'Entry 1' } }
   const pipeline: PreppedPipeline = [
     {
@@ -184,10 +185,10 @@ test('should use context from the "winning" pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not let "loosing" pipelines polute the context', (t) => {
+test('should not let "loosing" pipelines polute the context', () => {
   const value = { id: 'ent1', props: {}, title: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -204,10 +205,10 @@ test('should not let "loosing" pipelines polute the context', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support parent in pipeline', (t) => {
+test('should support parent in pipeline', () => {
   const value = { id: 'ent1', name: 'Parent name', props: { title: 'Entry 1' } }
   const pipeline: PreppedPipeline = [
     'props',
@@ -223,10 +224,10 @@ test('should support parent in pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support parent in iterating pipeline', (t) => {
+test('should support parent in iterating pipeline', () => {
   const value = {
     id: 'ent1',
     name: 'Parent name',
@@ -254,10 +255,10 @@ test('should support parent in iterating pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use first pipeline when setting', (t) => {
+test('should use first pipeline when setting', () => {
   const value = 'The real name'
   const pipeline: PreppedPipeline = [
     {
@@ -269,10 +270,10 @@ test('should use first pipeline when setting', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get a default value from the last pipeline', (t) => {
+test('should get a default value from the last pipeline', () => {
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
@@ -288,10 +289,10 @@ test('should get a default value from the last pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not get a default value from the last pipeline', (t) => {
+test('should not get a default value from the last pipeline', () => {
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
@@ -307,10 +308,10 @@ test('should not get a default value from the last pipeline', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should skip pipelines with wrong direction when getting default value', (t) => {
+test('should skip pipelines with wrong direction when getting default value', () => {
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
@@ -327,11 +328,11 @@ test('should skip pipelines with wrong direction when getting default value', (t
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // TODO: Change the behavior here? We are only continuing how we did it in the old version, but it is odd.
-test('should skip not provide special case when no default pipeline in reverse', (t) => {
+test('should skip not provide special case when no default pipeline in reverse', () => {
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
@@ -343,10 +344,10 @@ test('should skip not provide special case when no default pipeline in reverse',
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not run alt step in rev when dir is 1 (fwd)', (t) => {
+test('should not run alt step in rev when dir is 1 (fwd)', () => {
   const value = 'The real name'
   const pipeline: PreppedPipeline = [
     {
@@ -359,12 +360,12 @@ test('should not run alt step in rev when dir is 1 (fwd)', (t) => {
 
   const ret = runPipeline(value, pipeline, stateRev)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
 // Tests -- async
 
-test('should use value from async pipelines', async (t) => {
+test('should use value from async pipelines', async () => {
   const fn1 = async () => undefined
   const fn2 = async () => 'From async'
   const value = { id: 'ent1', title: 'Entry 1' } // No `name` property, so first pipeline will return undefined
@@ -381,10 +382,10 @@ test('should use value from async pipelines', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should set a default value with async pipelines', async (t) => {
+test('should set a default value with async pipelines', async () => {
   const fn = async () => 'From async'
   const value = undefined
   const pipeline: PreppedPipeline = [
@@ -397,5 +398,5 @@ test('should set a default value with async pipelines', async (t) => {
 
   const ret = await runPipelineAsync(value, pipeline, stateRev)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

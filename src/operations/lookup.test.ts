@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { noopNext } from '../utils/stateHelpers.js'
 
 import { lookup, lookdown } from './lookup.js'
@@ -10,7 +11,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should lookup data', async (t) => {
+test('should lookup data', async () => {
   const data = {
     content: { author: 'user2' },
     related: {
@@ -31,10 +32,10 @@ test('should lookup data', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should lookup array of data', async (t) => {
+test('should lookup array of data', async () => {
   const data = {
     content: { authors: ['user1', 'user3'] },
     related: {
@@ -59,10 +60,10 @@ test('should lookup array of data', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should match only first of several matches', async (t) => {
+test('should match only first of several matches', async () => {
   const data = {
     content: { authors: ['user1', 'user3'] },
     related: {
@@ -86,10 +87,10 @@ test('should match only first of several matches', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should match several matches when `matchSeveral` is true', async (t) => {
+test('should match several matches when `matchSeveral` is true', async () => {
   const propsMatchSeveral = { ...props, matchSeveral: true }
   const data = {
     content: { authors: ['user1', 'user3'] },
@@ -116,10 +117,10 @@ test('should match several matches when `matchSeveral` is true', async (t) => {
 
   const ret = await lookup(propsMatchSeveral)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should force the value at array path to an array', async (t) => {
+test('should force the value at array path to an array', async () => {
   const props = { arrayPath: '^^related.users', propPath: 'id' } // No array brackets in path
   const data = {
     content: { author: 'user2' },
@@ -138,10 +139,10 @@ test('should force the value at array path to an array', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should set value to undefined when array path yields undefined', async (t) => {
+test('should set value to undefined when array path yields undefined', async () => {
   const data = {
     content: { author: 'user2' },
   }
@@ -152,10 +153,10 @@ test('should set value to undefined when array path yields undefined', async (t)
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.is(ret.value, undefined)
+  assert.equal(ret.value, undefined)
 })
 
-test('should set value to undefined when no match', async (t) => {
+test('should set value to undefined when no match', async () => {
   const data = {
     content: { author: 'user3' },
     related: {
@@ -172,10 +173,10 @@ test('should set value to undefined when no match', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.is(ret.value, undefined)
+  assert.equal(ret.value, undefined)
 })
 
-test('should get lookup prop when flipped', async (t) => {
+test('should get lookup prop when flipped', async () => {
   const data = { id: 'user2', name: 'User 2' }
   const state = {
     context: [],
@@ -192,10 +193,10 @@ test('should get lookup prop when flipped', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw when prop path is a pipeline', async (t) => {
+test('should throw when prop path is a pipeline', async () => {
   const props = {
     arrayPath: '^^related.users[]',
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -214,19 +215,16 @@ test('should throw when prop path is a pipeline', async (t) => {
     context: [data],
     value: 'user2',
   }
-
-  const error = t.throws(() => lookup(props)(options)(noopNext)(state))
-
-  t.true(error instanceof TypeError)
-  t.is(
-    error?.message,
+  const expectedError = new TypeError(
     "The 'lookup' operation does not allow `path` (the prop path) to be a pipeline",
   )
+
+  assert.throws(() => lookup(props)(options)(noopNext)(state), expectedError)
 })
 
 // Tests -- reverse
 
-test('should get lookup prop in reverse', async (t) => {
+test('should get lookup prop in reverse', async () => {
   const data = { id: 'user2', name: 'User 2' }
   const state = {
     context: [],
@@ -241,10 +239,10 @@ test('should get lookup prop in reverse', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should get lookup prop on array in reverse', async (t) => {
+test('should get lookup prop on array in reverse', async () => {
   const data = [
     { id: 'user1', name: 'User 1' },
     { id: 'user2', name: 'User 2' },
@@ -262,10 +260,10 @@ test('should get lookup prop on array in reverse', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should lookup data in reverse when flipped', async (t) => {
+test('should lookup data in reverse when flipped', async () => {
   const data = {
     content: { author: 'user2' },
     related: {
@@ -290,12 +288,12 @@ test('should lookup data in reverse when flipped', async (t) => {
 
   const ret = await lookup(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- lookdown
 
-test('lookdown should get lookup prop going forward', async (t) => {
+test('lookdown should get lookup prop going forward', async () => {
   const data = { id: 'user2', name: 'User 2' }
   const state = {
     context: [],
@@ -308,10 +306,10 @@ test('lookdown should get lookup prop going forward', async (t) => {
 
   const ret = await lookdown(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('lookdown should lookup data in reverse', async (t) => {
+test('lookdown should lookup data in reverse', async () => {
   const data = {
     content: { author: 'user2' },
     related: {
@@ -334,5 +332,5 @@ test('lookdown should lookup data in reverse', async (t) => {
 
   const ret = await lookdown(props)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

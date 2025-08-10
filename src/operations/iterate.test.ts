@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import alt from './alt.js'
 import transform from './transform.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -16,7 +17,7 @@ const options = {}
 
 // Tests
 
-test('should map over a value array', async (t) => {
+test('should map over a value array', async () => {
   const def = {
     id: 'key',
     title: 'headline',
@@ -35,10 +36,10 @@ test('should map over a value array', async (t) => {
 
   const ret = await iterate(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map over non-array', async (t) => {
+test('should map over non-array', async () => {
   const def = {
     id: 'key',
     title: 'headline',
@@ -51,10 +52,10 @@ test('should map over non-array', async (t) => {
 
   const ret = await iterate(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should provide array as context', async (t) => {
+test('should provide array as context', async () => {
   const def = {
     id: 'key',
     title: 'headline',
@@ -75,10 +76,10 @@ test('should provide array as context', async (t) => {
 
   const ret = await iterate(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should provide array as context through several iterations', async (t) => {
+test('should provide array as context through several iterations', async () => {
   const def1 = {
     key: 'key',
     headline: 'key',
@@ -104,10 +105,10 @@ test('should provide array as context through several iterations', async (t) => 
   const ret1 = await iterate(def1)(options)(noopNext)(state)
   const ret2 = await iterate(def2)(options)(noopNext)(ret1)
 
-  t.deepEqual(ret2, expected)
+  assert.deepEqual(ret2, expected)
 })
 
-test('should provide array as context through double arrays', async (t) => {
+test('should provide array as context through double arrays', async () => {
   const def = {
     articles: [
       'items[]',
@@ -141,10 +142,10 @@ test('should provide array as context through double arrays', async (t) => {
 
   const ret = await iterate(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined when no def', async (t) => {
+test('should return undefined when no def', async () => {
   const def = {}
   const state = {
     context: [],
@@ -153,17 +154,17 @@ test('should return undefined when no def', async (t) => {
 
   const ret = await iterate(def)(options)(noopNext)(state)
 
-  t.is(ret.value, undefined)
+  assert.equal(ret.value, undefined)
 })
 
-test('should iterate context to support alt operation etc.', async (t) => {
+test('should iterate context to support alt operation etc.', async () => {
   const def = alt(
     // First set value for all items with key === 'ent1' ...
     transform(
       () => async (item?: unknown) =>
         item && (item as Record<string, unknown>).key === 'ent1'
           ? 'From somewhere else'
-          : undefined
+          : undefined,
     ),
     // ... then set value for all that got `undefined` from the previous transform
     transform(
@@ -172,8 +173,8 @@ test('should iterate context to support alt operation etc.', async (t) => {
           ? `${(item as Record<string, unknown>).key}: ${
               (item as Record<string, unknown>).headline
             }`
-          : ''
-    )
+          : '',
+    ),
   )
   const state = {
     context: [],
@@ -186,10 +187,10 @@ test('should iterate context to support alt operation etc.', async (t) => {
 
   const ret = await iterate(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should map over a value array in reverse', async (t) => {
+test('should map over a value array in reverse', async () => {
   const def = {
     key: 'id',
     headline: 'title',
@@ -209,5 +210,5 @@ test('should map over a value array in reverse', async (t) => {
 
   const ret = await iterate(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

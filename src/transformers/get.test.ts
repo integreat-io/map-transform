@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 
 import get from './get.js'
 
@@ -22,66 +23,66 @@ const options = {}
 
 // Test
 
-test('should return value at given path', (t) => {
+test('should return value at given path', () => {
   const path = 'meta.user'
   const expected = 'johnf'
 
   const ret = get({ path })(options)(data, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return pipeline value when no path', (t) => {
+test('should return pipeline value when no path', () => {
   const data = 'johnf'
   const expected = 'johnf'
 
   const ret = get({})(options)(data, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return undefined for unknown path', (t) => {
+test('should return undefined for unknown path', () => {
   const path = 'meta.missing'
 
   const ret = get({ path })(options)(data, state)
 
-  t.is(ret, undefined)
+  assert.equal(ret, undefined)
 })
 
-test('should return item at given array index', (t) => {
+test('should return item at given array index', () => {
   const path = '[1]'
   const expected = 'second'
 
   const ret = get({ path })(options)(arrayData, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return the last item', (t) => {
+test('should return the last item', () => {
   const path = '[-1]'
 
   const ret = get({ path })(options)(arrayData, state)
 
-  t.is(ret, 'third')
+  assert.equal(ret, 'third')
 })
 
-test('should return undefined when index is too high', (t) => {
+test('should return undefined when index is too high', () => {
   const path = '[3]'
 
   const ret = get({ path })(options)(arrayData, state)
 
-  t.is(ret, undefined)
+  assert.equal(ret, undefined)
 })
 
-test('should return undefined when data is not an array', (t) => {
+test('should return undefined when data is not an array', () => {
   const path = '[1]'
 
   const ret = get({ path })(options)(data, state)
 
-  t.is(ret, undefined)
+  assert.equal(ret, undefined)
 })
 
-test('should support root in path', (t) => {
+test('should support root in path', () => {
   const path = '^^meta.user'
   const data = { id: 'ent1', $type: 'entry' }
   const state = {
@@ -94,18 +95,15 @@ test('should support root in path', (t) => {
 
   const ret = get({ path })(options)(data, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should throw when path is a pipeline', (t) => {
+test('should throw when path is a pipeline', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const path = ['meta.user', { $transform: 'string' }] as any
-
-  const error = t.throws(() => get({ path })(options)(data, state))
-
-  t.true(error instanceof TypeError)
-  t.is(
-    error?.message,
+  const expectedError = new TypeError(
     "The 'get' transformer does not allow `path` to be a pipeline",
   )
+
+  assert.throws(() => get({ path })(options)(data, state), expectedError)
 })

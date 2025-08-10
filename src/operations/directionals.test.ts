@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { get, set } from './getSet.js'
 import pipe from './pipe.js'
 import { noopNext } from '../utils/stateHelpers.js'
@@ -22,7 +23,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should apply function when not rev', async (t) => {
+test('should apply function when not rev', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -36,10 +37,10 @@ test('should apply function when not rev', async (t) => {
 
   const ret = await fwd(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply function when rev is not specified', async (t) => {
+test('should apply function when rev is not specified', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -51,10 +52,10 @@ test('should apply function when rev is not specified', async (t) => {
 
   const ret = await fwd(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not apply function when rev', async (t) => {
+test('should not apply function when rev', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -68,10 +69,10 @@ test('should not apply function when rev', async (t) => {
 
   const ret = await fwd(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply function when not rev and flip', async (t) => {
+test('should apply function when not rev and flip', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -87,10 +88,10 @@ test('should apply function when not rev and flip', async (t) => {
 
   const ret = await fwd(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should treat string as get path in fwd', async (t) => {
+test('should treat string as get path in fwd', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: { title: 'Entry 1' },
@@ -100,10 +101,10 @@ test('should treat string as get path in fwd', async (t) => {
 
   const ret = await fwd('title')(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
-test('should apply in pipe', async (t) => {
+test('should apply in pipe', async () => {
   const def = [fwd(get('title')), fwd(set('heading'))]
   const state = {
     context: [],
@@ -118,12 +119,12 @@ test('should apply in pipe', async (t) => {
 
   const ret = await pipe(def)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- reverse
 
-test('should apply function when rev', async (t) => {
+test('should apply function when rev', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -137,10 +138,10 @@ test('should apply function when rev', async (t) => {
 
   const ret = await rev(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not apply function when fwd', async (t) => {
+test('should not apply function when fwd', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -154,10 +155,10 @@ test('should not apply function when fwd', async (t) => {
 
   const ret = await rev(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply function when rev even with flip', async (t) => {
+test('should apply function when rev even with flip', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -173,10 +174,10 @@ test('should apply function when rev even with flip', async (t) => {
 
   const ret = await rev(upper)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should treat string as get path in rev', async (t) => {
+test('should treat string as get path in rev', async () => {
   const state = {
     context: [],
     value: 'Entry 1',
@@ -186,12 +187,12 @@ test('should treat string as get path in rev', async (t) => {
 
   const ret = await rev('title')(options)(noopNext)(state)
 
-  t.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(ret.value, expectedValue)
 })
 
 // Tests -- divide
 
-test('should apply first function when not rev', async (t) => {
+test('should apply first function when not rev', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -205,10 +206,10 @@ test('should apply first function when not rev', async (t) => {
 
   const ret = await divide(upper, noop)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply second function when rev', async (t) => {
+test('should apply second function when rev', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -222,10 +223,10 @@ test('should apply second function when rev', async (t) => {
 
   const ret = await divide(upper, noop)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should apply first function when not rev even with flip', async (t) => {
+test('should apply first function when not rev even with flip', async () => {
   const state = {
     context: [{ title: 'Entry 1' }],
     value: 'Entry 1',
@@ -241,10 +242,10 @@ test('should apply first function when not rev even with flip', async (t) => {
 
   const ret = await divide(upper, noop)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should honor flip when told to', async (t) => {
+test('should honor flip when told to', async () => {
   const honorFlip = true
   const state = {
     context: [{ title: 'Entry 1' }],
@@ -261,5 +262,5 @@ test('should honor flip when told to', async (t) => {
 
   const ret = await divide(upper, noop, honorFlip)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

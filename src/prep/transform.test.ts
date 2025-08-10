@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
 import type { Options, State } from '../types.js'
 
@@ -30,7 +31,7 @@ const options = {
 
 // Tests
 
-test('should prepare transform operation', (t) => {
+test('should prepare transform operation', () => {
   const def = {
     $transform: 'uppercase',
   }
@@ -38,10 +39,10 @@ test('should prepare transform operation', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should prepare transform operation with symbol as key', (t) => {
+test('should prepare transform operation with symbol as key', () => {
   const def = {
     $transform: Symbol.for('uppercase'),
   }
@@ -49,10 +50,10 @@ test('should prepare transform operation with symbol as key', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass props to transformer', (t) => {
+test('should pass props to transformer', () => {
   const def = {
     $transform: 'upperOrLower',
     case: 'lower', // This should give us the lowercase transformer
@@ -61,10 +62,10 @@ test('should pass props to transformer', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not pass operation props to transformer', (t) => {
+test('should not pass operation props to transformer', () => {
   const def = {
     $transform: 'upperOrLower',
     $iterate: true, // Should not be passed on
@@ -74,20 +75,20 @@ test('should not pass operation props to transformer', (t) => {
 
   const ret = preparePipeline(def, options)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should pass options to transformer', (t) => {
+test('should pass options to transformer', () => {
   const def = { $transform: 'lowerIfAlias' }
   const optionsWithFwdAlias = { ...options, fwdAlias: 'from' } // Setting fwdAlias will give use the lowercase transformer in this weird test case
   const expected = [{ type: 'transform', fn: lowercaseFn }]
 
   const ret = preparePipeline(def, optionsWithFwdAlias)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support transformer function being given directly on $transform', (t) => {
+test('should support transformer function being given directly on $transform', () => {
   const def = {
     $transform: lowerIfAlias(), // We call the function here to get rid of the first level function level
   }
@@ -96,59 +97,50 @@ test('should support transformer function being given directly on $transform', (
 
   const ret = preparePipeline(def, optionsWithFwdAlias)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should throw for unknown transformer function', (t) => {
+test('should throw for unknown transformer function', () => {
   const def = {
     $transform: 'unknown',
   }
-
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(
-    error.message,
+  const expectedError = new Error(
     "Transformer 'unknown' was not found for transform operation",
   )
+
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })
 
-test('should throw when no transformers', (t) => {
+test('should throw when no transformers', () => {
   const def = {
     $transform: 'uppercase',
   }
   const options = {} // No transformers
-
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(
-    error.message,
+  const expectedError = new Error(
     "Transformer 'uppercase' was not found for transform operation. No transformers",
   )
+
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })
 
-test('should throw when no transformer id', (t) => {
+test('should throw when no transformer id', () => {
   const def = {
     $transform: '',
   }
+  const expectedError = new Error(
+    'Transform operation is missing transformer id',
+  )
 
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(error.message, 'Transform operation is missing transformer id')
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })
 
-test('should throw when transformer id is not a string', (t) => {
+test('should throw when transformer id is not a string', () => {
   const def = {
     $transform: { id: 'what?' },
   }
-
-  const error = t.throws(() => preparePipeline(def, options))
-
-  t.true(error instanceof Error)
-  t.is(
-    error.message,
+  const expectedError = new Error(
     'Transform operation was given a transformer id that is not a string or symbol',
   )
+
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })

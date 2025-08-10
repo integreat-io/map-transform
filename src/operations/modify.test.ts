@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import { noopNext } from '../utils/stateHelpers.js'
 
 import modify from './modify.js'
@@ -9,7 +10,7 @@ const options = {}
 
 // Tests -- forward
 
-test('should shallow merge object from pipeline with target', async (t) => {
+test('should shallow merge object from pipeline with target', async () => {
   const pipeline = 'data.personal'
   const state = {
     context: [],
@@ -25,10 +26,10 @@ test('should shallow merge object from pipeline with target', async (t) => {
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should shallow merge objects flipped and in reverse', async (t) => {
+test('should shallow merge objects flipped and in reverse', async () => {
   const pipeline = 'data.personal'
   const state = {
     context: [],
@@ -46,10 +47,10 @@ test('should shallow merge objects flipped and in reverse', async (t) => {
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should support pipeline more complex than path', async (t) => {
+test('should support pipeline more complex than path', async () => {
   const pipeline = { id: 'data.personal.id' }
   const state = {
     context: [],
@@ -65,10 +66,10 @@ test('should support pipeline more complex than path', async (t) => {
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not merge when pipeline yields non-object', async (t) => {
+test('should not merge when pipeline yields non-object', async () => {
   const pipeline = 'data.value'
   const state = {
     context: [],
@@ -82,10 +83,10 @@ test('should not merge when pipeline yields non-object', async (t) => {
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should use value when target is undefined', async (t) => {
+test('should use value when target is undefined', async () => {
   const pipeline = 'data.personal'
   const state = {
     context: [],
@@ -101,10 +102,10 @@ test('should use value when target is undefined', async (t) => {
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not merge when value is a non-object', async (t) => {
+test('should not merge when value is a non-object', async () => {
   const pipeline = 'data'
   const state = {
     context: [],
@@ -118,10 +119,10 @@ test('should not merge when value is a non-object', async (t) => {
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should not mutate undefined', async (t) => {
+test('should not mutate undefined', async () => {
   const pipeline = { data: '.' }
   const value = undefined
   const state = {
@@ -135,10 +136,10 @@ test('should not mutate undefined', async (t) => {
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined for null when included in nonvalues', async (t) => {
+test('should return undefined for null when included in nonvalues', async () => {
   const optionsWithNullAsNone = { ...options, nonvalues: [undefined, null] }
   const pipeline = { data: '.' }
   const value = null
@@ -153,12 +154,12 @@ test('should return undefined for null when included in nonvalues', async (t) =>
 
   const ret = await modify(pipeline)(optionsWithNullAsNone)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- reverse
 
-test('should shallow merge objects in reverse', async (t) => {
+test('should shallow merge objects in reverse', async () => {
   const pipeline = 'data.personal'
   const state = {
     context: [],
@@ -175,5 +176,5 @@ test('should shallow merge objects in reverse', async (t) => {
 
   const ret = await modify(pipeline)(options)(noopNext)(state)
 
-  t.deepEqual(ret, expected)
+  assert.deepEqual(ret, expected)
 })

@@ -1,4 +1,5 @@
-import test from 'ava'
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import State from '../state.js'
 
 import { not, notAsync } from './notNext.js'
@@ -10,53 +11,53 @@ const state = new State()
 
 // Tests
 
-test('should return true for false', (t) => {
+test('should return true for false', () => {
   const value = false
   const expected = true
 
   const ret = not({})(options)(value, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return false for true', (t) => {
+test('should return false for true', () => {
   const value = true
   const expected = false
 
   const ret = not({})(options)(value, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return true for falsy', (t) => {
+test('should return true for falsy', () => {
   const value = null
   const expected = true
 
   const ret = not({})(options)(value, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should return false for truthy', (t) => {
+test('should return false for truthy', () => {
   const value = 'true'
   const expected = false
 
   const ret = not({})(options)(value, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should get value from pipeline', (t) => {
+test('should get value from pipeline', () => {
   const value = { visible: false }
   const path = 'visible'
   const expected = true
 
   const ret = not({ path })(options)(value, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })
 
-test('should get value from async pipeline', async (t) => {
+test('should get value from async pipeline', async () => {
   const isFalse = async () => false
   const value = { id: 'ent1' }
   const path = [{ $transform: 'isFalse' }]
@@ -65,5 +66,5 @@ test('should get value from async pipeline', async (t) => {
 
   const ret = await notAsync({ path })(options)(value, state)
 
-  t.is(ret, expected)
+  assert.equal(ret, expected)
 })

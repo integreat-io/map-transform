@@ -118,6 +118,14 @@ function createOperation<U extends OperationObject>(
   options: Options,
 ): NextStateMapper {
   const { [fnProp]: fnId, ...props } = def
+  if (typeof fnId === 'function') {
+    return wrapFromDefinition(
+      operationFn(fnId as DataMapperWithOptions | AsyncDataMapperWithOptions), // We can only trust that the function has the right signature
+      def,
+      options,
+    )
+  }
+
   if (typeof fnId !== 'string' && typeof fnId !== 'symbol') {
     throw new Error(
       `${humanizeOperatorName(

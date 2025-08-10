@@ -3,7 +3,6 @@ import { escapeValue, unescapeValue } from '../utils/escape.js'
 import type {
   Dictionary,
   DictionaryValue,
-  Dictionaries,
   TransformerProps,
   Transformer,
 } from '../types.js'
@@ -44,7 +43,7 @@ function translate(data: unknown, dictionary: Dictionary, rev: boolean) {
 
 function extractDictionary(
   dictionary?: Dictionary | string,
-  dictionaries?: Dictionaries,
+  dictionaries?: Record<string, Dictionary>,
 ) {
   if (typeof dictionary === 'string') {
     return dictionaries && dictionaries[dictionary] // eslint-disable-line security/detect-object-injection

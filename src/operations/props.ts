@@ -10,7 +10,6 @@ import {
   setTargetOnState,
   setValueFromState,
   isNonvalueState,
-  stopIteration,
 } from '../utils/stateHelpers.js'
 import {
   isTransformObject,
@@ -54,20 +53,20 @@ function isPathWithModify(pipeline: unknown) {
 // `$modify` path in the pipeline, in which case it won't do anything anyway, so
 // we remove it.
 function isRegularProp(
-  entry: [string, unknown]
+  entry: [string, unknown],
 ): entry is [string, TransformDefinition] {
   const [prop, pipeline] = entry
   return (
-    (prop[0] !== '$' ||
-      (isPathWithModify(prop) && !isPathWithModify(pipeline))) &&
+    (prop[0] !== '$' || (pathHasModify(prop) && !isPathWithModify(pipeline))) &&
     isTransformDefinition(pipeline)
   )
 }
 
 // Sort props and pipelines with a $modify path last
+// TODO: Do we have to sort all props to put $modify last?
 function sortProps(
   [aProp, aPipeline]: [string, unknown],
-  [bProp, bPipeline]: [string, unknown]
+  [bProp, bPipeline]: [string, unknown],
 ) {
   const aIsModify = isPathWithModify(aProp) || isPathWithModify(aPipeline)
   const bIsModify = isPathWithModify(bProp) || isPathWithModify(bPipeline)
@@ -77,7 +76,7 @@ function sortProps(
 const checkDirection = (
   requiredDirection: unknown,
   directionKeyword: string,
-  directionAlias?: string
+  directionAlias?: string,
 ) =>
   requiredDirection === directionKeyword ||
   (directionAlias && requiredDirection === directionAlias)
@@ -86,8 +85,8 @@ const resolveDirection = (direction: unknown, options: Options) =>
   checkDirection(direction, 'rev', options.revAlias)
     ? true
     : checkDirection(direction, 'fwd', options.fwdAlias)
-    ? false
-    : undefined
+      ? false
+      : undefined
 
 // Wraps the given operation in `fwd` or `rev` if a direction is specified.
 function wrapInDirectional(operation: Operation, direction: unknown) {
@@ -156,7 +155,7 @@ function removeSlash(prop: string) {
 function createDirectionalOperation(
   pipeline: Pipeline,
   onlyFwd: boolean,
-  onlyRev: boolean
+  onlyRev: boolean,
 ) {
   if (onlyRev && onlyFwd) {
     return undefined // Don't run anything when both directions are disabled
@@ -169,18 +168,21 @@ function createDirectionalOperation(
   }
 }
 
+// NOTE: We mutate the state here to not create too many objects
+function setIterate(transformObject: TransformObject) {
+  transformObject.$iterate = true
+  return transformObject
+}
+
 const createSetPipeline = (options: Options) =>
   function createSetPipeline([prop, pipeline]: [string, TransformDefinition]):
-    | Operation
+    | NextStateMapper
     | undefined {
     // Adjust sub map object
     if (isTransformObject(pipeline)) {
       pipeline = [
         rev(mergeTargetAndValueOperation), // This will make sure the result of this pipeline is merged with the target in reverse
-        {
-          ...pipeline,
-          $iterate: pipeline.$iterate || isArr(prop),
-        },
+        isArr(prop) ? setIterate(pipeline) : pipeline,
       ]
     }
 
@@ -192,13 +194,14 @@ const createSetPipeline = (options: Options) =>
 
     // Prepare the operations and return as an operation
     const operations = [defToOperation(pipeline, options), set(unslashedProp)] // `pipeline` should not be flattened out with the `set`, to avoid destroying iteration logic
-    return createDirectionalOperation(operations, onlyFwd, onlyRev)
+    const operation = createDirectionalOperation(operations, onlyFwd, onlyRev)
+    return operation ? operation(options) : undefined
   }
 
 const runOperations =
-  (stateMappers: NextStateMapper[], options: Options) =>
+  (stateMappers: NextStateMapper[], nonvalues?: unknown[]) =>
   async (state: State) => {
-    if (isNonvalueState(state, options.nonvalues)) {
+    if (isNonvalueState(state, nonvalues)) {
       return state
     } else {
       const run = runOperationWithOriginalValue(state)
@@ -210,11 +213,16 @@ const runOperations =
     }
   }
 
-const setStateProps = (state: State, noDefaults?: boolean, flip?: boolean) => ({
+const overrideStateProps = (
+  state: State,
+  noDefaults?: boolean,
+  flip?: boolean,
+) => ({
   ...state,
   noDefaults: noDefaults || state.noDefaults || false,
   flip: flip || state.flip || false,
   target: undefined,
+  iterate: false,
 })
 
 const fixModifyPath = (def: TransformObject) =>
@@ -226,7 +234,33 @@ const createStateMappers = (def: TransformObject, options: Options) =>
     .sort(sortProps)
     .map(createSetPipeline(options))
     .filter(isNotNullOrUndefined)
-    .map((fn) => fn(options))
+
+function createNextStateMapper(
+  run: StateMapper,
+  nonvalues?: unknown[],
+  noDefaults = false,
+  flip = false,
+) {
+  return (next: StateMapper) => {
+    return async function doMutate(state: State) {
+      const nextState = await next(state)
+
+      // Don't touch state if its value is a nonvalue
+      if (isNonvalueState(nextState, nonvalues)) {
+        return nextState
+      }
+
+      // Override some state props and set defaults
+      const propsState = overrideStateProps(nextState, noDefaults, flip)
+
+      // Run the props operations
+      const thisState = await run(propsState)
+
+      // Set the value, but keep the target
+      return setValueFromState(nextState, thisState)
+    }
+  }
+}
 
 // Prepare one operation that will run all the prop pipelines
 function prepareOperation(def: TransformObject): Operation {
@@ -241,31 +275,16 @@ function prepareOperation(def: TransformObject): Operation {
     }
 
     // Prepare operations runner
-    const run = runOperations(nextStateMappers, options)
+    const run = runOperations(nextStateMappers, options.nonvalues)
     const runWithIterateWhenNeeded =
       def.$iterate === true ? iterate(() => () => run)(options)(noopNext) : run
 
-    return (next) => {
-      return async function doMutate(state) {
-        const nextState = await next(state)
-
-        // Don't touch state if its value is a nonvalue
-        if (isNonvalueState(nextState, options.nonvalues)) {
-          return nextState
-        }
-
-        // Don't pass on iteration to props
-        const propsState = stopIteration(
-          setStateProps(nextState, def.$noDefaults, def.$flip)
-        )
-
-        // Run the props operations
-        const thisState = await runWithIterateWhenNeeded(propsState)
-
-        // Set the value, but keep the target
-        return setValueFromState(nextState, thisState)
-      }
-    }
+    return createNextStateMapper(
+      runWithIterateWhenNeeded,
+      options.nonvalues,
+      def.$noDefaults,
+      def.$flip,
+    )
   }
 }
 

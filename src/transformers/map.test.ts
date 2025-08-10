@@ -70,6 +70,22 @@ test('should map in reverse', async (t) => {
   t.is(await mapping('shilling', stateRev), undefined)
 })
 
+test('should flipt the direction of map going forward', async (t) => {
+  const mapping = map({ dictionary: simple, flip: true })(options)
+
+  t.is(await mapping('stripe', state), '1')
+  t.is(await mapping('paypal', state), '2')
+  t.is(await mapping('shilling', state), undefined)
+})
+
+test('should flip the direction of map in reverse', async (t) => {
+  const mapping = map({ dictionary: simple, flip: true })(options)
+
+  t.is(await mapping('1', stateRev), 'stripe')
+  t.is(await mapping('2', stateRev), 'paypal')
+  t.is(await mapping('0', stateRev), undefined)
+})
+
 test('should map with several alternatives and defaults', async (t) => {
   const mapping = map({ dictionary: complex })(options)
 

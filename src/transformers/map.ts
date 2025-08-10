@@ -7,9 +7,11 @@ import type {
   TransformerProps,
   Transformer,
 } from '../types.js'
+import xor from '../utils/xor.js'
 
 export interface Props extends TransformerProps {
   dictionary?: Dictionary | string
+  flip?: boolean
 }
 
 const isSupportedValue = (data: unknown): data is DictionaryValue =>
@@ -20,7 +22,7 @@ const isSupportedValue = (data: unknown): data is DictionaryValue =>
 function findFirstMatch(
   value: DictionaryValue,
   dictionary: Dictionary,
-  direction: 0 | 1
+  direction: 0 | 1,
 ) {
   // eslint-disable-next-line security/detect-object-injection
   const match = dictionary.find((dict) => dict[direction] === value)
@@ -42,7 +44,7 @@ function translate(data: unknown, dictionary: Dictionary, rev: boolean) {
 
 function extractDictionary(
   dictionary?: Dictionary | string,
-  dictionaries?: Dictionaries
+  dictionaries?: Dictionaries,
 ) {
   if (typeof dictionary === 'string') {
     return dictionaries && dictionaries[dictionary] // eslint-disable-line security/detect-object-injection
@@ -59,13 +61,13 @@ const escapeDictionary = (dictionary?: Dictionary): Dictionary | undefined =>
 const transformer: Transformer<Props> = function map(props) {
   return (options) => {
     const dictionary = escapeDictionary(
-      extractDictionary(props.dictionary, options && options.dictionaries)
+      extractDictionary(props.dictionary, options && options.dictionaries),
     )
     if (!dictionary) {
       return () => undefined
     }
     return (data, state) => {
-      const { rev = false } = state
+      const rev = xor(state.rev, props.flip)
       const match = translate(escapeValue(data), dictionary, rev)
       return match === '*' ? data : unescapeValue(match)
     }

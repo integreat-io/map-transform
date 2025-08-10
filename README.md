@@ -1781,6 +1781,11 @@ const def28b = {
 const mapper = mapTransform(def28b, options)
 ```
 
+You may also provide a `flip` property on the operation object, and when set to
+`true`, it will use the dictionary in the opposite direction. This means that
+if may e.g. use a dictionary in reverse, as if you were going forward. The
+default value is `false`.
+
 #### `merge({path})` transformer
 
 The `merge` transformer accepts a pipeline or an array of pipelines in `path`,

@@ -1,5 +1,6 @@
 import prepareAltStep from './alt.js'
 import prepareApplyStep from './apply.js'
+import prepareArrayStep from './array.js'
 import prepareFilterStep from './filter.js'
 import prepareIfStep from './if.js'
 import prepareMutationStep from './mutation.js'
@@ -13,6 +14,7 @@ import type {
   Path,
   AltOperationNext as AltOperation,
   ApplyOperation,
+  ArrayOperationNext as ArrayOperation,
   FilterOperation,
   IfOperationNext as IfOperation,
   TransformOperation,
@@ -26,6 +28,7 @@ import type {
 export type OperationObject =
   | AltOperation
   | ApplyOperation
+  | ArrayOperation
   | FilterOperation
   | IfOperation
   | TransformOperation
@@ -53,6 +56,8 @@ const isAltOperation = (step: ObjectStep): step is AltOperation =>
   Object.prototype.hasOwnProperty.call(step, '$alt')
 const isApplyOperation = (step: ObjectStep): step is ApplyOperation =>
   Object.prototype.hasOwnProperty.call(step, '$apply')
+const isArrayOperation = (step: ObjectStep): step is ArrayOperation =>
+  Object.prototype.hasOwnProperty.call(step, '$array')
 const isFilterOperation = (step: ObjectStep): step is FilterOperation =>
   Object.prototype.hasOwnProperty.call(step, '$filter')
 const isIfOperation = (step: ObjectStep): step is IfOperation =>
@@ -138,6 +143,9 @@ function prepareOperation(operation: ObjectStep, options: Options) {
   } else if (isAltOperation(operation)) {
     // An alt operation
     return prepareAltStep(operation, options)
+  } else if (isArrayOperation(operation)) {
+    // An array operation
+    return prepareArrayStep(operation, options)
   } else if (isIfOperation(operation)) {
     // An if operation
     return prepareIfStep(operation, options)

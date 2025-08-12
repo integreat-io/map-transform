@@ -484,3 +484,66 @@ test('should not hijack array', async () => {
 
   assert.deepEqual(ret, expected)
 })
+
+test('should create an array with the array operation', async () => {
+  const def = {
+    $array: [
+      'content.articles[0].heading',
+      'content.articles[1].subheading',
+      { $value: 'What?' },
+    ],
+  }
+  const data = {
+    content: {
+      articles: [
+        { heading: 'Heading 1', subheading: 'Sub 1' },
+        { heading: 'Heading 2', subheading: 'Sub 2' },
+      ],
+    },
+  }
+  const expected = ['Heading 1', 'Sub 2', 'What?']
+
+  const ret = await mapTransform(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should recreate the original object as far as possible with the array operation in reverse', async () => {
+  const def = {
+    $array: ['content.articles[0].heading', 'content.articles[1].subheading'],
+  }
+  const data = ['Heading 1', 'Sub 2']
+  const expected = {
+    content: {
+      articles: [{ heading: 'Heading 1' }, { subheading: 'Sub 2' }],
+    },
+  }
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should create an array with the array operation when flipped in rev', async () => {
+  const def = {
+    $array: [
+      'content.articles[0].heading',
+      'content.articles[1].subheading',
+      { $value: 'What?' },
+    ],
+    $flip: true,
+  }
+  const data = {
+    content: {
+      articles: [
+        { heading: 'Heading 1', subheading: 'Sub 1' },
+        { heading: 'Heading 2', subheading: 'Sub 2' },
+      ],
+    },
+  }
+  const expected = ['Heading 1', 'Sub 2', 'What?']
+
+  const ret = await mapTransform(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})

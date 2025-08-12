@@ -1179,6 +1179,37 @@ const def = {
 }
 ```
 
+#### `array` operation
+
+The `array` operation will run all the pipelines it's given, and return an array
+of the values returned from each of them. The values are kept in the same
+position as the pipeline that returned them, and `undefined` values are also
+kept in place.
+
+```javascript
+const def = {
+  $array: [
+    'path.into.data',
+    ['name', { $transform: 'trim' }],
+    { $value: 'A set value' },
+  ],
+}
+```
+
+If there are no pipelines, the operation will return an empty array.
+
+The `array` operation also supports `$iterate` and `$direction`.
+
+When going in reverse, the array operation will run each pipeline in reverse
+on the item in the array matching the position of the pipeline. The result of
+a pipeline will be given to the next as a target. This is the closest we can
+get to recreating the original data.
+
+To reverse the direction, so that we create an array in reverse mode, set
+`$flip: true` on the operation object.
+
+There is no related operation function.
+
 #### `concat` operation
 
 The `concat` operation will flatten the result of every pipeline it is given
@@ -2083,7 +2114,8 @@ For example:
 ```javascript
 import mapTransform from 'map-transform'
 
-const createUsername = () => () => (name) => name.replace(/\s+/, '.').toLowerCase()
+const createUsername = () => () => (name) =>
+  name.replace(/\s+/, '.').toLowerCase()
 const options = { transformers: { createUsername } }
 
 const def = [
@@ -2162,7 +2194,7 @@ const def = {
 
 The flipped definition is (in this case) easier to read.
 
-Note also the `'none/1'` property in the unflipped version,  will stop this
+Note also the `'none/1'` property in the unflipped version, will stop this
 property from being set when going forward. This is not necessary on the flipped
 definition, but also results in a definition that will not work as expected
 going forward. This is a weakness in how MapTransform treats pipelines right

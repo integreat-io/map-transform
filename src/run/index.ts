@@ -1,14 +1,15 @@
-import State, { InitialState } from '../state.js'
-import runAltStep, { runAltStepAsync, AltStep } from './alt.js'
-import runApplyStep, { runApplyStepAsync, ApplyStep } from './apply.js'
-import runFilterStep, { runFilterStepAsync, FilterStep } from './filter.js'
-import runIfStep, { runIfStepAsync, IfStep } from './if.js'
+import State, { type InitialState } from '../state.js'
+import runAltStep, { runAltStepAsync, type AltStep } from './alt.js'
+import runApplyStep, { runApplyStepAsync, type ApplyStep } from './apply.js'
+import runArrayStep, { runArrayStepAsync, type ArrayStep } from './array.js'
+import runFilterStep, { runFilterStepAsync, type FilterStep } from './filter.js'
+import runIfStep, { runIfStepAsync, type IfStep } from './if.js'
 import runMutationStep, {
   runMutationStepAsync,
-  MutationStep,
+  type MutationStep,
 } from './mutation.js'
-import runTransformStep, { TransformStep } from './transform.js'
-import runValueStep, { ValueStep } from './value.js'
+import runTransformStep, { type TransformStep } from './transform.js'
+import runValueStep, { type ValueStep } from './value.js'
 import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
@@ -44,6 +45,7 @@ type StepFunctions = {
 const syncStepFunctions: StepFunctions = {
   alt: runAltStep,
   apply: runApplyStep,
+  array: runArrayStep,
   filter: runFilterStep,
   if: runIfStep,
   mutation: runMutationStep,
@@ -54,6 +56,7 @@ const syncStepFunctions: StepFunctions = {
 const asyncStepFunctions: StepFunctions = {
   alt: runAltStepAsync,
   apply: runApplyStepAsync,
+  array: runArrayStepAsync,
   filter: runFilterStepAsync,
   if: runIfStepAsync,
   mutation: runMutationStepAsync,
@@ -64,6 +67,7 @@ const asyncStepFunctions: StepFunctions = {
 export type OperationStep =
   | AltStep
   | ApplyStep
+  | ArrayStep
   | FilterStep
   | IfStep
   | MutationStep

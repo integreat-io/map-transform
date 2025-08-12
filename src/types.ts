@@ -148,6 +148,20 @@ export interface AltOperationNext extends AltOperation {
   $alt: TransformDefinitionNext[]
 }
 
+export interface ArrayOperation extends TransformerProps {
+  $array: TransformDefinition[]
+  $iterate?: boolean
+  $direction?: string
+  $flip?: boolean
+}
+
+export interface ArrayOperationNext extends TransformerProps {
+  $array: TransformDefinitionNext[]
+  $iterate?: boolean
+  $direction?: string
+  $flip?: boolean
+}
+
 export interface ConcatOperation extends TransformerProps {
   $concat: TransformDefinition[]
 }
@@ -173,6 +187,7 @@ export type OperationObject =
   | IfOperation
   | ApplyOperation
   | AltOperation
+  | ArrayOperation
   | ConcatOperation
   | ConcatRevOperation
   | LookupOperation

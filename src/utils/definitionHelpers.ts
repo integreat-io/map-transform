@@ -8,8 +8,9 @@ import iterate from '../operations/iterate.js'
 import transform from '../operations/transform.js'
 import filter from '../operations/filter.js'
 import ifelse from '../operations/ifelse.js'
-import apply from '../operations/apply.js'
 import alt from '../operations/alt.js'
+import apply from '../operations/apply.js'
+import array from '../operations/array.js'
 import { fwd, rev } from '../operations/directionals.js'
 import { concat, concatRev } from '../operations/concat.js'
 import { lookup, lookdown, Props as LookupProps } from '../operations/lookup.js'
@@ -27,8 +28,9 @@ import type {
   TransformOperation,
   FilterOperation,
   IfOperation,
-  ApplyOperation,
   AltOperation,
+  ApplyOperation,
+  ArrayOperation,
   ConcatOperation,
   ConcatRevOperation,
   LookupOperation,
@@ -178,6 +180,16 @@ const createAltOperation = (
     : passStateThroughNext
 }
 
+const createArrayOperation = (
+  def: ArrayOperation,
+  options: Options,
+): NextStateMapper => {
+  const { $array: pipelines, $flip: flip } = def
+  return Array.isArray(pipelines)
+    ? wrapFromDefinition(array({ pipelines, flip }), def, options)
+    : passStateThroughNext
+}
+
 function createIfOperation(
   def: IfOperation,
   options: Options,
@@ -231,10 +243,12 @@ function nextStateMapperFromObject(
       return createFilterOperation(def, options)
     } else if (isOperationType<IfOperation>(def, '$if')) {
       return createIfOperation(def, options)
-    } else if (isOperationType<ApplyOperation>(def, '$apply')) {
-      return createApplyOperation(def, options)
     } else if (isOperationType<AltOperation>(def, '$alt')) {
       return createAltOperation(def, options)
+    } else if (isOperationType<ApplyOperation>(def, '$apply')) {
+      return createApplyOperation(def, options)
+    } else if (isOperationType<ArrayOperation>(def, '$array')) {
+      return createArrayOperation(def, options)
     } else if (isOperationType<ConcatOperation>(def, '$concat')) {
       return createConcatOperation(concat, def.$concat, options)
     } else if (isOperationType<ConcatRevOperation>(def, '$concatRev')) {

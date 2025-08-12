@@ -960,6 +960,51 @@ test('should not iterate when $iterate is not set', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should not iterate a pipeline by default after a path with bracket notation', () => {
+  const def = {
+    articles: ['data[]', { title: 'content.heading' }],
+  }
+  const data = {
+    data: [
+      { content: { heading: 'Heading 1' } },
+      { content: { heading: 'Heading 2' } },
+    ],
+  }
+  const expected = {
+    articles: { title: ['Heading 1', 'Heading 2'] },
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should not iterate rest of pipeline after one iterating step', () => {
+  const def = {
+    'articles[]': [
+      { $iterate: true, title: 'content.heading' },
+      {
+        $filter: 'compare',
+        path: 'title',
+        not: true,
+        match: 'Heading 2',
+      },
+    ],
+  }
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } },
+    { content: { heading: 'Heading 3' } },
+  ]
+  const expected = {
+    articles: [{ title: 'Heading 1' }, { title: 'Heading 3' }],
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should shallow merge (modify) original object with transformed object', () => {
   const def = {
     article: {

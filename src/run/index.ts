@@ -84,17 +84,21 @@ export interface PreppedOptions {
 const isOperationObject = (step: PreppedStep): step is OperationStep =>
   isObject(step) && typeof step.type === 'string'
 
-// Return true if the given pipeline has one or more set steps. We take into
-// account whether we are going forward or in reverse.
+/**
+ * Return true if the given pipeline has one or more set steps. We take into
+ * account whether we are going forward or in reverse.
+ */
 const hasSetSteps = (pipeline: PreppedPipeline, isRev: boolean) =>
   pipeline.some(
     (step) => typeof step === 'string' && xor(step.startsWith('>'), isRev),
   )
 
-// Return true if the step should be run based on the direction set on the
-// operation object. If `dir` is negative, it should only be run in reverse, if
-// it's positive, it should only be run when we're going forward. `0` or
-// `undefined` means it may be run in both directions.
+/**
+ * Return true if the step should be run based on the direction set on the
+ * operation object. If `dir` is negative, it should only be run in reverse, if
+ * it's positive, it should only be run when we're going forward. `0` or
+ * `undefined` means it may be run in both directions.
+ */
 const shouldRun = (step: OperationStep, isRev: boolean) =>
   step.dir && typeof step.dir === 'number'
     ? step.dir < 0
@@ -102,12 +106,18 @@ const shouldRun = (step: OperationStep, isRev: boolean) =>
       : !isRev
     : true
 
+/**
+ * Return `true` if the step has the `it` flag set to `true` (meaning that the
+ * original definition had `$iterate: true`) or the value is an array.
+ */
 const shouldIterate = (
   value: unknown,
   step: OperationStep,
 ): value is unknown[] => !!step.it && Array.isArray(value)
 
-// Pick the right step runner based on the step type.
+/**
+ *  Pick the right step runner based on the step type.
+ */
 function getRunnerForStep(step: OperationStep, stepFunctions: StepFunctions) {
   const stepFunction = stepFunctions[step.type] as StepFunction<typeof step>
   if (stepFunction) {
@@ -117,10 +127,12 @@ function getRunnerForStep(step: OperationStep, stepFunctions: StepFunctions) {
   }
 }
 
-// Prepare state before handing it off to a step. If `nonvalues` is an array or
-// `noDefaults` is set`, we'll clone the state, giving it the nonvalues, and
-// making sure we provide the same context (no cloning). Otherwise, we'll reuse
-// the state and just set the value.
+/**
+ * Prepare state before handing it off to a step. If `nonvalues` is an array or
+ * `noDefaults` is set`, we'll clone the state, giving it the nonvalues, and
+ * making sure we provide the same context (no cloning). Otherwise, we'll reuse
+ * the state and just set the value.
+ */
 function handOffState(
   state: State,
   value: unknown,
@@ -148,8 +160,10 @@ function handOffState(
   }
 }
 
-// Calls the given operation runner. The state is updated with the value and
-// potentially any `nonvalues` provided on the step, and `index`.
+/**
+ * Call the given operation runner. The state is updated with the value and
+ * potentially any `nonvalues` provided on the step, and `index`.
+ */
 const runStep = (
   runner: StepFunction<OperationStep>,
   value: unknown,

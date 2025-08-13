@@ -205,9 +205,9 @@ const createSetPipeline = (options: Options) =>
   }
 
 const runOperations =
-  (stateMappers: StateMapper[], nonvalues?: unknown[]) =>
+  (stateMappers: StateMapper[], nonvalues?: unknown[], always = false) =>
   async (state: State) => {
-    if (isNonvalueState(state, nonvalues)) {
+    if (!always && isNonvalueState(state, nonvalues)) {
       return state
     } else {
       const run = runOperationWithOriginalValue(state)
@@ -244,17 +244,11 @@ const createStateMappers = (def: TransformObject, options: Options) =>
 function createStateMapper(
   next: StateMapper,
   run: StateMapper,
-  nonvalues?: unknown[],
   noDefaults = false,
   flip = false,
 ) {
   return async function doMutate(state: State) {
     const nextState = await next(state)
-
-    // Don't touch state if its value is a nonvalue
-    if (isNonvalueState(nextState, nonvalues)) {
-      return nextState
-    }
 
     // Override some state props and set defaults
     const propsState = overrideStateProps(nextState, noDefaults, flip)
@@ -285,6 +279,7 @@ function prepareOperation(def: TransformObject): Operation {
       const run = runOperations(
         nextStateMappers.map((fn) => fn(noopNext)),
         options.nonvalues,
+        def.$alwaysApply,
       )
       const runWithIterateWhenNeeded =
         def.$iterate === true
@@ -294,7 +289,6 @@ function prepareOperation(def: TransformObject): Operation {
       return createStateMapper(
         next,
         runWithIterateWhenNeeded,
-        options.nonvalues,
         def.$noDefaults,
         def.$flip,
       )

@@ -325,6 +325,28 @@ test('should pass on $iterate', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should pass on $alwaysApply', () => {
+  const def = {
+    $alwaysApply: true,
+    id: 'key',
+    title: 'name',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      always: true,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
 // TODO: Do we really need to set this, or is it handled by the presence of the
 // array bracket step?
 test('should iterate sub-objects on array path', () => {

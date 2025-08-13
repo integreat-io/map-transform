@@ -654,22 +654,58 @@ test('should spread array to mapping objects', async () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should map undefined to undefined', async () => {
+test('should skip mutation object for undefined ', async () => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
   const data = { items: undefined }
+  const expected = undefined
 
   const ret = await mapTransform(def)(data)
 
-  assert.equal(ret, undefined)
+  assert.equal(ret, expected)
 })
 
-test('should treat nonvalues as undefined', async () => {
+test('should skip mutation object for non-value', async () => {
   const def = ['items', { attributes: { title: 'content.heading' } }]
+  const options = { nonvalues: [undefined, null] }
   const data = { items: null }
+  const expected = null // Note: Next will return `undefined`
 
-  const ret = await mapTransform(def, { nonvalues: [undefined, null] })(data)
+  const ret = await mapTransform(def, options)(data)
 
-  assert.equal(ret, null)
+  assert.equal(ret, expected)
+})
+
+test('should run mutation object on undefined when $alwaysApply is true', async () => {
+  const def = [
+    'items',
+    {
+      $alwaysApply: true,
+      attributes: { $alwaysApply: true, title: 'content.heading' },
+    },
+  ]
+  const data = { items: undefined }
+  const expected = { attributes: { title: undefined } }
+
+  const ret = await mapTransform(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should run mutation object on non-value when $alwaysApply is true', async () => {
+  const def = [
+    'items',
+    {
+      $alwaysApply: true,
+      attributes: { $alwaysApply: true, title: 'content.heading' },
+    },
+  ]
+  const options = { nonvalues: [undefined, null] }
+  const data = { items: null }
+  const expected = { attributes: { title: undefined } }
+
+  const ret = await mapTransform(def, options)(data)
+
+  assert.deepEqual(ret, expected)
 })
 
 test('should map with root operation', async () => {

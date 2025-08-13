@@ -53,6 +53,7 @@ const nonOperatorKeys = [
   '$noDefaults',
   '$flip',
   '$direction',
+  '$alwaysApply',
 ]
 
 const isOperatorKey = (key: string) =>

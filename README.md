@@ -359,7 +359,7 @@ detail below.
 
 #### A note on undefined and null
 
-MapTransform will treat `undefined` as "no value" in several ways:
+MapTransform will treat `undefined` as a "non-value" in several ways:
 
 - When using the `alt` operator, alternative pipelines are run as long as we get
   `undefined`
@@ -376,6 +376,13 @@ as `undefined`.
 
 You could in principle include any primitive value in `nonvalues` and it will be
 treated as `undefined`, e.g. an empty string or the number `0`.
+
+A mutation object will be skipped in its entirety when it encounters a non-value
+in the pipeline. This is not always wanted, e.g. when the mutation object has
+defaults that we want to set in the mutation object. In these cases, you may set
+`$alwaysApply: true` on the mutation object. Note that you also have to set this
+for sub-mutation objects if you want to apply those as well, as this prop is not
+inherited.
 
 #### Directional mutation objects
 
@@ -1966,7 +1973,7 @@ You may also specify an `includePath` or `excludePath`. These are dot notation
 paths to arrays of strings, and will be used instead of `include` or `exclude`.
 If `include` or `exclude` are also provided, they will be used as default
 values when the corresponding path yields no value. Note that "no value" here
-means `undefined`, and we don't support custom nonvalues here yet.
+means `undefined`, and we don't support custom non-values here yet.
 
 When given an array of object, each object will be projected. When given
 anything that is not an object, `undefined` will be returned.
@@ -2223,6 +2230,10 @@ mutation object).
 When `noDefaults` is `true`, the `value` transformer will always return
 `undefined`. The `fixed` transformer, however, will still return its value. This
 is by design.
+
+See [the note on undefined and null](#a-note-on-undefined-and-null) for more on
+how to have more values (like `null`) be treated as a non-value (i.e. the same
+way as `undefined`), and how to apply a mutation object to a non-value.
 
 ```javascript
 import mapTransform from 'map-transform'

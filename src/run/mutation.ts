@@ -10,6 +10,7 @@ export interface MutationStep extends OperationStepBase {
   type: 'mutation'
   flip?: boolean
   noDefaults?: boolean
+  always?: boolean
   pipelines: PreppedPipeline[]
 }
 
@@ -26,11 +27,11 @@ const handOffState = (state: State, target: unknown, flip?: boolean) => ({
  */
 export default function runMutationStep(
   value: unknown,
-  { pipelines, flip }: MutationStep,
+  { pipelines, flip, always }: MutationStep,
   state: State,
 ) {
-  // Don't mutate a non-value
-  if (isNonvalue(value, state.nonvalues)) {
+  // Don't mutate a non-value, unless `always` is true
+  if (!always && isNonvalue(value, state.nonvalues)) {
     return undefined
   }
 

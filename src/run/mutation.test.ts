@@ -134,7 +134,7 @@ test('should not run mutation object on undefined', () => {
 
   const ret = runPipeline(value, pipeline, state)
 
-  assert.deepEqual(ret, expected)
+  assert.equal(ret, expected)
 })
 
 test('should not run mutation object on a non-value', () => {
@@ -150,6 +150,25 @@ test('should not run mutation object on a non-value', () => {
   ]
   const state = { nonvalues: [undefined, ''] }
   const expected = undefined
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.equal(ret, expected)
+})
+
+test('should run mutation object on undefined when always is true', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+      always: true,
+    },
+  ]
+  const expected = { id: undefined, title: undefined }
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -298,6 +317,7 @@ test('should not mutate non-values when iterating', () => {
         ['key', '>id'],
         ['name', '>title'],
       ],
+      noDefaults: true,
     },
   ]
   const state = { nonvalues: [undefined, ''] }

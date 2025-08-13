@@ -209,9 +209,10 @@ export type Pipeline = (
 export interface MutationObject extends Record<string, unknown> {
   $iterate?: boolean
   $modify?: boolean | Path
+  $direction?: string
   $noDefaults?: boolean
   $flip?: boolean
-  $direction?: string
+  $alwaysApply?: boolean
 }
 export type TransformObject = MutationObject
 

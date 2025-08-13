@@ -170,6 +170,14 @@ export interface ConcatRevOperation extends TransformerProps {
   $concatRev: TransformDefinition[]
 }
 
+export interface IterateOperation extends TransformerProps {
+  $iterate: TransformDefinition
+}
+
+export interface IterateOperationNext extends TransformerProps {
+  $iterate: TransformDefinitionNext
+}
+
 export interface LookupOperation extends TransformerProps {
   $lookup: Path
   path: Path
@@ -190,6 +198,7 @@ export type OperationObject =
   | ArrayOperation
   | ConcatOperation
   | ConcatRevOperation
+  | IterateOperation
   | LookupOperation
   | LookdownOperation
 

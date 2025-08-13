@@ -994,6 +994,20 @@ const def = [
 For mutation objects, you may set `$iterate: true` to apply the mutation to each
 item in an array.
 
+When you need to iterate a pipeline or an operation that is not a mutation
+object or an operation that supports the `$iterate` flag direction, you may wrap
+it in an `$iterate` operation object like this:
+
+```javascript
+const def = { $iterate: '>content' }
+```
+
+This example would iterate over an array and return another array where every
+item is an object with the original value on a `content` prop. Note that this
+could have also been accomplished by the `>content[]` path, so this is often a
+matter of taste or convenience, and it's a fallback for any case where there is
+not a valid alternative.
+
 There is also an operation function that will do this, the `iterate` operation
 function, but remember that this option will go away in v2.0. Wrap any pipeline
 (or other operation function) in this function, and the pipeline will be apply
@@ -1009,36 +1023,6 @@ import mapTransform, { iterate } from 'map-transform'
 const ensureInteger = () => () => (data) => Number.parseInt(data, 10) || 0
 const def = {
   counts: ['statistics[].views', iterate(transform(ensureInteger()))],
-}
-```
-
-The difference between `$iterate: true` on a mutation object and the `iterate`
-operation, is that the latter may be used with anything – not just mutation
-objects. You may accomplish something similar with the mutation object, though,
-as the path `.` will replace the object with its value:
-
-```javascript
-const def = {
-  counts: [
-    'statistics[].views',
-    {
-      $iterate: true,
-      '.': { $transform: 'ensureInteger' },
-    },
-  ],
-}
-```
-
-This example is just intended to show the concept, as it could be written in a
-much simpler way by using `$iterate: true` directly on the `$transform`
-operation object:
-
-```javascript
-const def = {
-  counts: [
-    'statistics[].views',
-    { $transform: 'ensureInteger', $iterate: true },
-  ],
 }
 ```
 

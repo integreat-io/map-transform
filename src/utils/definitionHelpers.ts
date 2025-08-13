@@ -42,6 +42,7 @@ import type {
   State,
   StateMapper,
   AsyncDataMapperWithState,
+  IterateOperation,
 } from '../types.js'
 
 const passStateThroughNext = (next: StateMapper) => async (state: State) =>
@@ -56,11 +57,13 @@ const nonOperatorKeys = [
   '$alwaysApply',
 ]
 
-const isOperatorKey = (key: string) =>
-  key[0] === '$' && !nonOperatorKeys.includes(key)
+const isOperatorKey = ([key, value]: [string, unknown]) =>
+  key[0] === '$' &&
+  (!nonOperatorKeys.includes(key) ||
+    (key === '$iterate' && !!value && value !== true))
 
 const isOperationObject = (def: unknown): def is OperationObject =>
-  isObject(def) && Object.keys(def).filter(isOperatorKey).length > 0
+  isObject(def) && Object.entries(def).filter(isOperatorKey).length > 0
 
 export const isOperationType = <T extends OperationObject>(
   def: TransformObject | OperationObject,
@@ -191,6 +194,16 @@ const createArrayOperation = (
     : passStateThroughNext
 }
 
+const createIterateOperation = (
+  def: IterateOperation,
+  options: Options,
+): NextStateMapper => {
+  const { $iterate: pipeline } = def
+  return pipeline
+    ? wrapFromDefinition(iterate(pipeline), def, options)
+    : passStateThroughNext
+}
+
 function createIfOperation(
   def: IfOperation,
   options: Options,
@@ -258,6 +271,8 @@ function nextStateMapperFromObject(
       return createLookupOperation(lookup, def, def.$lookup, options)
     } else if (isOperationType<LookdownOperation>(def, '$lookdown')) {
       return createLookupOperation(lookdown, def, def.$lookdown, options)
+    } else if (isOperationType<IterateOperation>(def, '$iterate')) {
+      return createIterateOperation(def, options)
     } else {
       // Not a known operation
       return () => async (value) => value

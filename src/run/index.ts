@@ -4,6 +4,10 @@ import runApplyStep, { runApplyStepAsync, type ApplyStep } from './apply.js'
 import runArrayStep, { runArrayStepAsync, type ArrayStep } from './array.js'
 import runFilterStep, { runFilterStepAsync, type FilterStep } from './filter.js'
 import runIfStep, { runIfStepAsync, type IfStep } from './if.js'
+import runIterateStep, {
+  runIterateStepAsync,
+  type IterateStep,
+} from './iterate.js'
 import runMutationStep, {
   runMutationStepAsync,
   type MutationStep,
@@ -48,6 +52,7 @@ const syncStepFunctions: StepFunctions = {
   array: runArrayStep,
   filter: runFilterStep,
   if: runIfStep,
+  iterate: runIterateStep,
   mutation: runMutationStep,
   transform: runTransformStep,
   value: runValueStep,
@@ -59,6 +64,7 @@ const asyncStepFunctions: StepFunctions = {
   array: runArrayStepAsync,
   filter: runFilterStepAsync,
   if: runIfStepAsync,
+  iterate: runIterateStepAsync,
   mutation: runMutationStepAsync,
   transform: runTransformStep,
   value: runValueStep,
@@ -70,6 +76,7 @@ export type OperationStep =
   | ArrayStep
   | FilterStep
   | IfStep
+  | IterateStep
   | MutationStep
   | TransformStep
   | ValueStep

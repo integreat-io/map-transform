@@ -3,6 +3,7 @@ import prepareApplyStep from './apply.js'
 import prepareArrayStep from './array.js'
 import prepareFilterStep from './filter.js'
 import prepareIfStep from './if.js'
+import prepareIterateStep from './iterate.js'
 import prepareMutationStep from './mutation.js'
 import preparePathStep from './path.js'
 import prepareTransformStep from './transform.js'
@@ -17,6 +18,7 @@ import type {
   ArrayOperationNext as ArrayOperation,
   FilterOperation,
   IfOperationNext as IfOperation,
+  IterateOperationNext as IterateOperation,
   TransformOperation,
   ValueOperation,
   MutationObject,
@@ -31,6 +33,7 @@ export type OperationObject =
   | ArrayOperation
   | FilterOperation
   | IfOperation
+  | IterateOperation
   | TransformOperation
   | ValueOperation
 export type Step = Path | MutationObject | OperationObject | Pipeline
@@ -62,6 +65,9 @@ const isFilterOperation = (step: ObjectStep): step is FilterOperation =>
   Object.prototype.hasOwnProperty.call(step, '$filter')
 const isIfOperation = (step: ObjectStep): step is IfOperation =>
   Object.prototype.hasOwnProperty.call(step, '$if')
+const isIterateOperation = (step: ObjectStep): step is IterateOperation =>
+  Object.prototype.hasOwnProperty.call(step, '$iterate') &&
+  typeof step.$iterate !== 'boolean'
 const isTransformOperation = (step: ObjectStep): step is TransformOperation =>
   Object.prototype.hasOwnProperty.call(step, '$transform')
 const isValueOperation = (step: ObjectStep): step is ValueOperation =>
@@ -103,13 +109,20 @@ function extractStepProps(
   }: MutationObject | OperationObject,
   options: Options,
 ): [StepProps | undefined, MutationObject | OperationObject] {
-  const it = !!$iterate
+  const it = $iterate === true
   const dir = getDir($direction, options)
   const nonvalues = Array.isArray($nonvalues)
     ? $nonvalues
     : Array.isArray($undefined)
       ? $undefined
       : undefined
+
+  // Set $iterate back if it is not a boolean – as this is then a $iterate
+  // operation
+  if ($iterate && typeof $iterate !== 'boolean') {
+    step.$iterate = $iterate
+  }
+
   return it || dir || noDefaults !== undefined || nonvalues
     ? [
         {
@@ -152,6 +165,9 @@ function prepareOperation(operation: ObjectStep, options: Options) {
   } else if (isFilterOperation(operation)) {
     // A filter operation
     return prepareFilterStep(operation, options)
+  } else if (isIterateOperation(operation)) {
+    // An iterate operation
+    return prepareIterateStep(operation, options)
   } else {
     // The step matches none of the known operations, so treat it as
     // a mutation object

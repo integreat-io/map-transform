@@ -1041,6 +1041,23 @@ test('should not iterate rest of pipeline after one iterating step', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should iterate with the $iterate operation', () => {
+  const def = {
+    'articles[]': [{ $iterate: { title: 'content.heading' } }],
+  }
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } },
+  ]
+  const expected = {
+    articles: [{ title: 'Heading 1' }, { title: 'Heading 2' }],
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should shallow merge (modify) original object with transformed object', () => {
   const def = {
     article: {

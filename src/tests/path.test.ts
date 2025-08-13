@@ -915,6 +915,23 @@ test('should not iterate when $iterate is not set', async () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should iterate with the $iterate operation', async () => {
+  const def = {
+    'articles[]': [{ $iterate: { title: 'content.heading' } }],
+  }
+  const data = [
+    { content: { heading: 'Heading 1' } },
+    { content: { heading: 'Heading 2' } },
+  ]
+  const expected = {
+    articles: [{ title: 'Heading 1' }, { title: 'Heading 2' }],
+  }
+
+  const ret = await mapTransform(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should forward map with directional paths', async () => {
   const def = [
     fwd(get('content.articles[]')),

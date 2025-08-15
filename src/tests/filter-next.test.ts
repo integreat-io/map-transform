@@ -68,6 +68,28 @@ test('should filter out items in array', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should filter with pipeline', () => {
+  const def = [
+    {
+      $iterate: true,
+      title: 'content.heading',
+    },
+    {
+      $filter: ['title', { $transform: 'compare', match: 'Just this' }],
+    },
+  ]
+  const data = [
+    { content: { heading: 'The heading' } },
+    { content: { heading: 'Just this' } },
+    { content: { heading: 'Another heading' } },
+  ]
+  const expected = [{ title: 'Just this' }]
+
+  const ret = mapTransformSync(def, options)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should filter with several filters', () => {
   const def = [
     {
@@ -309,7 +331,9 @@ test('should throw when filter operator is missing a transformer id', () => {
   const data = {
     content: { heading: 'The heading' },
   }
-  const expectedError = new Error('Filter operation is missing transformer id')
+  const expectedError = new Error(
+    'Filter operation is missing transformer id or pipeline',
+  )
 
   assert.throws(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

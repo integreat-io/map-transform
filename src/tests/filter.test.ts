@@ -81,6 +81,28 @@ test('should filter out items in array', async () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should filter with pipeline', async () => {
+  const def = [
+    {
+      $iterate: true,
+      title: 'content.heading',
+    },
+    {
+      $filter: ['title', { $transform: 'compare', match: 'Just this' }],
+    },
+  ]
+  const data = [
+    { content: { heading: 'The heading' } },
+    { content: { heading: 'Just this' } },
+    { content: { heading: 'Another heading' } },
+  ]
+  const expected = [{ title: 'Just this' }]
+
+  const ret = await mapTransform(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should filter with several filters', async () => {
   const def = [
     {
@@ -437,7 +459,7 @@ test('should throw when filter operator is missing a transformer id', () => {
     content: { heading: 'The heading' },
   }
   const expectedError = new Error(
-    'Filter operator was given no transformer id or an invalid transformer id',
+    'Filter operator was given no transformer id or pipeline',
   )
 
   assert.throws(

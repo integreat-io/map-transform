@@ -160,10 +160,27 @@ const createTransformOperation = (
   options: Options,
 ): NextStateMapper => createOperation(transform, '$transform', def, options)
 
-const createFilterOperation = (
+function createFilterOperation(
   def: FilterOperation,
   options: Options,
-): NextStateMapper => createOperation(filter, '$filter', def, options)
+): NextStateMapper {
+  const pipeline = def.$filter
+  if (!pipeline) {
+    // No pipeline or id -- throw
+    throw new Error('Filter operator was given no transformer id or pipeline')
+  } else if (
+    typeof pipeline === 'string' ||
+    typeof pipeline === 'symbol' ||
+    typeof pipeline === 'function'
+  ) {
+    // This is the "traditional" approach -- create an operation the same way we do it for `$transform`
+    return createOperation(filter, '$filter', def, options)
+  } else {
+    // This is the "new" approach, where we're given a pipeline
+    const filterFn = () => defToDataMapper(pipeline, options) // Wrap data mapper in function, as `filter()` will pass `options` to the first level 
+    return wrapFromDefinition(filter(filterFn), def, options)
+  }
+}
 
 const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
   Array.isArray(nonvalues)

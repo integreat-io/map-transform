@@ -864,22 +864,31 @@ would be a truly pure function.
 
 #### `filter` operation
 
-The `filter` operation will use a transformer function to decide what data to
-filter out. Just like the `transform` operation, it will just use whatever
-transformer you give it, but it expects the transformer to return a boolean
-value. When the transformer returns `true` the value is kept, and when it
-returns `false`, the value is removed. If the result is not a boolean,
-JavaScript rules will be used to force it to a boolean, meaning that
-`undefined`, `null`, `0`, and empty string `""` will be treated as `false`.
-This is often referred to values being "truthy" or "falsy".
+The `filter` operation will use a transformer function or a pipeline to decide
+what data to filter out. The operation may be specified in one of two ways:
 
-When filtering an array, the transformer is applied to each data item in the
-array, like you would expect of a filter function, and a new array with only the
-items that the transformer returns truthy for. For data that is not in an array,
-a falsy value from the transformer will simply mean that it is replaced with
+1. The "traditional" way is to define it just like the `transform` operation,
+   with a transform id and props on the operation object as props for the
+   transformer. `filter` will just use the transformer you give it, and force
+   whatever it returns to a boolean. When the transformer returns something truthy,
+   the value is kept, and when it returns something falsy, the value is removed.
+   JavaScript rules will be used to force the return value to a boolean, meaning
+   `undefined`, `null`, `0`, and empty string `""` will be treated as `false`.
+
+2. The "new" way is to set a pipeline on `$filter`. This pipeline will then be
+   run just like the transformer in the first case, and the value it returns will
+   be forced to a boolean. Not the you may not provide a path string as a pipeline
+   here, as that would be treated as the "traditional" approach with a transformer
+   id. Instead you will have to wrap a path in an array, to make it clear that it's
+   a pipeline, like `['path.to.wherever']`.
+
+When filtering an array, the transformer or pipeline is applied to each data
+item in the array, like you would expect of a filter function, and a new array
+with only the items that we get truthy for. For data that is not in an array, a
+falsy value from the transformer will simply mean that it is replaced with
 `undefined`.
 
-An example:
+An example with a transformer id:
 
 ```javascript
 import mapTransform from 'map-transform'
@@ -893,13 +902,31 @@ const def = [
     name: 'name',
     active: 'hasPayed'
   },
-  { $filter: 'onlyActives' }
+  { $filter: 'onlyActives', not: true }
 ]
 ```
 
-If you provide `$filter` with an unknown transformer id, `mapTransform()`
-will throw. Note that this happens right away, so you don't have to run the
-returned mapper function with any data to discover the mistake.
+An example with a pipeline:
+
+```javascript
+import mapTransform from 'map-transform'
+
+const onlyActives = () =>  () => (data) => data.active
+const options = { transformers: { onlyActives } }
+const def = [
+  'members[]'
+  {
+    $iterate: true,
+    name: 'name',
+    active: 'hasPayed'
+  },
+  { $filter: ['item', {$transform:'onlyActives'}, {$transform: 'not'}] }
+]
+```
+
+If you provide `$filter` with an unknown transformer id or no pipeline,
+`mapTransform()` will throw. This happens right away, so you don't have to run
+the returned mapper function with any data to discover the mistake.
 
 Set `$direction: 'fwd'` or `$direction: 'rev'` on the object, to have it filter
 in only one direction.

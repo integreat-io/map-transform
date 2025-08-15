@@ -106,7 +106,12 @@ export interface TransformOperation extends TransformerProps {
 }
 
 export interface FilterOperation extends TransformerProps {
-  $filter: string | symbol
+  $filter: string | symbol | TransformDefinition
+  $direction?: string
+}
+
+export interface FilterOperationNext extends TransformerProps {
+  $filter: string | symbol | TransformDefinitionNext
   $direction?: string
 }
 

@@ -30,6 +30,29 @@ test('should filter away items in array', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should filter away items in array with a full pipeline', () => {
+  const value = [
+    { value: 'One' },
+    { value: 2 },
+    undefined,
+    { value: '3' },
+    { value: 'four' },
+    { value: 5 },
+    {},
+  ]
+  const pipeline = [
+    {
+      type: 'filter' as const,
+      pipeline: ['value', { type: 'transform' as const, fn: isNumber }],
+    },
+  ]
+  const expected = [{ value: 2 }, { value: 5 }]
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should return value when filter returns true for single value', () => {
   const value = 2
   const pipeline = [

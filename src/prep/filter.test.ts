@@ -9,18 +9,20 @@ import preparePipeline from './index.js'
 
 const isTrueFn = () => true
 const isFalseFn = () => true
+const notFn = (value: unknown) => !value
 
 const isTrue = () => () => isTrueFn
 const isTrueOrFalse = (props: Record<string, unknown>) => (options: Options) =>
   (isObject(props) && props.bool === 'false') || options.fwdAlias === 'from'
     ? isFalseFn
     : isTrueFn
+const not = () => () => notFn
 
 const options = {
-  transformers: { isTrue, isTrueOrFalse },
+  transformers: { isTrue, isTrueOrFalse, not },
 }
 
-// Tests
+// Tests -- transformer variant
 
 test('should prepare filter operation', () => {
   const def = { $filter: 'isTrue' }
@@ -95,7 +97,25 @@ test('should throw when no transformer id', () => {
   const def = {
     $filter: '',
   }
-  const expectedError = new Error('Filter operation is missing transformer id')
+  const expectedError = new Error(
+    'Filter operation is missing transformer id or pipeline',
+  )
 
   assert.throws(() => preparePipeline(def, options), expectedError)
+})
+
+// Tests -- pipeline variant
+
+test('should prepare filter operation with a pipeline', () => {
+  const def = { $filter: ['meta.archived', { $transform: 'not' }] }
+  const expected = [
+    {
+      type: 'filter' as const,
+      pipeline: ['meta', 'archived', { type: 'transform' as const, fn: notFn }],
+    },
+  ]
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
 })

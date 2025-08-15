@@ -16,7 +16,7 @@ import type {
   AltOperationNext as AltOperation,
   ApplyOperation,
   ArrayOperationNext as ArrayOperation,
-  FilterOperation,
+  FilterOperationNext as FilterOperation,
   IfOperationNext as IfOperation,
   IterateOperationNext as IterateOperation,
   TransformOperation,

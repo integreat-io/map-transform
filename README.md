@@ -642,8 +642,7 @@ iterating the `tags[]` array from our example, you would have to use the path
 the array you're iterating.
 
 > Editors note: We should probably have more examples here, especially on what
-> happens in a pipeline where we go up and down. Will the parent point to the
-> original data or the data currently in the pipeline?
+> happens in a pipeline where we go up and down.
 
 The root notation follows the same logic, but will always go to the base level
 of the original data structure, regardless of how many levels down you have
@@ -651,8 +650,45 @@ moved. Roots are specified with double carrets, so the path `^^.id` will get the
 id from our data from anywhere in the data structure, be it in `content` or when
 iterating through `tags[]`.
 
-Setting on parent and root paths is currently not supported, but may be in the
-future.
+There is a big gotcha here, for both parent and root paths, relating to whether
+you're moving up in the original or the transformed data. The correct answer is
+that you're moving in the transformed data – if it is transformed. This need
+some explaining. Say you have a pipeline where you first transforms the data on
+the level you're at with a mutation object. The following steps in the pipeline
+will relate to the mutated object, and if you move into the mutated data with a
+path, and the go up again with a parent path, you are moving up in the mutated
+data. But if you instead just move into the data without transforming it, moving
+up with a parent path will give you the original data – there's nothing else,
+as you have not transformed it.
+
+This is probably as expected, but the confusing part comes into play when there
+is some "distance" between transforming the data and referencing it with a root
+or parent path, especially the root. Say you first transform the root level with
+a mutation object, then move on with other operations, and then at some point,
+further down in the data, you want to reference something at the root level in
+_the original data_. Well, now you can't, as you have transformed the root
+level, but you might have not realized you actually did that. This is even more
+confusing when you write a named pipeline and reference it with an `$apply`
+operation, as you have no knowledge in the named pipeline about any mutation of
+the root outside it.
+
+All of this should make sense when you think about it the right way, but might
+be confusing in practice. Try to picture the pipeline and how data changes in
+it, and you will always reference the transformed data – if it has been
+transformed. And sometimes, in complex cases, you might just have to test it.
+
+Note also, that if you are within a mutation object and move down into the data,
+the data above where you are isn't transformed yet. As long as you are within a
+mutation object, you're referencing the data as it was before entering that
+mutation object. But as soon as you move to the next step in the pipeline –
+after the mutation object, you are left with the results of that mutation
+object.
+
+> Editor's note: We need examples.
+
+> [!NOTE]
+> Setting on parent and root paths is currently not supported, but may be in
+> the future.
 
 #### Setting on a path
 

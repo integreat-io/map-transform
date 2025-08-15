@@ -919,6 +919,47 @@ test('should use root as $transform path', () => {
   )
 })
 
+test('should reference the mutated root', () => {
+  const def = {
+    $direction: 'from',
+    response: [
+      {
+        id: 'data.key',
+        title: 'data.content.heading',
+        viewCount: { $value: 183 },
+        settings: { type: { $value: 'new' } }, // This will override the settings in the root in the data
+      },
+      {
+        $modify: true,
+        meta: {
+          id: 'id',
+          type: '^^.settings.type',
+        },
+      },
+    ],
+  }
+  const data = {
+    data: {
+      key: 'key1',
+      content: { heading: 'The heading' },
+    },
+    settings: { type: 'old' },
+  }
+  const expected = {
+    response: {
+      id: 'key1',
+      title: 'The heading',
+      viewCount: 183,
+      settings: { type: 'new' },
+      meta: { id: 'key1', type: 'new' },
+    },
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should not map fields without pipeline', () => {
   const def = {
     title: null,

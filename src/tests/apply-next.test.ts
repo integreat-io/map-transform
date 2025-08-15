@@ -54,6 +54,11 @@ const recursive = {
   comments: ['children[]', { $apply: 'recursive', $iterate: true }],
 }
 
+const pipelineWithRoot = {
+  id: 'id',
+  type: '^^.settings.type',
+}
+
 const pipelines = {
   cast_entry: castEntry,
   getItems,
@@ -62,6 +67,7 @@ const pipelines = {
   hitsOnly,
   entry: entryMutation,
   recursive,
+  pipelineWithRoot,
 }
 
 const options = { pipelines, transformers }
@@ -363,6 +369,45 @@ test('should use reverse alias', () => {
 
   assert.deepEqual(retFwd, expectedFwd)
   assert.deepEqual(retRev, expectedRev)
+})
+
+test('should support root in applied pipeline', () => {
+  const def = {
+    $direction: 'from',
+    response: [
+      'data',
+      {
+        id: 'key',
+        title: 'content.heading',
+        settings: { type: { $value: 'wrong' } },
+        viewCount: { $value: '183' },
+      },
+      { $apply: 'cast_entry' },
+      {
+        $modify: true,
+        meta: { $apply: 'pipelineWithRoot' },
+      },
+    ],
+  }
+  const data = {
+    data: {
+      key: 'key1',
+      content: { heading: 'The heading' },
+    },
+    settings: { type: 'other' },
+  }
+  const expected = {
+    response: {
+      id: 'key1',
+      title: 'The heading',
+      viewCount: 183,
+      meta: { id: 'key1', type: 'other' },
+    },
+  }
+
+  const ret = mapTransformSync(def, options)(data)
+
+  assert.deepEqual(ret, expected)
 })
 
 test('should handle pipelines that applies themselves', () => {

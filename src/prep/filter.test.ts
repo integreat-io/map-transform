@@ -24,7 +24,12 @@ const options = {
 
 test('should prepare filter operation', () => {
   const def = { $filter: 'isTrue' }
-  const expected = [{ type: 'filter' as const, fn: isTrueFn }]
+  const expected = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isTrueFn }],
+    },
+  ]
 
   const ret = preparePipeline(def, options)
 
@@ -34,9 +39,14 @@ test('should prepare filter operation', () => {
 test('should pass props to transformer', () => {
   const def = {
     $filter: 'isTrueOrFalse',
-    bool: 'false', // This should give us the isFalse transformer
+    bool: 'false', // This should give us the isFalse transformer -- happens in the preparation of the transformer
   }
-  const expected = [{ type: 'filter', fn: isFalseFn }]
+  const expected = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isFalseFn }],
+    },
+  ]
 
   const ret = preparePipeline(def, options)
 
@@ -46,7 +56,12 @@ test('should pass props to transformer', () => {
 test('should pass options to transformer', () => {
   const def = { $filter: 'isTrueOrFalse' }
   const optionsWithFwdAlias = { ...options, fwdAlias: 'from' } // Setting fwdAlias will give use the isFalse transformer in this weird test case
-  const expected = [{ type: 'filter', fn: isFalseFn }]
+  const expected = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isFalseFn }],
+    },
+  ]
 
   const ret = preparePipeline(def, optionsWithFwdAlias)
 

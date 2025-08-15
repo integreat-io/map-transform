@@ -17,7 +17,12 @@ const isNumberAsync = async (value: unknown, _state: State) =>
 
 test('should filter away items in array', () => {
   const value = ['One', 2, '3', 'four', 5]
-  const pipeline = [{ type: 'filter' as const, fn: isNumber }]
+  const pipeline = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isNumber }],
+    },
+  ]
   const expected = [2, 5]
 
   const ret = runPipeline(value, pipeline, state)
@@ -27,7 +32,12 @@ test('should filter away items in array', () => {
 
 test('should return value when filter returns true for single value', () => {
   const value = 2
-  const pipeline = [{ type: 'filter' as const, fn: isNumber }]
+  const pipeline = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isNumber }],
+    },
+  ]
   const expected = 2
 
   const ret = runPipeline(value, pipeline, state)
@@ -37,7 +47,12 @@ test('should return value when filter returns true for single value', () => {
 
 test('should return undefined when filter returns false for single value', () => {
   const value = 'One'
-  const pipeline = [{ type: 'filter' as const, fn: isNumber }]
+  const pipeline = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isNumber }],
+    },
+  ]
   const expected = undefined
 
   const ret = runPipeline(value, pipeline, state)
@@ -47,7 +62,12 @@ test('should return undefined when filter returns false for single value', () =>
 
 test('should filter away items in array in reverse', () => {
   const value = ['One', 2, '3', 'four', 5]
-  const pipeline = [{ type: 'filter' as const, fn: isNumber }]
+  const pipeline = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isNumber }],
+    },
+  ]
   const expected = [2, 5]
 
   const ret = runPipeline(value, pipeline, stateRev)
@@ -59,7 +79,12 @@ test('should filter away items in array in reverse', () => {
 
 test('should filter away items in array async', async () => {
   const value = ['One', 2, '3', 'four', 5]
-  const pipeline = [{ type: 'filter' as const, fn: isNumberAsync }]
+  const pipeline = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isNumberAsync }],
+    },
+  ]
   const expected = [2, 5]
 
   const ret = await runPipelineAsync(value, pipeline, state)
@@ -69,7 +94,12 @@ test('should filter away items in array async', async () => {
 
 test('should return undefined when filter returns false for single value async', async () => {
   const value = 'One'
-  const pipeline = [{ type: 'filter' as const, fn: isNumberAsync }]
+  const pipeline = [
+    {
+      type: 'filter' as const,
+      pipeline: [{ type: 'transform' as const, fn: isNumberAsync }],
+    },
+  ]
   const expected = undefined
 
   const ret = await runPipelineAsync(value, pipeline, state)

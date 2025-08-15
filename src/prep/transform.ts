@@ -7,7 +7,7 @@ import type {
 } from '../types.js'
 import type { Options as OptionsNext } from './index.js'
 
-export function prepareFn(
+function prepareFn(
   id:
     | string
     | symbol
@@ -49,10 +49,18 @@ export function prepareFn(
   return fn(props)(options as Options)
 }
 
+/**
+ * Prepare the `$transform` operation.
+ *
+ * Note that the `opName` argument is used by the `$filter` operation, when it
+ * runs it default operation through a transformer. The `opName` makes error
+ * messages more meaningful.
+ */
 export default function prepareTransformStep(
   { $transform: id, ...props }: TransformOperation,
   options: OptionsNext,
+  opName = 'Transform',
 ): TransformStep {
-  const fn = prepareFn(id, props, options, 'Transform')
+  const fn = prepareFn(id, props, options, opName)
   return { type: 'transform', fn }
 }

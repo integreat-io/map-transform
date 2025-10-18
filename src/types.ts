@@ -1,4 +1,5 @@
 import type { TransformDefinition as TransformDefinitionNext } from './prep/index.js'
+export type { TransformDefinition as TransformDefinitionNext } from './prep/index.js'
 
 // Dictionary types
 

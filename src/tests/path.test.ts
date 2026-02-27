@@ -1377,6 +1377,82 @@ test('should map with parent through several iterations async', async () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should shallow merge (modify) original object with transformed object - flipped going forward', () => {
+  // $flip going forward should behave the same as going in reverse without $flip.
+  // This mirrors the reverse test in pathRev.test.ts with identical def/data.
+  const def = {
+    $flip: true,
+    article: {
+      $modify: 'article',
+      '.': 'content.$modify',
+      title: 'content.name',
+    },
+  }
+  const data = {
+    article: {
+      title: 'The real title',
+      name: 'Got to go',
+      text: 'This is high quality content for sure',
+    },
+  }
+  const expected = {
+    content: {
+      name: 'The real title',
+      title: 'The real title',
+      text: 'This is high quality content for sure',
+    },
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should allow $flip to affect transform objects through pipelines going forward', () => {
+  const def = {
+    $flip: true,
+    article: {
+      title: 'name',
+      sections: ['meta.tags', { $iterate: true, id: 'name' }],
+    },
+  }
+  const data = {
+    article: {
+      title: 'The real title',
+      sections: [{ id: 'news' }, { id: 'sports' }],
+    },
+  }
+  const expected = {
+    name: 'The real title',
+    meta: {
+      tags: [{ name: 'news' }, { name: 'sports' }],
+    },
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should treat get/set paths correctly when flipped going forward', () => {
+  const def = {
+    $flip: true,
+    article: ['name', '>title'],
+  }
+  const data = {
+    article: {
+      title: 'The real title',
+    },
+  }
+  const expected = {
+    name: 'The real title',
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should map with parent when parents yielded undefined', () => {
   const def = {
     status: ['response.data.invoices', '^.^.status'], // A contrived example, but it tests the parent path

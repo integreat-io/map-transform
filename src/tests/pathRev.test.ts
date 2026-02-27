@@ -805,6 +805,84 @@ test('should reverse map with flipped mutate object async', async () => {
   assert.deepEqual(ret, expectedValue)
 })
 
+test('should set on first alt path in reverse', () => {
+  const def = [
+    { $alt: ['Content.Article', 'content.article'] },
+    {
+      title: 'content.heading',
+    },
+  ]
+  const data = { title: 'Heading 1' }
+  const expected = {
+    Content: {
+      Article: {
+        content: { heading: 'Heading 1' },
+      },
+    },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should map parent path as simple path in reverse', () => {
+  // In reverse, parent paths (^) are stripped from the pipeline by
+  // adjustPipelineToDirection, and the remaining path steps are used.
+  // So '^.^.section' becomes just 'section' — a simple get/set.
+  const def = [
+    'content.articles[]',
+    {
+      $iterate: true,
+      id: 'key',
+      title: 'content.heading',
+      section: '^.^.section',
+    },
+  ]
+  const data = [
+    { id: 'ent1', title: 'Heading 1', section: 'news' },
+    { id: 'ent2', title: 'Heading 2', section: 'news' },
+  ]
+  const expected = {
+    content: {
+      articles: [
+        { key: 'ent1', content: { heading: 'Heading 1' }, section: 'news' },
+        { key: 'ent2', content: { heading: 'Heading 2' }, section: 'news' },
+      ],
+    },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should map single parent path as simple path in reverse', () => {
+  // For '^.section', the pipeline ['^', 'section'] reversed is ['section', '^'].
+  // adjustPipelineToDirection strips the '^' but there are no steps after it
+  // to skip, so the remaining pipeline is ['section'] — a simple get/set.
+  const def = [
+    'content.articles',
+    {
+      title: 'content.heading',
+      section: '^.section',
+    },
+  ]
+  const data = { title: 'Heading 1', section: 'news' }
+  const expected = {
+    content: {
+      articles: {
+        content: { heading: 'Heading 1' },
+        section: 'news',
+      },
+    },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should return data when no mapping def and reverse mapping', () => {
   const def = null
   const data = [

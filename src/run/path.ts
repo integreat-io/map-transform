@@ -129,9 +129,12 @@ export default function runPathStep(
   const [path, isSet] = extractPathStep(step, isRev)
 
   if (path === '[]') {
-    // Ensure that the value is an array -- regardless of direction. We won't
-    // turn non-values into empty arrays when `noDefaults` is `true`, though.
-    return [ensureArrayIfDefaultsAreAllowed(value, state), index]
+    // Ensure that the value is an array. When setting and the value is already
+    // an array, fall through to the iteration logic to ensure each item
+    // individually.
+    if (!isSet || !Array.isArray(value)) {
+      return [ensureArrayIfDefaultsAreAllowed(value, state), index]
+    }
   } else if (path === '^') {
     // Get the parent value. This is never run in rev, as we remove it from the
     // pipeline before running it.
@@ -170,7 +173,7 @@ export default function runPathStep(
     state.context.push(value)
   }
 
-  if (path[0] === '[') {
+  if (path[0] === '[' && path !== '[]') {
     // This is an index path
     const stepIndex = Number.parseInt(path.slice(1), 10)
     return [
@@ -194,6 +197,12 @@ export default function runPathStep(
       // need to iterate.
       return [value, setArrayIndex, true] // Return index of the iteration left off, to continue from there
     }
+  }
+
+  if (path === '[]') {
+    // We have an array notation that did not trigger iteration -- ensure each
+    // item is an array.
+    return [ensureArrayIfDefaultsAreAllowed(value, state), index]
   }
 
   // We are not iterating, so handle a get or set normally

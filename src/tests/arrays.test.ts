@@ -481,6 +481,149 @@ test('should recreate the original object as far as possible with the array oper
   assert.deepEqual(ret, expected)
 })
 
+test('should return undefined when all $array pipelines are non-setting in reverse', () => {
+  const def = {
+    $array: [{ $value: 'First' }, { $value: 'Second' }],
+  }
+  const data = ['First', 'Second']
+  const expected = undefined
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.equal(ret, expected)
+})
+
+test('should handle input array shorter than $array pipelines in reverse', () => {
+  const def = {
+    $array: ['content.articles[0].heading', 'content.articles[1].subheading'],
+  }
+  const data = ['Heading 1']
+  const expected = {
+    content: {
+      articles: [{ heading: 'Heading 1' }, { subheading: undefined }],
+    },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should handle input array longer than $array pipelines in reverse', () => {
+  const def = {
+    $array: ['content.articles[0].heading', 'content.articles[1].subheading'],
+  }
+  const data = ['Heading 1', 'Sub 2', 'Extra value']
+  const expected = {
+    content: {
+      articles: [{ heading: 'Heading 1' }, { subheading: 'Sub 2' }],
+    },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should iterate with iterate operation in reverse', () => {
+  const def = [
+    'content.articles',
+    {
+      $iterate: true,
+      title: 'content.heading',
+    },
+  ]
+  const data = [{ title: 'Heading 1' }, { title: 'Heading 2' }]
+  const expected = {
+    content: {
+      articles: [
+        { content: { heading: 'Heading 1' } },
+        { content: { heading: 'Heading 2' } },
+      ],
+    },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test.skip('should map array in transform object in reverse', () => {
+  const def = [
+    {
+      'entries[]': {
+        title: 'content.heading',
+      },
+      'authors[]': ['content.author'],
+    },
+  ]
+  const data = {
+    entries: [{ title: 'Heading 1' }, { title: 'Heading 2' }],
+    authors: ['johnf', 'lucyk'],
+  }
+  const expected = [
+    { content: { heading: 'Heading 1', author: 'johnf' } }, // <--
+    { content: { heading: 'Heading 2', author: 'lucyk' } },
+  ]
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should reverse flatten arrays', () => {
+  const def = [
+    'content.articles[].content[]',
+    {
+      $iterate: true,
+      attributes: {
+        title: 'heading',
+      },
+    },
+  ]
+  const data = [
+    { attributes: { title: 'Heading 1' } },
+    { attributes: { title: 'Heading 2' } },
+  ]
+  const expected = {
+    content: {
+      articles: [
+        {
+          content: [{ heading: 'Heading 1' }],
+        },
+        {
+          content: [{ heading: 'Heading 2' }],
+        },
+      ],
+    },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should recreate the original object with the $array operation when flipped going forward', () => {
+  const def = {
+    $array: [
+      'content.articles[0].heading',
+      'content.articles[1].subheading',
+      { $value: 'What?' },
+    ],
+    $flip: true,
+  }
+  const data = ['Heading 1', 'Sub 2']
+  const expected = {
+    content: {
+      articles: [{ heading: 'Heading 1' }, { subheading: 'Sub 2' }],
+    },
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should create an array with the array operation when flipped in rev', () => {
   const def = {
     $array: [

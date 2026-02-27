@@ -236,6 +236,96 @@ test('should recreate the original data when iterating in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should return undefined when all pipelines are non-setting in reverse', () => {
+  const value = ['Entry 1', 'The real name']
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'array' as const,
+      pipelines: [
+        [{ type: 'value', value: 'First', fixed: false }],
+        [{ type: 'value', value: 'Second', fixed: false }],
+      ],
+    },
+  ]
+  const expected = undefined
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  assert.equal(ret, expected)
+})
+
+test('should recreate from a single pipeline in reverse', () => {
+  const value = ['Entry 1']
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'array' as const,
+      pipelines: [['title']],
+    },
+  ]
+  const expected = { title: 'Entry 1' }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should handle input array shorter than pipelines in reverse', () => {
+  const value = ['Entry 1']
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'array' as const,
+      pipelines: [
+        ['title', { type: 'transform', fn: String }],
+        ['props', 'name'],
+      ],
+    },
+  ]
+  const expected = {
+    title: 'Entry 1',
+    props: { name: undefined },
+  }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should handle input array longer than pipelines in reverse', () => {
+  const value = ['Entry 1', 'The real name', 'Extra value']
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'array' as const,
+      pipelines: [
+        ['title', { type: 'transform', fn: String }],
+        ['props', 'name'],
+      ],
+    },
+  ]
+  const expected = {
+    title: 'Entry 1',
+    props: { name: 'The real name' },
+  }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should generate a single-element array', () => {
+  const value = { title: 'Entry 1' }
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'array' as const,
+      pipelines: [['title']],
+    },
+  ]
+  const expected = ['Entry 1']
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
 // Tests -- async
 
 test('should generate an array from the given async pipelines', async () => {

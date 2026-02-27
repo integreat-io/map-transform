@@ -98,7 +98,7 @@ const isOperationObject = (step: PreppedStep): step is OperationStep =>
  * Return true if the given pipeline has one or more set steps. We take into
  * account whether we are going forward or in reverse.
  */
-const hasSetSteps = (pipeline: PreppedPipeline, isRev: boolean) =>
+export const hasSetSteps = (pipeline: PreppedPipeline, isRev: boolean) =>
   pipeline.some(
     (step) => typeof step === 'string' && xor(step.startsWith('>'), isRev),
   )

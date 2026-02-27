@@ -271,6 +271,7 @@ test('should recreate the original data as far as possible in reverse async', as
       pipelines: [
         ['title', { type: 'transform', fn }],
         ['props', 'name'],
+        [{ type: 'value', value: 'Third', fixed: false }],
       ],
     },
   ]
@@ -318,6 +319,7 @@ test('should recreate the original data as far as possible when flipped going fo
       pipelines: [
         ['title', { type: 'transform', fn }],
         ['props', 'name'],
+        [{ type: 'value', value: 'Third', fixed: false }],
       ],
       flip: true,
     },
@@ -331,5 +333,3 @@ test('should recreate the original data as far as possible when flipped going fo
 
   assert.deepEqual(ret, expected)
 })
-
-test.todo('should skip pipelines with $value in reverse')

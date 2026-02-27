@@ -463,7 +463,11 @@ test('should create an array with the array operation', () => {
 
 test('should recreate the original object as far as possible with the array operation in reverse', () => {
   const def = {
-    $array: ['content.articles[0].heading', 'content.articles[1].subheading'],
+    $array: [
+      'content.articles[0].heading',
+      'content.articles[1].subheading',
+      { $value: 'What?' },
+    ],
   }
   const data = ['Heading 1', 'Sub 2']
   const expected = {

@@ -1,5 +1,5 @@
 import State, { type InitialState } from '../state.js'
-import runPipeline, { runPipelineAsync } from './index.js'
+import runPipeline, { runPipelineAsync, hasSetSteps } from './index.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { ensureArray } from '../utils/array.js'
 import xor from '../utils/xor.js'
@@ -50,6 +50,9 @@ function* setValuesFromPipelines(
 
   // Run each pipeline
   for (const [index, pipeline] of pipelines.entries()) {
+    if (!hasSetSteps(pipeline, true)) {
+      continue // Skip pipelines without set steps -- they can't set to the target
+    }
     // eslint-disable-next-line security/detect-object-injection
     const value = values[index]
     const nextState: InitialState = { ...state, target, rev: true } // Set previous return value as target and make sure we always move in reverse

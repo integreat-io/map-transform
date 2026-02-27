@@ -1,6 +1,6 @@
 import preparePipeline, { Options } from './index.js'
 import type { IterateStep } from '../run/iterate.js'
-import type { IterateOperationNext as IterateOperation } from '../types.js'
+import type { IterateOperation } from '../typesNext.js'
 
 export default function prepareArrayStep(
   { $iterate: pipeline }: IterateOperation,

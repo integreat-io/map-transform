@@ -13,19 +13,19 @@ import { isNotNullOrUndefined } from '../utils/is.js'
 import type { PreppedPipeline, StepProps, OperationStep } from '../run/index.js'
 import type {
   Path,
-  AltOperationNext as AltOperation,
+  AltOperation,
   ApplyOperation,
-  ArrayOperationNext as ArrayOperation,
-  FilterOperationNext as FilterOperation,
-  IfOperationNext as IfOperation,
-  IterateOperationNext as IterateOperation,
+  ArrayOperation,
+  FilterOperation,
+  IfOperation,
+  IterateOperation,
   TransformOperation,
   ValueOperation,
   MutationObject,
   Transformer,
   AsyncTransformer,
   Dictionaries,
-} from '../types.js'
+} from '../typesNext.js'
 
 export type OperationObject =
   | AltOperation

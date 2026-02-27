@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import type { State } from '../types.js'
+import type State from '../state.js'
 import type { PreppedPipeline } from '../run/index.js'
 
 import preparePipeline, { TransformDefinition } from './index.js'

@@ -5,7 +5,9 @@ import {
   async as asyncTransformers,
 } from './transformers/index.js'
 import type State from './state.js'
-import { Transformer, AsyncTransformer } from './types.js'
+import type { Transformer, AsyncTransformer } from './typesNext.js'
+
+export { syncTransformers, asyncTransformers }
 
 export interface InitialState {
   context?: unknown[]

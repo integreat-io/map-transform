@@ -4,7 +4,7 @@ import preparePipeline, {
 } from './index.js'
 import prepareTransformStep from './transform.js'
 import type { FilterStep } from '../run/filter.js'
-import type { FilterOperationNext as FilterOperation } from '../types.js'
+import type { FilterOperation } from '../typesNext.js'
 
 /**
  * When `idOrPipeline` is a string or symbol, we prepare a pipeline with a

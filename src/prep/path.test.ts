@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import type { Path } from '../types.js'
+import type { Path } from '../typesNext.js'
 
 import prep from './index.js'
 

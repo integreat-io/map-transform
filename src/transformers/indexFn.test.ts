@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import State from '../state.js'
 
 import index from './indexFn.js'
 
@@ -7,22 +8,22 @@ import index from './indexFn.js'
 
 const data = { id: 'ent1', $type: 'entry' }
 
-const state = {
+const state = new State({
   noDefaults: false,
   context: [],
   value: {},
   rev: false,
-}
+})
 
 const options = {}
 
 // Test
 
 test('should return index from state', async () => {
-  const stateWithIndex = {
+  const stateWithIndex = new State({
     ...state,
     index: 5,
-  }
+  })
 
   const ret = await index({})(options)(data, stateWithIndex)
 

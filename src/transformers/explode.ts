@@ -1,6 +1,6 @@
 import { isObject } from '../utils/is.js'
-import { revFromState } from '../utils/stateHelpers.js'
-import type { Transformer } from '../types.js'
+import xor from '../utils/xor.js'
+import type { Transformer } from '../typesNext.js'
 
 export interface KeyValue {
   key: string | number
@@ -56,7 +56,7 @@ function doExplode(data: unknown): unknown[] | undefined {
 
 function explodeOrImplode(isImplode: boolean): Transformer {
   return () => () => (data, state) =>
-    revFromState(state, isImplode) ? doImplode(data) : doExplode(data)
+    xor(state.isRev, isImplode) ? doImplode(data) : doExplode(data)
 }
 
 export const explode: Transformer = explodeOrImplode(false)

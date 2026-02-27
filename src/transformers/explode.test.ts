@@ -1,22 +1,18 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import State from '../state.js'
 
 import { explode, implode } from './explode.js'
 
 // Setup
 
-const state = {
+const state = new State({
   rev: false,
   noDefaults: false,
   context: [],
   value: {},
-}
-const stateRev = {
-  rev: true,
-  noDefaults: false,
-  context: [],
-  value: {},
-}
+})
+const stateRev = state.revState()
 
 const options = {}
 

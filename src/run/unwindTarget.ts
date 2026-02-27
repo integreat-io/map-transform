@@ -1,7 +1,7 @@
 import { calculateIndex } from './path.js'
 import { isObject } from '../utils/is.js'
 import type { PreppedPipeline, PreppedStep } from './index.js'
-import type { Path } from '../types.js'
+import type { Path } from '../typesNext.js'
 
 const isSetStep =
   (isRev: boolean) =>

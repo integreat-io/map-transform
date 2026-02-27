@@ -1,5 +1,5 @@
 import type { ValueStep } from '../run/value.js'
-import type { ValueOperation } from '../types.js'
+import type { ValueOperation } from '../typesNext.js'
 
 const unescape = (value: unknown) =>
   value === '**undefined**' ? undefined : value

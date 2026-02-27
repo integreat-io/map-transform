@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import type { PreppedPipeline } from './index.js'
-import type { State } from '../types.js'
+import type State from '../state.js'
 
 import runPipeline, { runPipelineAsync } from './index.js'
 

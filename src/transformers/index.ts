@@ -1,32 +1,21 @@
 import { value, fixed } from './value.js'
-import bucket from './bucket.js'
-import { bucket as bucketSync, bucketAsync } from './bucketNext.js'
-import compare from './compare.js'
-import { compare as compareSync, compareAsync } from './compareNext.js'
+import { bucket, bucketAsync } from './bucket.js'
+import { compare, compareAsync } from './compare.js'
 import { concat, concatAsync, concatRev, concatRevAsync } from './concat.js'
 import { explode, implode } from './explode.js'
 import flatten from './flatten.js'
-import get from './get.js'
 import index from './indexFn.js'
-import logical from './logical.js'
-import { logical as logicalSync, logicalAsync } from './logicalNext.js'
+import { logical, logicalAsync } from './logical.js'
 import { lookup, lookupAsync, lookdown, lookdownAsync } from './lookup.js'
 import map from './map.js'
-import { merge, mergeRev } from './merge.js'
-import {
-  merge as mergeSync,
-  mergeRev as mergeRevSync,
-  mergeAsync,
-  mergeRevAsync,
-} from './mergeNext.js'
-import not from './not.js'
-import { not as notSync, notAsync } from './notNext.js'
+import { merge, mergeRev, mergeAsync, mergeRevAsync } from './merge.js'
+import { not, notAsync } from './not.js'
 import project from './project.js'
 import sort from './sort.js'
 
 export const sync = {
-  bucket: bucketSync,
-  compare: compareSync,
+  bucket,
+  compare,
   concat,
   concatRev,
   explode,
@@ -34,13 +23,13 @@ export const sync = {
   flatten,
   implode,
   index,
-  logical: logicalSync,
+  logical,
   lookup,
   lookdown,
   map,
-  merge: mergeSync,
-  mergeRev: mergeRevSync,
-  not: notSync,
+  merge,
+  mergeRev,
+  not,
   project,
   sort,
   value,
@@ -63,25 +52,6 @@ export const async = {
   merge: mergeAsync,
   mergeRev: mergeRevAsync,
   not: notAsync,
-  project,
-  sort,
-  value,
-}
-
-export default {
-  bucket,
-  compare,
-  explode,
-  fixed,
-  flatten,
-  get,
-  implode,
-  index,
-  logical,
-  map,
-  merge,
-  mergeRev,
-  not,
   project,
   sort,
   value,

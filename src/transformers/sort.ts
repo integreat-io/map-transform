@@ -1,11 +1,11 @@
 import { pathGetter } from '../createPathMapper.js'
+import type State from '../state.js'
 import type {
   Path,
-  State,
   DataMapperWithState,
   TransformerProps,
   Transformer,
-} from '../types.js'
+} from '../typesNext.js'
 
 export interface Props extends TransformerProps {
   asc?: boolean

@@ -23,6 +23,13 @@
     },
     "./types.js": {
       "types": "./dist/types.d.ts"
+    },
+    "./next": {
+      "import": "./dist/mapTransform.js",
+      "types": "./dist/mapTransform.d.ts"
+    },
+    "./typesNext.js": {
+      "types": "./dist/typesNext.d.ts"
     }
   },
   "scripts": {
@@ -30,7 +37,7 @@
     "test:legacy": "node --import tsx --no-deprecation --test --enable-source-maps src/*.test.ts src/**/*.test.ts",
     "test:watch": "npm run dev",
     "dev": "node --import tsx --test --enable-source-maps --test-reporter node-test-reporter --watch 'src/**/*.test.ts' || exit 0",
-    "test:perf": "node --import tsx --test --enable-source-maps --test-reporter node-test-reporter --watch 'src/tests/performance/**/*.ts' || exit 0",
+    "test:perf": "node --import tsx --test --enable-source-maps --test-reporter node-test-reporter --watch 'src/legacy/tests/performance/**/*.ts' || exit 0",
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "lint": "eslint src",

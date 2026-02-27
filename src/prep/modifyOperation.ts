@@ -1,5 +1,5 @@
 import type { OperationObject, Options } from './index.js'
-import type { MutationObject } from '../types.js'
+import type { MutationObject } from '../typesNext.js'
 
 const createTransformOperation = (
   $transform: string,

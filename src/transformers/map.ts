@@ -6,7 +6,7 @@ import type {
   DictionaryValue,
   TransformerProps,
   Transformer,
-} from '../types.js'
+} from '../typesNext.js'
 import xor from '../utils/xor.js'
 
 export interface Props extends TransformerProps {

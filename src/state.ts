@@ -1,4 +1,5 @@
-import { PreppedPipeline } from './run/index.js'
+import xor from './utils/xor.js'
+import type { PreppedPipeline } from './run/index.js'
 
 export interface InitialState {
   value?: unknown
@@ -16,7 +17,7 @@ const cloneContext = (context?: unknown[]) =>
   Array.isArray(context) ? [...context] : []
 
 /**
- * Internal state used by the rewritten core.
+ * Internal state.
  */
 export default class State {
   value: unknown
@@ -46,5 +47,42 @@ export default class State {
     if (arguments.length === 2) {
       this.value = value
     }
+  }
+
+  /**
+   * Return true if the state is currently in reverse. Will take `flip` into
+   * account.
+   */
+  get isRev() {
+    return xor(this.rev, this.flip)
+  }
+
+  /**
+   * Return the same state, but in forward mode. Any flipped state is cleared.
+   */
+  forwardState() {
+    if (this.rev || this.flip) {
+      return new State({ ...this, rev: false, flip: false })
+    } else {
+      return this
+    }
+  }
+
+  /**
+   * Return the same state, but in reverse mode. Any flipped state is cleared.
+   */
+  revState() {
+    if (!this.rev || this.flip) {
+      return new State({ ...this, rev: true, flip: false })
+    } else {
+      return this
+    }
+  }
+
+  /**
+   * Return the same state, but with the opposite value of `flip`.
+   */
+  flipState() {
+    return new State({ ...this, flip: !this.flip })
   }
 }

@@ -1,40 +1,58 @@
-import { isObject } from '../utils/is.js'
+import {
+  createDataMapper,
+  createDataMapperAsync,
+  DataMapper,
+  DataMapperAsync,
+} from '../createDataMapper.js'
 import type {
   TransformDefinition,
-  DataMapperWithOptions,
-  AsyncDataMapperWithOptions,
-  DataMapperWithState,
-  AsyncDataMapperWithState,
+  Options as OptionsNext,
+} from '../prep/index.js'
+import type State from '../state.js'
+import type {
   AsyncTransformer,
+  Transformer,
   TransformerProps,
-  Options,
-} from '../types.js'
-import { defToDataMapper } from '../utils/definitionHelpers.js'
+} from '../typesNext.js'
 
 export interface Props extends TransformerProps {
   path?: TransformDefinition
 }
 
-function dataMapperFromProps(
-  props: Props | DataMapperWithOptions | AsyncDataMapperWithOptions,
-  options: Options
-): DataMapperWithState | AsyncDataMapperWithState {
-  if (typeof props === 'function') {
-    return props(options)
-  } else if (isObject(props)) {
-    return defToDataMapper(props.path, options)
-  } else {
-    return (value: unknown) => value
+function createTransformerSync(getFn: DataMapper) {
+  return function not(value: unknown, state: State) {
+    return !getFn(value, state)
   }
 }
 
-const transformer: AsyncTransformer<
-  Props | DataMapperWithOptions | AsyncDataMapperWithOptions
-> = function not(props) {
-  return (options) => {
-    const fn = dataMapperFromProps(props, options)
-    return async (value, state) => !(await fn(value, state))
+function createTransformerAsync(getFn: DataMapperAsync) {
+  return async function not(value: unknown, state: State) {
+    return !(await getFn(value, state))
   }
 }
 
-export default transformer
+/**
+ * Performs a logical not on the value in the pipeline or on the value returned
+ * by the `path` pipeline if one is set.
+ *
+ * This version does not support async pipelines.
+ */
+export const not: Transformer =
+  ({ path = null }: Props) =>
+  (options) => {
+    const getFn = createDataMapper(path, options as OptionsNext)
+    return createTransformerSync(getFn)
+  }
+
+/**
+ * Performs a logical not on the value in the pipeline or on the value returned
+ * by the `path` pipeline if one is set.
+ *
+ * This version supports async pipelines.
+ */
+export const notAsync: AsyncTransformer =
+  ({ path = null }: Props) =>
+  (options) => {
+    const getFn = createDataMapperAsync(path, options as OptionsNext)
+    return createTransformerAsync(getFn)
+  }

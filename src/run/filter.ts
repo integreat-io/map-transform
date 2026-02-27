@@ -1,8 +1,7 @@
 import runPipeline, { runPipelineAsync } from './index.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
-import type StateNext from '../state.js'
 import type { OperationStepBase, PreppedPipeline } from './index.js'
-import type { State } from '../types.js'
+import type State from '../state.js'
 
 export interface FilterStep extends OperationStepBase {
   type: 'filter'
@@ -51,7 +50,7 @@ function* runFilterStepGen(
 export default function runFilterStep(
   value: unknown,
   { pipeline }: FilterStep,
-  state: StateNext,
+  state: State,
 ) {
   const it = runFilterStepGen(value, pipeline, state)
   return runIterator(it)
@@ -68,7 +67,7 @@ export default function runFilterStep(
 export async function runFilterStepAsync(
   value: unknown,
   { pipeline }: FilterStep,
-  state: StateNext,
+  state: State,
 ) {
   const it = runFilterStepGen(value, pipeline, state, true)
   return runIteratorAsync(it)

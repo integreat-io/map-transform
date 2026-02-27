@@ -1,4 +1,4 @@
-import type { Path } from '../types.js'
+import type { Path } from '../typesNext.js'
 
 // We check if the bracket is escaped. If it is, we check if the escape is
 // escaped, in which case the bracket is not escaped after all.

@@ -1,73 +1,60 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
-import mapTransform, {
-  set,
-  filter,
-  fwd,
-  rev,
-  transformers as coreTransformers,
-} from '../index.js'
-const { compare, not } = coreTransformers
+import { mapTransformSync, mapTransformAsync } from '../index.js'
 
 // Setup
 
-const noHeadingTitle = () => () => async (item: unknown) =>
-  isObject(item) && !/heading/gi.test(item.title as string)
+const noHeadingTitle = () => () => (value: unknown) =>
+  isObject(value) && !/heading/gi.test(value.title as string)
+const noHeadingTitleAsync = () => () => async (value: unknown) =>
+  isObject(value) && !/heading/gi.test(value.title as string)
 
-const noAlso = () => async (item: unknown) =>
-  isObject(item) && !/also/gi.test(item.title as string)
+const noAlso = () => () => (value: unknown) =>
+  isObject(value) && !/also/gi.test(value.title as string)
 
-const transformers = {
-  noHeadingTitle,
-  [Symbol.for('noHeadingTitle')]: noHeadingTitle,
+const options = {
+  transformers: {
+    noAlso,
+    noHeadingTitle,
+    noHeadingTitleAsync,
+    [Symbol.for('noHeadingTitle')]: noHeadingTitle,
+  },
 }
 
 // Tests
 
-test('should filter out item', async () => {
-  const def = [
-    {
-      title: 'content.heading',
-    },
-    filter(noHeadingTitle()),
-  ]
+test('should filter out item', () => {
+  const def = [{ title: 'content.heading' }, { $filter: 'noHeadingTitle' }]
   const data = {
     content: { heading: 'The heading' },
   }
   const expected = undefined
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter out item with synchronous transform function', async () => {
-  const noHeadingTitle = () => () => (item: unknown) =>
-    isObject(item) && !/heading/gi.test(item.title as string)
-  const def = [
-    {
-      title: 'content.heading',
-    },
-    filter(noHeadingTitle()),
-  ]
+test('should filter out item with async transform function', async () => {
+  const def = [{ title: 'content.heading' }, { $filter: 'noHeadingTitleAsync' }]
   const data = {
     content: { heading: 'The heading' },
   }
   const expected = undefined
 
-  const ret = await mapTransform(def)(data)
+  const ret = await mapTransformAsync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter out items in array', async () => {
+test('should filter out items in array', () => {
   const def = [
     {
       $iterate: true,
       title: 'content.heading',
     },
-    filter(noHeadingTitle()),
+    { $filter: 'noHeadingTitle' },
   ]
   const data = [
     { content: { heading: 'The heading' } },
@@ -76,12 +63,12 @@ test('should filter out items in array', async () => {
   ]
   const expected = [{ title: 'Just this' }]
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter with pipeline', async () => {
+test('should filter with pipeline', () => {
   const def = [
     {
       $iterate: true,
@@ -98,19 +85,19 @@ test('should filter with pipeline', async () => {
   ]
   const expected = [{ title: 'Just this' }]
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter with several filters', async () => {
+test('should filter with several filters', () => {
   const def = [
     {
       $iterate: true,
       title: 'content.heading',
     },
-    filter(noHeadingTitle()),
-    filter(noAlso),
+    { $filter: 'noHeadingTitle' },
+    { $filter: 'noAlso' },
   ]
   const data = [
     { content: { heading: 'The heading' } },
@@ -120,19 +107,19 @@ test('should filter with several filters', async () => {
   ]
   const expected = [{ title: 'Just this' }]
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should set filtered items on path', async () => {
+test('should set filtered items on path', () => {
   const def = [
     {
       $iterate: true,
       title: 'content.heading',
     },
-    filter(noHeadingTitle()),
-    set('items[]'),
+    { $filter: 'noHeadingTitle' },
+    '>items[]',
   ]
   const data = [
     { content: { heading: 'The heading' } },
@@ -142,19 +129,19 @@ test('should set filtered items on path', async () => {
     items: [{ title: 'Just this' }],
   }
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter items from parent mapping for reverse mapping', async () => {
+test('should filter items from parent mapping for reverse mapping', () => {
   const def = {
     'items[]': [
       {
         $iterate: true,
         title: 'content.heading',
       },
-      filter(noHeadingTitle()),
+      { $filter: 'noHeadingTitle' },
     ],
   }
   const data = {
@@ -162,19 +149,19 @@ test('should filter items from parent mapping for reverse mapping', async () => 
   }
   const expected = [{ content: { heading: 'Just this' } }]
 
-  const ret = await mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter on reverse mapping', async () => {
+test('should filter on reverse mapping', () => {
   const def = [
     {
       $iterate: true,
       title: 'content.heading',
     },
-    filter(noHeadingTitle()),
-    filter(noAlso),
+    { $filter: 'noHeadingTitle' },
+    { $filter: 'noAlso' },
   ]
   const data = [
     { title: 'The heading' },
@@ -184,19 +171,19 @@ test('should filter on reverse mapping', async () => {
   ]
   const expected = [{ content: { heading: 'Just this' } }]
 
-  const ret = await mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   assert.deepEqual(ret, expected)
 })
 
-test('should use directional filters - going forward', async () => {
+test('should use directional filters - going forward', () => {
   const def = [
     {
       $iterate: true,
       title: 'content.heading',
     },
-    fwd(filter(noAlso)),
-    rev(filter(noHeadingTitle())),
+    { $filter: 'noAlso', $direction: 'fwd' },
+    { $filter: 'noHeadingTitle', $direction: 'rev' },
   ]
   const data = [
     { content: { heading: 'The heading' } },
@@ -210,19 +197,19 @@ test('should use directional filters - going forward', async () => {
     { title: 'Another heading' },
   ]
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should use directional filters - going reverse', async () => {
+test('should use directional filters - going reverse', () => {
   const def = [
     {
       $iterate: true,
       title: 'content.heading',
     },
-    fwd(filter(noAlso)),
-    rev(filter(noHeadingTitle())),
+    { $filter: 'noAlso', $direction: 'fwd' },
+    { $filter: 'noHeadingTitle', $direction: 'rev' },
   ]
   const data = [
     { title: 'The heading' },
@@ -235,158 +222,48 @@ test('should use directional filters - going reverse', async () => {
     { content: { heading: 'Also this' } },
   ]
 
-  const ret = await mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter before mapping', async () => {
-  const def = [
-    'content',
-    filter(noHeadingTitle()),
-    {
-      heading: 'title',
-    },
-  ]
-  const data = {
-    content: { title: 'The heading' },
-  }
+test('should filter before mapping', () => {
+  const def = ['content', { $filter: 'noHeadingTitle' }, { heading: 'title' }]
+  const data = { content: { title: 'The heading' } }
   const expected = undefined
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter with filter before mapping on reverse mapping', async () => {
-  const def = [
-    'content',
-    filter(noHeadingTitle()),
-    {
-      heading: 'title',
-    },
-  ]
-  const data = {
-    heading: 'The heading',
-  }
+test('should filter with filter before mapping on reverse mapping', () => {
+  const def = ['content', { $filter: 'noHeadingTitle' }, { heading: 'title' }]
+  const data = { heading: 'The heading' }
   const expected = { content: undefined }
 
-  const ret = await mapTransform(def)(data, { rev: true })
+  const ret = mapTransformSync(def, options)(data, { rev: true })
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter with compare helper', async () => {
+test('should filter with compare transformer', () => {
   const def = [
     {
       title: 'heading',
-      meta: {
-        section: 'section',
-      },
+      meta: { section: 'section' },
     },
-    filter(compare({ path: 'meta.section', match: 'news' })),
+    { $filter: 'compare', path: 'meta.section', match: 'news' },
   ]
   const data = { heading: 'The heading', section: 'fashion' }
   const expected = undefined
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should filter with not and compare helpers', async () => {
-  const def = [
-    {
-      title: 'heading',
-      meta: {
-        section: 'section',
-      },
-    },
-    filter(not(compare({ path: 'meta.section', match: 'news' }))),
-  ]
-  const data = { heading: 'The heading', section: 'fashion' }
-  const expected = {
-    title: 'The heading',
-    meta: { section: 'fashion' },
-  }
-
-  const ret = await mapTransform(def)(data)
-
-  assert.deepEqual(ret, expected)
-})
-
-test('should apply filter from operation object', async () => {
-  const def = [
-    {
-      title: 'content.heading',
-    },
-    { $filter: 'noHeadingTitle' },
-  ]
-  const data = {
-    content: { heading: 'The heading' },
-  }
-  const expected = undefined
-
-  const ret = await mapTransform(def, { transformers })(data)
-
-  assert.deepEqual(ret, expected)
-})
-
-test('should apply filter with compare function from operation object', async () => {
-  const def = [
-    { title: 'content.heading' },
-    {
-      $filter: 'compare',
-      path: 'title',
-      operator: '=',
-      match: 'Other heading',
-    },
-  ]
-  const data = {
-    content: { heading: 'The heading' },
-  }
-  const expected = undefined
-
-  const ret = await mapTransform(def)(data)
-
-  assert.deepEqual(ret, expected)
-})
-
-test('should only apply filter from operation object going forward', async () => {
-  const def = [
-    { title: 'content.heading' },
-    { $filter: 'noHeadingTitle', $direction: 'fwd' },
-  ]
-  const dataFwd = { content: { heading: 'The heading' } }
-  const dataRev = { title: 'The heading' }
-
-  const retFwd = await mapTransform(def, { transformers })(dataFwd)
-  const retRev = await mapTransform(def, { transformers })(dataRev, {
-    rev: true,
-  })
-
-  assert.equal(retFwd, undefined)
-  assert.deepEqual(retRev, dataFwd)
-})
-
-test('should only apply filter from operation object going in reverse', async () => {
-  const def = [
-    { title: 'content.heading' },
-    { $filter: 'noHeadingTitle', $direction: 'rev' },
-  ]
-  const dataFwd = { content: { heading: 'The heading' } }
-  const dataRev = { title: 'The heading' }
-
-  const retFwd = await mapTransform(def, { transformers })(dataFwd)
-  const retRev = await mapTransform(def, { transformers })(dataRev, {
-    rev: true,
-  })
-
-  assert.deepEqual(retFwd, dataRev)
-  assert.equal(retRev, undefined)
-})
-
-test('should filter after a lookup', async () => {
+test('should filter after a lookup', () => {
   const def = [
     'ids',
     { $lookup: '^^.content', path: 'id' },
@@ -394,7 +271,7 @@ test('should filter after a lookup', async () => {
       $iterate: true,
       title: 'heading',
     },
-    filter(noHeadingTitle()),
+    { $filter: 'noHeadingTitle' },
   ]
   const data = {
     ids: ['ent1', 'ent2'],
@@ -407,24 +284,20 @@ test('should filter after a lookup', async () => {
   }
   const expected = [{ title: 'Just this' }]
 
-  const ret = await mapTransform(def)(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should apply filter from operation object with Symbol id', async () => {
+test('should apply filter from operation object with Symbol id', () => {
   const def = [
-    {
-      title: 'content.heading',
-    },
+    { title: 'content.heading' },
     { $filter: Symbol.for('noHeadingTitle') },
   ]
-  const data = {
-    content: { heading: 'The heading' },
-  }
+  const data = { content: { heading: 'The heading' } }
   const expected = undefined
 
-  const ret = await mapTransform(def, { transformers })(data)
+  const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
 })
@@ -435,10 +308,10 @@ test('should throw when filter is given an unknown transformer id', () => {
     content: { heading: 'The heading' },
   }
   const expectedError = new Error(
-    "Filter operator was given the unknown transformer id 'unknown'",
+    "Transformer 'unknown' was not found for filter operation",
   )
 
-  assert.throws(() => mapTransform(def, { transformers })(data), expectedError)
+  assert.throws(() => mapTransformSync(def, options)(data), expectedError)
 })
 
 test('should throw when filter is given an unknown transformer id as symbol', () => {
@@ -447,10 +320,10 @@ test('should throw when filter is given an unknown transformer id as symbol', ()
     content: { heading: 'The heading' },
   }
   const expectedError = new Error(
-    "Filter operator was given the unknown transformer id 'Symbol(unknown)'",
+    "Transformer 'Symbol(unknown)' was not found for filter operation",
   )
 
-  assert.throws(() => mapTransform(def, { transformers })(data), expectedError)
+  assert.throws(() => mapTransformSync(def, options)(data), expectedError)
 })
 
 test('should throw when filter operator is missing a transformer id', () => {
@@ -459,12 +332,12 @@ test('should throw when filter operator is missing a transformer id', () => {
     content: { heading: 'The heading' },
   }
   const expectedError = new Error(
-    'Filter operator was given no transformer id or pipeline',
+    'Filter operation is missing transformer id or pipeline',
   )
 
   assert.throws(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => mapTransform(def as any, { transformers })(data),
+    () => mapTransformSync(def as any, options)(data),
     expectedError,
   )
 })

@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import State from './state.js'
-import type { Path } from './types.js'
+import type { Path } from './typesNext.js'
 
 import createPathMapper, { pathGetter, pathSetter } from './createPathMapper.js'
 

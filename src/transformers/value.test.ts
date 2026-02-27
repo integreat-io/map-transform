@@ -1,16 +1,17 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import State from '../state.js'
 
 import { value, fixed } from './value.js'
 
 // Setup
 
-const state = {
+const state = new State({
   rev: false,
   noDefaults: false,
   context: [],
   value: {},
-}
+})
 
 const options = {}
 
@@ -51,7 +52,7 @@ test('should return value when not undefined', async () => {
 
 test('should not return default value when noDefaults is true', async () => {
   const data = undefined
-  const stateWithNoDefaults = { ...state, noDefaults: true }
+  const stateWithNoDefaults = new State({ ...state, noDefaults: true })
 
   const ret = await value({ value: 'The default' })(options)(
     data,
@@ -63,7 +64,11 @@ test('should not return default value when noDefaults is true', async () => {
 
 test('should override pipeline value with undefined when noDefaults is true', async () => {
   const data = { title: 'Title 1' }
-  const stateWithNoDefaults = { ...state, value: data, noDefaults: true }
+  const stateWithNoDefaults = new State({
+    ...state,
+    value: data,
+    noDefaults: true,
+  })
 
   const ret = await value({ value: 'The default' })(options)(
     data,
@@ -110,7 +115,7 @@ test('should return fixed value from function', async () => {
 
 test('should return fixed value also when noDefaults is true', async () => {
   const data = undefined
-  const stateWithNoDefaults = { ...state, noDefaults: true }
+  const stateWithNoDefaults = new State({ ...state, noDefaults: true })
 
   const ret = await fixed({ value: 'The default' })(options)(
     data,

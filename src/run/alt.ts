@@ -7,7 +7,6 @@ import runPipeline, {
 } from './index.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { isNonvalue } from '../utils/is.js'
-import { revFromState } from '../utils/stateHelpers.js'
 import type { PreppedPipeline } from './index.js'
 
 export interface AltStep extends OperationStepBase {
@@ -122,8 +121,7 @@ export default function runAltStep(
   { pipelines }: AltStep,
   state: State,
 ) {
-  const isRev = revFromState(state)
-  if (isRev) {
+  if (state.isRev) {
     if (shouldUseDefault(value, pipelines, state)) {
       const it = getDefaultValue(pipelines, state)
       value = runIterator(it)
@@ -155,8 +153,7 @@ export async function runAltStepAsync(
   { pipelines }: AltStep,
   state: State,
 ) {
-  const isRev = revFromState(state)
-  if (isRev) {
+  if (state.isRev) {
     if (shouldUseDefault(value, pipelines, state)) {
       const it = getDefaultValue(pipelines, state, true)
       value = await runIteratorAsync(it)

@@ -1,41 +1,70 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import State from '../state.js'
 
-import not from './not.js'
+import { not, notAsync } from './not.js'
 
 // Setup
 
-const returnIt = () => async (value: unknown) => !!value
-const state = {
-  rev: false,
-  noDefaults: false,
-  context: [],
-  value: {},
-}
-
+const state = new State()
 const options = {}
 
 // Tests
 
-test('should return true for false', async () => {
-  const data = false
+test('should return true for false', () => {
+  const value = false
+  const expected = true
 
-  const ret = await not(returnIt)(options)(data, state)
-  assert.equal(ret, true)
+  const ret = not({})(options)(value, state)
+
+  assert.equal(ret, expected)
 })
 
-test('should return false for true', async () => {
-  const data = true
+test('should return false for true', () => {
+  const value = true
+  const expected = false
 
-  const ret = await not(returnIt)(options)(data, state)
-  assert.equal(ret, false)
+  const ret = not({})(options)(value, state)
+
+  assert.equal(ret, expected)
 })
 
-test('should return true for false from a path', async () => {
-  const data = { visible: false }
+test('should return true for falsy', () => {
+  const value = null
+  const expected = true
+
+  const ret = not({})(options)(value, state)
+
+  assert.equal(ret, expected)
+})
+
+test('should return false for truthy', () => {
+  const value = 'true'
+  const expected = false
+
+  const ret = not({})(options)(value, state)
+
+  assert.equal(ret, expected)
+})
+
+test('should get value from pipeline', () => {
+  const value = { visible: false }
   const path = 'visible'
+  const expected = true
 
-  const ret = await not({ path })(options)(data, state)
+  const ret = not({ path })(options)(value, state)
 
-  assert.equal(ret, true)
+  assert.equal(ret, expected)
+})
+
+test('should get value from async pipeline', async () => {
+  const isFalse = async () => false
+  const value = { id: 'ent1' }
+  const path = [{ $transform: 'isFalse' }]
+  const options = { transformers: { isFalse: () => () => isFalse } }
+  const expected = true
+
+  const ret = await notAsync({ path })(options)(value, state)
+
+  assert.equal(ret, expected)
 })

@@ -1,5 +1,5 @@
 import type { ApplyStep } from '../run/apply.js'
-import type { ApplyOperation } from '../types.js'
+import type { ApplyOperation } from '../typesNext.js'
 import type { Options } from './index.js'
 
 export default function prepareApplyStep(

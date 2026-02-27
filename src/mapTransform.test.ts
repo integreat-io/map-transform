@@ -1,9 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createDataMapper } from './createDataMapper.js'
-import type StateNext from './state.js'
-import type { Options as OptionsNext } from './prep/index.js'
-import type { State, Options, Transformer, AsyncTransformer } from './types.js'
+import type State from './state.js'
+import type { Options } from './prep/index.js'
+import type { Transformer, AsyncTransformer } from './typesNext.js'
 
 import mapTransform, { mapTransformAsync } from './mapTransform.js'
 
@@ -67,7 +67,7 @@ test('should not prepare uneeded pipelines', () => {
   }
   const transformers = {
     countPipelines: () => () => (_value: unknown, state: State) =>
-      (state as StateNext).pipelines.size, // We know we get the new State here, but it's not typed that way
+      state.pipelines.size,
   }
   const value = { key: 'ent1', name: 'Entry 1' }
   const state = {}
@@ -91,7 +91,7 @@ test('should pass on prepared pipelines to a data mapper in transformer', () => 
   }
   const transformers = {
     props: () => (options: Options) =>
-      createDataMapper({ $apply: 'props' }, options as OptionsNext),
+      createDataMapper({ $apply: 'props' }, options),
   }
   const value = { key: 'ent1', name: 'Entry 1' }
   const state = {}
@@ -106,8 +106,7 @@ test('should pass on prepared pipelines to a data mapper in transformer', () => 
 test('should pass on context to a data mapper in transformer', () => {
   const def = ['name', { $transform: 'props' }]
   const transformers = {
-    props: () => (options: Options) =>
-      createDataMapper(['^.key'], options as OptionsNext),
+    props: () => (options: Options) => createDataMapper(['^.key'], options),
   }
   const value = { key: 'ent1', name: 'Entry 1' }
   const state = {}

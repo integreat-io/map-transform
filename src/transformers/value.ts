@@ -1,4 +1,4 @@
-import type { Transformer } from '../types.js'
+import type { Transformer } from '../typesNext.js'
 import { unescapeValue } from '../utils/escape.js'
 import { isObject } from '../utils/is.js'
 
@@ -9,7 +9,7 @@ export const extractValue = (value: unknown): unknown => {
 
 const value: Transformer<unknown> = function value(props: unknown) {
   const value = extractValue(props)
-  return () => (_data, state) => state.noDefaults ? undefined : value
+  return () => (_data, state) => (state.noDefaults ? undefined : value)
 }
 
 const fixed: Transformer<unknown> = function fixed(props: unknown) {

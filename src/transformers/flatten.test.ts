@@ -1,16 +1,17 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import State from '../state.js'
 
 import flatten from './flatten.js'
 
 // Setup
 
-const state = {
+const state = new State({
   rev: false,
   noDefaults: false,
   context: [],
   value: {},
-}
+})
 
 const options = {}
 

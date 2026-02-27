@@ -1,8 +1,8 @@
 import State, { type InitialState } from '../state.js'
 import runPipeline, { runPipelineAsync } from './index.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
-import { revFromState } from '../utils/stateHelpers.js'
 import { ensureArray } from '../utils/array.js'
+import xor from '../utils/xor.js'
 import type { OperationStepBase, PreppedPipeline } from './index.js'
 
 export interface ArrayStep extends OperationStepBase {
@@ -71,7 +71,7 @@ export default function runArrayStep(
   { pipelines, flip }: ArrayStep,
   state: State,
 ) {
-  const isRev = revFromState(state, flip)
+  const isRev = xor(state.isRev, flip)
 
   if (pipelines.length === 0) {
     return isRev ? undefined : []
@@ -94,7 +94,7 @@ export async function runArrayStepAsync(
   { pipelines, flip }: ArrayStep,
   state: State,
 ) {
-  const isRev = revFromState(state, flip)
+  const isRev = xor(state.isRev, flip)
 
   if (pipelines.length === 0) {
     return isRev ? undefined : []

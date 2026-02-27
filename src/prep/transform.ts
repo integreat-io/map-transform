@@ -3,9 +3,8 @@ import type {
   DataMapperWithOptions,
   AsyncDataMapperWithOptions,
   TransformOperation,
-  Options,
-} from '../types.js'
-import type { Options as OptionsNext } from './index.js'
+} from '../typesNext.js'
+import type { Options } from './index.js'
 
 function prepareFn(
   id:
@@ -15,7 +14,7 @@ function prepareFn(
     | AsyncDataMapperWithOptions
     | null,
   props: Record<string, unknown>,
-  options: OptionsNext,
+  options: Options,
   opName: string,
 ) {
   if (!id) {
@@ -58,7 +57,7 @@ function prepareFn(
  */
 export default function prepareTransformStep(
   { $transform: id, ...props }: TransformOperation,
-  options: OptionsNext,
+  options: Options,
   opName = 'Transform',
 ): TransformStep {
   const fn = prepareFn(id, props, options, opName)

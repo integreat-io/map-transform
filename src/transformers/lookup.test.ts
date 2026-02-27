@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import State from '../state.js'
 
 import { lookup, lookupAsync, lookdown, lookdownAsync } from './lookup.js'
 
@@ -26,7 +27,7 @@ test('should lookup and return first match', () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = { id: 'user2', name: 'User 2' }
@@ -50,7 +51,7 @@ test('should lookup and return all matches when matchSeveral is true', () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const matchSeveral = true
@@ -77,7 +78,7 @@ test('should force value at arrayPath to array', () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users'
   const propPath = 'id'
   const expected = { id: 'user2', name: 'User 2' }
@@ -100,7 +101,7 @@ test('should return undefined when no match', () => {
     },
   ]
   const value = 'user3'
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = undefined
@@ -118,7 +119,7 @@ test('should return undefined when arrayPath returns no data', () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users'
   const propPath = 'id'
   const expected = undefined
@@ -143,7 +144,7 @@ test('should lookup with array of props', () => {
     { authors: ['user3', 'user1'] },
   ]
   const value = ['user3', 'user1']
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = [
@@ -172,7 +173,7 @@ test('should pick first when there are several matches', () => {
     },
   ]
   const value = ['user1', 'user3']
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = [
@@ -201,7 +202,7 @@ test('should include all matches when matchSeveral is true', () => {
     },
   ]
   const value = ['user1', 'user0', 'user3'] // There's no matches for 'user0', but it will not result in `undefined` as we're potentially getting more for each
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const matchSeveral = true
   const propPath = 'id'
@@ -235,7 +236,7 @@ test('should return undefined for values that does not match', () => {
     { authors: ['user0', 'user2'] },
   ]
   const value = ['user0', 'user2'] // There's no match for 'user0', so it will leave `undefined` in the array to keep the same order and positions as the values
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = [undefined, { id: 'user2', name: 'User 2' }]
@@ -254,7 +255,7 @@ test('should return empty array when arrayPath does not exist -- with array of p
     { authors: ['user1', 'user3'] },
   ]
   const value = ['user1', 'user3']
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = [undefined, undefined]
@@ -277,7 +278,7 @@ test('should support pipeline in propPath', () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = ['id', { $transform: 'castString' }]
   const expected = { id: 'user2', name: 'User 2' }
@@ -289,7 +290,7 @@ test('should support pipeline in propPath', () => {
 
 test('should get lookup prop going forward when flipped', () => {
   const value = { id: 'user2', name: 'User 2' }
-  const state = { rev: false, value, context: [], flip: true }
+  const state = new State({ rev: false, value, context: [], flip: true })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = 'user2'
@@ -312,7 +313,7 @@ test('should support async pipelines', async () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: false, value, context }
+  const state = new State({ rev: false, value, context })
   const arrayPath = [{ $transform: 'passThrough' }, '^^related.users[]']
   const propPath = [{ $transform: 'passThrough' }, 'id']
   const expected = { id: 'user2', name: 'User 2' }
@@ -324,7 +325,7 @@ test('should support async pipelines', async () => {
 
 test('should get lookup prop going forward with lookdown', () => {
   const value = { id: 'user2', name: 'User 2' }
-  const state = { rev: false, value, context: [] }
+  const state = new State({ rev: false, value, context: [] })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = 'user2'
@@ -338,7 +339,7 @@ test('should get lookup prop going forward with lookdown', () => {
 
 test('should get lookup prop in reverse', () => {
   const value = { id: 'user2', name: 'User 2' }
-  const state = { rev: true, value, context: [] }
+  const state = new State({ rev: true, value, context: [] })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = 'user2'
@@ -353,7 +354,7 @@ test('should get lookup props from array in reverse', () => {
     { id: 'user1', name: 'User 1' },
     { id: 'user2', name: 'User 2' },
   ]
-  const state = { rev: true, value, context: [] }
+  const state = new State({ rev: true, value, context: [] })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = ['user1', 'user2']
@@ -376,7 +377,7 @@ test('should lookup in reverse when flipped', () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: true, value, context, flip: true }
+  const state = new State({ rev: true, value, context, flip: true })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = { id: 'user2', name: 'User 2' }
@@ -399,7 +400,7 @@ test('should lookup data in reverse with lookdown', () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: true, value, context }
+  const state = new State({ rev: true, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = 'id'
   const expected = { id: 'user2', name: 'User 2' }
@@ -422,7 +423,7 @@ test('should support async pipelines in reverse with lookdown', async () => {
     },
   ]
   const value = 'user2'
-  const state = { rev: true, value, context }
+  const state = new State({ rev: true, value, context })
   const arrayPath = '^^related.users[]'
   const propPath = [{ $transform: 'passThrough' }, 'id']
   const expected = { id: 'user2', name: 'User 2' }

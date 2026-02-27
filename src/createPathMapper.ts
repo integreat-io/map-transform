@@ -1,7 +1,7 @@
 import preparePathStep from './prep/path.js'
 import { createTransformFunction, DataMapper } from './createDataMapper.js'
-import { goForward } from './utils/stateHelpers.js'
-import type { Path, State } from './types.js'
+import type State from './state.js'
+import type { Path } from './typesNext.js'
 
 // Will turn the given path into a set path
 const createSetPath = (path: Path) =>
@@ -11,7 +11,7 @@ const createSetPath = (path: Path) =>
 function createForwardMapper(path: Path): DataMapper {
   const pipeline = preparePathStep(path)
   const mapper = createTransformFunction(pipeline)
-  return (value: unknown, state: State) => mapper(value, goForward(state))
+  return (value: unknown, state: State) => mapper(value, state.forwardState())
 }
 
 /**

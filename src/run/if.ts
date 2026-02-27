@@ -1,5 +1,4 @@
 import runPipeline, { runPipelineAsync } from './index.js'
-import { goForward } from '../utils/stateHelpers.js'
 import type State from '../state.js'
 import type { OperationStepBase, PreppedPipeline } from './index.js'
 
@@ -39,7 +38,8 @@ export default function runIfStep(
   { condition, then: thenPipeline, else: elsePipeline }: IfStep,
   state: State,
 ) {
-  const predicate = condition && runPipeline(value, condition, goForward(state))
+  const predicate =
+    condition && runPipeline(value, condition, state.forwardState())
   return runThenOrElse(
     value,
     state,
@@ -64,7 +64,8 @@ export async function runIfStepAsync(
   state: State,
 ) {
   const predicate =
-    condition && (await runPipelineAsync(value, condition, goForward(state)))
+    condition &&
+    (await runPipelineAsync(value, condition, state.forwardState()))
   return await runThenOrElse(
     value,
     state,

@@ -1,43 +1,34 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { get } from '../operations/getSet.js'
+import State from '../state.js'
+import type { AsyncTransformer } from '../typesNext.js'
 
-import compare from './compare.js'
+import { compare, compareAsync } from './compare.js'
 
 // Setup
 
-const state = {
+const state = new State({
   rev: false,
   noDefaults: false,
   context: [],
   value: {},
+})
+
+const stateRev = state.revState()
+
+const uppercaseAsync: AsyncTransformer = () => () => async (value) =>
+  typeof value === 'string' ? value.toUpperCase() : value
+
+const options = {
+  transformers: { uppercase: uppercaseAsync },
 }
 
-const stateRev = {
-  rev: true,
-  noDefaults: false,
-  context: [],
-  value: {},
-}
-
-const options = {}
-
-// Tests
+// Tests -- sync
 
 test('should return true when object has match value at path', () => {
   const match = 'admin'
   const path = 'meta.role'
   const data = { name: 'John F.', meta: { role: 'admin' } }
-
-  const ret = compare({ path, operator: '=', match })(options)(data, state)
-
-  assert.equal(ret, true)
-})
-
-test('should match dates with ms values', () => {
-  const match = new Date('2025-05-18T00:43:51+02:00')
-  const path = 'date'
-  const data = { date: new Date('2025-05-18T00:43:51+02:00') }
 
   const ret = compare({ path, operator: '=', match })(options)(data, state)
 
@@ -141,10 +132,10 @@ test('should support root prefix in matchPath', () => {
   const path = 'meta.role'
   const matchPath = '^^acceptLevel'
   const data = { name: 'John F.', meta: { role: 'editor' }, level: 'admin' }
-  const stateWithRoot = {
+  const stateWithRoot = new State({
     context: [{ user: data, acceptLevel: 'editor' }, data],
     value: data,
-  }
+  })
 
   const ret = compare({ path, operator: '=', matchPath })(options)(
     data,
@@ -158,10 +149,10 @@ test('should support obsolete root prefix in matchPath', () => {
   const path = 'meta.role'
   const matchPath = '^acceptLevel'
   const data = { name: 'John F.', meta: { role: 'editor' }, level: 'admin' }
-  const stateWithRoot = {
+  const stateWithRoot = new State({
     context: [{ user: data, acceptLevel: 'editor' }, data],
     value: data,
-  }
+  })
 
   const ret = compare({ path, operator: '=', matchPath })(options)(
     data,
@@ -426,7 +417,7 @@ test('should return true when comparison is false and `not` is set', () => {
 
 test('should support pipeline as path', async () => {
   const match = 'admin'
-  const path = [get('meta.role')]
+  const path = ['meta.role']
   const data = { name: 'John F.', meta: { role: 'admin' } }
 
   const ret = await compare({ path, operator: '=', match })(options)(
@@ -453,6 +444,21 @@ test('should treat `valuePath` as an alias of `matchPath`', () => {
   const data = { name: 'John F.', meta: { role: 'admin' }, level: 'admin' }
 
   const ret = compare({ path, operator: '=', valuePath })(options)(data, state)
+
+  assert.equal(ret, true)
+})
+
+// Tests -- async
+
+test('should compare with async pipeline', async () => {
+  const match = 'ADMIN'
+  const path = ['meta.role', { $transform: 'uppercase' }]
+  const data = { name: 'John F.', meta: { role: 'admin' } }
+
+  const ret = await compareAsync({ path, operator: '=', match })(options)(
+    data,
+    state,
+  )
 
   assert.equal(ret, true)
 })

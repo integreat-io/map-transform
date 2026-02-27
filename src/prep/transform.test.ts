@@ -1,7 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
-import type { Options, State } from '../types.js'
+import type State from '../state.js'
+import type { Options } from './index.js'
 
 import preparePipeline from './index.js'
 

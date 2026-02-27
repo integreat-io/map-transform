@@ -18,10 +18,9 @@ import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { isObject } from '../utils/is.js'
-import { revFromState } from '../utils/stateHelpers.js'
 import xor from '../utils/xor.js'
 import { ensureArray } from '../utils/array.js'
-import type { Path } from '../types.js'
+import type { Path } from '../typesNext.js'
 
 export interface StepProps {
   it?: boolean
@@ -228,7 +227,7 @@ function* runOneLevelGen(
   ) => unknown,
 ): Generator<unknown, unknown, unknown> {
   // Set the actual rev, based on flip and what not
-  const isRev = revFromState(state)
+  const isRev = state.isRev
 
   const targets = unwindTarget(state.target, pipeline, isRev)
   let next = value
@@ -347,7 +346,7 @@ export async function runOneLevelAsync(
 // there we are setting with parent or root, to get to the set path that is most
 // likely the reverse of what the pipeline would get from.
 function adjustPipelineToDirection(pipeline: PreppedPipeline, state: State) {
-  const isRev = revFromState(state)
+  const isRev = state.isRev
 
   // Reverse the steps when we're going in reverse
   const directedPipeline = isRev ? [...pipeline].reverse() : pipeline

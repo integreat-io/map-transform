@@ -1,6 +1,6 @@
 import preparePipeline, { Options } from './index.js'
 import type { ArrayStep } from '../run/array.js'
-import type { ArrayOperationNext as ArrayOperation } from '../types.js'
+import type { ArrayOperation } from '../typesNext.js'
 
 export default function prepareArrayStep(
   { $array: pipelines, $flip: flip }: ArrayOperation,

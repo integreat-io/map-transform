@@ -5,15 +5,14 @@ import {
   DataMapperAsync,
 } from '../createDataMapper.js'
 import { ensureArray } from '../utils/array.js'
-import { flipState, revFromState } from '../utils/stateHelpers.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import type { Options, TransformDefinition } from '../prep/index.js'
+import type State from '../state.js'
 import type {
   Transformer,
   AsyncTransformer,
   TransformerProps,
-  State,
-} from '../types.js'
+} from '../typesNext.js'
 
 export interface Props extends TransformerProps {
   arrayPath?: TransformDefinition
@@ -30,9 +29,9 @@ function* lookupGen(
   propGetter: DataMapper,
   matchSeveral: boolean,
 ): Generator<unknown, unknown, unknown> {
-  if (revFromState(state)) {
+  if (state.isRev) {
     // We're going in reverse -- just set the value on the `propPath`
-    return propGetter(value, flipState(state))
+    return propGetter(value, state.flipState())
   } else {
     // Make a Set with the values to keep track of what we have found
     const values = new Set(ensureArray(value))
@@ -181,7 +180,7 @@ export const lookupAsync: AsyncTransformer = function lookup({
 export const lookdown: Transformer = function lookdown(props: Props) {
   return (options) => {
     const fn = lookup(props)(options)
-    return (value, state) => fn(value, flipState(state))
+    return (value, state) => fn(value, state.flipState())
   }
 }
 
@@ -194,6 +193,6 @@ export const lookdown: Transformer = function lookdown(props: Props) {
 export const lookdownAsync: AsyncTransformer = function lookdown(props: Props) {
   return (options) => {
     const fn = lookupAsync(props)(options)
-    return async (value, state) => fn(value, flipState(state))
+    return async (value, state) => fn(value, state.flipState())
   }
 }

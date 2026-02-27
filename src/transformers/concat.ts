@@ -7,18 +7,13 @@ import {
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { ensureArray } from '../utils/array.js'
 import { isNonvalue } from '../utils/is.js'
-import { flipState, revFromState } from '../utils/stateHelpers.js'
-import type StateNext from '../state.js'
+import State from '../state.js'
 import type {
   Transformer,
   AsyncTransformer,
   TransformerProps,
-  State,
-} from '../types.js'
-import type {
-  Options as OptionsNext,
-  TransformDefinition,
-} from '../prep/index.js'
+} from '../typesNext.js'
+import type { Options, TransformDefinition } from '../prep/index.js'
 
 export interface Props extends TransformerProps {
   path?: TransformDefinition | TransformDefinition[]
@@ -32,12 +27,12 @@ function* concatGen(
   state: State,
   getFns: DataMapper[] | DataMapperAsync[],
 ): Generator<unknown, unknown, unknown> {
-  if (revFromState(state)) {
+  if (state.isRev) {
     // We're in reverse -- set the value on the first pipeline and pass an
     // empty array to the rest.
-    let merged = yield getFns[0](value, state)
+    let merged = yield getFns[0](value, new State(state))
     for (const getFn of getFns.slice(1)) {
-      merged = yield getFn([], { ...state, target: merged })
+      merged = yield getFn([], new State({ ...state, target: merged }))
     }
     return merged
   } else {
@@ -45,18 +40,16 @@ function* concatGen(
     // one array.
     let merged: unknown[] = []
     for (const getFn of getFns) {
-      const arr = yield getFn(value, state)
+      const arr = yield getFn(value, new State(state))
       merged = mergeValues(merged, arr)
     }
     // Filter away non-values
-    return merged.filter(
-      (val) => !isNonvalue(val, (state as StateNext).nonvalues),
-    )
+    return merged.filter((val) => !isNonvalue(val, (state as State).nonvalues))
   }
 }
 
 function mergeWithNoPipelines(state: State) {
-  return revFromState(state) ? {} : []
+  return state.isRev ? {} : []
 }
 
 /**
@@ -69,7 +62,7 @@ function mergeWithNoPipelines(state: State) {
 export const concat: Transformer = function concat({ path = [] }: Props) {
   return (options) => {
     const getFns = ensureArray(path).map((pipeline) =>
-      createDataMapper(pipeline, options as OptionsNext),
+      createDataMapper(pipeline, options as Options),
     )
     if (getFns.length === 0) {
       return (_value, state) => mergeWithNoPipelines(state)
@@ -94,7 +87,7 @@ export const concatAsync: AsyncTransformer = function concat({
 }: Props) {
   return (options) => {
     const getFns = ensureArray(path).map((pipeline) =>
-      createDataMapperAsync(pipeline, options as OptionsNext),
+      createDataMapperAsync(pipeline, options as Options),
     )
     if (getFns.length === 0) {
       return async (_value, state) => mergeWithNoPipelines(state)
@@ -117,7 +110,7 @@ export const concatAsync: AsyncTransformer = function concat({
 export const concatRev: Transformer = function concatRev(props: Props) {
   return (options) => {
     const fn = concat(props)(options)
-    return (value, state) => fn(value, flipState(state))
+    return (value, state) => fn(value, state.flipState())
   }
 }
 
@@ -133,6 +126,6 @@ export const concatRevAsync: AsyncTransformer = function concatRev(
 ) {
   return (options) => {
     const fn = concatAsync(props)(options)
-    return async (value, state) => fn(value, flipState(state))
+    return async (value, state) => fn(value, state.flipState())
   }
 }

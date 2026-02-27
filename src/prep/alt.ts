@@ -1,6 +1,6 @@
 import preparePipeline, { Options } from './index.js'
 import type { AltStep } from '../run/alt.js'
-import type { AltOperationNext as AltOperation } from '../types.js'
+import type { AltOperation } from '../typesNext.js'
 
 export default function prepareAltStep(
   { $alt: pipelines }: AltOperation,

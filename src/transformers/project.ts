@@ -2,7 +2,8 @@ import mapAny from 'map-any'
 import { pathGetter } from '../createPathMapper.js'
 import { isObject, isString, isNonEmptyArray } from '../utils/is.js'
 import { ensureArray } from '../utils/array.js'
-import type { Transformer, TransformerProps, State } from '../types.js'
+import type State from '../state.js'
+import type { Transformer, TransformerProps } from '../typesNext.js'
 
 export interface Props extends TransformerProps {
   include?: string[]

@@ -94,3 +94,159 @@ test('should accept undefined as a separate value', () => {
 
   assert.equal(state.value, undefined)
 })
+
+// Tests -- isRev
+
+test('should return true when rev', () => {
+  const initialState = {
+    rev: true,
+    flip: false,
+  }
+
+  const state = new State(initialState)
+  const ret = state.isRev
+
+  assert.equal(ret, true)
+})
+
+test('should return false when fwd', () => {
+  const initialState = {
+    rev: false,
+    flip: false,
+  }
+
+  const state = new State(initialState)
+  const ret = state.isRev
+
+  assert.equal(ret, false)
+})
+
+test('should return true when forward and flipped', () => {
+  const initialState = {
+    rev: false,
+    flip: true,
+  }
+
+  const state = new State(initialState)
+  const ret = state.isRev
+
+  assert.equal(ret, true)
+})
+
+test('should return false when reverse and flipped', () => {
+  const initialState = {
+    rev: true,
+    flip: true,
+  }
+
+  const state = new State(initialState)
+  const ret = state.isRev
+
+  assert.equal(ret, false)
+})
+
+// Tests -- forwardState()
+
+test('should create a new forward state', () => {
+  const target = { item: { id: 'ent1' } }
+  const initialState = {
+    target,
+    nonvalues: [undefined, null],
+    rev: true,
+    flip: true,
+    noDefaults: true,
+  }
+
+  const state = new State(initialState)
+  const fwdState = state.forwardState()
+
+  assert.equal(fwdState.rev, false)
+  assert.equal(fwdState.flip, false)
+  assert.equal(fwdState.value, undefined)
+  assert.deepEqual(fwdState.context, [])
+  assert.deepEqual(fwdState.target, target)
+  assert.deepEqual(fwdState.nonvalues, [undefined, null])
+  assert.ok(fwdState.pipelines instanceof Map)
+  assert.equal(fwdState.pipelines.size, 0)
+  assert.equal(fwdState.noDefaults, true)
+  assert.equal(fwdState.index, undefined)
+})
+
+// Tests -- revState()
+
+test('should create a new reverse state', () => {
+  const target = { item: { id: 'ent1' } }
+  const initialState = {
+    target,
+    nonvalues: [undefined, null],
+    rev: false,
+    flip: true,
+    noDefaults: true,
+  }
+
+  const state = new State(initialState)
+  const revState = state.revState()
+
+  assert.equal(revState.rev, true)
+  assert.equal(revState.flip, false)
+  assert.equal(revState.value, undefined)
+  assert.deepEqual(revState.context, [])
+  assert.deepEqual(revState.target, target)
+  assert.deepEqual(revState.nonvalues, [undefined, null])
+  assert.ok(revState.pipelines instanceof Map)
+  assert.equal(revState.pipelines.size, 0)
+  assert.equal(revState.noDefaults, true)
+  assert.equal(revState.index, undefined)
+})
+
+// Tests -- flipState()
+
+test('should create a new flipped state', () => {
+  const target = { item: { id: 'ent1' } }
+  const initialState = {
+    target,
+    nonvalues: [undefined, null],
+    rev: false,
+    flip: false,
+    noDefaults: true,
+  }
+
+  const state = new State(initialState)
+  const revState = state.flipState()
+
+  assert.equal(revState.rev, false)
+  assert.equal(revState.flip, true)
+  assert.equal(revState.value, undefined)
+  assert.deepEqual(revState.context, [])
+  assert.deepEqual(revState.target, target)
+  assert.deepEqual(revState.nonvalues, [undefined, null])
+  assert.ok(revState.pipelines instanceof Map)
+  assert.equal(revState.pipelines.size, 0)
+  assert.equal(revState.noDefaults, true)
+  assert.equal(revState.index, undefined)
+})
+
+test('should create a new flipped state when flipped', () => {
+  const target = { item: { id: 'ent1' } }
+  const initialState = {
+    target,
+    nonvalues: [undefined, null],
+    rev: false,
+    flip: true,
+    noDefaults: true,
+  }
+
+  const state = new State(initialState)
+  const revState = state.flipState()
+
+  assert.equal(revState.rev, false)
+  assert.equal(revState.flip, false)
+  assert.equal(revState.value, undefined)
+  assert.deepEqual(revState.context, [])
+  assert.deepEqual(revState.target, target)
+  assert.deepEqual(revState.nonvalues, [undefined, null])
+  assert.ok(revState.pipelines instanceof Map)
+  assert.equal(revState.pipelines.size, 0)
+  assert.equal(revState.noDefaults, true)
+  assert.equal(revState.index, undefined)
+})

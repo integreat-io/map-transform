@@ -1,13 +1,19 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import State from '../state.js'
 
 import { concat, concatAsync, concatRev, concatRevAsync } from './concat.js'
 
 // Setup
 
 const options = {}
-const state = { rev: false, noDefaults: false, context: [], value: {} }
-const stateRev = { ...state, rev: true }
+const state = new State({
+  rev: false,
+  noDefaults: false,
+  context: [],
+  value: {},
+})
+const stateRev = state.revState()
 
 // Tests -- forward
 
@@ -54,7 +60,10 @@ test('should not include undefined', () => {
 test('should not include non-values', () => {
   const value = { group: 'bergen', user: 'johnf', team: null }
   const path = ['group', 'unknown', 'user', 'team']
-  const stateWithNonvalues = { ...state, nonvalues: [undefined, null] }
+  const stateWithNonvalues = new State({
+    ...state,
+    nonvalues: [undefined, null],
+  })
   const expected = ['bergen', 'johnf']
 
   const ret = concat({ path })(options)(value, stateWithNonvalues)
@@ -74,7 +83,7 @@ test('should return empty array when no pipeline', () => {
 test('should behave as forward when flipped in reverse', () => {
   const value = { users: ['johnf', 'maryk'], admins: ['theboss'] }
   const path = ['users[]', 'admins[]']
-  const stateRevWithFlip = { ...stateRev, flip: true }
+  const stateRevWithFlip = stateRev.flipState()
   const expected = ['johnf', 'maryk', 'theboss']
 
   const ret = concat({ path })(options)(value, stateRevWithFlip)
@@ -144,7 +153,7 @@ test('should return empty object when no pipeline in reverse', () => {
 test('should behave as reverse when flipped going forward', () => {
   const value = ['johnf', 'maryk', 'theboss']
   const path = ['users[]', 'admins[]']
-  const stateWithFlip = { ...state, flip: true }
+  const stateWithFlip = state.flipState()
   const expected = { users: ['johnf', 'maryk', 'theboss'], admins: [] }
 
   const ret = concat({ path })(options)(value, stateWithFlip)

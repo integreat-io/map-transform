@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import type { Dictionary } from '../types.js'
+import State from '../state.js'
+import type { Dictionary } from '../typesNext.js'
 
 import map from './map.js'
 
@@ -38,18 +39,13 @@ const withUndefinedKeyword = [
   ['**undefined**', 'USD'],
 ] as Dictionary
 
-const state = {
+const state = new State({
   rev: false,
   noDefaults: false,
   context: [],
   value: {},
-}
-const stateRev = {
-  rev: true,
-  noDefaults: false,
-  context: [],
-  value: {},
-}
+})
+const stateRev = state.revState()
 
 const options = {}
 

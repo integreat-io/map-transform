@@ -1,6 +1,6 @@
 import preparePipeline, { TransformDefinition, Options } from './prep/index.js'
 import runPipeline, { runPipelineAsync, PreppedPipeline } from './run/index.js'
-import type { State } from './types.js'
+import type State from './state.js'
 
 export type DataMapper = (value: unknown, state: State) => unknown
 export type DataMapperAsync = (value: unknown, state: State) => Promise<unknown>

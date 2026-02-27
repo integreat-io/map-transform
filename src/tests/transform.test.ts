@@ -1,9 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mapTransformSync, mapTransformAsync } from '../index.js'
 import { isObject } from '../utils/is.js'
 import type { TransformDefinition } from '../prep/index.js'
 import type { TransformerProps } from '../typesNext.js'
+
+import mapTransformSync, { mapTransformAsync } from '../mapTransform.js'
 
 // Setup
 

@@ -9,7 +9,7 @@ const slashedRegex = /(?<!\\)\/\d+$/ // Matches /1 at the end, but not if the sl
 const isSlashed = (path: Path) => slashedRegex.test(path)
 const removeSlash = (path: Path) => path.replace(slashedRegex, '')
 
-const allowedFirstStepOperations = ['mutation', 'alt']
+const allowedFirstStepOperations = ['mutation', 'alt', 'transform']
 
 // When a pipeline starts with no get step, i.e. the first step is not a path
 // or a mutation object, we either plug it or add a get dot step.

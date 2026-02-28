@@ -712,6 +712,209 @@ test('should shallow merge object with $merge in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should use built in map function in reverse', () => {
+  const def = {
+    result: [
+      'status',
+      {
+        $transform: 'map',
+        dictionary: [
+          [200, 'ok'],
+          [404, 'notfound'],
+          ['*', 'error'],
+        ],
+      },
+    ],
+  }
+  const data = { result: 'notfound' }
+  const expected = { status: 404 }
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use built in explode function in reverse', () => {
+  // explode converts an object to an array of { key, value } pairs.
+  // In reverse, it should convert an array of { key, value } pairs back to an object.
+  const def = {
+    items: ['data', { $transform: 'explode' }],
+  }
+  const data = {
+    items: [
+      { key: 'NOK', value: 1 },
+      { key: 'EUR', value: 0.1 },
+    ],
+  }
+  const expected = {
+    data: { NOK: 1, EUR: 0.1 },
+  }
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use built in implode function in reverse', () => {
+  // implode converts an array of { key, value } pairs to an object.
+  // In reverse, it should convert an object back to an array of { key, value } pairs.
+  const def = { properties: { $transform: 'implode' } }
+  const data = { properties: { value: 32, unit: 'KG' } }
+  const expected = [
+    { key: 'value', value: 32 },
+    { key: 'unit', value: 'KG' },
+  ]
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should not affect forward when transform is used as mutation property value', () => {
+  // A transform used directly as a mutation property value (no get path)
+  // should still work correctly in forward mode after allowing transforms
+  // to not be plugged in reverse.
+  const def = { properties: { $transform: 'implode' } }
+  const data = [
+    { key: 'value', value: 32 },
+    { key: 'unit', value: 'KG' },
+  ]
+  const expected = { properties: { value: 32, unit: 'KG' } }
+
+  const ret = mapTransformSync(def, options)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use forward-only transform as mutation property value in forward', () => {
+  // A forward-only transform should still work in forward mode
+  const def = {
+    title: { $transform: 'fixed', value: "I'm fixed", $direction: 'fwd' },
+  }
+  const data = { content: 'something' }
+  const expected = { title: "I'm fixed" }
+
+  const ret = mapTransformSync(def, options)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should skip forward-only transform as mutation property value in reverse', () => {
+  // A forward-only transform used as mutation property value. In reverse,
+  // the transform is skipped ($direction: 'fwd'), but the get from 'title'
+  // still runs and the value passes through the merge step.
+  const def = {
+    title: { $transform: 'fixed', value: "I'm fixed", $direction: 'fwd' },
+  }
+  const data = { title: 'The heading' }
+  const expected = 'The heading'
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should run bidirectional transform in reverse', () => {
+  // A transform without $direction runs in both directions.
+  // appendEllipsis appends ' ...' so in reverse it also appends.
+  const def = {
+    title: ['content.heading', { $transform: 'appendEllipsis' }],
+  }
+  const data = { title: 'The heading' }
+  const expected = { content: { heading: 'The heading ...' } }
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use fixed transform as mutation property value in reverse', () => {
+  // `fixed` always returns its value regardless of direction.
+  // In reverse, it gets from `title`, but `fixed` ignores input and returns
+  // its fixed value, which is then merged with the target.
+  const def = {
+    title: { $transform: 'fixed', value: 'Always this' },
+  }
+  const data = { title: 'Original' }
+  const expected = 'Always this'
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use explode transform as mutation property value in reverse', () => {
+  // `explode` converts an object to [{key, value}, ...] in forward.
+  // In reverse, it does the opposite: [{key, value}, ...] → object.
+  const def = { items: { $transform: 'explode' } }
+  const data = { items: [{ key: 'a', value: 1 }, { key: 'b', value: 2 }] }
+  const expected = { a: 1, b: 2 }
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use map transform as mutation property value in reverse', () => {
+  // `map` does dictionary lookup. In reverse, it does reverse lookup.
+  const def = {
+    result: {
+      $transform: 'map',
+      dictionary: [
+        ['draft', 'Draft'],
+        ['published', 'Published'],
+      ],
+    },
+  }
+  const data = { result: 'Published' }
+  const expected = 'published'
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use not transform as mutation property value in reverse', () => {
+  // `not` negates a boolean. It does the same in both directions.
+  const def = {
+    disabled: { $transform: 'not' },
+  }
+  const data = { disabled: true }
+  const expected = false
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use flatten transform as mutation property value in reverse', () => {
+  // `flatten` flattens nested arrays. Same in both directions.
+  const def = {
+    items: { $transform: 'flatten' },
+  }
+  const data = { items: [[1, 2], [3, 4]] }
+  const expected = [1, 2, 3, 4]
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use custom non-directional transform as mutation property value in reverse', () => {
+  // A custom transform (getLength) that doesn't check direction
+  // runs the same in both directions. In reverse, it gets from `len`,
+  // applies getLength, and merges.
+  const def = {
+    len: { $transform: 'getLength' },
+  }
+  const data = { len: 'hello' }
+  const expected = 5
+
+  const ret = mapTransformSync(def, options)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should apply transform from an operation object with Symbol as key', () => {
   const def = [
     {

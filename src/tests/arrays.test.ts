@@ -548,6 +548,9 @@ test('should iterate with iterate operation in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
+// Note: This test is how one would expect this to work, but it's not possible
+// to reverse this pipeline with this data. I'm keeping this test in case we
+// find a way in the future.
 test.skip('should map array in transform object in reverse', () => {
   const def = [
     {
@@ -562,7 +565,7 @@ test.skip('should map array in transform object in reverse', () => {
     authors: ['johnf', 'lucyk'],
   }
   const expected = [
-    { content: { heading: 'Heading 1', author: 'johnf' } }, // <--
+    { content: { heading: 'Heading 1', author: 'johnf' } },
     { content: { heading: 'Heading 2', author: 'lucyk' } },
   ]
 

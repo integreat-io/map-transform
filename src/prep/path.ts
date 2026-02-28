@@ -20,8 +20,13 @@ function splitPart(part: string): string[] {
   if (part === '$modify') {
     return ['...']
   } else if (part[0] === '^' && part.length > 1) {
+    // This is a root part, either mutated (^^) or the original (^^^). We also
+    // support an obsolete root format for now (^path -- no dot).
+    if (part === '^^^') {
+      // This is the root prefix for the original root.
+      return ['^^^']
+    }
     // The part starts with '^^' or the obsolete '^' root prefix.
-    // Note that this obsolete prefix will be removed in future versions.
     const rest = part.slice(part[1] === '^' ? 2 : 1) // Extract the rest of the part
     return [
       '^^', // Return the root part

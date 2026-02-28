@@ -509,6 +509,38 @@ test('should get from root when we are at the root', () => {
   assert.deepEqual(ret, expected)
 })
 
+// Tests -- get original root (^^^)
+
+test('should get pipeline with original root', () => {
+  const pipeline = ['response', 'data', 'item', '^^^', 'response']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { data: { item: { id: 'ent1' } } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should get from original root when we are at the root', () => {
+  const pipeline = ['^^^', 'response', 'data', 'item']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { id: 'ent1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should get from original root after parent', () => {
+  const pipeline = ['response', 'data', 'item', '^', '^^^', 'response']
+  const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { data: { item: { id: 'ent1' } } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
 // Tests -- set path
 
 test('should set pipeline', () => {

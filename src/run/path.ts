@@ -139,13 +139,16 @@ export default function runPathStep(
     // Get the parent value. This is never run in rev, as we remove it from the
     // pipeline before running it.
     return [state.context.pop(), index]
-  } else if (path === '^^') {
-    // Get the root from the context -- or the present value when we have no
-    // context. When we're setting, treat this is a plug and return the target.
+  } else if (path === '^^' || path === '^^^') {
+    // Get root from the context (^^) or from the original source data (^^^).
+    // When we're setting, treat this as a plug and return the target.
     if (isSet) {
       return [state.target, pipeline.length]
     } else {
-      const next = state.context.length === 0 ? value : state.context[0]
+      const next =
+        path === '^^^'
+          ? (state.root !== undefined ? state.root : value)
+          : (state.context.length === 0 ? value : state.context[0])
       state.context = []
       return [next, index]
     }

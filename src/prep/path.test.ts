@@ -286,6 +286,35 @@ test('should prepare path with dot-less root notation and index', () => {
   assert.deepEqual(ret, expected)
 })
 
+// Tests -- original root (^^^)
+
+test('should prepare path from original root', () => {
+  const def = '^^^.response'
+  const expected = ['^^^', 'response']
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should prepare original root path with nested path', () => {
+  const def = '^^^.data.items'
+  const expected = ['^^^', 'data', 'items']
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should prepare original root path with index', () => {
+  const def = '^^^.responses[1]'
+  const expected = ['^^^', 'responses', '[1]']
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
 // Tests -- set
 
 test('should prepare set path', () => {

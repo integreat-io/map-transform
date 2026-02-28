@@ -961,6 +961,103 @@ test('should reference the mutated root', () => {
   assert.deepEqual(ret, expected)
 })
 
+// Tests -- original root (^^^)
+
+test('should reference the original root with ^^^', () => {
+  const def = {
+    $direction: 'from',
+    response: [
+      {
+        id: 'data.key',
+        title: 'data.content.heading',
+        viewCount: { $value: 183 },
+        settings: { type: { $value: 'new' } },
+      },
+      {
+        $modify: true,
+        meta: {
+          id: 'id',
+          type: '^^^.settings.type', // ^^^ gets original root, not the transformed one
+        },
+      },
+    ],
+  }
+  const data = {
+    data: {
+      key: 'key1',
+      content: { heading: 'The heading' },
+    },
+    settings: { type: 'old' },
+  }
+  const expected = {
+    response: {
+      id: 'key1',
+      title: 'The heading',
+      viewCount: 183,
+      settings: { type: 'new' },
+      meta: { id: 'key1', type: 'old' }, // 'old' from original data, not 'new' from step 1
+    },
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should reference mutated root with ^^ and original root with ^^^ in the same pipeline', () => {
+  const def = [
+    {
+      title: 'content.heading',
+      type: { $value: 'article' },
+    },
+    {
+      $modify: true,
+      meta: {
+        mutatedType: '^^.type', // ^^ gets transformed root ('article')
+        originalType: '^^^.type', // ^^^ gets original root ('page')
+      },
+    },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    type: 'page',
+  }
+  const expected = {
+    title: 'The heading',
+    type: 'article',
+    meta: {
+      mutatedType: 'article',
+      originalType: 'page',
+    },
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should reference original root with ^^^ in a deeply nested pipeline', () => {
+  const def = [
+    'content',
+    {
+      title: 'heading',
+      source: '^^^.source', // ^^^ should reach the original top-level data
+    },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    source: 'external',
+  }
+  const expected = {
+    title: 'The heading',
+    source: 'external',
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should not map fields without pipeline', () => {
   const def = {
     title: null,

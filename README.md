@@ -645,37 +645,50 @@ the array you're iterating.
 > happens in a pipeline where we go up and down.
 
 The root notation follows the same logic, but will always go to the base level
-of the original data structure, regardless of how many levels down you have
-moved. Roots are specified with double carrets, so the path `^^.id` will get the
-id from our data from anywhere in the data structure, be it in `content` or when
-iterating through `tags[]`.
+of the data structure, regardless of how many levels down you have moved. Roots
+are specified with double carets, so the path `^^.id` will get the id from our
+data from anywhere in the data structure, be it in `content` or when iterating
+through `tags[]`.
 
-There is a big gotcha here, for both parent and root paths, relating to whether
-you're moving up in the original or the transformed data. The correct answer is
-that you're moving in the transformed data – if it is transformed. This need
-some explaining. Say you have a pipeline where you first transforms the data on
-the level you're at with a mutation object. The following steps in the pipeline
-will relate to the mutated object, and if you move into the mutated data with a
-path, and the go up again with a parent path, you are moving up in the mutated
-data. But if you instead just move into the data without transforming it, moving
-up with a parent path will give you the original data – there's nothing else,
-as you have not transformed it.
+There is a gotcha here, for both parent and root paths, relating to what data
+you're moving up in, as you are mutating the data as you move "down". The
+short answer is that you're moving in the mutated data – if you are mutating it.
+Say you have a pipeline where you first mutate the data on the level you're at
+with a mutation object. The following steps in the pipeline will relate to
+the mutated object, and if you move into the mutated data with a path, and then
+go up again with a parent path, you are moving up in the mutated data. But if
+you instead just move into the data without mutating it, moving up with a parent
+path will give you the original data – there's nothing else, as you have not
+mutated it.
 
 This is probably as expected, but the confusing part comes into play when there
-is some "distance" between transforming the data and referencing it with a root
-or parent path, especially the root. Say you first transform the root level with
-a mutation object, then move on with other operations, and then at some point,
+is some "distance" between mutating the data and referencing it with a root or
+parent path, especially the root. Say you first mutate the root level with a
+mutation object, then move on with other operations, and then at some point,
 further down in the data, you want to reference something at the root level in
-_the original data_. Well, now you can't, as you have transformed the root
-level, but you might have not realized you actually did that. This is even more
-confusing when you write a named pipeline and reference it with an `$apply`
-operation, as you have no knowledge in the named pipeline about any mutation of
-the root outside it.
+_the original data_. This is where the **original root** notation comes in.
 
-All of this should make sense when you think about it the right way, but might
-be confusing in practice. Try to picture the pipeline and how data changes in
-it, and you will always reference the transformed data – if it has been
-transformed. And sometimes, in complex cases, you might just have to test it.
+Use triple carets (`^^^`) to always reference the original, untransformed source
+data, regardless of any prior transformations in the pipeline. This is useful in
+multi-step pipelines where earlier steps may have transformed the root:
+
+```javascript
+const def = [
+  { title: 'content.heading', type: { $value: 'article' } },  // Step 1: transforms root
+  {
+    $modify: true,
+    meta: {
+      mutatedType: '^^.type',   // 'article' (from step 1 output)
+      originalType: '^^^.type', // value from the original source data
+    },
+  },
+]
+```
+
+This is especially useful when you write a named pipeline and reference it with
+an `$apply` operation, as you have no knowledge in the named pipeline about any
+mutation of the root outside it. Using `^^^` guarantees access to the original
+source data in all cases.
 
 Note also, that if you are within a mutation object and move down into the data,
 the data above where you are isn't transformed yet. As long as you are within a

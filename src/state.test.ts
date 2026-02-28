@@ -95,6 +95,55 @@ test('should accept undefined as a separate value', () => {
   assert.equal(state.value, undefined)
 })
 
+// Tests -- root
+
+test('should set root to value when created with a separate value', () => {
+  const value = { id: 'ent1' }
+
+  const state = new State({}, value)
+
+  assert.deepEqual(state.root, value)
+})
+
+test('should keep root from initial state when provided', () => {
+  const root = { id: 'original' }
+  const value = { id: 'transformed' }
+
+  const state = new State({ root }, value)
+
+  assert.deepEqual(state.root, root)
+})
+
+test('should have undefined root when created without a separate value', () => {
+  const state = new State()
+
+  assert.equal(state.root, undefined)
+})
+
+test('should preserve root through forwardState', () => {
+  const root = { id: 'original' }
+  const state = new State({ root, rev: true }, 'value')
+  const fwdState = state.forwardState()
+
+  assert.deepEqual(fwdState.root, root)
+})
+
+test('should preserve root through revState', () => {
+  const root = { id: 'original' }
+  const state = new State({ root }, 'value')
+  const revState = state.revState()
+
+  assert.deepEqual(revState.root, root)
+})
+
+test('should preserve root through flipState', () => {
+  const root = { id: 'original' }
+  const state = new State({ root }, 'value')
+  const flipped = state.flipState()
+
+  assert.deepEqual(flipped.root, root)
+})
+
 // Tests -- isRev
 
 test('should return true when rev', () => {

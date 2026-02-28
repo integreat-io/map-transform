@@ -3,6 +3,7 @@ import type { PreppedPipeline } from './run/index.js'
 
 export interface InitialState {
   value?: unknown
+  root?: unknown
   context?: unknown[]
   target?: unknown
   nonvalues?: unknown[]
@@ -21,6 +22,7 @@ const cloneContext = (context?: unknown[]) =>
  */
 export default class State {
   value: unknown
+  root: unknown
   context: unknown[] = []
   target: unknown
   nonvalues: unknown[]
@@ -38,6 +40,7 @@ export default class State {
     this.pipelines =
       initialState?.pipelines ?? new Map<string | symbol, PreppedPipeline>()
     this.value = initialState?.value
+    this.root = initialState?.root
     this.target = initialState?.target
     this.rev = !!initialState?.rev
     this.flip = !!initialState?.flip
@@ -46,6 +49,9 @@ export default class State {
 
     if (arguments.length === 2) {
       this.value = value
+      if (this.root === undefined) {
+        this.root = value
+      }
     }
   }
 

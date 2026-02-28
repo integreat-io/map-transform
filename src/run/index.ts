@@ -264,6 +264,9 @@ function* runOneLevelGen(
           runOneLevel(item, subPipeline, state)
         const arr = yield* iterateOverArray(next, targetArr, state, processor)
         next = arr.flat()
+        // Remove the array from context after iteration, matching the
+        // push/pop pattern used for operation iteration ($iterate).
+        state.context.pop()
       }
     } else if (isOperationObject(step)) {
       if (shouldRun(step, state.rev)) {

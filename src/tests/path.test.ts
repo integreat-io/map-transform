@@ -1453,6 +1453,215 @@ test('should treat get/set paths correctly when flipped going forward', () => {
   assert.deepEqual(ret, expected)
 })
 
+// -- Tests for context consistency between [] and $iterate --
+// After [] iteration completes, the array should NOT linger on the context
+// stack. This matches how $iterate works (push before, pop after). The
+// practical effect: ^ after a []-iterated segment should skip the array
+// level, just as it would after an $iterate-iterated segment.
+
+test('should have handle context in [] iteration the same way as $iterate', () => {
+  // Using []: 'items[].name' iterates items, gets name from each.
+  // Then in the next mutation step, ^.id should go up to the object
+  // containing `items`, NOT to the items array itself.
+  const def = ['response.data.items[].name', '^.^.^.^.id']
+  const data = {
+    response: {
+      id: 'r1',
+      data: {
+        items: [{ name: 'Alice' }, { name: 'Bob' }],
+      },
+    },
+  }
+  const expected = ['r1', 'r1']
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should have same parent context after [] iteration in parallell pipeline', () => {
+  // Using []: 'items[].name' iterates items, gets name from each.
+  // Then in the next mutation step, ^.id should go up to the object
+  // containing `items`, NOT to the items array itself.
+  const def = [
+    'response.data',
+    {
+      names: 'items[].name',
+      id: '^.id', // Should go up to {id: 'r1', data: {items: [...]}}
+    },
+  ]
+  const data = {
+    response: {
+      id: 'r1',
+      data: {
+        items: [{ name: 'Alice' }, { name: 'Bob' }],
+      },
+    },
+  }
+  const expected = {
+    names: ['Alice', 'Bob'],
+    id: 'r1',
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should have same parent context after [] iteration as after $iterate - with pipeline steps after iteration', () => {
+  // A pipeline where [] iteration happens in an earlier step, and a later
+  // step uses ^ to go up. The array from the [] should not be on the context.
+  const def = [
+    'response.data',
+    'items[].name',
+    '>names',
+    {
+      id: '^.^.id', // Should access response object (parent of data), not items array
+      data: '.',
+    },
+  ]
+  const data = {
+    response: {
+      id: 'r1',
+      data: {
+        items: [{ name: 'Alice' }, { name: 'Bob' }],
+      },
+    },
+  }
+  const expected = {
+    id: 'r1',
+    data: { names: ['Alice', 'Bob'] },
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should have consistent parent depth between [] and $iterate in nested iteration', () => {
+  // With nested [] iteration, parent should behave the same as if we had
+  // used $iterate at each level. Inside the inner iteration, ^.^ should
+  // reach the outer item (the invoice), not the inner array.
+  const def = {
+    items: [
+      'invoices[].lines[]',
+      {
+        $iterate: true,
+        rowId: 'rowId',
+        invoiceNo: '^.^.number', // ^ should go up past lines array to the invoice
+      },
+    ],
+  }
+  const data = {
+    invoices: [
+      {
+        number: 'INV-1',
+        lines: [{ rowId: 1 }, { rowId: 2 }],
+      },
+    ],
+  }
+  const expected = {
+    items: [
+      { rowId: 1, invoiceNo: 'INV-1' },
+      { rowId: 2, invoiceNo: 'INV-1' },
+    ],
+  }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should give same parent with [] and $iterate for equivalent pipelines', () => {
+  // Pipeline A uses [] for iteration, Pipeline B uses $iterate. Both should
+  // give the same parent context behavior.
+  const defWithBrackets = {
+    result: [
+      'data.items[]',
+      {
+        $iterate: true,
+        name: 'title',
+        source: '^.^.source', // After items[] iterates: ^ should go past items array to data object
+      },
+    ],
+  }
+  const defWithIterate = {
+    result: [
+      'data.items',
+      {
+        $iterate: true,
+        name: 'title',
+        source: '^.^.source', // With $iterate (no [] in path): ^ goes to data object
+      },
+    ],
+  }
+  const data = {
+    data: {
+      source: 'api',
+      items: [{ title: 'First' }, { title: 'Second' }],
+    },
+  }
+  const expectedWithBrackets = {
+    result: [
+      { name: 'First', source: 'api' },
+      { name: 'Second', source: 'api' },
+    ],
+  }
+
+  const retBrackets = mapTransformSync(defWithBrackets)(data)
+  const retIterate = mapTransformSync(defWithIterate)(data)
+
+  // Both should produce the same result. The [] adds one context level
+  // (the items array), so ^.^ is needed with [] vs just ^ with $iterate.
+  // But crucially, ^.^ with [] should reach the same place as ^ with $iterate.
+  assert.deepEqual(retBrackets, expectedWithBrackets)
+  assert.deepEqual(retIterate, expectedWithBrackets)
+})
+
+test('should need same number of parents with path iteration as with $iterate', () => {
+  // Compare path iteration (items[].title) with operation iteration
+  // ($iterate on a mutation). Both should need the same number of ^ to
+  // reach the same ancestor.
+  const defPathIteration = {
+    result: [
+      'data.items[].title', // Path iteration via []
+      {
+        $iterate: true,
+        title: '.',
+        source: '^.^.^.source', // item -> items array -> dataObj -> get source
+      },
+    ],
+  }
+  const defOperationIteration = {
+    result: [
+      'data.items',
+      {
+        $iterate: true,
+        title: 'title',
+        source: '^.^.source', // items array -> dataObj -> get source
+      },
+    ],
+  }
+  const data = {
+    data: {
+      source: 'api',
+      items: [{ title: 'First' }, { title: 'Second' }],
+    },
+  }
+  const expected = {
+    result: [
+      { title: 'First', source: 'api' },
+      { title: 'Second', source: 'api' },
+    ],
+  }
+
+  const retPath = mapTransformSync(defPathIteration)(data)
+  const retOp = mapTransformSync(defOperationIteration)(data)
+
+  assert.deepEqual(retPath, expected)
+  assert.deepEqual(retOp, expected)
+})
+
 test('should map with parent when parents yielded undefined', () => {
   const def = {
     status: ['response.data.invoices', '^.^.status'], // A contrived example, but it tests the parent path

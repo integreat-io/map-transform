@@ -28,10 +28,11 @@ export { default as root } from './legacy/operations/root.js'
 export { default as transform } from './legacy/operations/transform.js'
 /** @deprecated Use `mapTransformSync` or `mapTransformAsync` instead. */
 export { default as iterate } from './legacy/operations/iterate.js'
+
 /** @deprecated Use `mapTransformSync` or `mapTransformAsync` instead. */
 export { default as transformers } from './legacy/transformers/index.js'
 
-export { pathGetter, pathSetter } from './createPathMapper.js'
+export { pathGetter, pathSetter } from './legacy/createPathMapper.js'
 
 /** @deprecated Use `mapTransformSync` or `mapTransformAsync` instead. */
 export { default } from './legacy/index.js'

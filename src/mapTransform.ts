@@ -4,10 +4,11 @@ import {
   sync as syncTransformers,
   async as asyncTransformers,
 } from './transformers/index.js'
-import type State from './state.js'
+import State from './state.js'
 import type { Transformer, AsyncTransformer } from './typesNext.js'
 
-export { syncTransformers, asyncTransformers }
+export { syncTransformers, asyncTransformers, State }
+export { pathGetter, pathSetter } from './createPathMapper.js'
 
 export interface InitialState {
   context?: unknown[]

@@ -10,44 +10,44 @@ const stateRev = { context: [], value: undefined, rev: true }
 
 // Tests -- path getter
 
-test('should get path with getter', async () => {
+test('should get path with getter', () => {
   const path = 'data.items'
   const value = { data: { items: [{ id: 'ent1' }] } }
   const expected = [{ id: 'ent1' }]
 
-  const ret = await pathGetter(path)(value, state)
+  const ret = pathGetter(path)(value, state)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should get path with getter in reverse too', async () => {
+test('should get path with getter in reverse too', () => {
   const path = 'data.items'
   const value = { data: { items: [{ id: 'ent1' }] } }
   const expected = [{ id: 'ent1' }]
 
-  const ret = await pathGetter(path)(value, stateRev)
+  const ret = pathGetter(path)(value, stateRev)
 
   assert.deepEqual(ret, expected)
 })
 
 // Tests -- path setter
 
-test('should set path with setter', async () => {
+test('should set path with setter', () => {
   const path = 'data.items'
   const value = [{ id: 'ent1' }]
   const expected = { data: { items: [{ id: 'ent1' }] } }
 
-  const ret = await pathSetter(path)(value, state)
+  const ret = pathSetter(path)(value, state)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should set path with setter in reverse too', async () => {
+test('should set path with setter in reverse too', () => {
   const path = 'data.items'
   const value = [{ id: 'ent1' }]
   const expected = { data: { items: [{ id: 'ent1' }] } }
 
-  const ret = await pathSetter(path)(value, stateRev)
+  const ret = pathSetter(path)(value, stateRev)
 
   assert.deepEqual(ret, expected)
 })

@@ -2,7 +2,7 @@ import State, { type InitialState } from './state.js'
 import type { Options } from './prep/index.js'
 import type { TransformDefinition } from './prep/index.js'
 
-export type { TransformDefinition }
+export type { TransformDefinition, Options, InitialState }
 
 // Dictionary types
 

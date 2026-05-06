@@ -463,7 +463,7 @@ test('should handle pipelines that applies themselves', async () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should remove all unused pipelines before running pipeline', async () => {
+test('should keep unused pipelines available on the pipelines map', async () => {
   const getPipelineIds: Operation = (options) => (next) => async (state) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return { ...(await next(state)), value: Object.keys(options.pipelines!) }
@@ -479,7 +479,14 @@ test('should remove all unused pipelines before running pipeline', async () => {
   }
   const expected = {
     entries: [{ id: 'ent1' }],
-    pipelines: ['getItems'], // The ids of the present pipelines, returned by the `getPipelineIds` operation
+    pipelines: [
+      'cast_entry',
+      'getItems',
+      'hitsOnly',
+      'entry',
+      'recursive',
+      'pipelineWithRoot',
+    ],
   }
 
   const ret = await mapTransform(def, options)(data)

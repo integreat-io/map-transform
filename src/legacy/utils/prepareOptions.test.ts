@@ -14,8 +14,8 @@ test('should set default values for minimal incoming options', () => {
 
   assert.ok(ret)
   assert.equal(isObject(ret.transformers), true)
-  assert.equal(isObject(ret.pipelines), true)
-  assert.equal(isObject(ret.dictionaries), true)
+  assert.equal(ret.pipelines, undefined)
+  assert.equal(ret.dictionaries, undefined)
   assert.deepEqual(ret.nonvalues, [undefined])
   assert.equal(ret.fwdAlias, undefined)
   assert.equal(ret.revAlias, undefined)
@@ -110,7 +110,7 @@ test('should pass on incoming pipelines', () => {
 
   assert.equal(ret.pipelines?.customPath, 'path.to.something')
   assert.equal(ret.pipelines?.customPipeline, customPipeline)
-  assert.notEqual(ret.pipelines, options.pipelines) // Make sure we have created a new object
+  assert.equal(ret.pipelines, options.pipelines) // The pipelines object is passed through by reference
 })
 
 test('should pass on incoming dictionaries', () => {
@@ -130,7 +130,7 @@ test('should pass on incoming dictionaries', () => {
 
   assert.equal(ret.dictionaries?.dict1, dict1)
   assert.equal(ret.dictionaries?.dict2, dict2)
-  assert.notEqual(ret.dictionaries, options.dictionaries) // Make sure we have created a new object
+  assert.equal(ret.dictionaries, options.dictionaries) // The dictionaries object is passed through by reference
 })
 
 test('should use incoming nonvalue', () => {
@@ -162,11 +162,12 @@ test('should pass on other incoming options', () => {
 
 // Tests -- preparePipelines
 
-test('preparePipelines should include only needed pipelines and resolve it to an operation', () => {
+test('preparePipelines should resolve needed pipelines to operations', () => {
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe1')
   neededPipelineIds.add('pipe3')
   neededPipelineIds.add(Symbol.for('pipe4'))
+  const unusedPipeline = ['unused', 'pipeline']
   const options: Options = {
     ...prepareOptions({
       pipelines: {
@@ -174,7 +175,7 @@ test('preparePipelines should include only needed pipelines and resolve it to an
         pipe2: () => () => async (state: State) => state,
         pipe3: ['some', 'pipeline', { $transform: 'not' }],
         [Symbol.for('pipe4')]: () => () => async (state: State) => state,
-        [Symbol.for('pipe5')]: ['unused', 'pipeline'],
+        [Symbol.for('pipe5')]: unusedPipeline,
       },
     }),
     neededPipelineIds, // NOTE: We add this after we have prepared the options, as it is not preserved to preparation
@@ -183,15 +184,10 @@ test('preparePipelines should include only needed pipelines and resolve it to an
 
   preparePipelines(options)
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  assert.deepEqual(Reflect.ownKeys(options.pipelines!), [
-    'pipe1',
-    'pipe3',
-    Symbol.for('pipe4'),
-  ])
   assert.equal(typeof options.pipelines?.pipe1, 'function')
   assert.equal(typeof options.pipelines?.pipe3, 'function')
   assert.equal(typeof options.pipelines?.[Symbol.for('pipe4')], 'function')
+  assert.equal(options.pipelines?.[Symbol.for('pipe5')], unusedPipeline) // Unneeded pipelines are left untouched
   assert.equal(options.pipelines, originalPipelines)
 })
 
@@ -212,12 +208,6 @@ test('preparePipelines should also resolve pipelines applied by a pipeline', () 
 
   preparePipelines(options)
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  assert.deepEqual(Reflect.ownKeys(options.pipelines!), [
-    'pipe1',
-    'pipe2',
-    'pipe3',
-  ])
   assert.equal(typeof options.pipelines?.pipe1, 'function')
   assert.equal(typeof options.pipelines?.pipe2, 'function')
   assert.equal(typeof options.pipelines?.pipe3, 'function')
@@ -239,12 +229,6 @@ test('preparePipelines should also resolve pipelines applied by a pipeline in a 
 
   preparePipelines(options)
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  assert.deepEqual(Reflect.ownKeys(options.pipelines!), [
-    'pipe1',
-    'pipe2',
-    'pipe3',
-  ])
   assert.equal(typeof options.pipelines?.pipe1, 'function')
   assert.equal(typeof options.pipelines?.pipe2, 'function')
   assert.equal(typeof options.pipelines?.pipe3, 'function')
@@ -253,10 +237,11 @@ test('preparePipelines should also resolve pipelines applied by a pipeline in a 
 test('preparePipelines should not be tripped by recurring pipelines', () => {
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe3')
+  const pipe1 = () => () => async (state: State) => state
   const options: Options = {
     ...prepareOptions({
       pipelines: {
-        pipe1: () => () => async (state: State) => state,
+        pipe1,
         pipe2: ['sub', 'pipeline', { $apply: 'pipe2' }],
         pipe3: ['some', 'pipeline', { $apply: 'pipe2' }],
       },
@@ -266,9 +251,7 @@ test('preparePipelines should not be tripped by recurring pipelines', () => {
 
   preparePipelines(options)
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  assert.deepEqual(Reflect.ownKeys(options.pipelines!), ['pipe2', 'pipe3'])
-  assert.notEqual(typeof options.pipelines?.pipe1, 'function')
+  assert.equal(options.pipelines?.pipe1, pipe1) // Unneeded pipeline left untouched
   assert.equal(typeof options.pipelines?.pipe2, 'function')
   assert.equal(typeof options.pipelines?.pipe3, 'function')
 })

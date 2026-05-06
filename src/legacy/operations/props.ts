@@ -273,26 +273,26 @@ function prepareOperation(def: TransformObject): Operation {
       return (next) => async (state) => setStateValue(await next(state), {}) // TODO: Not sure if we need to call `next()` here
     }
 
-    return (next) => {
-      // Prepare operations runner. We need to do this inside `next()`, even
-      // though we use `noopNext()` to not kick off the next phase too soon.
-      const run = runOperations(
-        nextStateMappers.map((fn) => fn(noopNext)),
-        options.nonvalues,
-        def.$alwaysApply,
-      )
-      const runWithIterateWhenNeeded =
-        def.$iterate === true
-          ? iterate(() => () => run)(options)(noopNext)
-          : run
+    // Prepare operations runner once per options binding. Doing this inside
+    // `(next)` would rebuild the inner state mappers every time the operation
+    // is chained, which compounds exponentially with nested mutations.
+    const run = runOperations(
+      nextStateMappers.map((fn) => fn(noopNext)),
+      options.nonvalues,
+      def.$alwaysApply,
+    )
+    const runWithIterateWhenNeeded =
+      def.$iterate === true
+        ? iterate(() => () => run)(options)(noopNext)
+        : run
 
-      return createStateMapper(
+    return (next) =>
+      createStateMapper(
         next,
         runWithIterateWhenNeeded,
         def.$noDefaults,
         def.$flip,
       )
-    }
   }
 }
 

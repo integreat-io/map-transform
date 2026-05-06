@@ -5,14 +5,15 @@ import type { Options } from '../types.js'
 
 /**
  * Returns a completed options object. Include built-in transformers, but let
- * custom transformers override them. We are shallow cloning transformers,
- * pipelines, and dictionaries objects.
+ * custom transformers override them. The transformers object is shallow
+ * cloned; `pipelines` and `dictionaries` are passed through by reference so
+ * that resolved pipelines are shared across `mapTransform()` calls.
  */
 export function prepareOptions(options: Options): Options {
   return {
     transformers: { ...transformers, ...options.transformers },
-    pipelines: { ...options.pipelines },
-    dictionaries: { ...options.dictionaries },
+    pipelines: options.pipelines,
+    dictionaries: options.dictionaries,
     nonvalues: options.nonvalues ?? [undefined],
     fwdAlias: options.fwdAlias,
     revAlias: options.revAlias,
@@ -22,32 +23,18 @@ export function prepareOptions(options: Options): Options {
 }
 
 /**
- * Remove unneeded pipelines and resolve the needed ones as operations. We are
- * directly manipulating here to make sure any operation using the pipelines
- * object get the changes. This is okay, as we have shallow cloned the pipelines
- * object and are not mutating the object passed in.
+ * Resolve the needed pipelines as operations, mutating the pipelines object
+ * in place so the resolved operations are shared across `mapTransform()` calls
+ * that pass the same pipelines map.
  */
 export function preparePipelines(options: Options): void {
   const { pipelines, neededPipelineIds } = options
   if (pipelines && neededPipelineIds) {
-    // Resolve all needed pipelines to operations
     for (const key of neededPipelineIds) {
       const pipeline = pipelines[key] // eslint-disable-line security/detect-object-injection
-      if (typeof pipeline === 'function') {
-        // We already have a function, just register it
-        pipelines[key] = pipeline // eslint-disable-line security/detect-object-injection
-      } else {
-        // This is a pipeline of some sort. Resolve it and register it as an operation
+      if (typeof pipeline !== 'function') {
         const stateMapper = defToNextStateMapper(pipeline, options)(noopNext)
         pipelines[key] = () => () => stateMapper // eslint-disable-line security/detect-object-injection
-      }
-    }
-
-    // Remove unneeded pipelines
-    for (const key of Reflect.ownKeys(pipelines)) {
-      if (!neededPipelineIds.has(key)) {
-        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-        delete pipelines[key] // eslint-disable-line security/detect-object-injection
       }
     }
   }

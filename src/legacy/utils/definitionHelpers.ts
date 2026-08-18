@@ -1,5 +1,6 @@
 import { getStateValue, setStateValue } from './stateHelpers.js'
 import modifyOperationObject from './modifyOperationObject.js'
+import { cloneOptions } from './cloneOptions.js'
 import { noopNext } from './stateHelpers.js'
 import { isObject } from '../../utils/is.js'
 import { get } from '../operations/getSet.js'
@@ -184,7 +185,7 @@ function createFilterOperation(
 
 const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
   Array.isArray(nonvalues)
-    ? { ...options, nonvalues: nonvalues.map(unescapeValue) }
+    ? cloneOptions(options, { nonvalues: nonvalues.map(unescapeValue) })
     : options
 
 const createAltOperation = (

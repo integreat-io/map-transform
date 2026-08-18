@@ -676,3 +676,62 @@ test('should not share prepared pipelines when options are not prepared up front
     undefined,
   )
 })
+
+test('should prepare pipeline applied within an $alt with $undefined', async () => {
+  const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
+  const options = prepareOptions({
+    pipelines,
+    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
+  })
+  const def = {
+    value: [
+      'value',
+      {
+        $alt: [{ $apply: 'addSuffix' }, { $value: 'none' }],
+        $undefined: [undefined, null],
+      },
+    ],
+  }
+
+  const mapper = mapTransform(def, options)
+
+  // The pipeline is prepared up front, even though it is applied within an `$alt`
+  assert.equal(typeof options.preparedPipelines?.get('addSuffix'), 'function')
+  assert.deepEqual(await mapper({ value: 'ent1' }), { value: 'ent1!' })
+})
+
+test('should prepare pipeline applied within an $alt without $undefined', async () => {
+  const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
+  const options = prepareOptions({
+    pipelines,
+    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
+  })
+  const def = {
+    value: ['value', { $alt: [{ $apply: 'addSuffix' }, { $value: 'none' }] }],
+  }
+
+  const mapper = mapTransform(def, options)
+
+  assert.equal(typeof options.preparedPipelines?.get('addSuffix'), 'function')
+  assert.deepEqual(await mapper({ value: 'ent1' }), { value: 'ent1!' })
+})
+
+test('should not let nonvalues from an $alt leak into a shared prepared pipeline', async () => {
+  const pipelines = { orDefault: [{ $alt: ['value', { $value: 'fallback' }] }] }
+  const options = prepareOptions({ pipelines }) // Only `undefined` is a nonvalue
+  const altDef = {
+    out: [
+      {
+        $alt: [{ $apply: 'orDefault' }, { $value: 'none' }],
+        $undefined: [undefined, null],
+      },
+    ],
+  }
+  const plainDef = [{ $apply: 'orDefault' }]
+
+  const altMapper = mapTransform(altDef, options)
+  await altMapper({ value: null }) // Run before the next mapper is created, to catch any late preparation
+  const plainMapper = mapTransform(plainDef, options)
+
+  assert.equal(await plainMapper({ value: null }), null) // `null` is a value here
+})

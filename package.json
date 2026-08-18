@@ -41,7 +41,7 @@
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "lint": "eslint src",
-    "format": "prettier src/**/*.ts *.md -w",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "tsc --noEmit --strict",
     "verify": "npm run lint && npm run check-types && npm test"
   },

@@ -9,7 +9,7 @@ import mapTransform, {
   filter,
   prepareOptions,
 } from '../../index.js'
-import type { Operation } from '../types.js'
+import type { Operation, Options } from '../types.js'
 
 // Setup
 
@@ -734,4 +734,28 @@ test('should not let nonvalues from an $alt leak into a shared prepared pipeline
   const plainMapper = mapTransform(plainDef, options)
 
   assert.equal(await plainMapper({ value: null }), null) // `null` is a value here
+})
+
+test('should pass options to pipelines registered as Operation functions', async () => {
+  const receivedOptions: Options[] = []
+  const pipelineAsOperation: Operation =
+    (options) => (next) => async (state) => {
+      receivedOptions.push(options)
+      return next(state)
+    }
+  const def = { result: { $apply: 'myPipeline' } }
+  const data = { value: 'test' }
+  const options = {
+    pipelines: { myPipeline: pipelineAsOperation },
+    transformers: { someTransformer: () => () => async (v: unknown) => v },
+  }
+
+  await mapTransform(def, options)(data)
+
+  assert.equal(receivedOptions.length, 1)
+  assert.deepEqual(receivedOptions[0].pipelines, options.pipelines)
+  assert.equal(
+    receivedOptions[0].transformers?.someTransformer,
+    options.transformers.someTransformer,
+  )
 })

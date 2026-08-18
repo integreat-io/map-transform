@@ -42,7 +42,7 @@ const createApplyFn =
       throw new Error(`Unknown pipeline '${String(pipelineId)}'.`)
     }
     const nextState = await next(state)
-    return fn({})(noopNext)(removeFlip(nextState))
+    return fn(options)(noopNext)(removeFlip(nextState))
   }
 
 export default function apply(pipelineId: string | symbol): Operation {

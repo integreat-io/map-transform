@@ -32,6 +32,8 @@ export { default as iterate } from './legacy/operations/iterate.js'
 /** @deprecated Use `mapTransformSync` or `mapTransformAsync` instead. */
 export { default as transformers } from './legacy/transformers/index.js'
 
+export { prepareOptions } from './legacy/utils/prepareOptions.js'
+
 export { pathGetter, pathSetter } from './legacy/createPathMapper.js'
 
 /** @deprecated Use `mapTransformSync` or `mapTransformAsync` instead. */

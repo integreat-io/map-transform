@@ -37,6 +37,7 @@ export interface Options {
     operation: Record<string, unknown>,
   ) => Record<string, unknown>
   modifyGetValue?: (value: unknown, state: State, options: Options) => unknown
+  preparedPipelines?: Map<string | symbol, Operation>
 }
 
 // Data mapper types

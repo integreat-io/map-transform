@@ -184,11 +184,19 @@ test('preparePipelines should resolve needed pipelines to operations', () => {
 
   preparePipelines(options)
 
-  assert.equal(typeof options.pipelines?.pipe1, 'function')
-  assert.equal(typeof options.pipelines?.pipe3, 'function')
-  assert.equal(typeof options.pipelines?.[Symbol.for('pipe4')], 'function')
-  assert.equal(options.pipelines?.[Symbol.for('pipe5')], unusedPipeline) // Unneeded pipelines are left untouched
+  // Check that prepared pipelines are in the map
+  assert.equal(typeof options.preparedPipelines?.get('pipe1'), 'function')
+  assert.equal(typeof options.preparedPipelines?.get('pipe3'), 'function')
+  assert.equal(
+    typeof options.preparedPipelines?.get(Symbol.for('pipe4')),
+    'function',
+  )
+  // Unneeded pipelines are not prepared
+  assert.equal(options.preparedPipelines?.has('pipe2'), false)
+  assert.equal(options.preparedPipelines?.has(Symbol.for('pipe5')), false)
+  // Original pipelines object is unchanged
   assert.equal(options.pipelines, originalPipelines)
+  assert.equal(options.pipelines?.[Symbol.for('pipe5')], unusedPipeline)
 })
 
 test('preparePipelines should also resolve pipelines applied by a pipeline', () => {
@@ -208,9 +216,10 @@ test('preparePipelines should also resolve pipelines applied by a pipeline', () 
 
   preparePipelines(options)
 
-  assert.equal(typeof options.pipelines?.pipe1, 'function')
-  assert.equal(typeof options.pipelines?.pipe2, 'function')
-  assert.equal(typeof options.pipelines?.pipe3, 'function')
+  // Check that prepared pipelines are in the map
+  assert.equal(typeof options.preparedPipelines?.get('pipe1'), 'function')
+  assert.equal(typeof options.preparedPipelines?.get('pipe2'), 'function')
+  assert.equal(typeof options.preparedPipelines?.get('pipe3'), 'function')
 })
 
 test('preparePipelines should also resolve pipelines applied by a pipeline in a pipeline', () => {
@@ -229,9 +238,10 @@ test('preparePipelines should also resolve pipelines applied by a pipeline in a 
 
   preparePipelines(options)
 
-  assert.equal(typeof options.pipelines?.pipe1, 'function')
-  assert.equal(typeof options.pipelines?.pipe2, 'function')
-  assert.equal(typeof options.pipelines?.pipe3, 'function')
+  // Check that prepared pipelines are in the map
+  assert.equal(typeof options.preparedPipelines?.get('pipe1'), 'function')
+  assert.equal(typeof options.preparedPipelines?.get('pipe2'), 'function')
+  assert.equal(typeof options.preparedPipelines?.get('pipe3'), 'function')
 })
 
 test('preparePipelines should not be tripped by recurring pipelines', () => {
@@ -251,7 +261,10 @@ test('preparePipelines should not be tripped by recurring pipelines', () => {
 
   preparePipelines(options)
 
-  assert.equal(options.pipelines?.pipe1, pipe1) // Unneeded pipeline left untouched
-  assert.equal(typeof options.pipelines?.pipe2, 'function')
-  assert.equal(typeof options.pipelines?.pipe3, 'function')
+  // Check that prepared pipelines are in the map
+  assert.equal(options.preparedPipelines?.get('pipe1'), undefined) // Unneeded pipeline not prepared
+  assert.equal(typeof options.preparedPipelines?.get('pipe2'), 'function')
+  assert.equal(typeof options.preparedPipelines?.get('pipe3'), 'function')
+  // Original pipelines object is unchanged
+  assert.equal(options.pipelines?.pipe1, pipe1)
 })

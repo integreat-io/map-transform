@@ -23,7 +23,7 @@ export default function mapTransform(
   const internalOptions = prepareOptions(options)
   const stateMapper = defToNextStateMapper(def, internalOptions)(noopNext)
 
-  // Resolve all needed pipelnies and remove the unneeded ones.
+  // Resolve all needed pipelines and set them on the `preparedPipelines` Map.
   preparePipelines(internalOptions)
 
   return async function transform(data, initialState) {

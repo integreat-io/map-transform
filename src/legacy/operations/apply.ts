@@ -1,4 +1,5 @@
 import { noopNext } from '../utils/stateHelpers.js'
+import { getPreparedPipeline } from '../utils/preparedPipelines.js'
 import type {
   Options,
   Operation,
@@ -7,7 +8,9 @@ import type {
   TransformDefinition,
 } from '../types.js'
 
-const getPipeline = (
+// Look up the pipeline definition, to verify that it exists. Note that we don't
+// resolve it to an operation here, as that's done when the pipeline is run.
+const getPipelineDef = (
   pipelineId: string | symbol,
   pipelines: Record<string | symbol, TransformDefinition>,
 ) =>
@@ -20,7 +23,7 @@ const removeFlip = ({ flip, ...state }: State) => state
 
 // Register this pipeline id as needed on the options. This will tell
 // map-transform which pipelines to resolve into operations. All other pipelines
-// are removed.
+// are left alone.
 function markPipelineAsNeeded(pipelineId: string | symbol, options: Options) {
   if (!options.neededPipelineIds) {
     // There is not `Set` yet -- create it
@@ -30,18 +33,16 @@ function markPipelineAsNeeded(pipelineId: string | symbol, options: Options) {
 }
 
 const createApplyFn =
-  (
-    next: StateMapper,
-    pipelines: Record<string | symbol, TransformDefinition>,
-    pipelineId: string | symbol,
-  ) =>
+  (next: StateMapper, options: Options, pipelineId: string | symbol) =>
   async (state: State) => {
-    const fn = getPipeline(pipelineId, pipelines)
+    // Fetch the prepared pipeline. It will be resolved to an operation and
+    // cached the first time it's needed.
+    const fn: Operation | undefined = getPreparedPipeline(pipelineId, options)
     if (typeof fn !== 'function') {
       throw new Error(`Unknown pipeline '${String(pipelineId)}'.`)
     }
     const nextState = await next(state)
-    return fn ? fn({})(noopNext)(removeFlip(nextState)) : nextState
+    return fn({})(noopNext)(removeFlip(nextState))
   }
 
 export default function apply(pipelineId: string | symbol): Operation {
@@ -52,7 +53,7 @@ export default function apply(pipelineId: string | symbol): Operation {
         `Failed to apply pipeline '${String(pipelineId)}'. No pipelines`,
       )
     }
-    const pipeline = getPipeline(pipelineId, pipelines)
+    const pipeline = getPipelineDef(pipelineId, pipelines)
     if (!pipeline) {
       const message = pipelineId
         ? `Failed to apply pipeline '${String(pipelineId)}'. Unknown pipeline`
@@ -62,7 +63,7 @@ export default function apply(pipelineId: string | symbol): Operation {
     markPipelineAsNeeded(pipelineId, options)
 
     return (next) => {
-      return createApplyFn(next, pipelines, pipelineId)
+      return createApplyFn(next, options, pipelineId)
     }
   }
 }

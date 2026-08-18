@@ -7,6 +7,7 @@ import mapTransform, {
   fwd,
   rev,
   filter,
+  prepareOptions,
 } from '../../index.js'
 import type { Operation } from '../types.js'
 
@@ -583,4 +584,95 @@ test('should throw when applying an unknown pipeline inside a transform object',
   )
 
   assert.throws(() => mapTransform(def, options), expectedError)
+})
+
+// Tests -- sharing a pipelines object across `mapTransform()` calls
+//
+// Integreat calls `mapTransform()` many times with the same `pipelines`
+// object, so resolved pipelines may be shared across calls for performance.
+// Sharing is fine, but it must never let one call's options affect another's,
+// and it must never modify the object the caller passed in.
+
+test('should not let transformers from one call leak into another sharing the same pipelines object', async () => {
+  const suffixed = (suffix: string) => () => () => async (value: unknown) =>
+    `${value}${suffix}`
+  const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
+  const def = { value: ['value', { $apply: 'addSuffix' }] }
+
+  const mapperA = mapTransform(def, {
+    pipelines,
+    transformers: { suffix: suffixed('-A') },
+  })
+  const mapperB = mapTransform(def, {
+    pipelines,
+    transformers: { suffix: suffixed('-B') },
+  })
+
+  assert.deepEqual(await mapperA({ value: 'ent1' }), { value: 'ent1-A' })
+  assert.deepEqual(await mapperB({ value: 'ent1' }), { value: 'ent1-B' })
+})
+
+test('should not let nonvalues from one call leak into another sharing the same pipelines object', async () => {
+  const pipelines = { orDefault: [{ $alt: ['value', { $value: 'fallback' }] }] }
+  const def = [{ $apply: 'orDefault' }]
+
+  const mapperA = mapTransform(def, { pipelines }) // Only `undefined` is a nonvalue
+  const mapperB = mapTransform(def, { pipelines, nonvalues: [undefined, null] })
+
+  assert.equal(await mapperA({ value: null }), null) // `null` is a value here
+  assert.equal(await mapperB({ value: null }), 'fallback') // `null` is a nonvalue here
+})
+
+test('should not modify the pipelines object passed by the caller', async () => {
+  const addSuffix = [{ $transform: 'suffix' }]
+  const unused = ['unused', 'pipeline']
+  const pipelines = { addSuffix, unused }
+  const options = {
+    pipelines,
+    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
+  }
+  const def = { value: ['value', { $apply: 'addSuffix' }] }
+
+  await mapTransform(def, options)({ value: 'ent1' })
+
+  assert.equal(pipelines.addSuffix, addSuffix) // The applied pipeline is untouched
+  assert.equal(pipelines.unused, unused) // The unused pipeline is untouched
+  assert.deepEqual(Reflect.ownKeys(pipelines), ['addSuffix', 'unused']) // No pipelines are removed
+})
+
+test('should share prepared pipelines when given options from prepareOptions', async () => {
+  const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
+  const options = prepareOptions({
+    pipelines,
+    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
+  })
+  const defA = { value: ['value', { $apply: 'addSuffix' }] }
+  const defB = { title: ['title', { $apply: 'addSuffix' }] }
+
+  const mapperA = mapTransform(defA, options)
+  const preparedByA = options.preparedPipelines?.get('addSuffix')
+  const mapperB = mapTransform(defB, options)
+
+  assert.deepEqual(await mapperA({ value: 'ent1' }), { value: 'ent1!' })
+  assert.deepEqual(await mapperB({ title: 'Entry 1' }), { title: 'Entry 1!' })
+  assert.equal(typeof preparedByA, 'function') // The first call prepared the pipeline
+  assert.equal(options.preparedPipelines?.get('addSuffix'), preparedByA) // The second call reused it
+  assert.equal(pipelines.addSuffix, options.pipelines?.addSuffix) // The pipelines object is untouched
+})
+
+test('should not share prepared pipelines when options are not prepared up front', async () => {
+  const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
+  const options = {
+    pipelines,
+    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
+  }
+  const def = { value: ['value', { $apply: 'addSuffix' }] }
+
+  await mapTransform(def, options)({ value: 'ent1' })
+
+  // The Map is set on the internal options only, so we don't accidentally share it
+  assert.equal(
+    (options as { preparedPipelines?: unknown }).preparedPipelines,
+    undefined,
+  )
 })

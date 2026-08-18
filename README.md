@@ -176,6 +176,26 @@ await mapTransform(def)(source, { target }) // We're reusing `def` from the prev
 // }
 ```
 
+Finally, if you're using the same `options` across several `mapTransform`
+calls, you may gain some optimization by preparing the options up front. Do this
+with the exported `prepareOptions` function like so:
+
+```javascript
+import mapTransform, { prepareOptions, transform } from 'map-transform'
+
+// ...
+
+const preppedOptions = prepareOptions(options)
+await mapTransform(def1, preppedOptions)(source)
+
+// ...
+
+await mapTransform(def2, preppedOptions)(source)
+```
+
+Most of the preparations are still done just-in-time, but when it's done once,
+it won't happen again on the next call.
+
 > [!NOTE]
 > We are preparing for an upcoming 2.0 version, which will include breaking
 > changes.
@@ -674,11 +694,11 @@ multi-step pipelines where earlier steps may have transformed the root:
 
 ```javascript
 const def = [
-  { title: 'content.heading', type: { $value: 'article' } },  // Step 1: transforms root
+  { title: 'content.heading', type: { $value: 'article' } }, // Step 1: transforms root
   {
     $modify: true,
     meta: {
-      mutatedType: '^^.type',   // 'article' (from step 1 output)
+      mutatedType: '^^.type', // 'article' (from step 1 output)
       originalType: '^^^.type', // value from the original source data
     },
   },

@@ -57,7 +57,7 @@
   },
   "homepage": "https://github.com/integreat-io/map-transform#readme",
   "dependencies": {
-    "deepmerge-ts": "^7.1.5",
+    "deepmerge-ts": "^8.0.1",
     "map-any": "^1.0.0"
   },
   "devDependencies": {

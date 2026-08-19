@@ -232,7 +232,7 @@ function* runOneLevelGen(
   const targets = unwindTarget(state.target, pipeline, isRev)
   let next = value
   let index = 0
-  let doIterate: boolean | undefined = false
+  let doIterate: boolean | undefined
 
   // We go through each step in the pipeline one by one until we're done
   while (index < pipeline.length) {

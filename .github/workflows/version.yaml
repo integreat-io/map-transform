@@ -31,20 +31,25 @@ jobs:
         if: ${{ inputs.is-pre-release == false && github.ref != 'refs/heads/main' }}
         run: echo "Non Pre Release is only allowed on main branch. Exiting." && exit 1
       - name: Validate Input Semantic Version Type for None Pre Release
-        if: ${{ inputs.is-pre-release == false && inputs.version-range != 'major' && inputs.version-range != 'minor' && inputs.version-range != 'patch' }}
-        run: echo "Input Semantic Version Type must be one of major, minor and patch for non pre release. Exiting." && exit 1
+        if: ${{ inputs.is-pre-release == false && inputs.version-range != 'major' &&
+          inputs.version-range != 'minor' && inputs.version-range != 'patch' }}
+        run: echo "Input Semantic Version Type must be one of major, minor and patch for
+          non pre release. Exiting." && exit 1
       - name: Validate Input Semantic Version Type for Pre Release
-        if: ${{ inputs.is-pre-release == true && inputs.version-range != 'major' && inputs.version-range != 'minor' && inputs.version-range != 'patch' && inputs.version-range != 'rc' }}
-        run: echo "Input Semantic Version Type must be one of major, minor, patch and rc for pre release. Exiting." && exit 1
+        if: ${{ inputs.is-pre-release == true && inputs.version-range != 'major' &&
+          inputs.version-range != 'minor' && inputs.version-range != 'patch' &&
+          inputs.version-range != 'rc' }}
+        run: echo "Input Semantic Version Type must be one of major, minor, patch and rc
+          for pre release. Exiting." && exit 1
       - name: Git Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
       - name: Git Config
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
           git config push.autoSetupRemote "true"
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
           node-version: 24.x
           cache: 'npm'
@@ -53,7 +58,10 @@ jobs:
         # - For pre release with major, minor or patch bump: npm version pre{major|minor|patch} --preid rc
         # - For pre release without major, minor or patch bump: npm version prerelease --preid rc
         # - For non pre release: npm version {major|minor|patch}
-        run: npm version ${{ inputs.is-pre-release == true && 'pre' || '' }}${{ inputs.is-pre-release == true && inputs.version-range == 'rc' && 'release' || inputs.version-range }} ${{ inputs.is-pre-release == true && '--preid rc' || '' }} -m "v%s"
+        run: npm version ${{ inputs.is-pre-release == true && 'pre' || '' }}${{
+          inputs.is-pre-release == true && inputs.version-range == 'rc' &&
+          'release' || inputs.version-range }} ${{ inputs.is-pre-release == true
+          && '--preid rc' || '' }} -m "v%s"
       - name: Set Release Version Output
         id: set-release-version-output
         shell: bash

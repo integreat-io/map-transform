@@ -1,16 +1,15 @@
-import pluginPromise from 'eslint-plugin-promise'
+import { defineConfig } from 'eslint/config'
 import pluginSecurity from 'eslint-plugin-security'
 import eslintConfigPrettier from 'eslint-config-prettier'
 
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.strict,
   tseslint.configs.stylistic,
   eslintConfigPrettier,
-  pluginPromise.configs['flat/recommended'],
   pluginSecurity.configs.recommended,
   {
     rules: {

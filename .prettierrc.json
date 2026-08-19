@@ -2,8 +2,11 @@
   "semi": false,
   "singleQuote": true,
   "jsxSingleQuote": true,
-  "trailingComma": "all",
   "overrides": [
+    {
+      "files": ["tsconfig.json", "tsconfig.*.json", "jsconfig.json"],
+      "options": { "parser": "jsonc" }
+    },
     {
       "files": "*.md",
       "options": {

@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { isObject } from '../../utils/is.js'
-import type { Dictionary, State, Options } from '../types.js'
+import type { Dictionary, State, InternalOptions } from '../types.js'
 
 import { prepareOptions, preparePipelines } from './prepareOptions.js'
 
@@ -21,6 +21,17 @@ test('should set default values for minimal incoming options', () => {
   assert.equal(ret.revAlias, undefined)
   assert.equal(ret.modifyOperationObject, undefined)
   assert.equal(ret.modifyGetValue, undefined)
+})
+
+test('should set neededPipelineIds and preparedPipelines', () => {
+  const options = {}
+
+  const ret = prepareOptions(options)
+
+  assert.ok(ret.neededPipelineIds instanceof Set)
+  assert.equal(ret.neededPipelineIds.size, 0)
+  assert.ok(ret.preparedPipelines instanceof Map)
+  assert.equal(ret.preparedPipelines.size, 0)
 })
 
 test('should include internal transformers in the internal options', () => {
@@ -205,7 +216,7 @@ test('preparePipelines should resolve needed pipelines to operations', () => {
   neededPipelineIds.add('pipe3')
   neededPipelineIds.add(Symbol.for('pipe4'))
   const unusedPipeline = ['unused', 'pipeline']
-  const options: Options = {
+  const options: InternalOptions = {
     ...prepareOptions({
       pipelines: {
         pipe1: () => () => async (state: State) => state,
@@ -240,7 +251,7 @@ test('preparePipelines should also resolve pipelines applied by a pipeline', () 
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe1')
   neededPipelineIds.add('pipe3')
-  const options: Options = {
+  const options: InternalOptions = {
     ...prepareOptions({
       pipelines: {
         pipe1: () => () => async (state: State) => state,
@@ -262,7 +273,7 @@ test('preparePipelines should also resolve pipelines applied by a pipeline', () 
 test('preparePipelines should also resolve pipelines applied by a pipeline in a pipeline', () => {
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe3')
-  const options: Options = {
+  const options: InternalOptions = {
     ...prepareOptions({
       pipelines: {
         pipe1: () => () => async (state: State) => state,
@@ -285,7 +296,7 @@ test('preparePipelines should not be tripped by recurring pipelines', () => {
   const neededPipelineIds = new Set<string | symbol>()
   neededPipelineIds.add('pipe3')
   const pipe1 = () => () => async (state: State) => state
-  const options: Options = {
+  const options: InternalOptions = {
     ...prepareOptions({
       pipelines: {
         pipe1,

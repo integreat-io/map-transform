@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import { set } from './getSet.js'
 import iterate from './iterate.js'
 import { noopNext } from '../utils/stateHelpers.js'
-import { preparePipelines } from '../utils/prepareOptions.js'
-import type { Options } from '../types.js'
+import { prepareOptions, preparePipelines } from '../utils/prepareOptions.js'
+import type { InternalOptions, Options } from '../types.js'
 
 import apply from './apply.js'
 
@@ -18,14 +18,15 @@ const recursive = [
 ]
 
 // We need a fresh options for every test, as there are side effects
-const createOptions = (): Options => ({
-  pipelines: {
-    extractTitle,
-    renameTitle,
-    setTitle,
-    recursive,
-  },
-})
+const createOptions = () =>
+  prepareOptions({
+    pipelines: {
+      extractTitle,
+      renameTitle,
+      setTitle,
+      recursive,
+    },
+  })
 
 // Tests
 
@@ -202,7 +203,7 @@ test('should mark pipeline as needed when others has already been marked', async
     context: [],
     value: { title: 'Entry 1' },
   }
-  const options: Options = {
+  const options: InternalOptions = {
     ...createOptions(),
     neededPipelineIds: new Set(),
   }
@@ -215,6 +216,26 @@ test('should mark pipeline as needed when others has already been marked', async
   assert.equal(options.neededPipelineIds?.size, 2)
   assert.ok(options.neededPipelineIds?.has('extractTitle'))
   assert.ok(options.neededPipelineIds?.has('setTitle'))
+})
+
+test('should mark pipeline as needed on options that are not prepared', async () => {
+  const options: Options = { pipelines: { extractTitle } }
+  const state = {
+    context: [],
+    value: { title: 'Entry 1' },
+  }
+  const expected = {
+    context: [],
+    value: 'Entry 1',
+  }
+
+  const stateMapper = apply('extractTitle')(options)(noopNext)
+  const ret = await stateMapper(state)
+
+  assert.deepEqual(ret, expected)
+  // The book-keeping props are set on the options object we were given
+  assert.ok(options.neededPipelineIds?.has('extractTitle'))
+  assert.ok(options.preparedPipelines?.has('extractTitle'))
 })
 
 test('should throw when given an unknown pipeline id', () => {

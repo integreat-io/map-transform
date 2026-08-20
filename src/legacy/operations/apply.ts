@@ -1,7 +1,8 @@
 import { noopNext } from '../utils/stateHelpers.js'
 import { getPreparedPipeline } from '../utils/preparedPipelines.js'
+import { toInternalOptions } from '../utils/internalOptions.js'
 import type {
-  Options,
+  InternalOptions,
   Operation,
   State,
   StateMapper,
@@ -21,19 +22,8 @@ const getPipelineDef = (
 
 const removeFlip = ({ flip, ...state }: State) => state
 
-// Register this pipeline id as needed on the options. This will tell
-// map-transform which pipelines to resolve into operations. All other pipelines
-// are left alone.
-function markPipelineAsNeeded(pipelineId: string | symbol, options: Options) {
-  if (!options.neededPipelineIds) {
-    // There is not `Set` yet -- create it
-    options.neededPipelineIds = new Set<string | symbol>()
-  }
-  options.neededPipelineIds.add(pipelineId)
-}
-
 const createApplyFn =
-  (next: StateMapper, options: Options, pipelineId: string | symbol) =>
+  (next: StateMapper, options: InternalOptions, pipelineId: string | symbol) =>
   async (state: State) => {
     // Fetch the prepared pipeline. It will be resolved to an operation and
     // cached the first time it's needed.
@@ -60,10 +50,13 @@ export default function apply(pipelineId: string | symbol): Operation {
         : 'Failed to apply pipeline. No id provided'
       throw new Error(message)
     }
-    markPipelineAsNeeded(pipelineId, options)
+    // Register this pipeline id as needed, to tell map-transform which
+    // pipelines to resolve into operations. All others are left alone.
+    const internalOptions = toInternalOptions(options)
+    internalOptions.neededPipelineIds.add(pipelineId)
 
     return (next) => {
-      return createApplyFn(next, options, pipelineId)
+      return createApplyFn(next, internalOptions, pipelineId)
     }
   }
 }

@@ -1,6 +1,6 @@
 import { defToNextStateMapper } from './definitionHelpers.js'
 import { noopNext } from './stateHelpers.js'
-import type { Operation, Options } from '../types.js'
+import type { Operation, InternalOptions } from '../types.js'
 
 // Note: This module must not import `../transformers/index.js` -- directly or
 // indirectly -- as it is imported from `operations/apply.js`, which is part of
@@ -11,19 +11,16 @@ import type { Operation, Options } from '../types.js'
 /**
  * Returns the pipeline with the given id, resolved to an operation. Prepared
  * pipelines are cached in the `preparedPipelines` Map on the options object, so
- * that every pipeline is resolved only once. The Map is created when it's not
- * already there.
+ * that every pipeline is resolved only once.
  *
  * The `pipelines` object is never modified. Returns `undefined` when there is
  * no pipeline with the given id.
  */
 export function getPreparedPipeline(
   pipelineId: string | symbol,
-  options: Options,
+  options: InternalOptions,
 ): Operation | undefined {
-  const preparedPipelines =
-    options.preparedPipelines ?? (options.preparedPipelines = new Map())
-
+  const { preparedPipelines } = options
   const prepared = preparedPipelines.get(pipelineId)
   if (prepared) {
     return prepared
@@ -51,11 +48,8 @@ export function getPreparedPipeline(
  * needed, and as a `Set` will yield values added while we're iterating it,
  * these will be resolved too.
  */
-export function preparePipelines(options: Options): void {
-  const { neededPipelineIds } = options
-  if (neededPipelineIds) {
-    for (const key of neededPipelineIds) {
-      getPreparedPipeline(key, options)
-    }
+export function preparePipelines(options: InternalOptions): void {
+  for (const key of options.neededPipelineIds) {
+    getPreparedPipeline(key, options)
   }
 }

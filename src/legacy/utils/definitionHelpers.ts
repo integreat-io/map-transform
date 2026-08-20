@@ -1,6 +1,6 @@
 import { getStateValue, setStateValue } from './stateHelpers.js'
 import modifyOperationObject from './modifyOperationObject.js'
-import { cloneOptions } from './cloneOptions.js'
+import { toInternalOptions } from './internalOptions.js'
 import { noopNext } from './stateHelpers.js'
 import { isObject } from '../../utils/is.js'
 import { get } from '../operations/getSet.js'
@@ -37,6 +37,7 @@ import type {
   LookupOperation,
   LookdownOperation,
   Options,
+  InternalOptions,
   DataMapperWithState,
   DataMapperWithOptions,
   AsyncDataMapperWithOptions,
@@ -96,7 +97,7 @@ const wrapInNoDefaults =
 function wrapFromDefinition(
   ops: Operation,
   def: OperationObject,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper {
   const opsWithNoDefaults =
     def.$noDefaults === true ? wrapInNoDefaults(ops) : ops
@@ -122,7 +123,7 @@ function createOperation<U extends OperationObject>(
   ) => Operation,
   fnProp: string,
   def: U,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper {
   const { [fnProp]: fnId, ...props } = def
   if (typeof fnId === 'function') {
@@ -158,12 +159,12 @@ function createOperation<U extends OperationObject>(
 
 const createTransformOperation = (
   def: TransformOperation,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper => createOperation(transform, '$transform', def, options)
 
 function createFilterOperation(
   def: FilterOperation,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper {
   const pipeline = def.$filter
   if (!pipeline) {
@@ -183,14 +184,17 @@ function createFilterOperation(
   }
 }
 
-const setNoneValuesOnOptions = (options: Options, nonvalues?: unknown[]) =>
+const setNoneValuesOnOptions = (
+  options: InternalOptions,
+  nonvalues?: unknown[],
+) =>
   Array.isArray(nonvalues)
-    ? cloneOptions(options, { nonvalues: nonvalues.map(unescapeValue) })
+    ? { ...options, nonvalues: nonvalues.map(unescapeValue) }
     : options
 
 const createAltOperation = (
   def: AltOperation,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper | NextStateMapper[] => {
   const { $alt: defs, $undefined: nonvalues } = def
   return Array.isArray(defs)
@@ -204,7 +208,7 @@ const createAltOperation = (
 
 const createArrayOperation = (
   def: ArrayOperation,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper => {
   const { $array: pipelines, $flip: flip } = def
   return Array.isArray(pipelines)
@@ -214,7 +218,7 @@ const createArrayOperation = (
 
 const createIterateOperation = (
   def: IterateOperation,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper => {
   const { $iterate: pipeline } = def
   return pipeline
@@ -224,7 +228,7 @@ const createIterateOperation = (
 
 function createIfOperation(
   def: IfOperation,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper {
   const { $if: conditionPipeline, then: thenPipeline, else: elsePipeline } = def
   return wrapFromDefinition(
@@ -234,7 +238,7 @@ function createIfOperation(
   )
 }
 
-function createApplyOperation(def: ApplyOperation, options: Options) {
+function createApplyOperation(def: ApplyOperation, options: InternalOptions) {
   const pipelineId = def.$apply
   return wrapFromDefinition(apply(pipelineId), def, options)
 }
@@ -242,7 +246,7 @@ function createApplyOperation(def: ApplyOperation, options: Options) {
 function createConcatOperation(
   operationFn: (...fn: TransformDefinition[]) => Operation,
   pipeline: TransformDefinition[],
-  options: Options,
+  options: InternalOptions,
 ) {
   const pipelines = ensureArray(pipeline)
   return operationFn(...pipelines)(options)
@@ -252,7 +256,7 @@ function createLookupOperation(
   operationFn: (props: LookupProps) => Operation,
   def: LookupOperation | LookdownOperation,
   arrayPath: string,
-  options: Options,
+  options: InternalOptions,
 ) {
   const { path: propPath, ...props } = def
   return wrapFromDefinition(
@@ -264,7 +268,7 @@ function createLookupOperation(
 
 function nextStateMapperFromObject(
   defRaw: OperationObject | TransformObject,
-  options: Options,
+  options: InternalOptions,
 ): NextStateMapper | NextStateMapper[] {
   const def = modifyOperationObject(defRaw, options.modifyOperationObject)
 
@@ -304,14 +308,15 @@ export function defToNextStateMappers(
   def: TransformDefinition | undefined,
   options: Options,
 ): NextStateMapper[] | NextStateMapper {
+  const internalOptions = toInternalOptions(options)
   if (isPipeline(def)) {
-    return def.flatMap((def) => defToNextStateMappers(def, options))
+    return def.flatMap((def) => defToNextStateMappers(def, internalOptions))
   } else if (isObject(def)) {
-    return nextStateMapperFromObject(def, options)
+    return nextStateMapperFromObject(def, internalOptions)
   } else if (isPath(def)) {
-    return get(def).map((op) => op(options)) // Use `getNext` when we have it
+    return get(def).map((op) => op(internalOptions)) // Use `getNext` when we have it
   } else if (isOperation(def)) {
-    return def(options)
+    return def(internalOptions)
   } else {
     return () => async (value) => value
   }
@@ -321,9 +326,10 @@ export function defToNextStateMapper(
   def: TransformDefinition | undefined,
   options: Options,
 ): NextStateMapper {
+  const internalOptions = toInternalOptions(options)
   const nextStateMappers = isPipeline(def)
-    ? pipe(def)(options)
-    : defToNextStateMappers(def, options)
+    ? pipe(def)(internalOptions)
+    : defToNextStateMappers(def, internalOptions)
   if (Array.isArray(nextStateMappers)) {
     return pipeNext(nextStateMappers)
   } else {

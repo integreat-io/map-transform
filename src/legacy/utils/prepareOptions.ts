@@ -1,5 +1,5 @@
 import transformers from '../transformers/index.js'
-import type { Options } from '../types.js'
+import type { Options, InternalOptions } from '../types.js'
 
 export { getPreparedPipeline, preparePipelines } from './preparedPipelines.js'
 
@@ -24,14 +24,15 @@ const isPrepared = Symbol('isPrepared')
  * as-is, so preparing them again -- or passing them to `mapTransform()` -- is
  * free.
  */
-export function prepareOptions(options: Options): Options {
+export function prepareOptions(options: Options): InternalOptions {
   if (Reflect.get(options, isPrepared)) {
-    return options
+    return options as InternalOptions
   }
   const preppedOptions = {
     ...options,
     transformers: { ...transformers, ...options.transformers },
     nonvalues: options.nonvalues ?? [undefined],
+    neededPipelineIds: options.neededPipelineIds ?? new Set<string | symbol>(),
     preparedPipelines: options.preparedPipelines ?? new Map(),
   }
   Object.defineProperty(preppedOptions, isPrepared, {

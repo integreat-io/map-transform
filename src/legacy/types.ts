@@ -40,6 +40,15 @@ export interface Options {
   preparedPipelines?: Map<string | symbol, Operation>
 }
 
+/**
+ * Options with the book-keeping props in place. Get them from
+ * `prepareOptions()` or `toInternalOptions()` -- never write one by hand.
+ */
+export interface InternalOptions extends Options {
+  neededPipelineIds: Set<string | symbol>
+  preparedPipelines: Map<string | symbol, Operation>
+}
+
 // Data mapper types
 
 export type DataMapper<T extends InitialState | undefined = State> = (
@@ -86,10 +95,7 @@ export type Path = string
 
 export interface TransformOperation extends TransformerProps {
   $transform:
-    | string
-    | symbol
-    | DataMapperWithOptions
-    | AsyncDataMapperWithOptions
+    string | symbol | DataMapperWithOptions | AsyncDataMapperWithOptions
   $iterate?: boolean
   $direction?: string
 }
@@ -170,11 +176,7 @@ export type OperationObject =
   | LookdownOperation
 
 export type Pipeline = (
-  | MutationObject
-  | Operation
-  | OperationObject
-  | Path
-  | Pipeline
+  MutationObject | Operation | OperationObject | Path | Pipeline
 )[]
 
 // Note: We need to accept `unknown` on all unspecified keys, to support
@@ -193,9 +195,4 @@ export interface MutationObject extends Record<string, unknown> {
 export type TransformObject = MutationObject
 
 export type TransformDefinition =
-  | MutationObject
-  | Operation
-  | OperationObject
-  | Pipeline
-  | Path
-  | null
+  MutationObject | Operation | OperationObject | Pipeline | Path | null

@@ -18,8 +18,8 @@ Some highlighted features:
   transforming objects or array of values, or for object props and primite
   values.
 - By defining how to transform data from one object to another, you implicitly
-  define how to transform the other way – from the target to the original
-  (with some gotchas).
+  define how to transform the other way – from the target to the original (with
+  some gotchas).
 
 ## Getting started
 
@@ -33,9 +33,8 @@ older node versions, among other breaking changes. We expect to still support
 node versions from v20, but might also drop anything below v22, depending on the
 state of the node world at the time we release our v2.0.
 
-> [!NOTE]
-> This package is native [ESM](https://nodejs.org/api/esm.html). See this guide
-> on how to
+> [!NOTE] This package is native [ESM](https://nodejs.org/api/esm.html). See
+> this guide on how to
 > [convert to or use ESM packages](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c).
 
 ### Installing
@@ -105,8 +104,8 @@ const source2 = await mapper(target, { rev: true })
 ```
 
 You may improve this with pipelines, expressed through arrays. For instance,
-retrieve the `content` object first, so you don't have to write the entire
-path for every attribute:
+retrieve the `content` object first, so you don't have to write the entire path
+for every attribute:
 
 ```javascript
 const def = [
@@ -176,9 +175,9 @@ await mapTransform(def)(source, { target }) // We're reusing `def` from the prev
 // }
 ```
 
-Finally, if you're using the same `options` across several `mapTransform`
-calls, you may gain some optimization by preparing the options up front. Do this
-with the exported `prepareOptions` function like so:
+Finally, if you're using the same `options` across several `mapTransform` calls,
+you may gain some optimization by preparing the options up front. Do this with
+the exported `prepareOptions` function like so:
 
 ```javascript
 import mapTransform, { prepareOptions, transform } from 'map-transform'
@@ -194,11 +193,12 @@ await mapTransform(def2, preppedOptions)(source)
 ```
 
 Most of the preparations are still done just-in-time, but when it's done once,
-it won't happen again on the next call.
+it won't happen again on the next call. `prepareOptions` is idempotent, so
+passing already prepared options to `mapTransform` -- or calling
+`prepareOptions` on them again -- costs nothing.
 
-> [!NOTE]
-> We are preparing for an upcoming 2.0 version, which will include breaking
-> changes.
+> [!NOTE] We are preparing for an upcoming 2.0 version, which will include
+> breaking changes.
 >
 > The biggest change will be that we drop support for the approach where
 > operation functions can be used directly in the pipelines. Instead, the only
@@ -216,17 +216,16 @@ it won't happen again on the next call.
 > Note that these function have some breaking changes and are not to be
 > considered stable until the 2.0 version.
 >
-> We have also rewritten this README to focus on object notations first, and
-> the functional approach second. We have tried to mention what has changed in
-> the new `mapTransformSync` and `mapTransformAsync`, but there might still be
-> gaps in the documentation here.
+> We have also rewritten this README to focus on object notations first, and the
+> functional approach second. We have tried to mention what has changed in the
+> new `mapTransformSync` and `mapTransformAsync`, but there might still be gaps
+> in the documentation here.
 
 ### The mutation object
 
 Think of a mutation object as a description of the object structure you want.
 
-> [!NOTE]
-> Mutation objects were previously called "transform objects", and
+> [!NOTE] Mutation objects were previously called "transform objects", and
 > "mapping objects" before that. We're changing our terminalogy to keep in line
 > with the [Integreat project](https://github.com/integreat-io/integreat), where
 > MapTransform originally started and was spawned out from.
@@ -308,9 +307,8 @@ as its value, this mutation object will be iterated by default (no need to set
 the `$iterate` property). This does not happen to pipelines, paths, or
 operations.
 
-> [!NOTE]
-> This automatic iteration will disappear in v2.0 and is also removed in the
-> new `mapTransformSync` and `mapTransformAsync` exports.
+> [!NOTE] This automatic iteration will disappear in v2.0 and is also removed in
+> the new `mapTransformSync` and `mapTransformAsync` exports.
 
 #### Values on the mutation object
 
@@ -389,10 +387,10 @@ MapTransform will treat `undefined` as a "non-value" in several ways:
   return an empty array (not `[undefined]`)
 
 This is not the case for `null`, though. MapTransform treats `null` as a value,
-an _intended nothing_. To change this behavior,
-set `nonvalues: [undefined, null]` on the `options` object passed to
-MapTransform. This will essentially make MapTransform treat `null` the same way
-as `undefined`.
+an _intended nothing_. To change this behavior, set
+`nonvalues: [undefined, null]` on the `options` object passed to MapTransform.
+This will essentially make MapTransform treat `null` the same way as
+`undefined`.
 
 You could in principle include any primitive value in `nonvalues` and it will be
 treated as `undefined`, e.g. an empty string or the number `0`.
@@ -471,8 +469,8 @@ const def = {
 }
 ```
 
-If you prefer, you may modify deeper down in the object structure by setting
-the `$modify` flag at the end of a path:
+If you prefer, you may modify deeper down in the object structure by setting the
+`$modify` flag at the end of a path:
 
 ```javascript
 const def = {
@@ -541,10 +539,10 @@ here.)
 **A note on arrays:** In a transform pipeline, the default behavior is to treat
 an array as any other data. The array will be passed on to a `transform`
 operation, the entire array will be set on a path, etc. This also means that a
-mutation object will be applied to the entire array if nothing else is specified.
-In the example above, we have set `$iterate: true` on the mutation object, to
-signal that we want the mutation to be applied to each item of any array. See
-also [the `iterate` operation](#iteratepipeline-operation) for more.
+mutation object will be applied to the entire array if nothing else is
+specified. In the example above, we have set `$iterate: true` on the mutation
+object, to signal that we want the mutation to be applied to each item of any
+array. See also [the `iterate` operation](#iteratepipeline-operation) for more.
 
 > Editors note: We should think through how we use the word "pipeline", as it is
 > sometimes ment to refer to an array of operations that a value may be
@@ -614,10 +612,10 @@ getting the structure right when transforming in reverse mode. When running
 in `{ tags: { id: ['news', 'sports'] } }`.
 
 When a path with bracket notation meets `undefined` or any other
-[nonvalue](#a-note-on-undefined-and-null), an empty array will be returned,
-as you have stated that you expect an array. The only exception from this is
-when [`state.noDefaults` is `true`](#mapping-without-defaults), in which case
-you'll get `undefined`.
+[nonvalue](#a-note-on-undefined-and-null), an empty array will be returned, as
+you have stated that you expect an array. The only exception from this is when
+[`state.noDefaults` is `true`](#mapping-without-defaults), in which case you'll
+get `undefined`.
 
 It may not always be straight forward how MapTransform should set on a path with
 array notation, but it will again do its best. When there is no other
@@ -632,8 +630,8 @@ expect, as long as you use the brackets notation to guide MapTransform.
 Finally, you may include index numbers between the brackets, to only get a
 specific item. `tags[0].id` would get `'news'` from the data above. Use a
 negative number to count from the end (`-1` being the last item). The index
-version of the brackets notation won't return an array (as expected), unless
-the item at the index is another array (a sub-array).
+version of the brackets notation won't return an array (as expected), unless the
+item at the index is another array (a sub-array).
 
 When setting with an index bracket notation, you'll get an array where the
 bracket notation is, with one item at the index you've specified.
@@ -671,13 +669,13 @@ data from anywhere in the data structure, be it in `content` or when iterating
 through `tags[]`.
 
 There is a gotcha here, for both parent and root paths, relating to what data
-you're moving up in, as you are mutating the data as you move "down". The
-short answer is that you're moving in the mutated data – if you are mutating it.
-Say you have a pipeline where you first mutate the data on the level you're at
-with a mutation object. The following steps in the pipeline will relate to
-the mutated object, and if you move into the mutated data with a path, and then
-go up again with a parent path, you are moving up in the mutated data. But if
-you instead just move into the data without mutating it, moving up with a parent
+you're moving up in, as you are mutating the data as you move "down". The short
+answer is that you're moving in the mutated data – if you are mutating it. Say
+you have a pipeline where you first mutate the data on the level you're at with
+a mutation object. The following steps in the pipeline will relate to the
+mutated object, and if you move into the mutated data with a path, and then go
+up again with a parent path, you are moving up in the mutated data. But if you
+instead just move into the data without mutating it, moving up with a parent
 path will give you the original data – there's nothing else, as you have not
 mutated it.
 
@@ -719,9 +717,8 @@ object.
 
 > Editor's note: We need examples.
 
-> [!NOTE]
-> Setting on parent and root paths is currently not supported, but may be in
-> the future.
+> [!NOTE] Setting on parent and root paths is currently not supported, but may
+> be in the future.
 
 #### Setting on a path
 
@@ -824,8 +821,8 @@ you don't have to try to run the returned mapper function with any data to
 discover the mistake.
 
 The `transform` operation object also accepts `$iterate: true`, which will apply
-the transformer to every item in an array, should the data in the pipeline be
-an array. You may also set `$direction: 'fwd'` or `$direction: 'rev'` to have it
+the transformer to every item in an array, should the data in the pipeline be an
+array. You may also set `$direction: 'fwd'` or `$direction: 'rev'` to have it
 transform in one direction only.
 
 There are a few useful shorthands for the operation objects, like
@@ -925,11 +922,10 @@ of a `toAge` function, you could instead write a curried `yearsSince` function,
 that would accept the current date (or any date) as the first argument. This
 would be a truly pure function.
 
-> [!NOTE]
-> When you provide a transform function directly to a transform operation,
-> MapTransform will not provide any property object, so you should call the
-> outer function yourself with any relevant props. This option will be removed
-> in v2.0, but is still available to the regular MapTransform function.
+> [!NOTE] When you provide a transform function directly to a transform
+> operation, MapTransform will not provide any property object, so you should
+> call the outer function yourself with any relevant props. This option will be
+> removed in v2.0, but is still available to the regular MapTransform function.
 
 #### `filter` operation
 
@@ -939,17 +935,18 @@ what data to filter out. The operation may be specified in one of two ways:
 1. The "traditional" way is to define it just like the `transform` operation,
    with a transform id and props on the operation object as props for the
    transformer. `filter` will just use the transformer you give it, and force
-   whatever it returns to a boolean. When the transformer returns something truthy,
-   the value is kept, and when it returns something falsy, the value is removed.
-   JavaScript rules will be used to force the return value to a boolean, meaning
-   `undefined`, `null`, `0`, and empty string `""` will be treated as `false`.
+   whatever it returns to a boolean. When the transformer returns something
+   truthy, the value is kept, and when it returns something falsy, the value is
+   removed. JavaScript rules will be used to force the return value to a
+   boolean, meaning `undefined`, `null`, `0`, and empty string `""` will be
+   treated as `false`.
 
 2. The "new" way is to set a pipeline on `$filter`. This pipeline will then be
-   run just like the transformer in the first case, and the value it returns will
-   be forced to a boolean. Not the you may not provide a path string as a pipeline
-   here, as that would be treated as the "traditional" approach with a transformer
-   id. Instead you will have to wrap a path in an array, to make it clear that it's
-   a pipeline, like `['path.to.wherever']`.
+   run just like the transformer in the first case, and the value it returns
+   will be forced to a boolean. Not the you may not provide a path string as a
+   pipeline here, as that would be treated as the "traditional" approach with a
+   transformer id. Instead you will have to wrap a path in an array, to make it
+   clear that it's a pipeline, like `['path.to.wherever']`.
 
 When filtering an array, the transformer or pipeline is applied to each data
 item in the array, like you would expect of a filter function, and a new array
@@ -1184,8 +1181,8 @@ Note that the implementation of the two transformer functions is omitted from
 this example.
 
 To apply the pipeline to each item in an array, set `$iterate: true` on the
-`apply` operation object. You may also set `$direction: 'fwd'` or
-$direction: 'rev'` to have it apply in one direction only.
+`apply` operation object. You may also set `$direction: 'fwd'` or $direction:
+'rev'` to have it apply in one direction only.
 
 As an alternative to the `apply` operation object, you may call the `apply`
 operation function, but remember that this option will go away in v2.0.
@@ -1247,10 +1244,10 @@ the operation object. You may also set `$direction: 'fwd'` or
 
 There's a special case of the `alt` operation for backward compability, that may
 be removed in MapTransform v2.0. With only one pipeline, the operation will
-first check if the current value is `undefined`. If it is, it will run the
-one pipeline and return its value. If it's not, nothing happens. This is
-different from the multi-pipeline behavior, where the first is always run and
-the rest is only run if the previous returns `undefined`.
+first check if the current value is `undefined`. If it is, it will run the one
+pipeline and return its value. If it's not, nothing happens. This is different
+from the multi-pipeline behavior, where the first is always run and the rest is
+only run if the previous returns `undefined`.
 
 As an alternative to the `alt` operation object, you may call the `alt`
 operation function, but remember that this option will go away in v2.0.
@@ -1287,10 +1284,10 @@ If there are no pipelines, the operation will return an empty array.
 
 The `array` operation also supports `$iterate` and `$direction`.
 
-When going in reverse, the array operation will run each pipeline in reverse
-on the item in the array matching the position of the pipeline. The result of
-a pipeline will be given to the next as a target. This is the closest we can
-get to recreating the original data.
+When going in reverse, the array operation will run each pipeline in reverse on
+the item in the array matching the position of the pipeline. The result of a
+pipeline will be given to the next as a target. This is the closest we can get
+to recreating the original data.
 
 To reverse the direction, so that we create an array in reverse mode, set
 `$flip: true` on the operation object.
@@ -1312,8 +1309,8 @@ what array items to set on which pipeline.
 
 If `concat` is not given any pipelines, it will return an empty array going
 forward, and an empty object in reverse. The reason for the empty object is that
-the normal behavior for concat is to get with paths from an object, and with
-no paths, we can't set any props, so an empty object is the best we can do.
+the normal behavior for concat is to get with paths from an object, and with no
+paths, we can't set any props, so an empty object is the best we can do.
 
 > **Note:** This operation is destructive, in that the result from running it
 > forward cannot reproduce the original data when run in reverse. Only the data
@@ -1344,8 +1341,8 @@ const def = {
 #### `concatRev` operation
 
 The `concatRev` operation is the exact opposite of the `concat` operation,
-meaning that it will exhibit the same behavior in reverse as `concat` does
-going forward, and vice versa. See the description of
+meaning that it will exhibit the same behavior in reverse as `concat` does going
+forward, and vice versa. See the description of
 [the `concat` operation](#concat-operation) for more details.
 
 `concatRev` is available as an operation object with `$concatRev`.
@@ -1380,8 +1377,8 @@ const def = modify({
 })
 ```
 
-`def34` will in effect set the values placed at a deep path on the `data`
-prop. Giving this an object like:
+`def34` will in effect set the values placed at a deep path on the `data` prop.
+Giving this an object like:
 
 ```javascript
 const response = {
@@ -1415,8 +1412,8 @@ There aren operation functions for this as well, but these will be removed in
 MapTransform v2.0. If you want an operation to only apply in one direction, you
 need to wrap it in a `fwd` or `rev` operation. The `fwd` operation will only
 apply its pipeline when we're going forward, i.e. mapping in the normal
-direction, and its pipeline will be skipped when we're mapping in reverse.
-The `rev` operation will only apply its pipeline when we're mapping in reverse.
+direction, and its pipeline will be skipped when we're mapping in reverse. The
+`rev` operation will only apply its pipeline when we're mapping in reverse.
 
 The value in the pipeline will be untouched when we are encountering an
 operation that is not intended for the direction we are currently going in.
@@ -1520,8 +1517,8 @@ items without the root operation.
 
 #### `plug` operation
 
-The `plug` operation simply clears the value in the pipeline - it plugs it.
-The value will be set to `undefined` regardless of what has happened before that
+The `plug` operation simply clears the value in the pipeline - it plugs it. The
+value will be set to `undefined` regardless of what has happened before that
 point. Any `alt` operations etc. coming after the plug will still have an
 effect.
 
@@ -1627,8 +1624,8 @@ your own transformers.
 #### `bucket` transformer
 
 The `bucket` transformer will split an array out in buckets based on condition
-pipelines (pipelines that will return truthy for the items that belong in
-a certain bucket) or by size (how many items from the array to put in a bucket).
+pipelines (pipelines that will return truthy for the items that belong in a
+certain bucket) or by size (how many items from the array to put in a bucket).
 There's also an alternative way of using `groupByPath` (see below).
 
 Here's an example using condition pipelines:
@@ -1690,9 +1687,9 @@ set a `condition` property to a pipeline that will return truthy for the items
 that belong in the bucket.
 
 Each item is tested against the bucket condition in the order the buckets are
-defined, and will be placed in the first bucket that matches. You may have
-a bucket without a condition or size, which will serve as a catch-all bucket,
-and should therefore be placed last.
+defined, and will be placed in the first bucket that matches. You may have a
+bucket without a condition or size, which will serve as a catch-all bucket, and
+should therefore be placed last.
 
 Here's an example of distributing to buckets by size:
 
@@ -1711,9 +1708,9 @@ const mappedData = await mapTransform(def)(data)
 // }
 ```
 
-When distributing based on size, you set `size` to the
-number of items you want to put in this bucket. You may also combine `condition`
-and `size`, to get the provided number of items matching the condition.
+When distributing based on size, you set `size` to the number of items you want
+to put in this bucket. You may also combine `condition` and `size`, to get the
+provided number of items matching the condition.
 
 As an alternative to specifying `buckets`, you may provide a path or a pipeline
 in `groupByPath`. The transformer will then fetch the value from this path or
@@ -1754,8 +1751,8 @@ const def1 = [
 ```
 
 Actually, youcan also drop the `path` if you just want to compare the value in
-the pipeline with the `match` value, but it's more common to filter objects
-by one of it's properties.
+the pipeline with the `match` value, but it's more common to filter objects by
+one of it's properties.
 
 If you need to match the value at the path with another value in the data, you
 may use `matchPath` instead of `match`. This will be a dot notation path,
@@ -1774,8 +1771,8 @@ elements in an array, and `exists` requires any value besides `undefined`.
 Dates are compared using their milliseconds since epoc (1970-01-01) numeric
 values.
 
-If the `path` points to an array, compare returns `true` if any of the items
-in the array is a match.
+If the `path` points to an array, compare returns `true` if any of the items in
+the array is a match.
 
 Set `not: true` to reverse the result of the comparison.
 
@@ -1823,8 +1820,8 @@ await mapTransform(def)(data)
 #### `fixed` transformer
 
 The data given to the fixed transformer, will be inserted in the pipeline,
-replacing any data that is already there. The data may be an object, a string,
-a number, a boolean, `null`, or `undefined – or an array of any of these.
+replacing any data that is already there. The data may be an object, a string, a
+number, a boolean, `null`, or `undefined – or an array of any of these.
 
 This is almost the same behavior as
 [the `value` transformer](#value-transformer), which is more commonly used,
@@ -1835,8 +1832,8 @@ values that should be set no matter what.
 #### `flatten` transformer
 
 Will flatten an array in the pipeline. The default is to flatten one layer deep,
-but this may be changed by setting the `depth` property to the wanted number
-of levels.
+but this may be changed by setting the `depth` property to the wanted number of
+levels.
 
 Example:
 
@@ -2051,9 +2048,9 @@ used.
 
 You may also specify an `includePath` or `excludePath`. These are dot notation
 paths to arrays of strings, and will be used instead of `include` or `exclude`.
-If `include` or `exclude` are also provided, they will be used as default
-values when the corresponding path yields no value. Note that "no value" here
-means `undefined`, and we don't support custom non-values here yet.
+If `include` or `exclude` are also provided, they will be used as default values
+when the corresponding path yields no value. Note that "no value" here means
+`undefined`, and we don't support custom non-values here yet.
 
 When given an array of object, each object will be projected. When given
 anything that is not an object, `undefined` will be returned.
@@ -2238,8 +2235,8 @@ be the one used in forward mode.
 
 In some cases, the reverse transform is more complex than the forward transform.
 For that reason, there is a `$flip` property that may be set to `true` on a
-mutation object, to indicate that it is defined from the reverse perspective
-and should be "flipped" before transforming data with it.
+mutation object, to indicate that it is defined from the reverse perspective and
+should be "flipped" before transforming data with it.
 
 A flipped mutation object will – in forward mode – get with the properties on
 the object and set with the paths in the value. The order of paths and
@@ -2354,9 +2351,9 @@ mapper2({ id: 'cust4' }, { rev: true })
 ### The state object
 
 MapTransform uses a state object internally to pass on data, context, target,
-etc., between pipelines and operations. You may encounter this state object
-when you write your own transformers, as it is passed to the transformer
-function as the second argument (the current pipeline value is the first).
+etc., between pipelines and operations. You may encounter this state object when
+you write your own transformers, as it is passed to the transformer function as
+the second argument (the current pipeline value is the first).
 
 Most of the props on the state object should be regarded as MapTransform
 internals and subject to change without notice, but a few props are good to know
@@ -2365,8 +2362,8 @@ and might also be necessary to make your transformer work the way you want:
 - `rev`: When this is `true`, we are in reverse mode, so if your transformer
   should work differently depending on direction, you should check this prop.
 - `flip`: When `true`, we are being called from a mutation object in
-  [flip mode](#flipping-a-mutation-object), meaning that the mutation object
-  is defined from the perspective of the reverse mode. This will not affect most
+  [flip mode](#flipping-a-mutation-object), meaning that the mutation object is
+  defined from the perspective of the reverse mode. This will not affect most
   transformers, as we will treat the direction the same regardless of how the
   mutation object is defined, but there are cases where you want to xor `rev`
   and `flip` to get the direction. The guiding principle here is what "feels
@@ -2401,10 +2398,10 @@ useful when storing the definitions in a database, transferring it over http(s),
 etc.
 
 We are now favoring operation object notations, and the "old" operation
-functions will be removed in MapTransform v2.0, in line with the goal of
-being able to express all definitions as JSON-friendly objects. With a set of
-commonly shared transformers passed to `mapTransform()` on the `options` object,
-storing and sharing definitions over JSON is quite trivial. This is how we use
+functions will be removed in MapTransform v2.0, in line with the goal of being
+able to express all definitions as JSON-friendly objects. With a set of commonly
+shared transformers passed to `mapTransform()` on the `options` object, storing
+and sharing definitions over JSON is quite trivial. This is how we use
 MapTransform in [Integreat](https://github.com/integreat-io/integreat), which it
 was initially written for.
 
@@ -2447,8 +2444,8 @@ Data given to and returned from MapTransform is typed as `unknown`, as we can't
 know what it will be, and to signal that it should be typed by the user. We
 would have loved to provide a typed return value based on the definition given
 to `mapTransform`, but that is a task we have not been able to prioritize yet,
-and frankly we're not sure if it is at all possible. If you have the stomack
-for this, please create an issue with an outline of how you would do this. :)
+and frankly we're not sure if it is at all possible. If you have the stomack for
+this, please create an issue with an outline of how you would do this. :)
 
 ## Running the tests
 

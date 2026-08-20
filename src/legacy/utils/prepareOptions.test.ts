@@ -160,6 +160,43 @@ test('should pass on other incoming options', () => {
   assert.equal(ret.modifyGetValue, options.modifyGetValue)
 })
 
+test('should return the same object when options are already prepared', () => {
+  const options = {}
+  const preppedOptions = prepareOptions(options)
+
+  const ret = prepareOptions(preppedOptions)
+
+  assert.equal(ret, preppedOptions)
+})
+
+test('should not merge transformers again when options are already prepared', () => {
+  const customTrans = () => () => async () => {
+    return
+  }
+  const options = {
+    transformers: { custom: customTrans },
+  }
+  const preppedOptions = prepareOptions(options)
+
+  const ret = prepareOptions(preppedOptions)
+
+  assert.equal(ret.transformers, preppedOptions.transformers)
+  assert.equal(ret.transformers?.custom, customTrans)
+  assert.equal(typeof ret.transformers?.map, 'function')
+})
+
+test('should prepare options with a preparedPipelines Map that we have not prepared', () => {
+  const preparedPipelines = new Map()
+  const options = { preparedPipelines }
+
+  const ret = prepareOptions(options)
+
+  assert.notEqual(ret, options)
+  assert.equal(ret.preparedPipelines, preparedPipelines)
+  assert.equal(typeof ret.transformers?.map, 'function')
+  assert.equal(typeof ret.transformers?.value, 'function')
+})
+
 // Tests -- preparePipelines
 
 test('preparePipelines should resolve needed pipelines to operations', () => {

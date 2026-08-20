@@ -759,3 +759,27 @@ test('should pass options to pipelines registered as Operation functions', async
     options.transformers.someTransformer,
   )
 })
+
+test('should apply different pipelines from the same prepared options', async () => {
+  const pipelines = {
+    addSuffix: [{ $transform: 'suffix' }],
+    addPrefix: [{ $transform: 'prefix' }],
+  }
+  const options = prepareOptions({
+    pipelines,
+    transformers: {
+      suffix: () => () => async (value: unknown) => `${value}!`,
+      prefix: () => () => async (value: unknown) => `- ${value}`,
+    },
+  })
+  const defA = { value: ['value', { $apply: 'addSuffix' }] }
+  const defB = { title: ['title', { $apply: 'addPrefix' }] }
+
+  const mapperA = mapTransform(defA, options)
+  const mapperB = mapTransform(defB, options)
+
+  assert.deepEqual(await mapperA({ value: 'ent1' }), { value: 'ent1!' })
+  assert.deepEqual(await mapperB({ title: 'Entry 1' }), { title: '- Entry 1' })
+  assert.equal(typeof options.preparedPipelines?.get('addSuffix'), 'function')
+  assert.equal(typeof options.preparedPipelines?.get('addPrefix'), 'function')
+})

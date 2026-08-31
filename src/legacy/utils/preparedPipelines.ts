@@ -1,6 +1,6 @@
 import { defToNextStateMapper } from './definitionHelpers.js'
 import { noopNext } from './stateHelpers.js'
-import type { Operation, InternalOptions } from '../types.js'
+import type { Operation, InternalOptions, StateMapper } from '../types.js'
 
 // Note: This module must not import `../transformers/index.js` -- directly or
 // indirectly -- as it is imported from `operations/apply.js`, which is part of
@@ -36,7 +36,20 @@ export function getPreparedPipeline(
     return pipeline
   }
 
-  const stateMapper = defToNextStateMapper(pipeline, options)(noopNext)
+  // Cache a lazy operation before we resolve the pipeline, so that a
+  // transformer that runs map-transform with our options while we're resolving,
+  // won't start resolving this pipeline again. It is replaced by the direct
+  // version below, but anyone holding on to it will still reach the resolved
+  // state mapper.
+  let stateMapper: StateMapper
+  preparedPipelines.set(pipelineId, () => () => (state) => stateMapper(state))
+  try {
+    stateMapper = defToNextStateMapper(pipeline, options)(noopNext)
+  } catch (error) {
+    preparedPipelines.delete(pipelineId)
+    throw error
+  }
+
   const operation: Operation = () => () => stateMapper
   preparedPipelines.set(pipelineId, operation)
   return operation

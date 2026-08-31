@@ -9,7 +9,7 @@ import mapTransform, {
   filter,
   prepareOptions,
 } from '../../index.js'
-import type { Operation, Options } from '../types.js'
+import type { AsyncTransformer, Operation, Options } from '../types.js'
 
 // Setup
 
@@ -758,6 +758,22 @@ test('should pass options to pipelines registered as Operation functions', async
     receivedOptions[0].transformers?.someTransformer,
     options.transformers.someTransformer,
   )
+})
+
+test('should apply pipeline with a transformer that calls mapTransform() during preparation', async () => {
+  const templateLike: AsyncTransformer = () => (options) => {
+    const inner = mapTransform('title', options)
+    return async (data, state) => inner(data, state)
+  }
+  const pipelines = { entry: [{ $transform: 'templateLike' }] }
+  const options = { pipelines, transformers: { templateLike } }
+  const def = { result: { $apply: 'entry' } }
+  const data = { title: 'Entry 1' }
+  const expected = { result: 'Entry 1' }
+
+  const ret = await mapTransform(def, options)(data)
+
+  assert.deepEqual(ret, expected)
 })
 
 test('should apply different pipelines from the same prepared options', async () => {

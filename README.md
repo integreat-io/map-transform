@@ -1829,6 +1829,10 @@ except that the value set with `fixed` will be included even when
 `state.noDefaults` is `true`. Use `value` for default values, and `fixed` for
 values that should be set no matter what.
 
+Like the `value` transformer, `fixed` has its own short-hand operation object
+notation, so `{ $transform: 'fixed', value: 'customer' }` may be written
+`{ $fixed: 'customer' }`.
+
 #### `flatten` transformer
 
 Will flatten an array in the pipeline. The default is to flatten one layer deep,

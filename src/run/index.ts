@@ -83,14 +83,6 @@ export type OperationStep =
 export type PreppedStep = Path | OperationStep
 export type PreppedPipeline = PreppedStep[]
 
-export interface PreppedOptions {
-  pipelines: Map<string | symbol, PreppedPipeline>
-  nonvalues?: unknown[]
-  modifyOperationObject: (
-    operation: Record<string, unknown>,
-  ) => Record<string, unknown>
-}
-
 const isOperationObject = (step: PreppedStep): step is OperationStep =>
   isObject(step) && typeof step.type === 'string'
 

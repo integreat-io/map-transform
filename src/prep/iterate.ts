@@ -2,7 +2,7 @@ import preparePipeline, { Options } from './index.js'
 import type { IterateStep } from '../run/iterate.js'
 import type { IterateOperation } from '../typesNext.js'
 
-export default function prepareArrayStep(
+export default function prepareIterateStep(
   { $iterate: pipeline }: IterateOperation,
   options: Options,
 ): IterateStep | undefined {

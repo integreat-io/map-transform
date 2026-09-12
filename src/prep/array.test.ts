@@ -99,3 +99,12 @@ test('should pass on $flip as flip', () => {
 
   assert.deepEqual(ret, expected)
 })
+
+test('should throw when $array is not an array', () => {
+  const def = { $array: 'title' }
+  const expectedError = new Error(
+    'Array operation was given a value that is not an array of pipelines',
+  )
+
+  assert.throws(() => preparePipeline(def, options), expectedError)
+})

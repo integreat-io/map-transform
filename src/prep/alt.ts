@@ -6,6 +6,16 @@ export default function prepareAltStep(
   { $alt: pipelines }: AltOperation,
   options: Options,
 ): AltStep | undefined {
+  if (pipelines === undefined) {
+    return undefined // `undefined` is the same as not setting `$alt` at all
+  }
+
+  if (!Array.isArray(pipelines)) {
+    throw new Error(
+      'Alt operation was given a value that is not an array of pipelines',
+    )
+  }
+
   if (pipelines.length > 0) {
     return {
       type: 'alt',

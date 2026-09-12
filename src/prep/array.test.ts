@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import type { PreppedPipeline } from '../run/index.js'
 
 import preparePipeline from './index.js'
 
@@ -94,6 +95,24 @@ test('should pass on $flip as flip', () => {
       pipelines: [['title'], ['props', 'name']],
     },
   ]
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should throw when $array is not an array', () => {
+  const def = { $array: 'title' }
+  const expectedError = new Error(
+    'Array operation was given a value that is not an array of pipelines',
+  )
+
+  assert.throws(() => preparePipeline(def, options), expectedError)
+})
+
+test('should return no step when $array is undefined', () => {
+  const def = { $array: undefined }
+  const expected: PreppedPipeline = []
 
   const ret = preparePipeline(def, options)
 

@@ -110,3 +110,21 @@ test('should return no step when no pipelines', () => {
 
   assert.deepEqual(ret, expected)
 })
+
+test('should throw when $alt is not an array', () => {
+  const def = { $alt: 'title' }
+  const expectedError = new Error(
+    'Alt operation was given a value that is not an array of pipelines',
+  )
+
+  assert.throws(() => preparePipeline(def, options), expectedError)
+})
+
+test('should return no step when $alt is undefined', () => {
+  const def = { $alt: undefined }
+  const expected: PreppedPipeline = []
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
+})

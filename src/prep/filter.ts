@@ -2,7 +2,9 @@ import preparePipeline, {
   type Options,
   type TransformDefinition,
 } from './index.js'
-import prepareTransformStep from './transform.js'
+import prepareTransformStep, {
+  createTransformerFunctionError,
+} from './transform.js'
 import type { FilterStep } from '../run/filter.js'
 import type { FilterOperation } from '../typesNext.js'
 
@@ -17,6 +19,8 @@ function createPipeline(
 ) {
   if (!idOrPipeline) {
     throw new Error('Filter operation is missing transformer id or pipeline')
+  } else if (typeof idOrPipeline === 'function') {
+    throw createTransformerFunctionError('Filter')
   } else if (
     typeof idOrPipeline === 'string' ||
     typeof idOrPipeline === 'symbol'

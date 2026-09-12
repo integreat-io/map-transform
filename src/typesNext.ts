@@ -24,8 +24,7 @@ export type SyncDataMapper<T extends InitialState | undefined = State> = (
 ) => unknown
 
 export type DataMapper<T extends InitialState | undefined = State> =
-  | AsyncDataMapper<T>
-  | SyncDataMapper<T>
+  AsyncDataMapper<T> | SyncDataMapper<T>
 
 export type AsyncDataMapperWithState = (
   data: unknown,
@@ -65,11 +64,7 @@ export type AsyncTransformer<T = TransformerProps> = (
 export type Path = string
 
 export interface TransformOperation extends TransformerProps {
-  $transform:
-    | string
-    | symbol
-    | DataMapperWithOptions
-    | AsyncDataMapperWithOptions
+  $transform: string | symbol
   $iterate?: boolean
   $direction?: string
 }

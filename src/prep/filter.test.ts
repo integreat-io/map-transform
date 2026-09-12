@@ -118,3 +118,14 @@ test('should prepare filter operation with a pipeline', () => {
 
   assert.deepEqual(ret, expected)
 })
+
+test('should throw when a transformer function is given directly on $filter', () => {
+  const def = {
+    $filter: isTrue(), // We call the function here to get rid of the first function level
+  }
+  const expectedError = new Error(
+    'Filter operation was given a transformer function. Register the transformer in options and give its id instead',
+  )
+
+  assert.throws(() => preparePipeline(def, options), expectedError)
+})

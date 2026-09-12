@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
 
 import mapTransformSync, { mapTransformAsync } from '../mapTransform.js'
+import type { Transformer } from '../typesNext.js'
 
 // Tests
 
@@ -561,17 +562,19 @@ test('should flatten array with several levels and iterating operations', () => 
       },
     },
   }
-  const combineIds = () => (value: Record<string, unknown>) =>
-    `${value.clientId}:lastSyncedAt:${value.sourceId}:${value.tableId}`
+  const combineIds: Transformer = () => () => (value) =>
+    isObject(value)
+      ? `${value.clientId}:lastSyncedAt:${value.sourceId}:${value.tableId}`
+      : undefined
   const getIds = [
     {
       tableId: 'id',
       sourceId: '^.^.source.id',
       clientId: '^.^.^.^.id',
     },
-    { $transform: combineIds },
+    { $transform: 'combineIds' },
   ]
-  const options = { pipelines: { getIds } }
+  const options = { pipelines: { getIds }, transformers: { combineIds } }
   const expected = {
     payload: {
       type: 'date',

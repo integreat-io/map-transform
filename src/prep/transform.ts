@@ -1,18 +1,19 @@
 import type { TransformStep } from '../run/transform.js'
-import type {
-  DataMapperWithOptions,
-  AsyncDataMapperWithOptions,
-  TransformOperation,
-} from '../typesNext.js'
+import type { TransformOperation } from '../typesNext.js'
 import type { Options } from './index.js'
 
+/**
+ * The error we throw when an operation is given a transformer function instead
+ * of the id of a transformer. Shared with the `$filter` operation, which
+ * accepts a transformer id the same way `$transform` does.
+ */
+export const createTransformerFunctionError = (opName: string) =>
+  new Error(
+    `${opName} operation was given a transformer function. Register the transformer in options and give its id instead`,
+  )
+
 function prepareFn(
-  id:
-    | string
-    | symbol
-    | DataMapperWithOptions
-    | AsyncDataMapperWithOptions
-    | null,
+  id: string | symbol | null,
   props: Record<string, unknown>,
   options: Options,
   opName: string,
@@ -22,8 +23,7 @@ function prepareFn(
   }
 
   if (typeof id === 'function') {
-    // `id` is actual a transformer function, so pass it options and return it right away
-    return id(options as Options)
+    throw createTransformerFunctionError(opName)
   }
 
   if (typeof id !== 'string' && typeof id !== 'symbol') {

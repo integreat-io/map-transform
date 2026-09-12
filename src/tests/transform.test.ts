@@ -105,6 +105,25 @@ test('should map simple object with several transforms', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should throw when an async transform is used in a sync pipeline', () => {
+  const def = [
+    {
+      title: 'content.heading',
+      author: 'meta.writer.username',
+    },
+    { $transform: 'appendAuthorToTitleAsync' },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } },
+  }
+  const expectedError = new Error(
+    'A transformer returned a promise in a synchronous pipeline. Use mapTransformAsync() to run async transformers',
+  )
+
+  assert.throws(() => mapTransformSync(def, options)(data), expectedError)
+})
+
 test('should map with async transforms', async () => {
   const def = [
     {
@@ -847,7 +866,12 @@ test('should use explode transform as mutation property value in reverse', () =>
   // `explode` converts an object to [{key, value}, ...] in forward.
   // In reverse, it does the opposite: [{key, value}, ...] → object.
   const def = { items: { $transform: 'explode' } }
-  const data = { items: [{ key: 'a', value: 1 }, { key: 'b', value: 2 }] }
+  const data = {
+    items: [
+      { key: 'a', value: 1 },
+      { key: 'b', value: 2 },
+    ],
+  }
   const expected = { a: 1, b: 2 }
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
@@ -892,7 +916,12 @@ test('should use flatten transform as mutation property value in reverse', () =>
   const def = {
     items: { $transform: 'flatten' },
   }
-  const data = { items: [[1, 2], [3, 4]] }
+  const data = {
+    items: [
+      [1, 2],
+      [3, 4],
+    ],
+  }
   const expected = [1, 2, 3, 4]
 
   const ret = mapTransformSync(def, options)(data, { rev: true })

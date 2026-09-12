@@ -777,3 +777,22 @@ test('should run mutation object asynchronously', async () => {
 
   assert.deepEqual(ret, expected)
 })
+
+test('should run mutation object on undefined asynchronously when always is true', async () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+      always: true,
+    },
+  ]
+  const expected = { id: undefined, title: undefined }
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})

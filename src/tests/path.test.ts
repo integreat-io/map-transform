@@ -787,6 +787,22 @@ test('should run mutation object on non-value when $alwaysApply is true', () => 
   assert.deepEqual(ret, expected)
 })
 
+test('should run mutation object on undefined asynchronously when $alwaysApply is true', async () => {
+  const def = [
+    'items',
+    {
+      $alwaysApply: true,
+      attributes: { $alwaysApply: true, title: 'content.heading' },
+    },
+  ]
+  const data = { items: undefined }
+  const expected = { attributes: { title: undefined } }
+
+  const ret = await mapTransformAsync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should map with root operation', () => {
   const def = [
     'content',

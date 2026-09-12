@@ -10,6 +10,7 @@ import prepareTransformStep from './transform.js'
 import prepareValueStep from './value.js'
 import modifyOperation from './modifyOperation.js'
 import { isNotNullOrUndefined } from '../utils/is.js'
+import { unescapeValue } from '../utils/escape.js'
 import type { PreppedPipeline, StepProps, OperationStep } from '../run/index.js'
 import type {
   Path,
@@ -111,11 +112,12 @@ function extractStepProps(
 ): [StepProps | undefined, MutationObject | OperationObject] {
   const it = $iterate === true
   const dir = getDir($direction, options)
-  const nonvalues = Array.isArray($nonvalues)
+  const rawNonvalues = Array.isArray($nonvalues)
     ? $nonvalues
     : Array.isArray($undefined)
       ? $undefined
       : undefined
+  const nonvalues = rawNonvalues?.map(unescapeValue)
 
   // Set $iterate back if it is not a boolean – as this is then a $iterate
   // operation

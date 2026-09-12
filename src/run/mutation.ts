@@ -53,11 +53,11 @@ export default function runMutationStep(
  */
 export async function runMutationStepAsync(
   value: unknown,
-  { pipelines, flip }: MutationStep,
+  { pipelines, flip, always }: MutationStep,
   state: State,
 ) {
-  // Don't mutate a non-value
-  if (isNonvalue(value, state.nonvalues)) {
+  // Don't mutate a non-value, unless `always` is true
+  if (!always && isNonvalue(value, state.nonvalues)) {
     return undefined
   }
 

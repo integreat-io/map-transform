@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import type State from '../state.js'
 
-import runPipeline from './index.js'
+import runPipeline, { runPipelineAsync } from './index.js'
 
 // Setup
 
@@ -98,4 +98,39 @@ test('should not run transformer function going forward', () => {
   const ret = runPipeline(value, pipeline, state)
 
   assert.deepEqual(ret, expected)
+})
+
+test('should throw when transformer returns a promise', () => {
+  const value = 'Hello'
+  const asyncUppercase = async (val: unknown) =>
+    typeof val === 'string' ? val.toUpperCase() : val
+  const pipeline = [{ type: 'transform' as const, fn: asyncUppercase }]
+  const expectedError = new Error(
+    'A transformer returned a promise in a synchronous pipeline. Use mapTransformAsync() to run async transformers',
+  )
+
+  assert.throws(() => runPipeline(value, pipeline, state), expectedError)
+})
+
+test('should throw when transformer returns a thenable', () => {
+  const value = 'Hello'
+  const thenableUppercase = () => ({ then: () => undefined })
+  const pipeline = [{ type: 'transform' as const, fn: thenableUppercase }]
+  const expectedError = new Error(
+    'A transformer returned a promise in a synchronous pipeline. Use mapTransformAsync() to run async transformers',
+  )
+
+  assert.throws(() => runPipeline(value, pipeline, state), expectedError)
+})
+
+test('should not throw when transformer returns a promise in an async pipeline', async () => {
+  const value = 'Hello'
+  const asyncUppercase = async (val: unknown) =>
+    typeof val === 'string' ? val.toUpperCase() : val
+  const pipeline = [{ type: 'transform' as const, fn: asyncUppercase }]
+  const expected = 'HELLO'
+
+  const ret = await runPipelineAsync(value, pipeline, state)
+
+  assert.equal(ret, expected)
 })

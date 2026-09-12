@@ -311,6 +311,26 @@ test('should not get a default value from the last pipeline', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should skip default value that is a nonvalue', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [
+        ['name'],
+        [{ type: 'value', value: 'Default name' }],
+        [{ type: 'value', value: '' }],
+      ],
+    },
+  ]
+  const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, ''] }
+  const expected = { name: 'Default name' }
+
+  const ret = runPipeline(value, pipeline, stateRevWithNonvalues)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should skip pipelines with wrong direction when getting default value', () => {
   const value = undefined
   const pipeline: PreppedPipeline = [

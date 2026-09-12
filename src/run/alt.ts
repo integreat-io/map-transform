@@ -86,7 +86,10 @@ function* getDefaultValue(
     const value = yield isAsync
       ? runPipelineAsync(undefined, pipeline, state)
       : runPipeline(undefined, pipeline, state)
-    if (!isUntouchedValue(undefined, value, pipeline) && !isNonvalue(value)) {
+    if (
+      !isUntouchedValue(undefined, value, pipeline) &&
+      !isNonvalue(value, state.nonvalues)
+    ) {
       return value
     }
   }

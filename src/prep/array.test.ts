@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import type { PreppedPipeline } from '../run/index.js'
 
 import preparePipeline from './index.js'
 
@@ -107,4 +108,13 @@ test('should throw when $array is not an array', () => {
   )
 
   assert.throws(() => preparePipeline(def, options), expectedError)
+})
+
+test('should return no step when $array is undefined', () => {
+  const def = { $array: undefined }
+  const expected: PreppedPipeline = []
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
 })

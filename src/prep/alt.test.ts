@@ -83,3 +83,12 @@ test('should throw when $alt is not an array', () => {
 
   assert.throws(() => preparePipeline(def, options), expectedError)
 })
+
+test('should return no step when $alt is undefined', () => {
+  const def = { $alt: undefined }
+  const expected: PreppedPipeline = []
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
+})

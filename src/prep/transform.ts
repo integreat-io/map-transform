@@ -2,6 +2,16 @@ import type { TransformStep } from '../run/transform.js'
 import type { TransformOperation } from '../typesNext.js'
 import type { Options } from './index.js'
 
+/**
+ * The error we throw when an operation is given a transformer function instead
+ * of the id of a transformer. Shared with the `$filter` operation, which
+ * accepts a transformer id the same way `$transform` does.
+ */
+export const createTransformerFunctionError = (opName: string) =>
+  new Error(
+    `${opName} operation was given a transformer function. Register the transformer in options and give its id instead`,
+  )
+
 function prepareFn(
   id: string | symbol | null,
   props: Record<string, unknown>,
@@ -13,9 +23,7 @@ function prepareFn(
   }
 
   if (typeof id === 'function') {
-    throw new Error(
-      `${opName} operation was given a transformer function. Register the transformer in options and give its id instead`,
-    )
+    throw createTransformerFunctionError(opName)
   }
 
   if (typeof id !== 'string' && typeof id !== 'symbol') {

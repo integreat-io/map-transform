@@ -671,3 +671,37 @@ test('should apply default in iterated deep structure', () => {
 
   assert.deepEqual(ret, expected)
 })
+
+test('should treat **undefined** in $nonvalues as undefined', () => {
+  const def = {
+    title: [
+      {
+        $alt: ['content.heading', { $value: 'Default heading' }],
+        $nonvalues: ['**undefined**'],
+      },
+    ],
+  }
+  const data = { content: {} }
+  const expected = { title: 'Default heading' }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should treat **undefined** in $undefined as undefined', () => {
+  const def = {
+    title: [
+      {
+        $alt: ['content.heading', { $value: 'Default heading' }],
+        $undefined: ['**undefined**'],
+      },
+    ],
+  }
+  const data = { content: {} }
+  const expected = { title: 'Default heading' }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})

@@ -395,6 +395,25 @@ This will essentially make MapTransform treat `null` the same way as
 You could in principle include any primitive value in `nonvalues` and it will be
 treated as `undefined`, e.g. an empty string or the number `0`.
 
+You may also set `$nonvalues` on an operation or mutation object, to use another
+set of non-values for that operation and any pipelines within it. This overrides
+the `nonvalues` option for that part of the definition. `$undefined` is an alias
+of `$nonvalues`, and when both are set, `$nonvalues` is used. As a definition
+may be written in JSON, where `undefined` cannot be expressed, the value
+`'**undefined**'` is treated as `undefined` in these lists:
+
+```javascript
+const def = {
+  // Treat an empty string as `undefined` when picking a default here
+  name: [
+    {
+      $alt: ['data.name', { $value: 'Anonymous' }],
+      $nonvalues: ['**undefined**', ''],
+    },
+  ],
+}
+```
+
 A mutation object will be skipped in its entirety when it encounters a non-value
 in the pipeline. This is not always wanted, e.g. when the mutation object has
 defaults that we want to set in the mutation object. In these cases, you may set

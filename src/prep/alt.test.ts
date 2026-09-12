@@ -51,6 +51,42 @@ test('should pass on $undefined as nonvalues', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should unescape **undefined** in $nonvalues', () => {
+  const def = {
+    $alt: [['title'], 'props.name'],
+    $nonvalues: ['**undefined**', ''],
+  }
+  const expected = [
+    {
+      type: 'alt' as const,
+      nonvalues: [undefined, ''],
+      pipelines: [['title'], ['props', 'name']],
+    },
+  ]
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should unescape **undefined** in $undefined', () => {
+  const def = {
+    $alt: [['title'], 'props.name'],
+    $undefined: ['**undefined**', ''],
+  }
+  const expected = [
+    {
+      type: 'alt' as const,
+      nonvalues: [undefined, ''],
+      pipelines: [['title'], ['props', 'name']],
+    },
+  ]
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should pass on $direction as dir', () => {
   const def = { $alt: [['title'], 'props.name'], $direction: 'rev' }
   const expected = [

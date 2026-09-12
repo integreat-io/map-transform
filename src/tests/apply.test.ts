@@ -1,7 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import mapTransformSync, { mapTransformAsync } from '../mapTransform.js'
+import mapTransformSync, {
+  mapTransformAsync,
+  prepareOptions,
+} from '../mapTransform.js'
+import { isObject } from '../utils/is.js'
+import type { Transformer } from '../typesNext.js'
 
 // Setup
 
@@ -525,4 +530,99 @@ test('should throw when applying an unknown pipeline inside a transform object',
   )
 
   assert.throws(() => mapTransformSync(def, options), expectedError)
+})
+
+test('should share prepared pipelines between calls given the same prepared options', () => {
+  let prepareCount = 0
+  const countPrepares: Transformer = () => () => {
+    prepareCount++
+    return (value: unknown) => value
+  }
+  const options = prepareOptions({
+    pipelines: { entry: [{ $transform: 'countPrepares' }, 'title'] },
+    transformers: { countPrepares },
+  })
+  const data = { title: 'Entry 1' }
+  const expectedFirst = { first: 'Entry 1' }
+  const expectedSecond = { second: 'Entry 1' }
+  const expectedPrepareCount = 1
+
+  const retFirst = mapTransformSync(
+    { first: { $apply: 'entry' } },
+    options,
+  )(data)
+  const retSecond = mapTransformSync(
+    { second: { $apply: 'entry' } },
+    options,
+  )(data)
+
+  assert.deepEqual(retFirst, expectedFirst)
+  assert.deepEqual(retSecond, expectedSecond)
+  assert.equal(prepareCount, expectedPrepareCount)
+})
+
+test('should not share prepared pipelines when options are not prepared up front', () => {
+  let prepareCount = 0
+  const countPrepares: Transformer = () => () => {
+    prepareCount++
+    return (value: unknown) => value
+  }
+  const options = {
+    pipelines: { entry: [{ $transform: 'countPrepares' }, 'title'] },
+    transformers: { countPrepares },
+  }
+  const data = { title: 'Entry 1' }
+  const expectedFirst = { first: 'Entry 1' }
+  const expectedSecond = { second: 'Entry 1' }
+  const expectedPrepareCount = 2
+
+  const retFirst = mapTransformSync(
+    { first: { $apply: 'entry' } },
+    options,
+  )(data)
+  const retSecond = mapTransformSync(
+    { second: { $apply: 'entry' } },
+    options,
+  )(data)
+
+  assert.deepEqual(retFirst, expectedFirst)
+  assert.deepEqual(retSecond, expectedSecond)
+  assert.equal(prepareCount, expectedPrepareCount)
+})
+
+test('should not share prepared pipelines between sync and async', async () => {
+  const options = prepareOptions({
+    pipelines: { entry: ['title', { $transform: 'dontTouchAsync' }] },
+    transformers,
+  })
+  const data = { title: 'Entry 1' }
+  const expected = { id: 'Entry 1' }
+
+  const ret = await mapTransformAsync(
+    { id: { $apply: 'entry' } },
+    options,
+  )(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should apply pipeline with a transformer that runs map-transform during preparation', () => {
+  const templateLike: Transformer = () => (options) => {
+    const inner = mapTransformSync({ $apply: 'wrapper' }, options)
+    return (value: unknown) =>
+      isObject(value) && value.expand ? inner(value) : value
+  }
+  const options = {
+    pipelines: {
+      entry: [{ $transform: 'templateLike' }, 'title'],
+      wrapper: [{ $apply: 'entry' }],
+    },
+    transformers: { templateLike },
+  }
+  const data = { title: 'Entry 1' }
+  const expected = { result: 'Entry 1' }
+
+  const ret = mapTransformSync({ result: { $apply: 'entry' } }, options)(data)
+
+  assert.deepEqual(ret, expected)
 })

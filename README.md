@@ -197,6 +197,14 @@ it won't happen again on the next call. `prepareOptions` is idempotent, so
 passing already prepared options to `mapTransform` -- or calling
 `prepareOptions` on them again -- costs nothing.
 
+The upcoming v2 functions have their own `prepareOptions`, which works the same
+way and is just as optional -- options you haven't prepared are prepared for
+you, you just don't get to share the result with the next call. One difference
+is worth knowing about: a pipeline is prepared with the transformers baked into
+it, and the synchronous and the asynchronous version use different transformers,
+so they never share prepared pipelines with each other. Preparing the same
+options for both is fine, each gets its own.
+
 > [!NOTE] We are preparing for an upcoming 2.0 version, which will include
 > breaking changes.
 >

@@ -89,16 +89,15 @@ test('should pass options to transformer', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should support transformer function being given directly on $transform', () => {
+test('should throw when a transformer function is given directly on $transform', () => {
   const def = {
     $transform: lowerIfAlias(), // We call the function here to get rid of the first level function level
   }
-  const optionsWithFwdAlias = { ...options, fwdAlias: 'from' } // Setting fwdAlias will give use the lowercase transformer in this weird test case
-  const expected = [{ type: 'transform', fn: lowercaseFn }]
+  const expectedError = new Error(
+    'Transform operation was given a transformer function. Register the transformer in options and give its id instead',
+  )
 
-  const ret = preparePipeline(def, optionsWithFwdAlias)
-
-  assert.deepEqual(ret, expected)
+  assert.throws(() => preparePipeline(def, options), expectedError)
 })
 
 test('should throw for unknown transformer function', () => {

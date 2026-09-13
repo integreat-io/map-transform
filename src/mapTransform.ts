@@ -4,10 +4,14 @@ import {
   sync as syncTransformers,
   async as asyncTransformers,
 } from './transformers/index.js'
+import prepareOptions, {
+  prepareOptionsWithBookKeeping,
+  withBookKeeping,
+} from './prepareOptions.js'
 import State from './state.js'
-import type { Transformer, AsyncTransformer } from './typesNext.js'
+import type { Variant, VariantBookKeeping } from './prepareOptions.js'
 
-export { syncTransformers, asyncTransformers, State }
+export { syncTransformers, asyncTransformers, State, prepareOptions }
 export { pathGetter, pathSetter } from './createPathMapper.js'
 
 export interface InitialState {
@@ -17,14 +21,31 @@ export interface InitialState {
   noDefaults?: boolean
 }
 
-// Prepare the pipelines that have their id in `neededPipelineIds` Set. Return
-// a Map of the pipelines.
-function preparePipelines(options: Options) {
-  const pipelines = new Map()
-  if (options.neededPipelineIds && options.pipelines) {
-    for (const id of options.neededPipelineIds) {
-      const pipeline = options.pipelines[id] // eslint-disable-line security/detect-object-injection
-      pipelines.set(id, preparePipeline(pipeline, options))
+// Prepare the pipelines that have had their id added to `neededPipelineIds`,
+// and set them on the `pipelines` Map. Pipelines that are already prepared are
+// left alone, so preparing the same options again is free, and preparing a
+// pipeline may mark more pipelines as needed -- as a `Set` yields values added
+// while we're iterating it, these are prepared too.
+function preparePipelines(
+  { neededPipelineIds, pipelines }: VariantBookKeeping,
+  options: Options,
+) {
+  for (const id of neededPipelineIds) {
+    if (pipelines.has(id) || !options.pipelines) {
+      continue
+    }
+
+    // Set an empty pipeline before we prepare, so that a transformer that runs
+    // map-transform with our options while we're preparing won't start
+    // preparing this pipeline again. We fill the very same array below, so
+    // anyone holding on to it still ends up with the prepared steps.
+    const pipeline: PreppedPipeline = []
+    pipelines.set(id, pipeline)
+    try {
+      pipeline.push(...preparePipeline(options.pipelines[id], options)) // eslint-disable-line security/detect-object-injection
+    } catch (error) {
+      pipelines.delete(id)
+      throw error
     }
   }
   return pipelines
@@ -52,27 +73,35 @@ function createTransformFunctionAsync(
 
 function preparePipelinesAndStateProps(
   def: TransformDefinition,
-  options: Options,
-  transformers: Record<string, Transformer | AsyncTransformer>,
+  rawOptions: Options,
+  variant: Variant,
 ): [PreppedPipeline, Partial<State>] {
-  const stateProps: Partial<State> = { nonvalues: options.nonvalues } // These props will be added to the state object
+  // Prepare the options, unless they are already prepared. Prepared options
+  // hold the transformers and the prepared pipelines for both variants, and
+  // are shared by every `mapTransform()` call they are given to.
+  const [preparedOptions, book] = prepareOptionsWithBookKeeping(rawOptions)
+  const variantBook = book[variant] // eslint-disable-line security/detect-object-injection
+  const { transformers, neededPipelineIds } = variantBook
 
-  // Set the `neededPipelineIds` Set and add the built-in transformers.
-  options = {
-    ...options,
-    neededPipelineIds: new Set(),
-    transformers: { ...transformers, ...options.transformers },
-  }
+  // Make our own copy of the options for this variant, and give it the same
+  // book-keeping, so that a transformer running map-transform with the options
+  // it is given will share our prepared pipelines.
+  const options = withBookKeeping(
+    { ...preparedOptions, transformers, neededPipelineIds },
+    book,
+  )
 
-  // Prepare the pipeline.
+  // Prepare the pipeline. Any `$apply` operation will add its pipeline id to
+  // `neededPipelineIds` while we do.
   const pipeline = preparePipeline(def, options)
 
-  // Prepare all pipelines that have had their id in set in `neededPipelineIds`
-  // during pipeline preparation, and add them to the `pipelines` Map on the
-  // state object.
-  stateProps.pipelines = preparePipelines(options)
+  // Prepare the pipelines that are needed but not prepared yet, and hand the
+  // Map of them to the state object.
+  const stateProps: Partial<State> = {
+    nonvalues: rawOptions.nonvalues,
+    pipelines: preparePipelines(variantBook, options),
+  }
 
-  // Return the pipeline and state props.
   return [pipeline, stateProps]
 }
 
@@ -91,7 +120,7 @@ export default function mapTransform(
   const [pipeline, stateProps] = preparePipelinesAndStateProps(
     def,
     options,
-    syncTransformers,
+    'sync',
   )
   return createTransformFunction(pipeline, stateProps)
 }
@@ -111,7 +140,7 @@ export function mapTransformAsync(
   const [pipeline, stateProps] = preparePipelinesAndStateProps(
     def,
     options,
-    asyncTransformers,
+    'async',
   )
   return createTransformFunctionAsync(pipeline, stateProps)
 }

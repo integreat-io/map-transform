@@ -39,7 +39,7 @@ test('should iterate with an operation and make index available on state', () =>
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
-        [{ type: 'transform', fn }, '>order'],
+        [{ type: 'transform', id: 'index', fn }, '>order'],
       ],
     },
   ]
@@ -62,7 +62,7 @@ test.skip('should iterate target', () => {
       it: true,
       pipelines: [
         ['name', '>title'],
-        [{ type: 'transform', fn }, '>order'],
+        [{ type: 'transform', id: 'index', fn }, '>order'],
       ],
     },
   ]
@@ -88,7 +88,9 @@ test('should not touch value when empty pipeline', () => {
 
 test('should run operation going forward', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase, dir: 1 },
+  ]
   const expected = 'HELLO'
 
   const ret = runPipeline(value, pipeline, state)
@@ -98,7 +100,9 @@ test('should run operation going forward', () => {
 
 test('should not run operation function going in reverse', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase, dir: 1 },
+  ]
   const expected = 'Hello'
 
   const ret = runPipeline(value, pipeline, stateRev)
@@ -108,7 +112,9 @@ test('should not run operation function going in reverse', () => {
 
 test('should ignore flip when checking direction', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase, dir: 1 },
+  ]
   const stateFlipped = { ...state, flip: true }
   const expected = 'HELLO'
 
@@ -139,7 +145,10 @@ test('should run a simple pipeline asynchronously', async () => {
 
 test('should run a pipeline with an async transformer', async () => {
   const fn = async () => 'From async'
-  const pipeline = [{ type: 'transform' as const, fn }, '>value']
+  const pipeline = [
+    { type: 'transform' as const, id: 'fromAsync', fn },
+    '>value',
+  ]
   const value = { id: 'ent1' }
   const expected = { value: 'From async' }
 
@@ -154,8 +163,8 @@ test('should run a pipeline with an async transformer when iterating', async () 
     'items',
     '[]',
     'id',
-    { type: 'transform' as const, fn },
-    { type: 'transform' as const, fn: uppercaseAsync },
+    { type: 'transform' as const, id: 'fromAsync', fn },
+    { type: 'transform' as const, id: 'uppercaseAsync', fn: uppercaseAsync },
     '>value',
   ]
   const value = { items: [{ id: 'ent1' }, { id: 'ent2' }] }
@@ -173,7 +182,7 @@ test('should run a pipeline with an async transformer in a mutation object', asy
       type: 'mutation' as const,
       pipelines: [
         ['key', '>id'],
-        [{ type: 'transform' as const, fn }, '>value'],
+        [{ type: 'transform' as const, id: 'fromAsync', fn }, '>value'],
       ],
     },
   ]
@@ -194,7 +203,7 @@ test('should run a pipeline applying an async pipline', async () => {
       type: 'mutation' as const,
       pipelines: [
         ['key', '>id'],
-        [{ type: 'transform' as const, fn }, '>value'],
+        [{ type: 'transform' as const, id: 'fromAsync', fn }, '>value'],
       ],
     },
   ])
@@ -212,7 +221,10 @@ test('should run a pipeline with async alt pipelines', async () => {
   const pipeline = [
     {
       type: 'alt' as const,
-      pipelines: [['name'], [{ type: 'transform' as const, fn }, '>value']],
+      pipelines: [
+        ['name'],
+        [{ type: 'transform' as const, id: 'fromAsync', fn }, '>value'],
+      ],
     },
   ]
   const value = { key: 'ent1' }
@@ -236,7 +248,7 @@ test('should iterate with an operation and make index available on state for asy
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
-        [{ type: 'transform', fn }, '>order'],
+        [{ type: 'transform', id: 'index', fn }, '>order'],
       ],
     },
   ]

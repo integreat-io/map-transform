@@ -393,8 +393,8 @@ test('should use value from async pipelines', async () => {
     {
       type: 'alt',
       pipelines: [
-        [{ type: 'transform' as const, fn: fn1 }],
-        [{ type: 'transform' as const, fn: fn2 }],
+        [{ type: 'transform' as const, id: 'undefinedAsync', fn: fn1 }],
+        [{ type: 'transform' as const, id: 'fromAsync', fn: fn2 }],
       ],
     },
   ]

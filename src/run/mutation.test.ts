@@ -334,7 +334,7 @@ test.skip('should set pipelines on the given target', () => {
     {
       type: 'mutation',
       pipelines: [
-        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['>...'], // $modify
       ],
     },
@@ -353,7 +353,7 @@ test('should merge mutated object with pipeline value ($modify)', () => {
     {
       type: 'mutation',
       pipelines: [
-        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['>...'], // $modify
       ],
     },
@@ -440,7 +440,7 @@ test('should merge with flip ($modify)', () => {
     {
       type: 'mutation',
       pipelines: [
-        ['slug', { type: 'transform', fn: uppercase }, '>key'],
+        ['slug', { type: 'transform', id: 'uppercase', fn: uppercase }, '>key'],
         ['...'], // Reverse $modify
       ],
     },
@@ -459,7 +459,7 @@ test('should skip reverse merge going forward ($modify)', () => {
     {
       type: 'mutation',
       pipelines: [
-        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['...'], // Reverse $modify
       ],
     },
@@ -707,7 +707,7 @@ test('should merge in reverse ($modify)', () => {
     {
       type: 'mutation',
       pipelines: [
-        ['slug', { type: 'transform', fn: uppercase }, '>key'],
+        ['slug', { type: 'transform', id: 'uppercase', fn: uppercase }, '>key'],
         ['...'], // Reverse $modify
       ],
     },
@@ -725,7 +725,7 @@ test('should merge with flip in reverse ($modify)', () => {
     {
       type: 'mutation',
       pipelines: [
-        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['>...'], // $modify
       ],
     },
@@ -744,7 +744,7 @@ test('should skip forward merge in reverse ($modify)', () => {
     {
       type: 'mutation',
       pipelines: [
-        ['key', { type: 'transform', fn: uppercase }, '>slug'],
+        ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['>...'], // $modify
       ],
     },
@@ -767,7 +767,7 @@ test('should run mutation object asynchronously', async () => {
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
-        [{ type: 'transform' as const, fn }, '>asyncValue'],
+        [{ type: 'transform' as const, id: 'fromAsync', fn }, '>asyncValue'],
       ],
     },
   ]

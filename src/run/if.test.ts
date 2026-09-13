@@ -128,8 +128,8 @@ test('should run then-pipeline when async condition is true', async () => {
     {
       type: 'if',
       condition: [
-        { type: 'transform', fn: getIsActiveAsync },
-        { type: 'transform', fn: notFn },
+        { type: 'transform', id: 'getIsActiveAsync', fn: getIsActiveAsync },
+        { type: 'transform', id: 'not', fn: notFn },
       ],
       then: [{ type: 'value', value: 'active' }, '>state'],
       else: [{ type: 'value', value: 'inactive' }, '>state'],
@@ -148,8 +148,8 @@ test('should run else-pipeline when async condition is false', async () => {
     {
       type: 'if',
       condition: [
-        { type: 'transform', fn: getIsActiveAsync },
-        { type: 'transform', fn: notFn },
+        { type: 'transform', id: 'getIsActiveAsync', fn: getIsActiveAsync },
+        { type: 'transform', id: 'not', fn: notFn },
       ],
       then: [{ type: 'value', value: 'active' }, '>state'],
       else: [{ type: 'value', value: 'inactive' }, '>state'],
@@ -170,7 +170,7 @@ test('should run async then-pipeline', async () => {
       condition: ['isActive'],
       then: [
         { type: 'value', value: 'active' },
-        { type: 'transform', fn: uppercaseAsync },
+        { type: 'transform', id: 'uppercaseAsync', fn: uppercaseAsync },
         '>state',
       ],
       else: [{ type: 'value', value: 'inactive' }, '>state'],
@@ -192,7 +192,7 @@ test('should run async else-pipeline', async () => {
       then: [{ type: 'value', value: 'active' }, '>state'],
       else: [
         { type: 'value', value: 'inactive' },
-        { type: 'transform', fn: uppercaseAsync },
+        { type: 'transform', id: 'uppercaseAsync', fn: uppercaseAsync },
         '>state',
       ],
     },

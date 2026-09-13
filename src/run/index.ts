@@ -12,7 +12,10 @@ import runMutationStep, {
   runMutationStepAsync,
   type MutationStep,
 } from './mutation.js'
-import runTransformStep, { type TransformStep } from './transform.js'
+import runTransformStep, {
+  runTransformStepAsync,
+  type TransformStep,
+} from './transform.js'
 import runValueStep, { type ValueStep } from './value.js'
 import runPath from './path.js'
 import unwindTarget from './unwindTarget.js'
@@ -65,7 +68,7 @@ const asyncStepFunctions: StepFunctions = {
   if: runIfStepAsync,
   iterate: runIterateStepAsync,
   mutation: runMutationStepAsync,
-  transform: runTransformStep,
+  transform: runTransformStepAsync,
   value: runValueStep,
 }
 

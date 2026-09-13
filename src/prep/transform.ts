@@ -45,7 +45,7 @@ function prepareFn(
   }
 
   // We have a transformer function, so give it props and options
-  return fn(props)(options as Options)
+  return { id, fn: fn(props)(options as Options) }
 }
 
 /**
@@ -60,6 +60,6 @@ export default function prepareTransformStep(
   options: Options,
   opName = 'Transform',
 ): TransformStep {
-  const fn = prepareFn(id, props, options, opName)
-  return { type: 'transform', fn }
+  const { id: transformerId, fn } = prepareFn(id, props, options, opName)
+  return { type: 'transform', id: transformerId, fn }
 }

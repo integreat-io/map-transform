@@ -167,7 +167,7 @@ test('should run pipeline asynchronously', async () => {
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
-        [{ type: 'transform' as const, fn }, '>asyncValue'],
+        [{ type: 'transform' as const, id: 'fromAsync', fn }, '>asyncValue'],
       ],
     },
   ]

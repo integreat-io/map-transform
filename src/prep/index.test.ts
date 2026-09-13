@@ -24,7 +24,7 @@ test('should prepare pipeline', () => {
   const expected = [
     'data',
     'name',
-    { type: 'transform', fn: uppercaseFn },
+    { type: 'transform', id: 'uppercase', fn: uppercaseFn },
     '>title',
     '>[]',
     '>items',
@@ -40,7 +40,7 @@ test('should prepare pipeline with sub-pipeline', () => {
   const expected = [
     'data',
     'name',
-    { type: 'transform', fn: uppercaseFn },
+    { type: 'transform', id: 'uppercase', fn: uppercaseFn },
     '>title',
     '>[]',
     '>items',
@@ -76,7 +76,9 @@ test('should prepare transform operation with iteration', () => {
       $iterate: true,
     },
   ]
-  const expected = [{ type: 'transform', fn: uppercaseFn, it: true }]
+  const expected = [
+    { type: 'transform', id: 'uppercase', fn: uppercaseFn, it: true },
+  ]
 
   const ret = preparePipeline(def, options)
 
@@ -89,7 +91,9 @@ test('should prepare transform operation with direction fwd', () => {
     $direction: 'fwd',
     $iterate: true,
   }
-  const expected = [{ type: 'transform', fn: uppercaseFn, dir: 1, it: true }]
+  const expected = [
+    { type: 'transform', id: 'uppercase', fn: uppercaseFn, dir: 1, it: true },
+  ]
 
   const ret = preparePipeline(def, options)
 
@@ -101,7 +105,9 @@ test('should prepare transform operation with direction rev', () => {
     $transform: 'uppercase',
     $direction: 'rev',
   }
-  const expected = [{ type: 'transform', fn: uppercaseFn, dir: -1 }]
+  const expected = [
+    { type: 'transform', id: 'uppercase', fn: uppercaseFn, dir: -1 },
+  ]
 
   const ret = preparePipeline(def, options)
 
@@ -113,7 +119,9 @@ test('should prepare transform operation with direction set to fwdAlias', () => 
     $transform: 'uppercase',
     $direction: 'from',
   }
-  const expected = [{ type: 'transform', fn: uppercaseFn, dir: 1 }]
+  const expected = [
+    { type: 'transform', id: 'uppercase', fn: uppercaseFn, dir: 1 },
+  ]
 
   const ret = preparePipeline(def, options)
 
@@ -125,7 +133,9 @@ test('should prepare transform operation with direction revAlias', () => {
     $transform: 'uppercase',
     $direction: 'to',
   }
-  const expected = [{ type: 'transform', fn: uppercaseFn, dir: -1 }]
+  const expected = [
+    { type: 'transform', id: 'uppercase', fn: uppercaseFn, dir: -1 },
+  ]
 
   const ret = preparePipeline(def, options)
 

@@ -24,6 +24,7 @@ test('should change $and to $transform', () => {
   const expectedPipeline = [
     {
       type: 'transform',
+      id: 'logical',
       fn: logicalFn,
     },
   ]
@@ -46,6 +47,7 @@ test('should change $or to $transform', () => {
   const expectedPipeline = [
     {
       type: 'transform',
+      id: 'logical',
       fn: logicalFn,
     },
   ]
@@ -68,6 +70,7 @@ test('should change $not to $transform', () => {
   const expectedPipeline = [
     {
       type: 'transform',
+      id: 'not',
       fn: notFn,
     },
   ]
@@ -89,6 +92,7 @@ test('should change $merge to $transform', () => {
   const expectedPipeline = [
     {
       type: 'transform',
+      id: 'merge',
       fn: mergeFn,
     },
   ]
@@ -110,6 +114,7 @@ test('should change $concat to $transform', () => {
   const expectedPipeline = [
     {
       type: 'transform',
+      id: 'concat',
       fn: concatFn,
     },
   ]
@@ -131,6 +136,7 @@ test('should change $concatRev to $transform', () => {
   const expectedPipeline = [
     {
       type: 'transform',
+      id: 'concatRev',
       fn: concatRevFn,
     },
   ]
@@ -152,6 +158,7 @@ test('should change $lookup to $transform', () => {
   const expectedPipeline = [
     {
       type: 'transform',
+      id: 'lookup',
       fn: lookupFn,
     },
   ]
@@ -174,6 +181,7 @@ test('should change $lookdown to $transform', () => {
   const expectedPipeline = [
     {
       type: 'transform',
+      id: 'lookdown',
       fn: lookdownFn,
     },
   ]
@@ -197,7 +205,7 @@ test('should apply modifyOperationObject to operation', () => {
     modifyOperationObject,
     transformers: { cast_string: () => () => castFn },
   }
-  const expected = [{ type: 'transform', fn: castFn }]
+  const expected = [{ type: 'transform', id: 'cast_string', fn: castFn }]
 
   const ret = preparePipeline(def, options)
 
@@ -213,7 +221,7 @@ test('should apply modifyOperationObject to before built-in modify', () => {
     modifyOperationObject,
     transformers: { logical: logicalStub },
   }
-  const expectedPipeline = [{ type: 'transform', fn: logicalFn }]
+  const expectedPipeline = [{ type: 'transform', id: 'logical', fn: logicalFn }]
   const expectedProps = {
     operator: 'AND',
     path: ['this', 'that'],

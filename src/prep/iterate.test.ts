@@ -23,7 +23,7 @@ test('should prepare array operation', () => {
   const expected = [
     {
       type: 'iterate' as const,
-      pipeline: [{ type: 'transform', fn: String }],
+      pipeline: [{ type: 'transform', id: 'string', fn: String }],
     },
   ]
 

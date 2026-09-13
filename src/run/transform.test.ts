@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import type State from '../state.js'
 
-import runPipeline from './index.js'
+import runPipeline, { runPipelineAsync } from './index.js'
 
 // Setup
 
@@ -16,13 +16,18 @@ const uppercase = (val: unknown, state: State) =>
       : val.toUpperCase()
     : val
 
+const uppercaseAsync = async (val: unknown) =>
+  typeof val === 'string' ? val.toUpperCase() : val
+
 const size = (val: unknown) => (Array.isArray(val) ? val.length : 0)
 
 // Tests
 
 test('should run transformer function', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase },
+  ]
   const expected = 'HELLO'
 
   const ret = runPipeline(value, pipeline, state)
@@ -32,7 +37,9 @@ test('should run transformer function', () => {
 
 test('should pass on state to transformer function', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase },
+  ]
   const expected = 'hello' // Does lowercase in rev
 
   const ret = runPipeline(value, pipeline, stateRev)
@@ -42,7 +49,7 @@ test('should pass on state to transformer function', () => {
 
 test('should run transformer function on array', () => {
   const value = ['Hello', 'Hello again']
-  const pipeline = [{ type: 'transform' as const, fn: size }]
+  const pipeline = [{ type: 'transform' as const, id: 'size', fn: size }]
   const expected = 2
 
   const ret = runPipeline(value, pipeline, state)
@@ -52,7 +59,9 @@ test('should run transformer function on array', () => {
 
 test('should iterate transformer function on array when it is true', () => {
   const value = ['Hello', 'Hello again']
-  const pipeline = [{ type: 'transform' as const, fn: uppercase, it: true }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase, it: true },
+  ]
   const expected = ['HELLO', 'HELLO AGAIN']
 
   const ret = runPipeline(value, pipeline, state)
@@ -62,7 +71,9 @@ test('should iterate transformer function on array when it is true', () => {
 
 test('should run transformer function going forward', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase, dir: 1 },
+  ]
   const expected = 'HELLO'
 
   const ret = runPipeline(value, pipeline, state)
@@ -72,7 +83,9 @@ test('should run transformer function going forward', () => {
 
 test('should not run transformer function going in reverse', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: 1 }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase, dir: 1 },
+  ]
   const expected = 'Hello'
 
   const ret = runPipeline(value, pipeline, stateRev)
@@ -82,7 +95,9 @@ test('should not run transformer function going in reverse', () => {
 
 test('should run transformer function going in reverse', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: -1 }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase, dir: -1 },
+  ]
   const expected = 'hello'
 
   const ret = runPipeline(value, pipeline, stateRev)
@@ -92,10 +107,38 @@ test('should run transformer function going in reverse', () => {
 
 test('should not run transformer function going forward', () => {
   const value = 'Hello'
-  const pipeline = [{ type: 'transform' as const, fn: uppercase, dir: -1 }]
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercase', fn: uppercase, dir: -1 },
+  ]
   const expected = 'Hello'
 
   const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should throw when transformer returns a promise', () => {
+  const value = 'Hello'
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercaseAsync', fn: uppercaseAsync },
+  ]
+  const expectedError = {
+    name: 'Error',
+    message:
+      "Transformer 'uppercaseAsync' returned a promise. You cannot use async transformers when running MapTransform synchronously",
+  }
+
+  assert.throws(() => runPipeline(value, pipeline, state), expectedError)
+})
+
+test('should not throw when transformer returns a promise in async pipeline', async () => {
+  const value = 'Hello'
+  const pipeline = [
+    { type: 'transform' as const, id: 'uppercaseAsync', fn: uppercaseAsync },
+  ]
+  const expected = 'HELLO'
+
+  const ret = await runPipelineAsync(value, pipeline, state)
 
   assert.deepEqual(ret, expected)
 })

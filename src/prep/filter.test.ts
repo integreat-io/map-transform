@@ -28,7 +28,7 @@ test('should prepare filter operation', () => {
   const expected = [
     {
       type: 'filter' as const,
-      pipeline: [{ type: 'transform' as const, fn: isTrueFn }],
+      pipeline: [{ type: 'transform' as const, id: 'isTrue', fn: isTrueFn }],
     },
   ]
 
@@ -45,7 +45,9 @@ test('should pass props to transformer', () => {
   const expected = [
     {
       type: 'filter' as const,
-      pipeline: [{ type: 'transform' as const, fn: isFalseFn }],
+      pipeline: [
+        { type: 'transform' as const, id: 'isTrueOrFalse', fn: isFalseFn },
+      ],
     },
   ]
 
@@ -60,7 +62,9 @@ test('should pass options to transformer', () => {
   const expected = [
     {
       type: 'filter' as const,
-      pipeline: [{ type: 'transform' as const, fn: isFalseFn }],
+      pipeline: [
+        { type: 'transform' as const, id: 'isTrueOrFalse', fn: isFalseFn },
+      ],
     },
   ]
 
@@ -110,7 +114,11 @@ test('should prepare filter operation with a pipeline', () => {
   const expected = [
     {
       type: 'filter' as const,
-      pipeline: ['meta', 'archived', { type: 'transform' as const, fn: notFn }],
+      pipeline: [
+        'meta',
+        'archived',
+        { type: 'transform' as const, id: 'not', fn: notFn },
+      ],
     },
   ]
 

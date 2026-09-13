@@ -69,7 +69,7 @@ test('should iterate over an array with an async pipeline', async () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'iterate',
-      pipeline: [{ type: 'transform', fn }, '>title'],
+      pipeline: [{ type: 'transform', id: 'fromAsync', fn }, '>title'],
     },
   ]
   const expected = [{ title: 'From async' }, { title: 'From async' }]
@@ -85,7 +85,7 @@ test('should apply async pipeline to a single item', async () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'iterate',
-      pipeline: [{ type: 'transform', fn }, '>title'],
+      pipeline: [{ type: 'transform', id: 'fromAsync', fn }, '>title'],
     },
   ]
   const expected = { title: 'From async' }

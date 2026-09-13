@@ -47,7 +47,11 @@ test('should prepare mutation object with pipelines', () => {
       type: 'mutation',
       pipelines: [
         ['key', '>id'],
-        ['name', { type: 'transform', fn: uppercaseFn }, '>title'],
+        [
+          'name',
+          { type: 'transform', id: 'uppercase', fn: uppercaseFn },
+          '>title',
+        ],
       ],
     },
   ]
@@ -248,7 +252,11 @@ test('should prepare mutation object with more levels', () => {
           {
             type: 'mutation',
             pipelines: [
-              ['name', { type: 'transform', fn: uppercaseFn }, '>title'],
+              [
+                'name',
+                { type: 'transform', id: 'uppercase', fn: uppercaseFn },
+                '>title',
+              ],
               ['^^', 'key', '>slug'],
             ],
           },
@@ -367,7 +375,11 @@ test('should iterate sub-objects on array path', () => {
             it: true,
             pipelines: [
               ['key', '>id'],
-              ['name', { type: 'transform', fn: uppercaseFn }, '>title'],
+              [
+                'name',
+                { type: 'transform', id: 'uppercase', fn: uppercaseFn },
+                '>title',
+              ],
             ],
           },
           '>[]',
@@ -508,7 +520,11 @@ test('should pass on $flip', () => {
       flip: true,
       pipelines: [
         ['id', '>key'],
-        ['title', { type: 'transform', fn: uppercaseFn }, '>name'],
+        [
+          'title',
+          { type: 'transform', id: 'uppercase', fn: uppercaseFn },
+          '>name',
+        ],
       ],
     },
   ]

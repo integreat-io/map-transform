@@ -847,7 +847,12 @@ test('should use explode transform as mutation property value in reverse', () =>
   // `explode` converts an object to [{key, value}, ...] in forward.
   // In reverse, it does the opposite: [{key, value}, ...] → object.
   const def = { items: { $transform: 'explode' } }
-  const data = { items: [{ key: 'a', value: 1 }, { key: 'b', value: 2 }] }
+  const data = {
+    items: [
+      { key: 'a', value: 1 },
+      { key: 'b', value: 2 },
+    ],
+  }
   const expected = { a: 1, b: 2 }
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
@@ -892,7 +897,12 @@ test('should use flatten transform as mutation property value in reverse', () =>
   const def = {
     items: { $transform: 'flatten' },
   }
-  const data = { items: [[1, 2], [3, 4]] }
+  const data = {
+    items: [
+      [1, 2],
+      [3, 4],
+    ],
+  }
   const expected = [1, 2, 3, 4]
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
@@ -1013,4 +1023,52 @@ test('should run operation objects trought modifyOperationObject', () => {
   const ret = mapTransformSync(def, { ...options, modifyOperationObject })(data)
 
   assert.deepEqual(ret, expected)
+})
+
+test('should throw when mapping sync with an async transformer', () => {
+  const def = [
+    {
+      title: 'content.heading',
+      author: 'meta.writer.username',
+    },
+    { $transform: 'appendAuthorToTitleAsync' },
+  ]
+  const data = {
+    content: { heading: 'The heading' },
+    meta: { writer: { username: 'johnf' } },
+  }
+  const expectedError = {
+    name: 'Error',
+    message:
+      "Transformer 'appendAuthorToTitleAsync' returned a promise. You cannot use async transformers when running MapTransform synchronously",
+  }
+
+  assert.throws(() => mapTransformSync(def, options)(data), expectedError)
+})
+
+test('should throw when mapping sync with an async transformer in an iteration', () => {
+  const def = [
+    'content.items[]',
+    {
+      $iterate: true,
+      title: 'heading',
+      author: 'writer',
+    },
+    { $transform: 'appendAuthorToTitleAsync', $iterate: true },
+  ]
+  const data = {
+    content: {
+      items: [
+        { heading: 'The heading', writer: 'johnf' },
+        { heading: 'Another heading', writer: 'lucyk' },
+      ],
+    },
+  }
+  const expectedError = {
+    name: 'Error',
+    message:
+      "Transformer 'appendAuthorToTitleAsync' returned a promise. You cannot use async transformers when running MapTransform synchronously",
+  }
+
+  assert.throws(() => mapTransformSync(def, options)(data), expectedError)
 })

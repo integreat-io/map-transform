@@ -36,7 +36,7 @@ test('should prepare transform operation', () => {
   const def = {
     $transform: 'uppercase',
   }
-  const expected = [{ type: 'transform', fn: uppercaseFn }]
+  const expected = [{ type: 'transform', id: 'uppercase', fn: uppercaseFn }]
 
   const ret = preparePipeline(def, options)
 
@@ -47,7 +47,9 @@ test('should prepare transform operation with symbol as key', () => {
   const def = {
     $transform: Symbol.for('uppercase'),
   }
-  const expected = [{ type: 'transform', fn: uppercaseFn }]
+  const expected = [
+    { type: 'transform', id: Symbol.for('uppercase'), fn: uppercaseFn },
+  ]
 
   const ret = preparePipeline(def, options)
 
@@ -59,7 +61,7 @@ test('should pass props to transformer', () => {
     $transform: 'upperOrLower',
     case: 'lower', // This should give us the lowercase transformer
   }
-  const expected = [{ type: 'transform', fn: lowercaseFn }]
+  const expected = [{ type: 'transform', id: 'upperOrLower', fn: lowercaseFn }]
 
   const ret = preparePipeline(def, options)
 
@@ -72,7 +74,9 @@ test('should not pass operation props to transformer', () => {
     $iterate: true, // Should not be passed on
     case: 'lower', // This should give us the lowercase transformer, unless $iterate is passed to transformer
   }
-  const expected = [{ type: 'transform', fn: lowercaseFn, it: true }]
+  const expected = [
+    { type: 'transform', id: 'upperOrLower', fn: lowercaseFn, it: true },
+  ]
 
   const ret = preparePipeline(def, options)
 
@@ -82,7 +86,7 @@ test('should not pass operation props to transformer', () => {
 test('should pass options to transformer', () => {
   const def = { $transform: 'lowerIfAlias' }
   const optionsWithFwdAlias = { ...options, fwdAlias: 'from' } // Setting fwdAlias will give use the lowercase transformer in this weird test case
-  const expected = [{ type: 'transform', fn: lowercaseFn }]
+  const expected = [{ type: 'transform', id: 'lowerIfAlias', fn: lowercaseFn }]
 
   const ret = preparePipeline(def, optionsWithFwdAlias)
 

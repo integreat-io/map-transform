@@ -20,7 +20,7 @@ test('should generate an array from the given pipelines', () => {
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['props', 'name'],
         [{ type: 'value', value: 'Third', fixed: false }],
       ],
@@ -43,7 +43,7 @@ test('should keep undefined', () => {
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['unknown'],
         [{ type: 'value', value: 'Third', fixed: false }],
       ],
@@ -133,7 +133,7 @@ test('should generate an array from the given pipelines when flipped in reverse'
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['props', 'name'],
         [{ type: 'value', value: 'Third', fixed: false }],
       ],
@@ -153,7 +153,7 @@ test('should recreate the original data as far as possible in reverse', () => {
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['props', 'name'],
       ],
     },
@@ -174,7 +174,7 @@ test('should recreate the original data as far as possible when flipped going fo
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['props', 'name'],
       ],
       flip: true,
@@ -214,7 +214,7 @@ test('should recreate the original data when iterating in reverse', () => {
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['props', 'name'],
       ],
       it: true,
@@ -275,7 +275,7 @@ test('should handle input array shorter than pipelines in reverse', () => {
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['props', 'name'],
       ],
     },
@@ -296,7 +296,7 @@ test('should handle input array longer than pipelines in reverse', () => {
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['props', 'name'],
       ],
     },
@@ -339,7 +339,7 @@ test('should generate an array from the given async pipelines', async () => {
     {
       type: 'array' as const,
       pipelines: [
-        [{ type: 'transform', fn }],
+        [{ type: 'transform', id: 'fromAsync', fn }],
         ['props', 'name'],
         [{ type: 'value', value: 'Third', fixed: false }],
       ],
@@ -359,7 +359,7 @@ test('should recreate the original data as far as possible in reverse async', as
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn }],
+        ['title', { type: 'transform', id: 'fromAsync', fn }],
         ['props', 'name'],
         [{ type: 'value', value: 'Third', fixed: false }],
       ],
@@ -386,7 +386,7 @@ test('should generate an array from the given async pipelines when flipped in re
     {
       type: 'array' as const,
       pipelines: [
-        [{ type: 'transform', fn }],
+        [{ type: 'transform', id: 'fromAsync', fn }],
         ['props', 'name'],
         [{ type: 'value', value: 'Third', fixed: false }],
       ],
@@ -407,7 +407,7 @@ test('should recreate the original data as far as possible when flipped going fo
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn }],
+        ['title', { type: 'transform', id: 'fromAsync', fn }],
         ['props', 'name'],
         [{ type: 'value', value: 'Third', fixed: false }],
       ],

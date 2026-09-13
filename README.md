@@ -946,6 +946,12 @@ would be a truly pure function.
 > call the outer function yourself with any relevant props. This option will be
 > removed in v2.0, but is still available to the regular MapTransform function.
 
+Transformers may be asynchronous, but only when you run the transformation with
+`mapTransformAsync`. When you run it with `mapTransformSync` and a transformer
+returns a promise, MapTransform will throw, telling you the id of the offending
+transformer. This also applies to transformers used by other operations, like
+`filter`.
+
 #### `filter` operation
 
 The `filter` operation will use a transformer function or a pipeline to decide

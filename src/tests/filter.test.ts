@@ -342,3 +342,17 @@ test('should throw when filter operator is missing a transformer id', () => {
     expectedError,
   )
 })
+
+test('should throw when filtering sync with an async transformer', () => {
+  const def = [{ title: 'content.heading' }, { $filter: 'noHeadingTitleAsync' }]
+  const data = {
+    content: { heading: 'The heading' },
+  }
+  const expectedError = {
+    name: 'Error',
+    message:
+      "Transformer 'noHeadingTitleAsync' returned a promise. You cannot use async transformers when running MapTransform synchronously",
+  }
+
+  assert.throws(() => mapTransformSync(def, options)(data), expectedError)
+})

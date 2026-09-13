@@ -28,7 +28,7 @@ test('should prepare array operation', () => {
     {
       type: 'array' as const,
       pipelines: [
-        ['title', { type: 'transform', fn: String }],
+        ['title', { type: 'transform', id: 'string', fn: String }],
         ['props', 'name'],
         [{ type: 'value', value: 'Third', fixed: false }],
       ],

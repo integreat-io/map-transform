@@ -197,6 +197,12 @@ it won't happen again on the next call. `prepareOptions` is idempotent, so
 passing already prepared options to `mapTransform` -- or calling
 `prepareOptions` on them again -- costs nothing.
 
+`map-transform/next` exports its own `prepareOptions` alongside `mapTransform`.
+Options prepared with one API cannot be handed to the other. Note that the sync
+`mapTransform()` and the async `mapTransformAsync()` cache their prepared
+pipelines separately, so mixing both on the same prepared options will prepare
+each pipeline twice.
+
 > [!NOTE] We are preparing for an upcoming 2.0 version, which will include
 > breaking changes.
 >

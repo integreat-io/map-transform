@@ -5,29 +5,19 @@ import {
   async as asyncTransformers,
 } from './transformers/index.js'
 import State from './state.js'
+import { createInternalOptions } from './prepareOptions.js'
 import type { Transformer, AsyncTransformer } from './typesNext.js'
+import type { Mode } from './prepareOptions.js'
 
 export { syncTransformers, asyncTransformers, State }
 export { pathGetter, pathSetter } from './createPathMapper.js'
+export { default as prepareOptions } from './prepareOptions.js'
 
 export interface InitialState {
   context?: unknown[]
   target?: unknown
   rev?: boolean
   noDefaults?: boolean
-}
-
-// Prepare the pipelines that have their id in `neededPipelineIds` Set. Return
-// a Map of the pipelines.
-function preparePipelines(options: Options) {
-  const pipelines = new Map()
-  if (options.neededPipelineIds && options.pipelines) {
-    for (const id of options.neededPipelineIds) {
-      const pipeline = options.pipelines[id] // eslint-disable-line security/detect-object-injection
-      pipelines.set(id, preparePipeline(pipeline, options))
-    }
-  }
-  return pipelines
 }
 
 // Create a synchronous transform function. It will run the given prepared
@@ -54,26 +44,17 @@ function preparePipelinesAndStateProps(
   def: TransformDefinition,
   options: Options,
   transformers: Record<string, Transformer | AsyncTransformer>,
+  mode: Mode,
 ): [PreppedPipeline, Partial<State>] {
-  const stateProps: Partial<State> = { nonvalues: options.nonvalues } // These props will be added to the state object
-
-  // Set the `neededPipelineIds` Set and add the built-in transformers.
-  options = {
-    ...options,
-    neededPipelineIds: new Set(),
-    transformers: { ...transformers, ...options.transformers },
-  }
-
-  // Prepare the pipeline.
-  const pipeline = preparePipeline(def, options)
-
-  // Prepare all pipelines that have had their id in set in `neededPipelineIds`
-  // during pipeline preparation, and add them to the `pipelines` Map on the
-  // state object.
-  stateProps.pipelines = preparePipelines(options)
-
-  // Return the pipeline and state props.
-  return [pipeline, stateProps]
+  const internalOptions = createInternalOptions(options, mode, transformers)
+  const pipeline = preparePipeline(def, internalOptions)
+  return [
+    pipeline,
+    {
+      nonvalues: options.nonvalues,
+      pipelines: internalOptions.preparedPipelines,
+    },
+  ]
 }
 
 /**
@@ -92,6 +73,7 @@ export default function mapTransform(
     def,
     options,
     syncTransformers,
+    'sync',
   )
   return createTransformFunction(pipeline, stateProps)
 }
@@ -112,6 +94,7 @@ export function mapTransformAsync(
     def,
     options,
     asyncTransformers,
+    'async',
   )
   return createTransformFunctionAsync(pipeline, stateProps)
 }

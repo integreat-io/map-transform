@@ -46,7 +46,7 @@ type ObjectStep = MutationObject | OperationObject
 export interface Options {
   transformers?: Record<string | symbol, Transformer | AsyncTransformer>
   pipelines?: Record<string | symbol, TransformDefinition>
-  neededPipelineIds?: Set<string | symbol>
+  preparedPipelines?: Map<string | symbol, PreppedPipeline>
   dictionaries?: Dictionaries
   nonvalues?: unknown[]
   fwdAlias?: string

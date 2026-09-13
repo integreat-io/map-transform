@@ -1,4 +1,6 @@
+import preparePipeline from './index.js'
 import type { ApplyStep } from '../run/apply.js'
+import type { PreppedPipeline } from '../run/index.js'
 import type { ApplyOperation } from '../typesNext.js'
 import type { Options } from './index.js'
 
@@ -20,11 +22,24 @@ export default function prepareApplyStep(
       `Failed to apply pipeline '${String(id)}'. Unknown pipeline`,
     )
   }
-
-  if (!options.neededPipelineIds) {
-    options.neededPipelineIds = new Set()
+  const { preparedPipelines } = options
+  if (!preparedPipelines) {
+    throw new Error(
+      `Failed to apply pipeline '${String(id)}'. Options have no prepared pipelines Map`,
+    )
   }
-  options.neededPipelineIds.add(id)
+
+  if (!preparedPipelines.has(id)) {
+    // Set an empty pipeline first, so pipelines applying themselves terminate
+    const pipeline: PreppedPipeline = []
+    preparedPipelines.set(id, pipeline)
+    try {
+      pipeline.push(...preparePipeline(options.pipelines[id], options)) // eslint-disable-line security/detect-object-injection
+    } catch (error) {
+      preparedPipelines.delete(id)
+      throw error
+    }
+  }
 
   return { type: 'apply', id }
 }

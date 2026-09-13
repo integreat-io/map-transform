@@ -1,7 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import mapTransformSync, { mapTransformAsync } from '../mapTransform.js'
+import mapTransformSync, {
+  mapTransformAsync,
+  prepareOptions,
+} from '../mapTransform.js'
 
 // Setup
 
@@ -447,6 +450,42 @@ test('should handle pipelines that applies themselves', () => {
   const ret = mapTransformSync(def, options)(data)
 
   assert.deepEqual(ret, expected)
+})
+
+test('should apply different pipelines from the same prepared options', () => {
+  const preppedOptions = prepareOptions(options)
+  const defA = ['data.entries', { $apply: 'cast_entry' }]
+  const defB = { $apply: 'hitsOnly' }
+  const data = {
+    data: { entries: [{ id: 'ent1', title: 'Entry 1', viewCount: '12' }] },
+    meta: { hits: 1 },
+  }
+  const expectedA = [{ id: 'ent1', title: 'Entry 1', viewCount: 12 }]
+  const expectedB = { hits: 1 }
+
+  const retA = mapTransformSync(defA, preppedOptions)(data)
+  const retB = mapTransformSync(defB, preppedOptions)(data)
+
+  assert.deepEqual(retA, expectedA)
+  assert.deepEqual(retB, expectedB)
+})
+
+test('should apply different async pipelines from the same prepared options', async () => {
+  const preppedOptions = prepareOptions(options)
+  const defA = [{ $apply: 'getItemsAsync' }, { $apply: 'cast_entry' }]
+  const defB = { $apply: 'hitsOnly' }
+  const data = {
+    data: { entries: [{ id: 'ent1', title: 'Entry 1', viewCount: '12' }] },
+    meta: { hits: 1 },
+  }
+  const expectedA = [{ id: 'ent1', title: 'Entry 1', viewCount: 12 }]
+  const expectedB = { hits: 1 }
+
+  const retA = await mapTransformAsync(defA, preppedOptions)(data)
+  const retB = await mapTransformAsync(defB, preppedOptions)(data)
+
+  assert.deepEqual(retA, expectedA)
+  assert.deepEqual(retB, expectedB)
 })
 
 test('should throw when applying an unknown pipeline id', () => {

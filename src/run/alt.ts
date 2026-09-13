@@ -35,8 +35,7 @@ function* getWithAltPipelines(
 ): Generator<unknown, unknown, unknown> {
   for (const [index, pipeline] of pipelines.entries()) {
     // Run a pipeline on the value. We create a cloned state for every pipeline
-    // so they won't interfere with each other. We do the cloning here, to be
-    // able to retrieve the context from the "winner".
+    // so they won't interfere with each other or with the outer context.
     const nextState = new State(state)
     const next = yield isAsync
       ? runOneLevelAsync(value, pipeline, nextState)
@@ -45,16 +44,13 @@ function* getWithAltPipelines(
       !isUntouchedValue(value, next, pipeline) &&
       (!isNonvalue(next, state.nonvalues) || index === pipelines.length - 1)
     ) {
-      // We have a value, or we have reached the last pipeline. Update the
-      // state context from this pipeline and return the value, even it is a
-      // non-value.
-      state.context = nextState.context
+      // We have a value, or we have reached the last pipeline. Return the
+      // value, even it is a non-value.
       return next
     }
   }
 
   // No pipeline returned a value -- return undefined.
-  state.context.push(value)
   return undefined
 }
 
@@ -109,8 +105,8 @@ function setWithAltPipelines(
 
 /**
  * Run several pipelines until one of them returns a value. If no pipelines
- * returns a value, `undefined` is returned. The `state` context will be
- * updated as if only the "winning" pipeline ran.
+ * returns a value, `undefined` is returned. The `state` context is left
+ * untouched.
  *
  * In reverse, the first pipeline will be used to set the `value`, as this is
  * most likely to be the wanted reverse version. If any of the other pipelines
@@ -141,8 +137,8 @@ export default function runAltStep(
 
 /**
  * Run several pipelines until one of them returns a value. If no pipelines
- * returns a value, `undefined` is returned. The `state` context will be
- * updated as if only the "winning" pipeline ran.
+ * returns a value, `undefined` is returned. The `state` context is left
+ * untouched.
  *
  * In reverse, the first pipeline will be used to set the `value`, as this is
  * most likely to be the wanted reverse version. If any of the other pipelines

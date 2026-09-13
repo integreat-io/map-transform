@@ -628,7 +628,7 @@ test('should treat lookdown as get going forward', () => {
     'content.heading': 'title',
     'content.authors': [
       'authors[]',
-      { $lookdown: '^meta.users[]', path: 'id' },
+      { $lookdown: '^^.meta.users[]', path: 'id' },
     ],
   }
   const data = {
@@ -1071,6 +1071,79 @@ test('should reference original root with ^^^ in a deeply nested pipeline', () =
     title: 'The heading',
     source: 'external',
   }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should reference the mutated root with ^^ from inside an applied pipeline', () => {
+  const def = [
+    {
+      items: 'list',
+      meta: { section: { $value: 'news' } },
+    },
+    {
+      $modify: true,
+      items: ['items[]', { $iterate: true, $apply: 'item' }],
+    },
+  ]
+  const pipelines = {
+    item: {
+      id: 'key',
+      section: '^^.meta.section',
+      source: '^^^.source',
+    },
+  }
+  const data = {
+    list: [{ key: 'ent1' }, { key: 'ent2' }],
+    source: 'external',
+  }
+  const expected = {
+    items: [
+      { id: 'ent1', section: 'news', source: 'external' },
+      { id: 'ent2', section: 'news', source: 'external' },
+    ],
+    meta: { section: 'news' },
+  }
+
+  const ret = mapTransformSync(def, { pipelines })(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should move up in the mutated data after a mutation object', () => {
+  const def = [
+    { id: 'key', item: { title: 'content.heading' } },
+    { title: 'item.title', id: ['item.title', '^.^.id'] },
+  ]
+  const data = { key: 'ent1', content: { heading: 'The heading' } }
+  const expected = { title: 'The heading', id: 'ent1' }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should set on the parent level with a parent set path', () => {
+  const def = {
+    items: [
+      'list[]',
+      { $iterate: true, id: 'key', '^.^.meta.section': 'section' },
+    ],
+  }
+  const data = { list: [{ key: 'ent1', section: 'news' }] }
+  const expected = { meta: { section: 'news' }, items: [{ id: 'ent1' }] }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should drop the value when setting on a parent level that does not exist', () => {
+  const def = { id: 'key', '^.section': 'section' }
+  const data = { key: 'ent1', section: 'news' }
+  const expected = { id: 'ent1' }
 
   const ret = mapTransformSync(def)(data)
 

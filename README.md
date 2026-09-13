@@ -227,6 +227,23 @@ each pipeline twice.
 > new `mapTransformSync` and `mapTransformAsync`, but there might still be gaps
 > in the documentation here.
 
+#### Deviations from v1 behaviour in `next`
+
+The following behaviours of `mapTransformSync` and `mapTransformAsync` differ
+from the default export, on purpose:
+
+- The root form without a dot after a single caret, `^path`, is removed. Write
+  `^^.path`.
+- `$alt` no longer changes the levels for parent paths after it. Before, a
+  `$alt` that found no value added a level, so the next step needed `^.^` to
+  reach the parent. After, the next step sees the same levels as before the
+  `$alt`, so `^` is enough.
+- Parent and root paths in reverse set on the parent or root level of the target
+  instead of on the current level. Before, `section: '^.^.meta.section'` inside
+  an iteration reversed to `items[].section`, and a root path in reverse set
+  nothing. After, the same definition sets `meta.section` on the object holding
+  `items`. When the parent level does not exist, the value is dropped.
+
 ### The mutation object
 
 Think of a mutation object as a description of the object structure you want.
@@ -679,41 +696,68 @@ In the example with the `content` path, you may access the `id` with the path
 much the same way as `../` in file paths on any computer. You may go up several
 levels with e.g. `^.^.^.prop` (not applicable to our example).
 
-In an iteration you need to remember that the array counts as one level, so if
-iterating the `tags[]` array from our example, you would have to use the path
-`^.^.id` to get to the id. You could also use `^.[0]` to get the first item in
-the array you're iterating.
+The number of carets you need follows from the structure of the definition
+alone, by these rules:
 
-> Editors note: We should probably have more examples here, especially on what
-> happens in a pipeline where we go up and down.
+1. **Only drilling down adds a level.** A key segment like `content` adds one
+   level, and so does an index like `[0]`. Entering an item in an array adds one
+   level too, whether you get there by iterating a path with `[]`, by
+   `$iterate: true` on a mutation object, or by an `$iterate` operation. A bare
+   `[]` that only makes sure you have an array, adds nothing. So when iterating
+   the `tags[]` array from our example above, you would use `^.^.id` to get to
+   the id: one caret to the array and one more to the object holding it. You
+   could also use `^.[0]` to get the first item in the array you're iterating.
+2. **Operations are opaque.** After a `$transform`, a mutation object, `$alt`,
+   `$if`, `$filter`, `$apply`, or `$array`, the levels are what they were before
+   the operation, no matter what the operation did on the inside. Inside an
+   operation, you inherit the levels from where the operation is used.
+3. **Set paths don't move.** A `>prop` step does not add a level, so `^` after
+   it is the same as `^` before it.
+4. **`^^` is the top of the tree you're in, `^^^` is the original data.** The
+   root notation `^^.id` goes to the base level of the data structure,
+   regardless of how many levels down you have moved.
+5. **In reverse, parent and root paths set on the parent or root level.** See
+   [Setting on parent and root](#setting-on-parent-and-root) below.
 
-The root notation follows the same logic, but will always go to the base level
-of the data structure, regardless of how many levels down you have moved. Roots
-are specified with double carets, so the path `^^.id` will get the id from our
-data from anywhere in the data structure, be it in `content` or when iterating
-through `tags[]`.
+The parents you move up in, are the data you moved down in. When you first
+mutate the data with a mutation object and then move into the result with a
+path, going up again with a parent path takes you up in the mutated data:
 
-There is a gotcha here, for both parent and root paths, relating to what data
-you're moving up in, as you are mutating the data as you move "down". The short
-answer is that you're moving in the mutated data – if you are mutating it. Say
-you have a pipeline where you first mutate the data on the level you're at with
-a mutation object. The following steps in the pipeline will relate to the
-mutated object, and if you move into the mutated data with a path, and then go
-up again with a parent path, you are moving up in the mutated data. But if you
-instead just move into the data without mutating it, moving up with a parent
-path will give you the original data – there's nothing else, as you have not
-mutated it.
+```javascript
+const def = [
+  { id: 'key', item: { title: 'content.heading' } },
+  { title: 'item.title', id: ['item.title', '^.^.id'] },
+]
+// From { key: 'ent1', content: { heading: 'The heading' } }
+// we get { title: 'The heading', id: 'ent1' }
+```
 
-This is probably as expected, but the confusing part comes into play when there
-is some "distance" between mutating the data and referencing it with a root or
-parent path, especially the root. Say you first mutate the root level with a
-mutation object, then move on with other operations, and then at some point,
-further down in the data, you want to reference something at the root level in
-_the original data_. This is where the **original root** notation comes in.
+Here, `item.title` in the second mutation object moves two levels down into the
+object from the first, and `^.^.id` goes back up to the mutated object and gets
+the `id` we set there. Note that within a mutation object, all pipelines start
+from the same object, so the pipeline for `id` is not affected by the pipeline
+for `title`.
 
-Use triple carets (`^^^`) to always reference the original, untransformed source
-data, regardless of any prior transformations in the pipeline. This is useful in
-multi-step pipelines where earlier steps may have transformed the root:
+Rule 2 means you don't have to know what an operation did to get the levels
+right after it. In this example, `$alt` may find the article on different
+depths, but the mutation object after it sees the same levels either way:
+
+```javascript
+const def = [
+  'items[]',
+  {
+    $iterate: true,
+    article: [
+      { $alt: ['content', 'original.content'] },
+      { title: 'title', section: '^.^.meta.section' },
+    ],
+  },
+]
+// From { meta: { section: 'news' }, items: [{ content: { title: 'A' } }] }
+// we get [{ article: { title: 'A', section: 'news' } }]
+```
+
+Rule 4 in a multi-step pipeline, where the first step mutates the root:
 
 ```javascript
 const def = [
@@ -728,22 +772,43 @@ const def = [
 ]
 ```
 
-This is especially useful when you write a named pipeline and reference it with
-an `$apply` operation, as you have no knowledge in the named pipeline about any
-mutation of the root outside it. Using `^^^` guarantees access to the original
-source data in all cases.
+The same holds inside a named pipeline applied with `$apply`: `^^` is the top of
+the tree the pipeline is applied in, mutated or not, and `^^^` is the original
+source data.
 
-Note also, that if you are within a mutation object and move down into the data,
-the data above where you are isn't transformed yet. As long as you are within a
-mutation object, you're referencing the data as it was before entering that
-mutation object. But as soon as you move to the next step in the pipeline –
-after the mutation object, you are left with the results of that mutation
-object.
+##### Setting on parent and root
 
-> Editor's note: We need examples.
+When you go in reverse, a parent or root path becomes a set path, and it sets on
+the parent or root level of the target, with the same number of carets as going
+forward. In this example, `section` is read from two levels up going forward,
+and in reverse it is set two levels up: on the object holding `items`.
 
-> [!NOTE] Setting on parent and root paths is currently not supported, but may
-> be in the future.
+```javascript
+const def = [
+  'items[]',
+  { $iterate: true, id: 'key', section: '^.^.meta.section' },
+]
+// Forward, from { meta: { section: 'news' }, items: [{ key: 'ent1' }] }
+// we get [{ id: 'ent1', section: 'news' }]
+// In reverse, from [{ id: 'ent1', section: 'news' }]
+// we get { meta: { section: 'news' }, items: [{ key: 'ent1' }] }
+```
+
+A root path sets on the root level of the target in the same way, so
+`'^^.meta.section'` in the example above would give the same result in reverse.
+When you set on a parent level, nothing is set on the current level, so `id` is
+the only prop on the items here.
+
+Set paths may also use parent and root notation going forward, with a `>` prefix
+or as a key on a mutation object. `{ '^.^.meta.section': 'section' }` sets
+`meta.section` two levels up in the target.
+
+When there is no parent level to set on, e.g. when a mutation object with
+`section: '^.section'` is run in reverse at the top level, the value is dropped.
+
+A parent path _within_ a path is different from these cases. The path
+`item.^.count` moves down into `item` and up again, and is the same as `count`.
+In reverse, it sets `count`, not `item.count`.
 
 #### Setting on a path
 

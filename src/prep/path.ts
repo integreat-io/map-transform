@@ -19,19 +19,10 @@ function isEscaped(part: string, index: number) {
 function splitPart(part: string): string[] {
   if (part === '$modify') {
     return ['...']
-  } else if (part[0] === '^' && part.length > 1) {
-    // This is a root part, either mutated (^^) or the original (^^^). We also
-    // support an obsolete root format for now (^path -- no dot).
-    if (part === '^^^') {
-      // This is the root prefix for the original root.
-      return ['^^^']
-    }
-    // The part starts with '^^' or the obsolete '^' root prefix.
-    const rest = part.slice(part[1] === '^' ? 2 : 1) // Extract the rest of the part
-    return [
-      '^^', // Return the root part
-      ...splitPart(rest), // Split up the rest of the part if necessary
-    ]
+  } else if (part.startsWith('^^') && part !== '^^' && part !== '^^^') {
+    // A root part with the rest of the path without a dot, e.g. `^^path`
+    const prefix = part.startsWith('^^^') ? '^^^' : '^^'
+    return [prefix, ...splitPart(part.slice(prefix.length))]
   } else {
     const indexOfBracket = part.indexOf('[')
     if (indexOfBracket >= 0 && !isEscaped(part, indexOfBracket)) {

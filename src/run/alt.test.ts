@@ -169,7 +169,7 @@ test('should use non-values provided on the operation', () => {
   assert.equal(ret, expected)
 })
 
-test('should use context from the "winning" pipeline', () => {
+test('should not change the context after alt', () => {
   const value = { id: 'ent1', props: { title: 'Entry 1' } }
   const pipeline: PreppedPipeline = [
     {
@@ -181,14 +181,14 @@ test('should use context from the "winning" pipeline', () => {
   const state = {
     context: [{ item: { id: 'ent1', props: { title: 'Entry 1' } } }],
   }
-  const expected = { title: 'Entry 1' }
+  const expected = { item: { id: 'ent1', props: { title: 'Entry 1' } } }
 
   const ret = runPipeline(value, pipeline, state)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should not let "loosing" pipelines polute the context', () => {
+test('should not change the context at all', () => {
   const value = { id: 'ent1', props: {}, title: 'Entry 1' }
   const pipeline: PreppedPipeline = [
     {
@@ -196,12 +196,12 @@ test('should not let "loosing" pipelines polute the context', () => {
       pipelines: [['name'], ['props', 'title'], ['title']],
     },
     '^', // Lets us see what's in the context
-    '^', // We do it twice to reveal if the 'props.title' context is there
+    '^', // We do it twice to reveal if any pipeline left something in the context
   ]
   const state = {
     context: [{ item: { id: 'ent1', props: { title: 'Entry 1' } } }],
   }
-  const expected = { item: { id: 'ent1', props: { title: 'Entry 1' } } }
+  const expected = undefined
 
   const ret = runPipeline(value, pipeline, state)
 

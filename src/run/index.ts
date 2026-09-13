@@ -18,6 +18,7 @@ import runTransformStep, {
 } from './transform.js'
 import runValueStep, { type ValueStep } from './value.js'
 import runPath from './path.js'
+import resolveParentSets from './resolveParentSets.js'
 import unwindTarget from './unwindTarget.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import { isObject } from '../utils/is.js'
@@ -224,23 +225,37 @@ function* runOneLevelGen(
   // Set the actual rev, based on flip and what not
   const isRev = state.isRev
 
-  const targets = unwindTarget(state.target, pipeline, isRev)
+  // Resolve parent and root set steps, and find the target to set on. The
+  // targets for the set steps in this pipeline are pushed to the target
+  // context, so that the set steps may pop them, and so that any nested
+  // pipelines may set on them through their own parent set steps.
+  const { targetContext } = state
+  const depth = targetContext.length
+  const [steps, parentLevel] = resolveParentSets(pipeline, isRev, depth)
+  const baseTarget =
+    parentLevel === undefined
+      ? state.target
+      : parentLevel >= 0
+        ? targetContext[parentLevel] // eslint-disable-line security/detect-object-injection
+        : undefined
+  const hasTargets = hasSetSteps(steps, isRev)
+  targetContext.push(...unwindTarget(baseTarget, steps, isRev))
+
   let next = value
   let index = 0
   let doIterate: boolean | undefined
 
   // We go through each step in the pipeline one by one until we're done
-  while (index < pipeline.length) {
-    const step = pipeline[index++]
+  while (index < steps.length) {
+    const step = steps[index++]
     if (typeof step === 'string') {
       // This is a path step -- handle it for both get and set.
       const prevIndex = index
       ;[next, index, doIterate] = runPath(
         next,
-        pipeline,
+        steps,
         step,
         index,
-        targets,
         handOffState(state, next),
         isRev,
       )
@@ -249,15 +264,18 @@ function* runOneLevelGen(
         // The path step returned with the `doIterate` flag set, so we'll
         // iterate of a subset of the pipeline -- from this step to the index
         // set to `index`. We'll also iterate over the target if there are set
-        // steps in the pipeline.
-        const subPipeline = pipeline.slice(prevIndex - 1, index) // Iteration from this step to a qualified set operation
+        // steps in the pipeline. The array is a level of its own, so the
+        // target array is pushed to the target context while we iterate.
+        const subPipeline = steps.slice(prevIndex - 1, index) // Iteration from this step to a qualified set operation
         const target = hasSetSteps(subPipeline, isRev)
-          ? targets.pop()
+          ? targetContext.pop()
           : undefined
         const targetArr = ensureArray(target, state.nonvalues) // Make sure we have a target array
         const processor = (item: unknown, state: State) =>
           runOneLevel(item, subPipeline, state)
+        targetContext.push(target)
         const arr = yield* iterateOverArray(next, targetArr, state, processor)
+        targetContext.pop()
         next = arr.flat()
         // Remove the array from context after iteration, matching the
         // push/pop pattern used for operation iteration ($iterate).
@@ -269,27 +287,46 @@ function* runOneLevelGen(
         // direction we are going in. Get the right operation runner for this
         // step.
         const runner = getRunnerForStep(step, stepFunctions)
+        const contextDepth = state.context.length
 
         if (shouldIterate(next, step)) {
           // We are iterating, so pass each value in the `next` array to the
           // operation runner. The index is set on the state to be available to
-          // transformers.We push the array to the context before iterating,
+          // transformers. We push the array to the context before iterating,
           // and remove it afterwards, so that the array is available to parent
-          // paths during iteration.
+          // paths during iteration. The array is a level in the target context
+          // too, but there is no target for it.
           state.context.push(next) // Push the array to the context
+          targetContext.push(undefined)
           const processor = (item: unknown, state: State, index: number) =>
             runStep(runner, item, step, state, index)
           next = yield* iterateOverArray(next, [], state, processor)
+          targetContext.pop()
           state.context.pop() // Remove the array from the context after iteration
         } else {
           // This is a single value, so just pass it to the operation runner.
           next = yield runStep(runner, next, step, state)
         }
+
+        // Operations are opaque to the context -- whatever they did to it, the
+        // next step sees the context as it was before the operation.
+        state.context.length = contextDepth
       }
     }
   }
 
-  return next
+  // Leave the target context as we found it
+  targetContext.length = depth
+
+  if (parentLevel === undefined) {
+    return next
+  } else if (parentLevel >= 0 && hasTargets) {
+    // We have set on a parent level, so record the result there and leave the
+    // current target untouched
+    targetContext[parentLevel] = next // eslint-disable-line security/detect-object-injection
+  }
+  // A missing parent level drops the value
+  return state.target
 }
 
 /**
@@ -340,33 +377,9 @@ export async function runOneLevelAsync(
   return runIteratorAsync(it)
 }
 
-// Reverse the pipeline when we are going in reverse. Will also skip steps when
-// there we are setting with parent or root, to get to the set path that is most
-// likely the reverse of what the pipeline would get from.
-function adjustPipelineToDirection(pipeline: PreppedPipeline, state: State) {
-  const isRev = state.isRev
-
-  // Reverse the steps when we're going in reverse
-  const directedPipeline = isRev ? [...pipeline].reverse() : pipeline
-
-  // Adjust pipeline for setting to parent or root
-  const steps = []
-  let skipCount = 0
-  for (const step of directedPipeline) {
-    if (isRev ? step === '^' : step === '>^') {
-      // This is a parent step -- count how many to skip after this
-      skipCount++
-    } else if (skipCount > 0) {
-      // We're skipping this step
-      skipCount--
-    } else {
-      // We are not skipping steps
-      steps.push(step)
-    }
-  }
-
-  return steps
-}
+// Reverse the pipeline when we are going in reverse.
+const adjustPipelineToDirection = (pipeline: PreppedPipeline, state: State) =>
+  state.isRev ? [...pipeline].reverse() : pipeline
 
 /**
  * Applies the given pipeline on a value, and returns the resulting value.

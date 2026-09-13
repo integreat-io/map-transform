@@ -6,6 +6,7 @@ import {
   type CreateDataMapper,
 } from '../../transformers/bucket.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
+import { normalizeRootPath } from '../createPathMapper.js'
 import { ensureArray } from '../../utils/array.js'
 import { isObject, isNonvalue } from '../../utils/is.js'
 import StateClass from '../../state.js'
@@ -87,7 +88,7 @@ const extractArrayFromBuckets = (
 const transformer: AsyncTransformer<Props> = function bucket(props) {
   return (options) => {
     const [getFn, setFn, getGroupByPathFn, keys, bucketPipelines] = prepare(
-      props as PropsNext, // These type overrides are not strictly correct, but ...
+      { ...props, path: normalizeRootPath(props.path ?? '.') } as PropsNext, // These type overrides are not strictly correct, but ...
       options as OptionsNext, // ... will do for now, as this is a temporary solution
       defToDataMapper as CreateDataMapper<DataMapper>,
     )

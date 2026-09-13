@@ -1,4 +1,4 @@
-import { pathGetter } from '../../createPathMapper.js'
+import { createPathGetter } from '../createPathMapper.js'
 import StateClass from '../../state.js'
 import type { Path, TransformerProps, Transformer } from '../types.js'
 
@@ -29,7 +29,7 @@ const compare = (direction: number) =>
   }
 
 function fetchSortValue(
-  getFn: ReturnType<typeof pathGetter>,
+  getFn: ReturnType<typeof createPathGetter>,
   state: StateClass,
 ) {
   return function fetchSortValue(item: unknown): SortValue {
@@ -48,7 +48,7 @@ const transformer: Transformer<Props> = function sort(props) {
     }
 
     const direction = asc === false ? -1 : 1
-    const getFn = path ? pathGetter(path) : (value: unknown) => value
+    const getFn = path ? createPathGetter(path) : (value: unknown) => value
 
     return (data, state) => {
       if (!Array.isArray(data) || data.length < 2) {

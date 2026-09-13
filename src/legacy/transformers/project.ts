@@ -1,5 +1,5 @@
 import mapAny from 'map-any'
-import { pathGetter } from '../../createPathMapper.js'
+import { createPathGetter } from '../createPathMapper.js'
 import { isObject, isString, isNonEmptyArray } from '../../utils/is.js'
 import { ensureArray } from '../../utils/array.js'
 import StateClass from '../../state.js'
@@ -26,7 +26,7 @@ const projectPropsFromPath = (
   rawProps: unknown[] | undefined,
   doInclude: boolean,
 ) => {
-  const getFn = pathGetter(path)
+  const getFn = createPathGetter(path)
   return (obj: Record<string, unknown>, state: State) => {
     let props = getFn(obj, new StateClass(state))
     if (props === undefined) {

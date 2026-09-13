@@ -282,6 +282,7 @@ test('should apply pipeline from array path in reverse', () => {
         },
       ],
     },
+    params: { source: undefined }, // Set on the root in reverse, from `^^params.source`
   }
 
   const ret = mapTransformSync(def, options)(data, { rev: true })

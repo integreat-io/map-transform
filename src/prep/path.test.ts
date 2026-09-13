@@ -268,9 +268,10 @@ test('should prepare path with dot-less root notation', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should prepare path from obsolete root format', () => {
+test('should treat a caret without a dot as part of a prop name', () => {
+  // This is an old format we don't support anymore
   const def = '^response'
-  const expected = ['^^', 'response']
+  const expected = ['^response']
 
   const ret = prep(def, options)
 

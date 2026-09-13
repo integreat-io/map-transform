@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import type { Path } from '../typesNext.js'
 
-import runPipeline from './index.js'
+import runPipeline, { PreppedPipeline } from './index.js'
 
 // Setup
 
@@ -271,10 +271,10 @@ test('should set with parents throught array notation', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should set from parent after set', () => {
+test('should cancel the next set step with parent and leave a get step in between', () => {
   const pipeline = ['response', 'data', 'item', '>value', '^', 'count']
   const value = 1
-  const expected = { response: { data: { item: { count: 1 } } } } // The `item` is set, but the reverse would not get from it ...
+  const expected = { response: { data: undefined } } // `>value` gets from `{ count: 1 }` and yields undefined
 
   const ret = runPipeline(value, pipeline, state)
 
@@ -283,24 +283,84 @@ test('should set from parent after set', () => {
 
 // Tests -- get root
 
-test('should return undefined when setting with root', () => {
+test('should set on root and cancel the following set steps', () => {
   const pipeline = ['response', 'data', 'item', '^^', 'response']
   const value = { data: { item: { id: 'ent1' } } }
-  const expected = undefined
+  const expected = { response: { data: { item: { id: 'ent1' } } } }
 
   const ret = runPipeline(value, pipeline, state)
 
-  assert.equal(ret, expected)
+  assert.deepEqual(ret, expected)
 })
 
-test('should return undefined when setting with root in reverse', () => {
+test('should set on current level with root when there are no parent levels', () => {
   const pipeline = ['^^', 'response', 'data', 'item']
   const value = { id: 'ent1' }
-  const expected = undefined
+  const expected = { response: { data: { item: { id: 'ent1' } } } }
 
   const ret = runPipeline(value, pipeline, state)
 
-  assert.equal(ret, expected)
+  assert.deepEqual(ret, expected)
+})
+
+test('should set on the parent level with a trailing parent step', () => {
+  const pipeline: PreppedPipeline = [
+    'item',
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['^', 'section', '>section'],
+      ],
+    },
+  ]
+  const value = { id: 'ent1', section: 'news' }
+  const expected = { section: 'news', item: { key: 'ent1' } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should set on the root level with a trailing root step', () => {
+  const pipeline: PreppedPipeline = [
+    'content',
+    'item',
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['^^', 'meta', 'section', '>section'],
+      ],
+    },
+  ]
+  const value = { id: 'ent1', section: 'news' }
+  const expected = {
+    meta: { section: 'news' },
+    content: { item: { key: 'ent1' } },
+  }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should drop the value when the parent level does not exist', () => {
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['key', '>id'],
+        ['^', 'section', '>section'],
+      ],
+    },
+  ]
+  const value = { id: 'ent1', section: 'news' }
+  const expected = { key: 'ent1' }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
 })
 
 // Tests -- get path

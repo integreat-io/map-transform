@@ -1,5 +1,5 @@
 import mapAny from 'map-any/async.js'
-import { pathGetter } from '../../createPathMapper.js'
+import { createPathGetter } from '../createPathMapper.js'
 import {
   getStateValue,
   setStateValue,
@@ -112,7 +112,7 @@ export function lookup({
       )
     }
 
-    const getter = pathGetter(propPath)
+    const getter = createPathGetter(propPath)
     const matchFn = matchInArray(
       defToNextStateMapper(arrayPath, options),
       matchSeveral ? findAllMatches : findOneMatch,

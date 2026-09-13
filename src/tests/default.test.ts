@@ -496,26 +496,31 @@ test('should preserve context during alt paths when not in a root pipeline', () 
   assert.deepEqual(ret, expected)
 })
 
-test('should provide correct context for parent during alt paths', () => {
+test('should provide the context from before alt to the step after it', () => {
   const def = [
     'items[]',
     {
       $iterate: true,
       article: [
         { $alt: ['content', 'original'] },
-        { id: '^.id', title: 'title', note: 'text' },
+        { section: '^.^.meta.section', title: 'title', note: 'text' },
       ],
     },
   ]
   const data = {
+    meta: { section: 'news' },
     items: [
       { id: '12345', content: { title: 'Entry 12345', text: 'Awesome text' } },
       { id: '12346', original: { title: 'Entry 12346', text: 'Marvelous' } },
     ],
   }
   const expected = [
-    { article: { id: '12345', title: 'Entry 12345', note: 'Awesome text' } },
-    { article: { id: '12346', title: 'Entry 12346', note: 'Marvelous' } },
+    {
+      article: { section: 'news', title: 'Entry 12345', note: 'Awesome text' },
+    },
+    {
+      article: { section: 'news', title: 'Entry 12346', note: 'Marvelous' },
+    },
   ]
 
   const ret = mapTransformSync(def)(data)
@@ -523,20 +528,24 @@ test('should provide correct context for parent during alt paths', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should provide correct context for parent during alt paths with different number of levels', () => {
+test('should provide the context from before alt when alt pipelines have different number of levels', () => {
   const def = [
     'items[]',
     {
       $iterate: true,
       article: [
         { $alt: ['content', 'original.content'] },
-        { id: '^.id', title: 'title', note: 'text' },
+        { section: '^.^.meta.section', title: 'title', note: 'text' },
       ],
     },
   ]
   const data = {
+    meta: { section: 'news' },
     items: [
-      { id: '12345', content: { title: 'Entry 12345', text: 'Awesome text' } },
+      {
+        id: '12345',
+        content: { title: 'Entry 12345', text: 'Awesome text' },
+      },
       {
         original: {
           id: '12346',
@@ -546,8 +555,12 @@ test('should provide correct context for parent during alt paths with different 
     ],
   }
   const expected = [
-    { article: { id: '12345', title: 'Entry 12345', note: 'Awesome text' } },
-    { article: { id: '12346', title: 'Entry 12346', note: 'Marvelous' } },
+    {
+      article: { section: 'news', title: 'Entry 12345', note: 'Awesome text' },
+    },
+    {
+      article: { section: 'news', title: 'Entry 12346', note: 'Marvelous' },
+    },
   ]
 
   const ret = mapTransformSync(def)(data)
@@ -555,28 +568,29 @@ test('should provide correct context for parent during alt paths with different 
   assert.deepEqual(ret, expected)
 })
 
-test('should provide correct context for parent when all alt pipelines return undefined', () => {
+test('should provide the context from before alt when all alt pipelines return undefined', () => {
   const def = [
     'items[]',
     {
       $iterate: true,
       title: [
         { $alt: ['original.heading', 'content.title', 'content.headline'] },
-        '^.^.id', // The reason for this odd looking use of parent, is that the $alt operation will push the pipeline value to the context when getting `undefined`, so we need to go up again one level to get the id
+        '^.^.meta.section',
       ],
     },
   ]
   const data = {
+    meta: { section: 'news' },
     items: [{ id: '12345' }, { id: '12346' }],
   }
-  const expected = [{ title: '12345' }, { title: '12346' }]
+  const expected = [{ title: 'news' }, { title: 'news' }]
 
   const ret = mapTransformSync(def)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should provide correct context for parent during alt paths that moves us further down', () => {
+test('should provide the context from before alt when moving further down after alt', () => {
   const def = [
     'items[]',
     {
@@ -608,7 +622,7 @@ test('should provide correct context for parent when alt yields no value', () =>
     'items[]',
     {
       $iterate: true,
-      title: ['title', { $alt: ['heading'] }, '^.^.id'], // This path doesn't make sense, but does the job of testing the context
+      title: ['title', { $alt: ['heading'] }, '^.id'], // This path doesn't make sense, but does the job of testing the context
     },
   ]
   const data = {
@@ -622,6 +636,23 @@ test('should provide correct context for parent when alt yields no value', () =>
   const ret = mapTransformSync(def)(data)
 
   assert.deepEqual(ret, expected)
+})
+
+test('should provide the same context after alt with and without nonvalues', () => {
+  const defWithout = ['items[0]', { $alt: ['missing.x', 'id'] }, '^']
+  const defWith = [
+    'items[0]',
+    { $alt: ['missing.x', 'id'], $nonvalues: [undefined, null] },
+    '^',
+  ]
+  const data = { items: [{ id: '12345' }, { id: '12346' }] }
+  const expected = [{ id: '12345' }, { id: '12346' }]
+
+  const retWithout = mapTransformSync(defWithout)(data)
+  const retWith = mapTransformSync(defWith)(data)
+
+  assert.deepEqual(retWithout, expected)
+  assert.deepEqual(retWith, expected)
 })
 
 test('should apply default value from an operation object going in reverse only', () => {

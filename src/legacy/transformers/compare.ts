@@ -1,5 +1,5 @@
 import mapAny from 'map-any'
-import { pathGetter } from '../../createPathMapper.js'
+import { createPathGetter } from '../createPathMapper.js'
 import { doCompare, createComparer } from '../../transformers/compare.js'
 import { defToDataMapper } from '../utils/definitionHelpers.js'
 import type {
@@ -40,11 +40,11 @@ const transformer: Transformer<Props> | AsyncTransformer<Props> =
       const comparer = createComparer(operator)
       const getMatch =
         typeof matchPath === 'string'
-          ? pathGetter(matchPath)
+          ? createPathGetter(matchPath)
           : () => realMatchValue
 
       if (typeof path === 'string' || !path) {
-        const getValue = pathGetter(path)
+        const getValue = createPathGetter(path)
         return (data, state) => {
           const stateNext = new StateClass(state)
           const value = getValue(data, stateNext)

@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import type { Path } from '../typesNext.js'
 
-import runPipeline from './index.js'
+import runPipeline, { PreppedPipeline } from './index.js'
 
 // Setup
 
@@ -811,8 +811,7 @@ test('should disregard one set step for each parent notation', () => {
   assert.deepEqual(ret, expected)
 })
 
-// TODO: Is this correct?
-test('should apply parent to non-path steps too', () => {
+test('should only count set steps when cancelling with parent notation', () => {
   const pipeline = [
     'response',
     'data',
@@ -825,14 +824,14 @@ test('should apply parent to non-path steps too', () => {
     '>data',
   ]
   const value = { response: { data: { item: { id: 'ent1' } } } }
-  const expected = { data: { value: { id: 'ent1' } } }
+  const expected = { here: { id: 'ent1' } }
 
   const ret = runPipeline(value, pipeline, state)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should return undefined when trying to set with root notation', () => {
+test('should set on root and cancel the following set steps with root notation', () => {
   const pipeline = [
     'response',
     'data',
@@ -844,6 +843,35 @@ test('should return undefined when trying to set with root notation', () => {
     '>data',
   ]
   const value = { response: { data: { item: { id: 'ent1' } } } }
+  const expected = { value: { id: 'ent1' } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should set on the parent level with a trailing parent set step', () => {
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      pipelines: [
+        ['id', '>key'],
+        ['section', '>section', '>^'],
+      ],
+    },
+    '>item',
+  ]
+  const value = { id: 'ent1', section: 'news' }
+  const expected = { section: 'news', item: { key: 'ent1' } }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should drop the value when setting on a parent level that does not exist', () => {
+  const pipeline = ['section', '>section', '>^']
+  const value = { id: 'ent1', section: 'news' }
   const expected = undefined
 
   const ret = runPipeline(value, pipeline, state)

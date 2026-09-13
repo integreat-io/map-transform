@@ -74,6 +74,51 @@ test('should iterate with iterate operation', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should set index when iterating with the iterate operation', () => {
+  const def = [
+    'items[]',
+    { $iterate: { id: 'id', index: { $transform: 'index' } } },
+  ]
+  const data = { items: [{ id: 'ent1' }, { id: 'ent2' }] }
+  const expected = [
+    { id: 'ent1', index: 0 },
+    { id: 'ent2', index: 1 },
+  ]
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should count the array as a level when iterating with the iterate operation', () => {
+  const def = [
+    'items[]',
+    { $iterate: { id: 'id', section: '^.^.meta.section' } },
+  ]
+  const data = {
+    meta: { section: 'news' },
+    items: [{ id: 'ent1' }, { id: 'ent2' }],
+  }
+  const expected = [
+    { id: 'ent1', section: 'news' },
+    { id: 'ent2', section: 'news' },
+  ]
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should iterate with the iterate operation in reverse', () => {
+  const def = ['items[]', { $iterate: { id: 'key' } }]
+  const data = [{ id: 'ent1' }, { id: 'ent2' }]
+  const expected = { items: [{ key: 'ent1' }, { key: 'ent2' }] }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should map array in transform object', () => {
   const def = [
     {

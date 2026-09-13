@@ -77,6 +77,24 @@ test.skip('should iterate target', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should not let an operation change the context for the next step', () => {
+  const fn = (value: unknown, state: State) => {
+    state.context.push({ pushed: true })
+    return value
+  }
+  const value = { id: 'ent1' }
+  const pipeline: PreppedPipeline = [
+    { type: 'transform', id: 'pusher', fn },
+    '^',
+  ]
+  const state = { context: [{ items: [{ id: 'ent1' }] }] }
+  const expected = { items: [{ id: 'ent1' }] }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should not touch value when empty pipeline', () => {
   const pipeline: PreppedPipeline = []
   const value = { id: 'ent1' }

@@ -16,13 +16,14 @@ const options = {
 
 // Tests
 
-test('should prepare array operation', () => {
+test('should prepare iterate operation', () => {
   const def = {
     $iterate: { $transform: 'string' },
   }
   const expected = [
     {
       type: 'iterate' as const,
+      it: true,
       pipeline: [{ type: 'transform', id: 'string', fn: String }],
     },
   ]

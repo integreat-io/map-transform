@@ -6,6 +6,7 @@ export interface InitialState {
   root?: unknown
   context?: unknown[]
   target?: unknown
+  targetContext?: unknown[]
   nonvalues?: unknown[]
   pipelines?: Map<string | symbol, PreppedPipeline>
   rev?: boolean
@@ -25,6 +26,7 @@ export default class State {
   root: unknown
   context: unknown[] = []
   target: unknown
+  targetContext: unknown[]
   nonvalues: unknown[]
   pipelines: Map<string | symbol, PreppedPipeline>
   rev: boolean
@@ -42,6 +44,9 @@ export default class State {
     this.value = initialState?.value
     this.root = initialState?.root
     this.target = initialState?.target
+    // The target context is shared, not cloned, so that nested pipelines may
+    // set on the target levels of the pipelines enclosing them
+    this.targetContext = initialState?.targetContext ?? []
     this.rev = !!initialState?.rev
     this.flip = !!initialState?.flip
     this.noDefaults = !!initialState?.noDefaults

@@ -1,5 +1,4 @@
 import runPipeline, { runPipelineAsync } from './index.js'
-import { runIterator, runIteratorAsync } from '../utils/iterator.js'
 import type State from '../state.js'
 import type { OperationStepBase, PreppedPipeline } from './index.js'
 
@@ -9,48 +8,20 @@ export interface IterateStep extends OperationStepBase {
 }
 
 /**
- * Run each pipeline and return the values as an array.
- */
-function* applyPipeline(
-  data: unknown,
-  pipeline: PreppedPipeline,
-  state: State,
-  isAsync = false,
-): Generator<unknown, unknown, unknown> {
-  if (Array.isArray(data)) {
-    const values = []
-
-    // Run each pipeline on the value to the `values` array
-    for (const item of data) {
-      const result = yield isAsync
-        ? runPipelineAsync(item, pipeline, state)
-        : runPipeline(item, pipeline, state)
-      values.push(result)
-    }
-
-    // Return the array of values
-    return values
-  } else {
-    return yield isAsync
-      ? runPipelineAsync(data, pipeline, state)
-      : runPipeline(data, pipeline, state)
-  }
-}
-
-/**
- * Run the pipeline for every item in an array
+ * Run the pipeline on a value. The step is prepared with `it: true`, so the
+ * runner iterates arrays and hands each item to this function.
  */
 export default function runIterateStep(
   value: unknown,
   { pipeline }: IterateStep,
   state: State,
 ) {
-  const it = applyPipeline(value, pipeline, state)
-  return runIterator(it)
+  return runPipeline(value, pipeline, state)
 }
 
 /**
- * Run the pipeline for every item in an array
+ * Run the pipeline on a value. The step is prepared with `it: true`, so the
+ * runner iterates arrays and hands each item to this function.
  *
  * This version supports async pipelines.
  */
@@ -59,6 +30,5 @@ export async function runIterateStepAsync(
   { pipeline }: IterateStep,
   state: State,
 ) {
-  const it = applyPipeline(value, pipeline, state, true)
-  return runIteratorAsync(it)
+  return await runPipelineAsync(value, pipeline, state)
 }

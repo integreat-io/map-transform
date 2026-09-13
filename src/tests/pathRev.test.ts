@@ -532,7 +532,7 @@ test('should skip transform object when $direction is fwdAlias', () => {
 test('should treat lookup as get in reverse', () => {
   const def = {
     title: 'content.heading',
-    authors: ['content.authors[]', { $lookup: '^meta.users[]', path: 'id' }],
+    authors: ['content.authors[]', { $lookup: '^^.meta.users[]', path: 'id' }],
   }
   const data = {
     title: 'The heading',
@@ -826,10 +826,7 @@ test('should set on first alt path in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should map parent path as simple path in reverse', () => {
-  // In reverse, parent paths (^) are stripped from the pipeline by
-  // adjustPipelineToDirection, and the remaining path steps are used.
-  // So '^.^.section' becomes just 'section' — a simple get/set.
+test('should set on the parent level through an iteration in reverse', () => {
   const def = [
     'content.articles[]',
     {
@@ -845,9 +842,10 @@ test('should map parent path as simple path in reverse', () => {
   ]
   const expected = {
     content: {
+      section: 'news',
       articles: [
-        { key: 'ent1', content: { heading: 'Heading 1' }, section: 'news' },
-        { key: 'ent2', content: { heading: 'Heading 2' }, section: 'news' },
+        { key: 'ent1', content: { heading: 'Heading 1' } },
+        { key: 'ent2', content: { heading: 'Heading 2' } },
       ],
     },
   }
@@ -857,10 +855,7 @@ test('should map parent path as simple path in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should map single parent path as simple path in reverse', () => {
-  // For '^.section', the pipeline ['^', 'section'] reversed is ['section', '^'].
-  // adjustPipelineToDirection strips the '^' but there are no steps after it
-  // to skip, so the remaining pipeline is ['section'] — a simple get/set.
+test('should set on the parent level in reverse', () => {
   const def = [
     'content.articles',
     {
@@ -873,10 +868,65 @@ test('should map single parent path as simple path in reverse', () => {
     content: {
       articles: {
         content: { heading: 'Heading 1' },
-        section: 'news',
       },
+      section: 'news',
     },
   }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should set on the parent level through an iteration with the same number of parents as going forward', () => {
+  const def = [
+    'items[]',
+    { $iterate: true, id: 'key', section: '^.^.meta.section' },
+  ]
+  const dataFwd = {
+    meta: { section: 'news' },
+    items: [{ key: 'ent1' }, { key: 'ent2' }],
+  }
+  const dataRev = [
+    { id: 'ent1', section: 'news' },
+    { id: 'ent2', section: 'news' },
+  ]
+  const expectedFwd = [
+    { id: 'ent1', section: 'news' },
+    { id: 'ent2', section: 'news' },
+  ]
+  const expectedRev = {
+    meta: { section: 'news' },
+    items: [{ key: 'ent1' }, { key: 'ent2' }],
+  }
+
+  const retFwd = mapTransformSync(def)(dataFwd)
+  const retRev = mapTransformSync(def)(dataRev, { rev: true })
+
+  assert.deepEqual(retFwd, expectedFwd)
+  assert.deepEqual(retRev, expectedRev)
+})
+
+test('should set on the root level with a root path in reverse', () => {
+  const def = [
+    'content.articles[]',
+    { $iterate: true, id: 'key', section: '^^.meta.section' },
+  ]
+  const data = [{ id: 'ent1', section: 'news' }]
+  const expected = {
+    meta: { section: 'news' },
+    content: { articles: [{ key: 'ent1' }] },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should drop the value when there is no parent level in reverse', () => {
+  const def = { id: 'key', section: '^.section' }
+  const data = { id: 'ent1', section: 'news' }
+  const expected = { key: 'ent1' }
 
   const ret = mapTransformSync(def)(data, { rev: true })
 

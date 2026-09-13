@@ -1,5 +1,5 @@
 import StateClass from '../../state.js'
-import { pathGetter } from '../../createPathMapper.js'
+import { createPathGetter } from '../createPathMapper.js'
 import type { TransformerProps, Transformer } from '../types.js'
 
 export interface Props extends TransformerProps {
@@ -18,7 +18,7 @@ const transformer: Transformer<Props | string> = function get(props) {
       )
     }
 
-    const mapper = pathGetter(path)
+    const mapper = createPathGetter(path)
     return (data, state) => mapper(data, new StateClass(state))
   }
 }

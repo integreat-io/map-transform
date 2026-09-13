@@ -9,6 +9,7 @@ export default function prepareIterateStep(
   if (pipeline && (!Array.isArray(pipeline) || pipeline.length > 0)) {
     return {
       type: 'iterate',
+      it: true,
       pipeline: preparePipeline(pipeline, options),
     }
   } else {

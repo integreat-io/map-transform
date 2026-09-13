@@ -104,29 +104,35 @@ function getNextSetArrayOrSetIndex(
   return index < currentIndex ? pipeline.length : index
 }
 
-// Extract the normalized path, and return true in the second position of
-// of the tupple if this is a set path. If we are going forward, a '>' prefix
-// indicates set, if we are in reverse, it indicates get.
-const extractPathStep = (step: string, isRev: boolean): [string, boolean] =>
+/**
+ * Extract the normalized path, and return true in the second position of
+ * of the tupple if this is a set path. If we are going forward, a '>' prefix
+ * indicates set, if we are in reverse, it indicates get.
+ */
+export const extractPathStep = (
+  step: string,
+  isRev: boolean,
+): [string, boolean] =>
   step[0] === '>' ? [step.slice(1), !isRev] : [step, isRev]
 
 /**
  * Run a path step. The step will start with '>' when it's a set step.
  * When we're going in reverse, a get step will be treated as set, and
- * vica versa.
+ * vica versa. Set steps take their target from the end of the target context
+ * on the state, where the runner has pushed the target for every set step.
  */
 export default function runPathStep(
   value: unknown,
   pipeline: PreppedPipeline,
   step: string,
   index: number,
-  targets: unknown[],
   state: State,
   isRev: boolean, // We get the actual rev from the pipeline, to not derive it from state for each step
 ): [unknown, number, boolean?] {
   // Normalize the path and set the `isSet` flag based on whether we are
   // in reverse or not.
   const [path, isSet] = extractPathStep(step, isRev)
+  const targets = state.targetContext
 
   if (path === '[]') {
     // Ensure that the value is an array. When setting and the value is already
@@ -136,19 +142,23 @@ export default function runPathStep(
       return [ensureArrayIfDefaultsAreAllowed(value, state), index]
     }
   } else if (path === '^') {
-    // Get the parent value. This is never run in rev, as we remove it from the
-    // pipeline before running it.
-    return [state.context.pop(), index]
+    // Get the parent value. Parent set steps are resolved by the runner before
+    // the pipeline is run, so we only get here when getting.
+    return [isSet ? value : state.context.pop(), index]
   } else if (path === '^^' || path === '^^^') {
     // Get root from the context (^^) or from the original source data (^^^).
-    // When we're setting, treat this as a plug and return the target.
+    // Root set steps are resolved by the runner before the pipeline is run.
     if (isSet) {
-      return [state.target, pipeline.length]
+      return [value, index]
     } else {
       const next =
         path === '^^^'
-          ? (state.root !== undefined ? state.root : value)
-          : (state.context.length === 0 ? value : state.context[0])
+          ? state.root !== undefined
+            ? state.root
+            : value
+          : state.context.length === 0
+            ? value
+            : state.context[0]
       state.context = []
       return [next, index]
     }

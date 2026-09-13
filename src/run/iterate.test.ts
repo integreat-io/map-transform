@@ -18,6 +18,7 @@ test('should iterate over an array', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'iterate',
+      it: true,
       pipeline: ['name', '>title'],
     },
   ]
@@ -33,6 +34,7 @@ test('should apply pipeline to a single item', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'iterate',
+      it: true,
       pipeline: ['name', '>title'],
     },
   ]
@@ -48,6 +50,7 @@ test('should iterate in reverse', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'iterate',
+      it: true,
       pipeline: ['name', '>title'],
     },
   ]
@@ -69,6 +72,7 @@ test('should iterate over an array with an async pipeline', async () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'iterate',
+      it: true,
       pipeline: [{ type: 'transform', id: 'fromAsync', fn }, '>title'],
     },
   ]
@@ -85,6 +89,7 @@ test('should apply async pipeline to a single item', async () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'iterate',
+      it: true,
       pipeline: [{ type: 'transform', id: 'fromAsync', fn }, '>title'],
     },
   ]

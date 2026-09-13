@@ -145,23 +145,6 @@ test('should support root prefix in matchPath', () => {
   assert.equal(ret, true)
 })
 
-test('should support obsolete root prefix in matchPath', () => {
-  const path = 'meta.role'
-  const matchPath = '^acceptLevel'
-  const data = { name: 'John F.', meta: { role: 'editor' }, level: 'admin' }
-  const stateWithRoot = new State({
-    context: [{ user: data, acceptLevel: 'editor' }, data],
-    value: data,
-  })
-
-  const ret = compare({ path, operator: '=', matchPath })(options)(
-    data,
-    stateWithRoot,
-  )
-
-  assert.equal(ret, true)
-})
-
 test('should use equality as default operator', () => {
   const match = 'admin'
   const path = 'meta.role'

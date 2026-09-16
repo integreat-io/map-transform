@@ -351,8 +351,7 @@ test('should skip pipelines with wrong direction when getting default value', ()
   assert.deepEqual(ret, expected)
 })
 
-// TODO: Change the behavior here? We are only continuing how we did it in the old version, but it is odd.
-test('should skip not provide special case when no default pipeline in reverse', () => {
+test('should not use pipelines with set steps as default in reverse', () => {
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
@@ -360,7 +359,41 @@ test('should skip not provide special case when no default pipeline in reverse',
       pipelines: [['name'], ['title']],
     },
   ]
-  const expected = { name: { title: undefined } } // This is probably not what we wanted, but it is how the $alt operation has been working so far
+  const expected = { name: undefined }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should not set with default pipelines on target in reverse', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], ['title']],
+    },
+  ]
+  const stateRevWithTarget = { rev: true, target: { id: 'ent1' } }
+  const expected = { id: 'ent1', name: undefined }
+
+  const ret = runPipeline(value, pipeline, stateRevWithTarget)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should not use value after set step as default in reverse', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [
+        ['name'],
+        ['title', { type: 'value', value: 'Default name' }],
+      ],
+    },
+  ]
+  const expected = { name: undefined }
 
   const ret = runPipeline(value, pipeline, stateRev)
 

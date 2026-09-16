@@ -3,6 +3,7 @@ import runPipeline, {
   runPipelineAsync,
   runOneLevel,
   runOneLevelAsync,
+  hasSetSteps,
   OperationStepBase,
 } from './index.js'
 import { runIterator, runIteratorAsync } from '../utils/iterator.js'
@@ -63,7 +64,8 @@ const shouldUseDefault = (
 
 // Get a default value from the pipelines, starting with the last. We skip the
 // first one since this is only used in rev, and we'll then set with the first
-// one.
+// one. Pipelines with set steps would set on the target rather than provide a
+// value, so they are skipped too.
 //
 // TODO: Is it correct to pass these pipelines `undefined`? It would make sense
 // as we are looking for default values, but could there be cases where a
@@ -76,7 +78,10 @@ function* getDefaultValue(
   state: State,
   isAsync = false,
 ): Generator<unknown, unknown, unknown> {
-  const defaultPipelines = pipelines.slice(1).reverse()
+  const defaultPipelines = pipelines
+    .slice(1)
+    .filter((pipeline) => !hasSetSteps(pipeline, true))
+    .reverse()
 
   for (const pipeline of defaultPipelines) {
     const value = yield isAsync
@@ -109,9 +114,9 @@ function setWithAltPipelines(
  * untouched.
  *
  * In reverse, the first pipeline will be used to set the `value`, as this is
- * most likely to be the wanted reverse version. If any of the other pipelines
- * contains a $value operator, we will attempt to get a default value from
- * them, starting with the last pipeline and going backwards.
+ * most likely to be the wanted reverse version. If the value is a nonvalue, we
+ * will attempt to get a default value from the other pipelines without set
+ * steps, starting with the last pipeline and going backwards.
  *
  * This version does not support async pipelines.
  */
@@ -141,9 +146,9 @@ export default function runAltStep(
  * untouched.
  *
  * In reverse, the first pipeline will be used to set the `value`, as this is
- * most likely to be the wanted reverse version. If any of the other pipelines
- * contains a $value operator, we will attempt to get a default value from
- * them, starting with the last pipeline and going backwards.
+ * most likely to be the wanted reverse version. If the value is a nonvalue, we
+ * will attempt to get a default value from the other pipelines without set
+ * steps, starting with the last pipeline and going backwards.
  *
  * This version supports async pipelines.
  */

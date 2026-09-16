@@ -149,6 +149,18 @@ test('should not set on alternative path in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should not set with alternative paths as default in reverse', () => {
+  const def = {
+    name: { $alt: ['a', 'b'] },
+  }
+  const data = { name: undefined }
+  const expected = { a: undefined }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should set missing values to undefined when no default', () => {
   const def = {
     $iterate: true,

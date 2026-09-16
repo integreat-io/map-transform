@@ -1350,6 +1350,10 @@ don't think too much about it. See
 [the `get` and `set` operations](#getpath-and-setpath-operation) for more on how
 `get` works in reverse.
 
+When the value is `undefined` in reverse, the alternative pipelines are used to
+look for a default value. Only pipelines without set paths (e.g. a `$value`
+pipeline) are used for this, so put the default in its own pipeline.
+
 To apply the `alt` operation to each item in an array, set `$iterate: true` on
 the operation object. You may also set `$direction: 'fwd'` or
 `$direction: 'rev'` to limit it to one direction only.

@@ -526,7 +526,7 @@ test('should support $modify prop with a dot notation path', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should skip props with $modify in both directions', () => {
+test('should split $modify in both directions into two pipelines', () => {
   const def = {
     $modify: 'data.$modify',
     slug: 'key',
@@ -535,7 +535,51 @@ test('should skip props with $modify in both directions', () => {
     {
       type: 'mutation',
       it: true,
-      pipelines: [['key', '>slug']],
+      pipelines: [
+        ['key', '>slug'],
+        ['data', '>...'],
+        ['data', '...'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test("should split $modify: '$modify' into two pipelines", () => {
+  const def = {
+    $modify: '$modify',
+    slug: 'key',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [['key', '>slug'], ['>...'], ['...']],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should split $modify in both directions with paths on both sides', () => {
+  const def = {
+    'content.$modify': 'response.$modify',
+    slug: 'key',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        ['key', '>slug'],
+        ['response', '>...', '>content'],
+        ['response', '...', '>content'],
+      ],
     },
   ]
 
@@ -564,6 +608,15 @@ test('should not treat prop starting with $modify as modify', () => {
 
 test('should return no step when mutation object has only a $modify prop', () => {
   const def = { $modify: true }
+  const expected: PreppedPipeline = []
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should return no step when mutation object has only a $modify prop in both directions', () => {
+  const def = { $modify: '$modify' }
   const expected: PreppedPipeline = []
 
   const ret = prep(def, options)

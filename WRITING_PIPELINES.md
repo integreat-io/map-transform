@@ -196,6 +196,7 @@ const def = { 'articles[]': 'content.items' }
 | `$iterate: false`    | Apply mutation to an array as a whole. By default, it's applied to each item            |
 | `$modify: true`      | Modify existing object instead of replacing it                                          |
 | `$modify: 'path'`    | Modify the object at the given path                                                     |
+| `$modify: '$modify'` | Modify existing object in both directions                                               |
 | `$flip: true`        | Definition is written from reverse perspective                                          |
 | `$direction: 'fwd'`  | Only apply this mutation going forward                                                  |
 | `$direction: 'rev'`  | Only apply this mutation going in reverse                                               |
@@ -218,7 +219,20 @@ const def = {
 `$modify` can also be a path: `$modify: 'response'` merges with the object at
 `response`.
 
-For reverse, `$modify` is expressed as a value: `{ response: '$modify', ... }`.
+`$modify` is a path segment that merges instead of replacing, and it takes
+effect on the side being set: going forward when it's in a key, and in reverse
+when it's in a value, e.g. `{ response: '$modify', ... }`.
+
+Put `$modify` on both sides to modify in both directions:
+
+```js
+const def = {
+  $modify: 'response.$modify',
+  data: 'response.data.deeply.placed.items',
+}
+// Merges with the object at `response` going forward, and sets the merged
+// object on `response` in reverse
+```
 
 ### `$flip`
 

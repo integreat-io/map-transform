@@ -85,10 +85,20 @@ const hasModifyInBothDirections = (pipeline: PreppedPipeline) =>
   pipeline.some((path) => path === '...') &&
   pipeline.some((path) => path === '>...')
 
-const isPipelineWithEffect = (
-  pipeline?: PreppedPipeline,
-): pipeline is PreppedPipeline =>
-  !!pipeline && !hasModifyInBothDirections(pipeline)
+// Split a pipeline with `$modify` in both directions into a forward and a
+// reverse half.
+function splitModifyInBothDirections(pipeline?: PreppedPipeline) {
+  if (!pipeline) {
+    return []
+  } else if (hasModifyInBothDirections(pipeline)) {
+    return [
+      pipeline.filter((path) => path !== '...'),
+      pipeline.filter((path) => path !== '>...'),
+    ]
+  } else {
+    return [pipeline]
+  }
+}
 
 /**
  * Prepare a mutation step and return the internal step format. Each property
@@ -109,11 +119,11 @@ export default function prepareMutationStep(
     .map(([setPath, pipeline]) =>
       prepProp(setPath, pipeline as TransformDefinition, options),
     )
-    .filter(isPipelineWithEffect)
+    .flatMap(splitModifyInBothDirections)
     .sort(sortModifyLast)
 
   // Skip mutations with only a $modify prop
-  if (pipelines.length === 1 && pipelineHasModify(pipelines[0])) {
+  if (pipelines.length > 0 && pipelines.every(pipelineHasModify)) {
     return undefined
   }
 

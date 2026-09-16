@@ -419,6 +419,49 @@ test('should shallow merge (modify) original object with transformed object from
   assert.deepEqual(ret, expected)
 })
 
+test("should modify in both directions with $modify: '$modify' in reverse", () => {
+  const def = {
+    $modify: '$modify',
+    title: 'name',
+  }
+  const data = {
+    name: 'Oh, this must go',
+    title: 'The real title',
+    text: 'This is high quality content for sure',
+  }
+  const expected = {
+    name: 'The real title',
+    title: 'The real title',
+    text: 'This is high quality content for sure',
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should modify in both directions with $modify from a path in reverse', () => {
+  const def = {
+    $modify: 'response.$modify',
+    title: 'response.name',
+  }
+  const data = {
+    title: 'The real title',
+    text: 'This is high quality content for sure',
+  }
+  const expected = {
+    response: {
+      name: 'The real title',
+      title: 'The real title',
+      text: 'This is high quality content for sure',
+    },
+  }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should shallow merge (modify) original object with transformed object in reverse - flipped', () => {
   const def = {
     $flip: true,

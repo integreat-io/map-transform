@@ -510,8 +510,11 @@ const def = {
 
 The `$modify: true` notation is actually an alias for `$modify: '.'`.
 
-This is the way to set it for reverse direction (this is the exact same as the
-example above, just reversed):
+`$modify` works like a path segment that merges instead of replacing, and it
+takes effect on the side of the prop that is being set. When it is in a key, it
+modifies going forward. When it is in a value, it modifies in reverse. This is
+the way to set it for reverse direction (this is the exact same as the example
+above, just reversed):
 
 ```javascript
 const def = {
@@ -529,6 +532,18 @@ const def = {
   'content.data': 'response.data.deeply.placed.items',
 }
 ```
+
+> [!NOTE] In the next version, you may put `$modify` on both sides of a prop to
+> modify in both directions. `$modify: '$modify'` modifies the pipeline value
+> both going forward and in reverse, and `$modify: 'response.$modify'` does the
+> same with the object at `response`:
+>
+> ```javascript
+> const def = {
+>   $modify: 'response.$modify',
+>   data: 'response.data.deeply.placed.items',
+> }
+> ```
 
 ### Transform pipelines
 

@@ -38,8 +38,7 @@ const isUnknownDollarProp = (path: Path) =>
 
 // Prepare one property by setting the key as the set path at the end of the
 // pipeline. Properties starting with `'$'` (unless it's `$modify`) or
-// properties withtout pipelines are not included. Properties ending in `'[]'`
-// with another mutation object as pipeline, is iterated.
+// properties without pipelines are not included.
 function prepProp(
   setPath: string,
   pipeline: TransformDefinition | boolean,
@@ -57,9 +56,6 @@ function prepProp(
 
   if (isUnknownDollarProp(setPath) || !pipeline) {
     return undefined
-  }
-  if (setPath.endsWith('[]') && isObject(pipeline)) {
-    pipeline = { ...pipeline, $iterate: true }
   }
   if (setPath.includes('/')) {
     if (isSlashed(setPath)) {
@@ -123,6 +119,7 @@ export default function prepareMutationStep(
 
   return {
     type: 'mutation',
+    it: true,
     ...(flip && { flip }),
     ...(always && { always }),
     pipelines,

@@ -42,7 +42,9 @@ test('should prepare applied pipelines into the Map', () => {
     pipelines: { entry: pipeline, user: pipeline, comment: pipeline },
     preparedPipelines,
   }
-  const expectedPipeline = [{ type: 'mutation', pipelines: [['key', '>id']] }]
+  const expectedPipeline = [
+    { type: 'mutation', it: true, pipelines: [['key', '>id']] },
+  ]
 
   preparePipeline(def, options)
 

@@ -1185,7 +1185,9 @@ test('should map data as is when no mapping', () => {
 test('should map with nested mappings', () => {
   const def = [
     {
+      $iterate: false,
       content: {
+        $iterate: false,
         'articles[]': [
           {
             $iterate: true,
@@ -1210,7 +1212,27 @@ test('should map with nested mappings', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should not iterate when $iterate is not set', () => {
+test('should iterate mutation object over an array by default', () => {
+  const def = { id: 'key' }
+  const data = [{ key: 'a' }, { key: 'b' }]
+  const expected = [{ id: 'a' }, { id: 'b' }]
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should not iterate mutation object when $iterate is false', () => {
+  const def = { $iterate: false, id: 'key' }
+  const data = [{ key: 'a' }, { key: 'b' }]
+  const expected = { id: ['a', 'b'] }
+
+  const ret = mapTransformSync(def)(data)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should iterate when $iterate is not set', () => {
   const def = {
     'articles[]': [{ title: 'content.heading' }],
   }
@@ -1218,16 +1240,17 @@ test('should not iterate when $iterate is not set', () => {
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } },
   ]
-  const expected = {
-    articles: [{ title: ['Heading 1', 'Heading 2'] }],
-  }
+  const expected = [
+    { articles: [{ title: 'Heading 1' }] },
+    { articles: [{ title: 'Heading 2' }] },
+  ]
 
   const ret = mapTransformSync(def)(data)
 
   assert.deepEqual(ret, expected)
 })
 
-test('should not iterate a pipeline by default after a path with bracket notation', () => {
+test('should iterate a pipeline by default after a path with bracket notation', () => {
   const def = {
     articles: ['data[]', { title: 'content.heading' }],
   }
@@ -1238,7 +1261,7 @@ test('should not iterate a pipeline by default after a path with bracket notatio
     ],
   }
   const expected = {
-    articles: { title: ['Heading 1', 'Heading 2'] },
+    articles: [{ title: 'Heading 1' }, { title: 'Heading 2' }],
   }
 
   const ret = mapTransformSync(def)(data)
@@ -1248,6 +1271,7 @@ test('should not iterate a pipeline by default after a path with bracket notatio
 
 test('should not iterate rest of pipeline after one iterating step', () => {
   const def = {
+    $iterate: false,
     'articles[]': [
       { $iterate: true, title: 'content.heading' },
       {
@@ -1274,6 +1298,7 @@ test('should not iterate rest of pipeline after one iterating step', () => {
 
 test('should iterate with the $iterate operation', () => {
   const def = {
+    $iterate: false,
     'articles[]': [{ $iterate: { title: 'content.heading' } }],
   }
   const data = [
@@ -1379,16 +1404,17 @@ test('should return data when no mapping def', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should return empty object when mapping def is empty object', () => {
+test('should return empty object for each item when mapping def is empty object', () => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } },
   ]
+  const expected = [{}, {}]
 
   const ret = mapTransformSync(def)(data)
 
-  assert.deepEqual(ret, {})
+  assert.deepEqual(ret, expected)
 })
 
 test('should set empty transform object to empty object on a path', () => {

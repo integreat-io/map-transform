@@ -142,6 +142,15 @@ test('should prepare transform operation with direction revAlias', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should throw when $iterate operation is combined with another operation', () => {
+  const def = { $transform: 'uppercase', $iterate: 'items' }
+  const expectedError = new Error(
+    'Cannot define more than one operation on the same object: Was $transform, $iterate',
+  )
+
+  assert.throws(() => preparePipeline(def, options), expectedError)
+})
+
 test('should throw when pipeline has a function (old operation)', () => {
   const def = [
     'data.name',

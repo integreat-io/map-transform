@@ -113,8 +113,7 @@ const shouldRun = (step: OperationStep, isRev: boolean) =>
     : true
 
 /**
- * Return `true` if the step has the `it` flag set to `true` (meaning that the
- * original definition had `$iterate: true`) or the value is an array.
+ * Return `true` if the value is an array and the step's `it` flag is `true`.
  */
 const shouldIterate = (
   value: unknown,

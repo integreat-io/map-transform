@@ -122,6 +122,7 @@ test('should iterate with the iterate operation in reverse', () => {
 test('should map array in transform object', () => {
   const def = [
     {
+      $iterate: false,
       'entries[]': {
         title: 'content.heading',
       },
@@ -443,6 +444,7 @@ test('should map array of objects', () => {
 test('should set empty data array', () => {
   const def = [
     {
+      $iterate: false,
       'items[]': {
         title: 'heading',
       },

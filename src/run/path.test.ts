@@ -819,7 +819,7 @@ test('should only count set steps when cancelling with parent notation', () => {
     '>value',
     '>^',
     '>^',
-    { type: 'mutation' as const, pipelines: [['value', '>here']] },
+    { type: 'mutation' as const, it: true, pipelines: [['value', '>here']] },
     '>content',
     '>data',
   ]
@@ -854,6 +854,7 @@ test('should set on the parent level with a trailing parent set step', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['id', '>key'],
         ['section', '>section', '>^'],

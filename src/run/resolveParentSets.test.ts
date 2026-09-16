@@ -38,10 +38,13 @@ test('should skip operation steps when cancelling', () => {
   const pipeline: PreppedPipeline = [
     '>value',
     '>^',
-    { type: 'mutation', pipelines: [] },
+    { type: 'mutation', it: true, pipelines: [] },
     '>item',
   ]
-  const expected = [['>value', { type: 'mutation', pipelines: [] }], undefined]
+  const expected = [
+    ['>value', { type: 'mutation', it: true, pipelines: [] }],
+    undefined,
+  ]
 
   const ret = resolveParentSets(pipeline, false, 0)
 

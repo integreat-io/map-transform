@@ -20,6 +20,7 @@ test('should run mutation object', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -42,6 +43,7 @@ test('should iterate in pipeline', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -65,6 +67,7 @@ test('should keep the order of the pipelines on the target object', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -85,6 +88,7 @@ test('should set undefined value', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -104,6 +108,7 @@ test('should keep the value of a non-value', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -124,6 +129,7 @@ test('should not run mutation object on undefined', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -142,6 +148,7 @@ test('should not run mutation object on a non-value', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -161,6 +168,7 @@ test('should run mutation object on undefined when always is true', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -180,9 +188,13 @@ test('should run mutation object with sub-mutations', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
-        [{ type: 'mutation', pipelines: [['name', '>title']] }, '>attributes'],
+        [
+          { type: 'mutation', it: true, pipelines: [['name', '>title']] },
+          '>attributes',
+        ],
       ],
     },
   ]
@@ -200,6 +212,7 @@ test('should support parent steps in pipelines', () => {
     'props',
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['^', 'key', '>id'],
         ['name', '>title'],
@@ -239,6 +252,7 @@ test('should run several mutation objects in a pipeline', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -246,6 +260,7 @@ test('should run several mutation objects in a pipeline', () => {
     },
     {
       type: 'mutation',
+      it: true,
       pipelines: [['title', '>text']],
     },
   ]
@@ -262,6 +277,7 @@ test('should support parent step through a previous mutation step', () => {
     'props',
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -269,6 +285,7 @@ test('should support parent step through a previous mutation step', () => {
     },
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['^', 'index', '>id'],
         ['title', '>text'],
@@ -307,6 +324,28 @@ test('should iterate mutation object', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should not iterate mutation object when it is false', () => {
+  const value = [
+    { key: 'ent1', name: 'Entry 1' },
+    { key: 'ent2', name: 'Entry 2' },
+  ]
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'mutation',
+      it: false,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
+  const expected = { id: ['ent1', 'ent2'], title: ['Entry 1', 'Entry 2'] }
+
+  const ret = runPipeline(value, pipeline, state)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should not mutate non-values when iterating', () => {
   const value = [undefined, { key: 'ent1', name: 'Entry 1' }, '']
   const pipeline: PreppedPipeline = [
@@ -333,6 +372,7 @@ test.skip('should set pipelines on the given target', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['>...'], // $modify
@@ -352,6 +392,7 @@ test('should merge mutated object with pipeline value ($modify)', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['>...'], // $modify
@@ -370,6 +411,7 @@ test('should modify pipeline value with a pipeline', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['item', 'key', '>id'],
         ['item', 'props', '>...'], // $modify
@@ -390,6 +432,7 @@ test('should modify pipeline value with parent step in mod pipeline', () => {
     'props',
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['name', '>title'],
         ['^', '>...'], // $modify
@@ -408,6 +451,7 @@ test('should use modify pipelines on several levels', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['item', 'props', 'name', '>desc'],
         [
@@ -415,6 +459,7 @@ test('should use modify pipelines on several levels', () => {
           'props',
           {
             type: 'mutation',
+            it: true,
             pipelines: [['^', 'key', '>slug'], ['>...']], // $modify
           },
           '>props',
@@ -439,6 +484,7 @@ test('should merge with flip ($modify)', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['slug', { type: 'transform', id: 'uppercase', fn: uppercase }, '>key'],
         ['...'], // Reverse $modify
@@ -458,6 +504,7 @@ test('should skip reverse merge going forward ($modify)', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['...'], // Reverse $modify
@@ -476,6 +523,7 @@ test('should not return empty object when noDefaults is true', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       noDefaults: true,
       pipelines: [['item', 'key', '>id']],
     },
@@ -492,6 +540,7 @@ test('should not include value from value operation when noDefaults is true', ()
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       noDefaults: true,
       pipelines: [
         ['item', 'key', '>id'],
@@ -501,6 +550,7 @@ test('should not include value from value operation when noDefaults is true', ()
           'props',
           {
             type: 'mutation',
+            it: true,
             pipelines: [
               ['name', '>title'],
               [{ type: 'value', value: 'news' }, '>section', '>|'],
@@ -526,6 +576,7 @@ test('should override noDefaults in a sub-mutation', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       noDefaults: true,
       pipelines: [
         ['item', 'key', '>id'],
@@ -535,6 +586,7 @@ test('should override noDefaults in a sub-mutation', () => {
           'props',
           {
             type: 'mutation',
+            it: true,
             noDefaults: false,
             pipelines: [
               ['name', '>title'],
@@ -561,6 +613,7 @@ test('should run mutation object in reverse', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -579,11 +632,12 @@ test('should run mutation object with sub-mutations in reverse', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         [
           '.', // This is set when prepping, for sub-mutations
-          { type: 'mutation', pipelines: [['name', '>title']] },
+          { type: 'mutation', it: true, pipelines: [['name', '>title']] },
           '>attributes',
         ],
       ],
@@ -601,6 +655,7 @@ test('should run mutation object as in reverse when flip is true', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       flip: true,
       pipelines: [
         ['key', '>id'],
@@ -620,13 +675,14 @@ test('should pass on flip to sub-mutation', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       flip: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
         [
           'meta',
-          { type: 'mutation', pipelines: [['old', '>archived']] },
+          { type: 'mutation', it: true, pipelines: [['old', '>archived']] },
           '>props',
         ],
       ],
@@ -644,13 +700,19 @@ test('should override flip on sub-mutation', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       flip: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
         [
           'meta',
-          { type: 'mutation', flip: false, pipelines: [['archived', '>old']] },
+          {
+            type: 'mutation',
+            it: true,
+            flip: false,
+            pipelines: [['archived', '>old']],
+          },
           '>props',
         ],
       ],
@@ -668,6 +730,7 @@ test('should skip pipeline with forward plug', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -687,6 +750,7 @@ test('should not skip pipeline with forward plug in reverse', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -706,6 +770,7 @@ test('should merge in reverse ($modify)', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['slug', { type: 'transform', id: 'uppercase', fn: uppercase }, '>key'],
         ['...'], // Reverse $modify
@@ -724,6 +789,7 @@ test('should merge with flip in reverse ($modify)', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['>...'], // $modify
@@ -743,6 +809,7 @@ test('should skip forward merge in reverse ($modify)', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', { type: 'transform', id: 'uppercase', fn: uppercase }, '>slug'],
         ['>...'], // $modify
@@ -764,6 +831,7 @@ test('should run mutation object asynchronously', async () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -783,6 +851,7 @@ test('should run mutation object on undefined asynchronously when always is true
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],

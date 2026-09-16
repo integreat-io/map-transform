@@ -372,7 +372,7 @@ test('should use built in explode function', () => {
 })
 
 test('should use built in implode function', () => {
-  const def = { properties: { $transform: 'implode' } }
+  const def = { $iterate: false, properties: { $transform: 'implode' } }
   const data = [
     { key: 'value', value: 32 },
     { key: 'unit', value: 'KG' },
@@ -500,6 +500,7 @@ test('should apply transform function to array with iteration', () => {
   const def = [
     'content',
     {
+      $iterate: false,
       tags: { $transform: 'generateTag', $iterate: true },
     },
   ]
@@ -774,7 +775,7 @@ test('should not affect forward when transform is used as mutation property valu
   // A transform used directly as a mutation property value (no get path)
   // should still work correctly in forward mode after allowing transforms
   // to not be plugged in reverse.
-  const def = { properties: { $transform: 'implode' } }
+  const def = { $iterate: false, properties: { $transform: 'implode' } }
   const data = [
     { key: 'value', value: 32 },
     { key: 'unit', value: 'KG' },

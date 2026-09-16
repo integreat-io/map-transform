@@ -8,6 +8,7 @@ import type State from '../state.js'
 
 export interface MutationStep extends OperationStepBase {
   type: 'mutation'
+  it: boolean
   flip?: boolean
   noDefaults?: boolean
   always?: boolean

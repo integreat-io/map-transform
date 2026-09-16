@@ -198,6 +198,7 @@ test('should run a pipeline with an async transformer in a mutation object', asy
   const pipeline = [
     {
       type: 'mutation' as const,
+      it: true,
       pipelines: [
         ['key', '>id'],
         [{ type: 'transform' as const, id: 'fromAsync', fn }, '>value'],
@@ -219,6 +220,7 @@ test('should run a pipeline applying an async pipline', async () => {
   pipelines.set('entry', [
     {
       type: 'mutation' as const,
+      it: true,
       pipelines: [
         ['key', '>id'],
         [{ type: 'transform' as const, id: 'fromAsync', fn }, '>value'],

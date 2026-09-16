@@ -243,6 +243,10 @@ from the default export, on purpose:
   an iteration reversed to `items[].section`, and a root path in reverse set
   nothing. After, the same definition sets `meta.section` on the object holding
   `items`. When the parent level does not exist, the value is dropped.
+- Mutation objects iterate arrays by default, just like get paths map over
+  arrays. Before, you had to set `$iterate: true`, and without it the entire
+  array was passed to the mutation object, giving one object with an array of
+  values on every property. Set `$iterate: false` to get that behaviour back.
 
 ### The mutation object
 
@@ -290,6 +294,10 @@ mutation object. If you don't, the entire array will be passed to the mutation
 object. This will in most cases have the (propably unwanted) effect of returning
 one object with an array of values on every property.
 
+> [!NOTE] In the next version, mutation objects iterate arrays by default, so
+> `$iterate: true` is not needed. Set `$iterate: false` to pass the entire array
+> to the mutation object instead.
+
 ```javascript
 const def = {
   $iterate: true,
@@ -330,8 +338,9 @@ as its value, this mutation object will be iterated by default (no need to set
 the `$iterate` property). This does not happen to pipelines, paths, or
 operations.
 
-> [!NOTE] This automatic iteration will disappear in v2.0 and is also removed in
-> the new `mapTransformSync` and `mapTransformAsync` exports.
+> [!NOTE] This changes slightly in the next version, as mutation objects iterate
+> by default. A key with the `[]` suffix will still be iterated, but not because
+> of that suffix.
 
 #### Values on the mutation object
 
@@ -586,6 +595,10 @@ specified. In the example above, we have set `$iterate: true` on the mutation
 object, to signal that we want the mutation to be applied to each item of any
 array. See also [the `iterate` operation](#iteratepipeline-operation) for more.
 
+> [!NOTE] In the next version, mutation objects will iterate by default, so to
+> get the behavior described as default for mutation objects above, you will
+> have to set `$iterate: false`.
+
 > Editors note: We should think through how we use the word "pipeline", as it is
 > sometimes ment to refer to an array of operations that a value may be
 > transformed through, other times any operation that could have been a part of
@@ -701,12 +714,12 @@ alone, by these rules:
 
 1. **Only drilling down adds a level.** A key segment like `content` adds one
    level, and so does an index like `[0]`. Entering an item in an array adds one
-   level too, whether you get there by iterating a path with `[]`, by
-   `$iterate: true` on a mutation object, or by an `$iterate` operation. A bare
-   `[]` that only makes sure you have an array, adds nothing. So when iterating
-   the `tags[]` array from our example above, you would use `^.^.id` to get to
-   the id: one caret to the array and one more to the object holding it. You
-   could also use `^.[0]` to get the first item in the array you're iterating.
+   level too, whether you get there by iterating a path with `[]`, by a mutation
+   object iterating an array, or by an `$iterate` operation. A bare `[]` that
+   only makes sure you have an array, adds nothing. So when iterating the
+   `tags[]` array from our example above, you would use `^.^.id` to get to the
+   id: one caret to the array and one more to the object holding it. You could
+   also use `^.[0]` to get the first item in the array you're iterating.
 2. **Operations are opaque.** After a `$transform`, a mutation object, `$alt`,
    `$if`, `$filter`, `$apply`, or `$array`, the levels are what they were before
    the operation, no matter what the operation did on the inside. Inside an
@@ -1182,6 +1195,9 @@ const def = [
 
 For mutation objects, you may set `$iterate: true` to apply the mutation to each
 item in an array.
+
+> [!NOTE] In the next version, mutation objects do this by default, and
+> `$iterate: false` turns it off.
 
 When you need to iterate a pipeline or an operation that is not a mutation
 object or an operation that supports the `$iterate` flag direction, you may wrap

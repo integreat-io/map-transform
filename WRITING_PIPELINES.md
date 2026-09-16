@@ -89,10 +89,10 @@ The number of carets follows from the structure of the definition alone:
 
 1. **Only drilling down adds a level.** A key segment adds one, `[0]` adds one,
    and entering an array item adds one — whether by iterating a path with `[]`,
-   by `$iterate: true`, or by the `$iterate` operation. A bare `[]` adds
-   nothing. So from inside iterating `tags[]`, use `'^.^.id'` to reach the
-   object above the array. One `^` reaches the array itself, which is useful for
-   things like `^.[0].id`.
+   by a mutation object iterating an array, or by the `$iterate` operation. A
+   bare `[]` adds nothing. So from inside iterating `tags[]`, use `'^.^.id'` to
+   reach the object above the array. One `^` reaches the array itself, which is
+   useful for things like `^.[0].id`.
 2. **Operations are opaque.** After `$transform`, a mutation object, `$alt`,
    `$if`, `$filter`, `$apply`, or `$array`, the levels are what they were before
    the operation. Inside an operation, you inherit the levels from where it is
@@ -193,7 +193,7 @@ const def = { 'articles[]': 'content.items' }
 
 | Property             | Description                                                                             |
 | -------------------- | --------------------------------------------------------------------------------------- |
-| `$iterate: true`     | Apply mutation to each item in an array. Will still apply to single value               |
+| `$iterate: false`    | Apply mutation to an array as a whole. By default, it's applied to each item            |
 | `$modify: true`      | Modify existing object instead of replacing it                                          |
 | `$modify: 'path'`    | Modify the object at the given path                                                     |
 | `$flip: true`        | Definition is written from reverse perspective                                          |
@@ -293,8 +293,10 @@ falsy. Supports `$direction`.
 Wraps a pipeline so it applies to each item in an array individually, rather
 than the array as a whole.
 
-Note that the presence of `$iterate` by itself does not turn this into an
-operation object, it will just make a mutation object iterate.
+Note that `$iterate` is also used as a flag on mutation objects and other
+operators, to control if they are iterated or not. In these cases, the value is
+either `true` or `false`, while `$iterate: <pipeline>` iterates the given
+pipeline.
 
 ### `$apply` — Named Pipelines
 
@@ -611,5 +613,5 @@ mapper(sourceData, { target })
 // In options.pipelines:
 // userShape: { id: 'userId', name: 'fullName' }
 
-const def = ['data.users[]', { $iterate: true }, { $apply: 'userShape' }]
+const def = ['data.users', { $apply: 'userShape' }]
 ```

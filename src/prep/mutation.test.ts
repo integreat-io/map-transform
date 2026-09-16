@@ -25,6 +25,7 @@ test('should prepare mutation object', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -45,6 +46,7 @@ test('should prepare mutation object with pipelines', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         [
@@ -70,6 +72,7 @@ test('should forward plug slashed properties', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -92,6 +95,7 @@ test('should forward plug slashed property without a path', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -114,6 +118,7 @@ test('should unescape escaped slash', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -136,6 +141,7 @@ test('should unescape a slashed property', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -158,6 +164,7 @@ test('should plug pipelines with no set in reverse', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -179,6 +186,7 @@ test('should skip props without a pipeline', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [['key', '>id']],
     },
   ]
@@ -196,6 +204,7 @@ test('should skip unknown dollar props', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [['key', '>id']],
     },
   ]
@@ -213,6 +222,7 @@ test('should unescape escaped dollar props', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>$title'],
@@ -227,7 +237,7 @@ test('should unescape escaped dollar props', () => {
 
 test('should return no pipelines when no props', () => {
   const def = {}
-  const expected = [{ type: 'mutation', pipelines: [] }]
+  const expected = [{ type: 'mutation', it: true, pipelines: [] }]
 
   const ret = prep(def, options)
 
@@ -245,12 +255,14 @@ test('should prepare mutation object with more levels', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         [
           '.',
           {
             type: 'mutation',
+            it: true,
             pipelines: [
               [
                 'name',
@@ -279,6 +291,7 @@ test('should support dot notation in props', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title', '>content'],
@@ -299,6 +312,7 @@ test('should support index notation in props', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>[0]', '>names'],
@@ -333,6 +347,49 @@ test('should pass on $iterate', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should set it to true on mutation object by default', () => {
+  const def = {
+    id: 'key',
+    title: 'name',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      it: true,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should pass on $iterate: false', () => {
+  const def = {
+    $iterate: false,
+    id: 'key',
+    title: 'name',
+  }
+  const expected = [
+    {
+      type: 'mutation',
+      it: false,
+      pipelines: [
+        ['key', '>id'],
+        ['name', '>title'],
+      ],
+    },
+  ]
+
+  const ret = prep(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should pass on $alwaysApply', () => {
   const def = {
     $alwaysApply: true,
@@ -342,6 +399,7 @@ test('should pass on $alwaysApply', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       always: true,
       pipelines: [
         ['key', '>id'],
@@ -355,9 +413,7 @@ test('should pass on $alwaysApply', () => {
   assert.deepEqual(ret, expected)
 })
 
-// TODO: Do we really need to set this, or is it handled by the presence of the
-// array bracket step?
-test('should iterate sub-objects on array path', () => {
+test('should not set $iterate on sub-objects on array path', () => {
   const def = {
     'items[]': {
       id: 'key',
@@ -367,6 +423,7 @@ test('should iterate sub-objects on array path', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         [
           '.',
@@ -402,6 +459,7 @@ test('should support $modify prop', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [['key', '>slug'], ['>...']],
     },
   ]
@@ -419,6 +477,7 @@ test('should support $modify prop with dot path', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [['key', '>slug'], ['>...']],
     },
   ]
@@ -436,6 +495,7 @@ test('should support reverse $modify prop', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [['key', '>slug'], ['...']],
     },
   ]
@@ -453,6 +513,7 @@ test('should support $modify prop with a dot notation path', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>slug'],
         ['data', 'props', '>...'],
@@ -473,6 +534,7 @@ test('should skip props with $modify in both directions', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [['key', '>slug']],
     },
   ]
@@ -490,6 +552,7 @@ test('should not treat prop starting with $modify as modify', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [['key', '>slug']],
     },
   ]
@@ -517,6 +580,7 @@ test('should pass on $flip', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       flip: true,
       pipelines: [
         ['id', '>key'],
@@ -543,6 +607,7 @@ test('should pass on $noDefaults', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       noDefaults: true,
       pipelines: [
         ['key', '>id'],
@@ -565,6 +630,7 @@ test('should pass on $noDefaults when it is false', () => {
   const expected = [
     {
       type: 'mutation',
+      it: true,
       noDefaults: false,
       pipelines: [
         ['key', '>id'],

@@ -12,6 +12,7 @@ test('should run pipeline', () => {
   const entryPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -36,6 +37,7 @@ test('should continue pipeline with the same context', () => {
     '^', // Parent up to the outside context
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -58,6 +60,7 @@ test('should not pass on flip to pipeline', () => {
   const entryPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -102,6 +105,7 @@ test('should run recursive pipeline', () => {
   const commentPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['title', '>comment'],
         ['comments', { type: 'apply', id: 'comment', it: true }, '>children'],
@@ -130,6 +134,7 @@ test('should run pipeline in reverse', () => {
   const entryPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],
@@ -164,6 +169,7 @@ test('should run pipeline asynchronously', async () => {
   const entryPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['name', '>title'],

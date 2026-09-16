@@ -56,6 +56,20 @@ export interface Options {
   ) => Record<string, unknown>
 }
 
+// The keys that define an operation. Other `$` keys are either step props or
+// modifiers belonging to one operation, like `$flip` or `$modify`.
+const operationKeys = [
+  '$transform',
+  '$value',
+  '$apply',
+  '$alt',
+  '$array',
+  '$if',
+  '$filter',
+  '$iterate',
+]
+const isOperationKey = (key: string) => operationKeys.includes(key)
+
 const isAltOperation = (step: ObjectStep): step is AltOperation =>
   Object.prototype.hasOwnProperty.call(step, '$alt')
 const isApplyOperation = (step: ObjectStep): step is ApplyOperation =>
@@ -67,8 +81,7 @@ const isFilterOperation = (step: ObjectStep): step is FilterOperation =>
 const isIfOperation = (step: ObjectStep): step is IfOperation =>
   Object.prototype.hasOwnProperty.call(step, '$if')
 const isIterateOperation = (step: ObjectStep): step is IterateOperation =>
-  Object.prototype.hasOwnProperty.call(step, '$iterate') &&
-  typeof step.$iterate !== 'boolean'
+  isNotNullOrUndefined(step.$iterate) && typeof step.$iterate !== 'boolean'
 const isTransformOperation = (step: ObjectStep): step is TransformOperation =>
   Object.prototype.hasOwnProperty.call(step, '$transform')
 const isValueOperation = (step: ObjectStep): step is ValueOperation =>
@@ -91,8 +104,8 @@ function getDir(dir: unknown, options: Options) {
 // object with these props, prepared for the internal operation format, and the
 // step object without these props.
 // The supported step props are:
-// - `$iterate`: Causes the operation to be iterated if the pipeline value is
-//   an array.
+// - `$iterate`: When a boolean, it sets whether the operation is iterated if
+//   the pipeline value is an array.
 // - `$direction`: Will only run the operation in the specified direction.
 // - `$noDefaults`: When true, no default values will be used.
 // - `$nonvalues`: Will apply the list of nonvalues to options for the
@@ -107,10 +120,14 @@ function extractStepProps(
     $noDefaults: noDefaults,
     $undefined,
     ...step
-  }: MutationObject | OperationObject,
+  }: ObjectStep,
   options: Options,
-): [StepProps | undefined, MutationObject | OperationObject] {
-  const it = $iterate === true
+): [StepProps | undefined, ObjectStep] {
+  const it = typeof $iterate === 'boolean' ? $iterate : undefined
+  if ($iterate && typeof $iterate !== 'boolean') {
+    // Put $iterate back when it's used as an iteration operation
+    step.$iterate = $iterate
+  }
   const dir = getDir($direction, options)
   const rawNonvalues = Array.isArray($nonvalues)
     ? $nonvalues
@@ -119,16 +136,10 @@ function extractStepProps(
       : undefined
   const nonvalues = rawNonvalues?.map(unescapeValue)
 
-  // Set $iterate back if it is not a boolean – as this is then a $iterate
-  // operation
-  if ($iterate && typeof $iterate !== 'boolean') {
-    step.$iterate = $iterate
-  }
-
-  return it || dir || noDefaults !== undefined || nonvalues
+  return it !== undefined || dir || noDefaults !== undefined || nonvalues
     ? [
         {
-          ...(it && { it }),
+          ...(it !== undefined && { it }),
           ...(dir && { dir }),
           ...(typeof noDefaults === 'boolean' && { noDefaults }),
           ...(nonvalues && { nonvalues }),
@@ -177,6 +188,25 @@ function prepareOperation(operation: ObjectStep, options: Options) {
   }
 }
 
+function validateObjectStep(operation: ObjectStep) {
+  const keys = Object.keys(operation).filter(isOperationKey)
+  if (keys.length > 1) {
+    throw new Error(
+      `Cannot define more than one operation on the same object: Was ${keys.join(', ')}`,
+    )
+  }
+}
+
+// Prepare an operation or mutation object, making sure `$iterate` is not
+// combined with anything that would make it ambiguous or meaningless.
+function prepareObjectStep(step: ObjectStep, options: Options) {
+  const [props, operation] = extractStepProps(step, options)
+
+  validateObjectStep(operation)
+
+  return setStepProps(prepareOperation(operation, options), props) // Set the step props that is common for all operations
+}
+
 // Validate and prepare a step. If a step is an array (a sub-pipeline), we
 // prepare it and return it, knowing it will be flattened into the pipeline
 // this step is a part of.
@@ -192,12 +222,7 @@ const prepareStep = (options: Options) =>
       throw new Error('Operation functions are not supported anymore')
     } else if (step) {
       // An operation or mutation object step
-      const [props, operation] = extractStepProps(
-        modifyOperation(step, options),
-        options,
-      )
-      const operationObject = prepareOperation(operation, options)
-      return setStepProps(operationObject, props) // Set the step props that is common for all operations
+      return prepareObjectStep(modifyOperation(step, options), options)
     } else {
       return undefined
     }

@@ -946,13 +946,13 @@ test('should return data when no mapping def and reverse mapping', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should return empty object when mapping def is empty', () => {
+test('should return empty object for each item when mapping def is empty', () => {
   const def = {}
   const data = [
     { content: { heading: 'Heading 1' } },
     { content: { heading: 'Heading 2' } },
   ]
-  const expected = {}
+  const expected = [{}, {}]
 
   const ret = mapTransformSync(def)(data, { rev: true })
 

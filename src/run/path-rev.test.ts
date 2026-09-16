@@ -308,6 +308,7 @@ test('should set on the parent level with a trailing parent step', () => {
     'item',
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['^', 'section', '>section'],
@@ -328,6 +329,7 @@ test('should set on the root level with a trailing root step', () => {
     'item',
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['^^', 'meta', 'section', '>section'],
@@ -349,6 +351,7 @@ test('should drop the value when the parent level does not exist', () => {
   const pipeline: PreppedPipeline = [
     {
       type: 'mutation',
+      it: true,
       pipelines: [
         ['key', '>id'],
         ['^', 'section', '>section'],

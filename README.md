@@ -176,34 +176,16 @@ await mapTransform(def)(source, { target }) // We're reusing `def` from the prev
 ```
 
 Finally, if you're using the same `options` across several `mapTransform` calls,
-you may gain some optimization by preparing the options up front. Do this with
-the exported `prepareOptions` function like so:
+pass the same options object each time. Calls with the same options object share
+prepared pipelines automatically, so a pipeline is only prepared once. Changing
+pipeline definitions on the options object after it has been used is not
+supported.
 
-```javascript
-import mapTransform, { prepareOptions, transform } from 'map-transform'
-
-// ...
-
-const preppedOptions = prepareOptions(options)
-await mapTransform(def1, preppedOptions)(source)
-
-// ...
-
-await mapTransform(def2, preppedOptions)(source)
-```
-
-Most of the preparations are still done just-in-time, but when it's done once,
-it won't happen again on the next call. `prepareOptions` is idempotent, so
-passing already prepared options to `mapTransform` -- or calling
-`prepareOptions` on them again -- costs nothing.
-
-`map-transform/next` exports its own `prepareOptions` alongside `mapTransform`.
-Like in the legacy API, the default export is async, and it is also exported as
-`mapTransformAsync()`, with `mapTransformSync()` as its sync counterpart.
-Options prepared with one API cannot be handed to the other. Note that
-`mapTransformSync()` and the async `mapTransformAsync()` cache their prepared
-pipelines separately, so mixing both on the same prepared options will prepare
-each pipeline twice.
+`map-transform/next` works the same way. Like in the legacy API, the default
+export is async, and it is also exported as `mapTransformAsync()`, with
+`mapTransformSync()` as its sync counterpart. Note that `mapTransformSync()` and
+the async `mapTransformAsync()` cache their prepared pipelines separately, so
+mixing both on the same options object will prepare each pipeline twice.
 
 > [!NOTE] We are preparing for an upcoming 2.0 version, which will include
 > breaking changes.

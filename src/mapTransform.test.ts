@@ -2,13 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createDataMapper, createDataMapperAsync } from './createDataMapper.js'
 import type State from './state.js'
-import type { Options } from './prep/index.js'
+import legacyMapTransform from './index.js'
+import type { Options, TransformDefinition } from './prep/index.js'
 import type { Transformer, AsyncTransformer } from './typesNext.js'
+import type { AsyncTransformer as LegacyAsyncTransformer } from './legacy/types.js'
 
 import mapTransformDefault, {
   mapTransformSync,
   mapTransformAsync,
-  prepareOptions,
 } from './mapTransform.js'
 
 // Tests -- sync
@@ -158,27 +159,7 @@ test('should pass on nonvalues to the run function', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should prepare pipelines once for several calls with prepared options', () => {
-  let prepareCount = 0
-  const counted: Transformer = () => () => {
-    prepareCount++
-    return (value) => value
-  }
-  const pipelines = { entry: [{ $transform: 'counted' }, { id: 'key' }] }
-  const options = prepareOptions({ pipelines, transformers: { counted } })
-  const def = { $apply: 'entry' }
-  const value = { key: 'ent1' }
-  const expected = { id: 'ent1' }
-
-  const mapperA = mapTransformSync(def, options)
-  const mapperB = mapTransformSync(def, options)
-
-  assert.equal(prepareCount, 1)
-  assert.deepEqual(mapperA(value), expected)
-  assert.deepEqual(mapperB(value), expected)
-})
-
-test('should prepare pipelines again with unprepared options', () => {
+test('should prepare pipelines once for several calls with the same options object', () => {
   let prepareCount = 0
   const counted: Transformer = () => () => {
     prepareCount++
@@ -193,9 +174,34 @@ test('should prepare pipelines again with unprepared options', () => {
   const mapperA = mapTransformSync(def, options)
   const mapperB = mapTransformSync(def, options)
 
-  assert.equal(prepareCount, 2)
+  assert.equal(prepareCount, 1)
   assert.deepEqual(mapperA(value), expected)
   assert.deepEqual(mapperB(value), expected)
+})
+
+test('should share prepared pipelines with the same options object without modifying it', () => {
+  let prepareCount = 0
+  const counted: Transformer = () => () => {
+    prepareCount++
+    return (value) => value
+  }
+  const entry = [{ $transform: 'counted' }, { id: 'key' }]
+  const pipelines = { entry }
+  const options = { pipelines, transformers: { counted } }
+  const def = { $apply: 'entry' }
+  const value = { key: 'ent1' }
+  const expected = { id: 'ent1' }
+
+  const mapperA = mapTransformSync(def, options)
+  const mapperB = mapTransformSync(def, options)
+
+  assert.equal(prepareCount, 1)
+  assert.deepEqual(mapperA(value), expected)
+  assert.deepEqual(mapperB(value), expected)
+  assert.deepEqual(Reflect.ownKeys(options), ['pipelines', 'transformers'])
+  assert.equal(options.pipelines, pipelines)
+  assert.equal(pipelines.entry, entry)
+  assert.deepEqual(Reflect.ownKeys(pipelines), ['entry'])
 })
 
 test('should not share prepared pipelines between sync and async', async () => {
@@ -205,7 +211,7 @@ test('should not share prepared pipelines between sync and async', async () => {
     return (value) => value
   }
   const pipelines = { entry: [{ $transform: 'counted' }, { id: 'key' }] }
-  const options = prepareOptions({ pipelines, transformers: { counted } })
+  const options = { pipelines, transformers: { counted } }
   const def = { $apply: 'entry' }
   const value = { key: 'ent1' }
   const expected = { id: 'ent1' }
@@ -224,7 +230,7 @@ test('should apply pipeline with a transformer that runs map-transform during pr
     return (value, state) => inner(value, state)
   }
   const pipelines = { entry: [{ $transform: 'templateLike' }] }
-  const options = prepareOptions({ pipelines, transformers: { templateLike } })
+  const options = { pipelines, transformers: { templateLike } }
   const def = { result: { $apply: 'entry' } }
   const value = { title: 'Entry 1' }
   const expected = { result: 'Entry 1' }
@@ -243,7 +249,7 @@ test('should apply pipeline with a transformer that applies the pipeline under p
     }
   }
   const pipelines = { entry: [{ $transform: 'self' }] }
-  const options = prepareOptions({ pipelines, transformers: { self } })
+  const options = { pipelines, transformers: { self } }
   const def = { $apply: 'entry' }
   const value = { key: 'ent1', child: { key: 'ent1.1' } }
   const expected = { id: 'ent1', child: { id: 'ent1.1' } }
@@ -262,7 +268,7 @@ test('should apply pipeline with a transformer that applies the pipeline under p
     }
   }
   const pipelines = { entry: [{ $transform: 'self' }] }
-  const options = prepareOptions({ pipelines, transformers: { self } })
+  const options = { pipelines, transformers: { self } }
   const def = { $apply: 'entry' }
   const value = { key: 'ent1', child: { key: 'ent1.1' } }
   const expected = { id: 'ent1', child: { id: 'ent1.1' } }
@@ -272,7 +278,7 @@ test('should apply pipeline with a transformer that applies the pipeline under p
   assert.deepEqual(ret, expected)
 })
 
-test('should apply pipeline with a transformer that applies the pipeline under preparation through mapTransform with unprepared options', () => {
+test('should apply pipeline with a transformer that applies the pipeline under preparation through mapTransform with a new options object', () => {
   const self: Transformer = () => (options: Options) => {
     const mapChild = mapTransformSync({ $apply: 'entry' }, options)
     return (value) => {
@@ -349,14 +355,14 @@ test('should include built-in transformers async', async () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should prepare pipelines once for several async calls with prepared options', async () => {
+test('should prepare pipelines once for several async calls with the same options object', async () => {
   let prepareCount = 0
   const counted: AsyncTransformer = () => () => {
     prepareCount++
     return async (value) => value
   }
   const pipelines = { entry: [{ $transform: 'counted' }, { id: 'key' }] }
-  const options = prepareOptions({ pipelines, transformers: { counted } })
+  const options = { pipelines, transformers: { counted } }
   const def = { $apply: 'entry' }
   const value = { key: 'ent1' }
   const expected = { id: 'ent1' }
@@ -375,7 +381,7 @@ test('should apply pipeline with an async transformer that runs map-transform du
     return async (value, state) => inner(value, state)
   }
   const pipelines = { entry: [{ $transform: 'templateLike' }] }
-  const options = prepareOptions({ pipelines, transformers: { templateLike } })
+  const options = { pipelines, transformers: { templateLike } }
   const def = { result: { $apply: 'entry' } }
   const value = { title: 'Entry 1' }
   const expected = { result: 'Entry 1' }
@@ -396,7 +402,7 @@ test('should apply pipeline with an async transformer that applies the pipeline 
     }
   }
   const pipelines = { entry: [{ $transform: 'self' }] }
-  const options = prepareOptions({ pipelines, transformers: { self } })
+  const options = { pipelines, transformers: { self } }
   const def = { $apply: 'entry' }
   const value = { key: 'ent1', child: { key: 'ent1.1' } }
   const expected = { id: 'ent1', child: { id: 'ent1.1' } }
@@ -415,7 +421,7 @@ test('should apply pipeline with an async transformer that applies the pipeline 
     }
   }
   const pipelines = { entry: [{ $transform: 'self' }] }
-  const options = prepareOptions({ pipelines, transformers: { self } })
+  const options = { pipelines, transformers: { self } }
   const def = { $apply: 'entry' }
   const value = { key: 'ent1', child: { key: 'ent1.1' } }
   const expected = { id: 'ent1', child: { id: 'ent1.1' } }
@@ -436,7 +442,7 @@ test('should prepare the pipeline for both modes when an async run has a transfo
     }
   }
   const pipelines = { entry: [{ $transform: 'self' }] }
-  const options = prepareOptions({ pipelines, transformers: { self } })
+  const options = { pipelines, transformers: { self } }
   const def = { $apply: 'entry' }
   const value = { key: 'ent1', child: { key: 'ent1.1' } }
   const expected = { id: 'ent1', child: { id: 'ent1.1' } }
@@ -445,4 +451,27 @@ test('should prepare the pipeline for both modes when an async run has a transfo
 
   assert.equal(prepareCount, 2)
   assert.deepEqual(ret, expected)
+})
+
+// Tests -- interchangeable types
+
+test('should accept both next and legacy mapTransform as the same type', async () => {
+  type MapTransform = (
+    def: TransformDefinition,
+    options?: Options,
+  ) => (data: unknown) => Promise<unknown>
+  const suffix: LegacyAsyncTransformer = () => () => async (value) =>
+    `${value}!`
+  const options: Options = { transformers: { suffix } }
+  const nextMapTransform: MapTransform = mapTransformAsync
+  const oldMapTransform: MapTransform = legacyMapTransform
+  const def = { title: ['name', { $transform: 'suffix' }] }
+  const value = { name: 'Entry 1' }
+  const expected = { title: 'Entry 1!' }
+
+  const retNext = await nextMapTransform(def, options)(value)
+  const retLegacy = await oldMapTransform(def, options)(value)
+
+  assert.deepEqual(retNext, expected)
+  assert.deepEqual(retLegacy, expected)
 })

@@ -5,13 +5,12 @@ import {
   async as asyncTransformers,
 } from './transformers/index.js'
 import State from './state.js'
-import { createInternalOptions } from './prepareOptions.js'
+import { createInternalOptions } from './internalOptions.js'
 import type { Transformer, AsyncTransformer } from './typesNext.js'
-import type { Mode } from './prepareOptions.js'
+import type { Mode } from './internalOptions.js'
 
 export { syncTransformers, asyncTransformers, State, mapTransformAsync }
 export { pathGetter, pathSetter } from './createPathMapper.js'
-export { default as prepareOptions } from './prepareOptions.js'
 
 export interface InitialState {
   context?: unknown[]

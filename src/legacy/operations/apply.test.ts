@@ -234,8 +234,8 @@ test('should mark pipeline as needed on options that are not prepared', async ()
 
   assert.deepEqual(ret, expected)
   // The book-keeping props are set on the options object we were given
-  assert.ok(options.neededPipelineIds?.has('extractTitle'))
-  assert.ok(options.preparedPipelines?.has('extractTitle'))
+  assert.ok(Reflect.get(options, 'neededPipelineIds').has('extractTitle'))
+  assert.ok(Reflect.get(options, 'preparedPipelines').has('extractTitle'))
 })
 
 test('should throw when given an unknown pipeline id', () => {

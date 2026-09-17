@@ -30,14 +30,17 @@ test('should set the book-keeping props on the given options object', () => {
   // What we add through the returned options is known to the original
   ret.neededPipelineIds.add('entry')
   ret.preparedPipelines.set('entry', operation)
-  assert.ok(options.neededPipelineIds?.has('entry'))
-  assert.equal(options.preparedPipelines?.get('entry'), operation)
+  assert.ok(Reflect.get(options, 'neededPipelineIds').has('entry'))
+  assert.equal(
+    Reflect.get(options, 'preparedPipelines').get('entry'),
+    operation,
+  )
 })
 
 test('should keep existing neededPipelineIds and preparedPipelines', () => {
   const neededPipelineIds = new Set<string | symbol>(['entry'])
   const preparedPipelines = new Map<string | symbol, Operation>()
-  const options: Options = { pipelines, neededPipelineIds, preparedPipelines }
+  const options = { pipelines, neededPipelineIds, preparedPipelines }
 
   const ret = toInternalOptions(options)
 

@@ -1,4 +1,5 @@
 import preparePipeline from './index.js'
+import { isInternalOptions } from '../internalOptions.js'
 import type { ApplyStep } from '../run/apply.js'
 import type { PreppedPipeline } from '../run/index.js'
 import type { ApplyOperation } from '../typesNext.js'
@@ -22,12 +23,12 @@ export default function prepareApplyStep(
       `Failed to apply pipeline '${String(id)}'. Unknown pipeline`,
     )
   }
-  const { preparedPipelines } = options
-  if (!preparedPipelines) {
+  if (!isInternalOptions(options)) {
     throw new Error(
       `Failed to apply pipeline '${String(id)}'. Options have no prepared pipelines Map`,
     )
   }
+  const { preparedPipelines } = options
 
   if (!preparedPipelines.has(id)) {
     // Set an empty pipeline first, so pipelines applying themselves terminate

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import type { Options } from './index.js'
+import type { InternalOptions } from '../internalOptions.js'
 
 import preparePipeline from './index.js'
 
@@ -38,7 +38,7 @@ test('should prepare applied pipelines into the Map', () => {
   const def = [{ $apply: 'entry' }, { $apply: 'comment' }]
   const pipeline = { id: 'key' }
   const preparedPipelines = new Map()
-  const options: Options = {
+  const options: InternalOptions = {
     pipelines: { entry: pipeline, user: pipeline, comment: pipeline },
     preparedPipelines,
   }
@@ -56,7 +56,7 @@ test('should prepare applied pipelines into the Map', () => {
 test('should prepare pipelines that apply each other', () => {
   const def = { $apply: 'entry' }
   const preparedPipelines = new Map()
-  const options: Options = {
+  const options: InternalOptions = {
     pipelines: {
       entry: { id: 'key', props: { $apply: 'props' } },
       props: { parent: { $apply: 'entry' } },
@@ -75,7 +75,7 @@ test('should reuse an already prepared pipeline', () => {
   const def = { $apply: 'entry' }
   const alreadyPrepared = ['key']
   const preparedPipelines = new Map([['entry', alreadyPrepared]])
-  const options: Options = {
+  const options: InternalOptions = {
     pipelines: { entry: 'name' },
     preparedPipelines,
   }
@@ -88,7 +88,7 @@ test('should reuse an already prepared pipeline', () => {
 test('should remove the pipeline from the Map when preparation throws', () => {
   const def = { $apply: 'entry' }
   const preparedPipelines = new Map()
-  const options: Options = {
+  const options: InternalOptions = {
     pipelines: { entry: { $apply: 'unknown' } },
     preparedPipelines,
   }

@@ -28,7 +28,6 @@ export interface State extends InitialState {
 export interface Options {
   transformers?: Record<string | symbol, Transformer | AsyncTransformer>
   pipelines?: Record<string | symbol, TransformDefinition>
-  neededPipelineIds?: Set<string | symbol>
   dictionaries?: Dictionaries
   nonvalues?: unknown[]
   fwdAlias?: string
@@ -37,7 +36,6 @@ export interface Options {
     operation: Record<string, unknown>,
   ) => Record<string, unknown>
   modifyGetValue?: (value: unknown, state: State, options: Options) => unknown
-  preparedPipelines?: Map<string | symbol, Operation>
 }
 
 /**
@@ -56,18 +54,27 @@ export type DataMapper<T extends InitialState | undefined = State> = (
   state?: T,
 ) => Promise<unknown>
 
-export type AsyncDataMapperWithState = (
-  data: unknown,
-  state: State,
-) => Promise<unknown>
+// Method syntax makes the params bivariant, so legacy and next types are assignable
+interface AsyncDataMapperWithStateMethod {
+  mapper(data: unknown, state: State): Promise<unknown>
+}
+export type AsyncDataMapperWithState = AsyncDataMapperWithStateMethod['mapper']
 
-export type DataMapperWithState = (data: unknown, state: State) => unknown
+interface DataMapperWithStateMethod {
+  mapper(data: unknown, state: State): unknown
+}
+export type DataMapperWithState = DataMapperWithStateMethod['mapper']
 
-export type AsyncDataMapperWithOptions = (
-  options: Options,
-) => AsyncDataMapperWithState
+interface AsyncDataMapperWithOptionsMethod {
+  mapper(options: Options): AsyncDataMapperWithState
+}
+export type AsyncDataMapperWithOptions =
+  AsyncDataMapperWithOptionsMethod['mapper']
 
-export type DataMapperWithOptions = (options: Options) => DataMapperWithState
+interface DataMapperWithOptionsMethod {
+  mapper(options: Options): DataMapperWithState
+}
+export type DataMapperWithOptions = DataMapperWithOptionsMethod['mapper']
 
 // Operation types
 

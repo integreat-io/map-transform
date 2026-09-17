@@ -8,7 +8,7 @@ import type { Operation, Options, InternalOptions } from '../types.js'
  * Returns the given options with the book-keeping props `neededPipelineIds` and
  * `preparedPipelines` in place. They are set on the options object we're given,
  * so that everyone holding on to it -- the caller included -- shares the same
- * Set and Map. Options from `prepareOptions()` already have them.
+ * Set and Map.
  */
 export function toInternalOptions(options: Options): InternalOptions {
   const internalOptions = options as InternalOptions

@@ -171,41 +171,44 @@ test('should pass on other incoming options', () => {
   assert.equal(ret.modifyGetValue, options.modifyGetValue)
 })
 
-test('should return the same object when options are already prepared', () => {
+test('should share neededPipelineIds and preparedPipelines between calls with the same options object', () => {
+  const options = {}
+
+  const retA = prepareOptions(options)
+  const retB = prepareOptions(options)
+
+  assert.notEqual(retA, retB)
+  assert.equal(retA.neededPipelineIds, retB.neededPipelineIds)
+  assert.equal(retA.preparedPipelines, retB.preparedPipelines)
+})
+
+test('should share neededPipelineIds and preparedPipelines with a call on the returned options', () => {
   const options = {}
   const preppedOptions = prepareOptions(options)
 
   const ret = prepareOptions(preppedOptions)
 
-  assert.equal(ret, preppedOptions)
+  assert.equal(ret.neededPipelineIds, preppedOptions.neededPipelineIds)
+  assert.equal(ret.preparedPipelines, preppedOptions.preparedPipelines)
 })
 
-test('should not merge transformers again when options are already prepared', () => {
-  const customTrans = () => () => async () => {
-    return
-  }
-  const options = {
-    transformers: { custom: customTrans },
-  }
-  const preppedOptions = prepareOptions(options)
+test('should not share neededPipelineIds and preparedPipelines between different options objects', () => {
+  const optionsA = {}
+  const optionsB = {}
 
-  const ret = prepareOptions(preppedOptions)
+  const retA = prepareOptions(optionsA)
+  const retB = prepareOptions(optionsB)
 
-  assert.equal(ret.transformers, preppedOptions.transformers)
-  assert.equal(ret.transformers?.custom, customTrans)
-  assert.equal(typeof ret.transformers?.map, 'function')
+  assert.notEqual(retA.neededPipelineIds, retB.neededPipelineIds)
+  assert.notEqual(retA.preparedPipelines, retB.preparedPipelines)
 })
 
-test('should prepare options with a preparedPipelines Map that we have not prepared', () => {
-  const preparedPipelines = new Map()
-  const options = { preparedPipelines }
+test('should not modify the given options', () => {
+  const options = {}
 
-  const ret = prepareOptions(options)
+  prepareOptions(options)
 
-  assert.notEqual(ret, options)
-  assert.equal(ret.preparedPipelines, preparedPipelines)
-  assert.equal(typeof ret.transformers?.map, 'function')
-  assert.equal(typeof ret.transformers?.value, 'function')
+  assert.deepEqual(Reflect.ownKeys(options), [])
 })
 
 // Tests -- preparePipelines
@@ -226,7 +229,7 @@ test('preparePipelines should resolve needed pipelines to operations', () => {
         [Symbol.for('pipe5')]: unusedPipeline,
       },
     }),
-    neededPipelineIds, // NOTE: We add this after we have prepared the options, as it is not preserved to preparation
+    neededPipelineIds,
   }
   const originalPipelines = options.pipelines
 
@@ -259,7 +262,7 @@ test('preparePipelines should also resolve pipelines applied by a pipeline', () 
         pipe3: ['some', 'pipeline', { $apply: 'pipe2' }],
       },
     }),
-    neededPipelineIds, // NOTE: We add this after we have prepared the options, as it is not preserved to preparation
+    neededPipelineIds,
   }
 
   preparePipelines(options)
@@ -281,7 +284,7 @@ test('preparePipelines should also resolve pipelines applied by a pipeline in a 
         pipe3: ['some', 'pipeline', { $apply: 'pipe2' }],
       },
     }),
-    neededPipelineIds, // NOTE: We add this after we have prepared the options, as it is not preserved to preparation
+    neededPipelineIds,
   }
 
   preparePipelines(options)
@@ -304,7 +307,7 @@ test('preparePipelines should not be tripped by recurring pipelines', () => {
         pipe3: ['some', 'pipeline', { $apply: 'pipe2' }],
       },
     }),
-    neededPipelineIds, // NOTE: We add this after we have prepared the options, as it is not preserved to preparation
+    neededPipelineIds,
   }
 
   preparePipelines(options)

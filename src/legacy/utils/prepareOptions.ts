@@ -1,12 +1,29 @@
 import transformers from '../transformers/index.js'
+import { toInternalOptions } from './internalOptions.js'
 import type { Options, InternalOptions } from '../types.js'
 
 export { getPreparedPipeline, preparePipelines } from './preparedPipelines.js'
 
-// Marks an options object as prepared. Kept local to this module, so that
-// another copy of map-transform will prepare the options again instead of
-// trusting our merge.
-const isPrepared = Symbol('isPrepared')
+type PipelineCache = Pick<
+  InternalOptions,
+  'neededPipelineIds' | 'preparedPipelines'
+>
+
+const pipelineCaches = new WeakMap<Options, PipelineCache>()
+
+function getPipelineCache(options: Options): PipelineCache {
+  const cached = pipelineCaches.get(options)
+  if (cached) {
+    return cached
+  }
+  // Internal options copied by an operation carry their Set and Map with them
+  const { neededPipelineIds, preparedPipelines } = toInternalOptions({
+    ...options,
+  })
+  const cache = { neededPipelineIds, preparedPipelines }
+  pipelineCaches.set(options, cache)
+  return cache
+}
 
 /**
  * Returns a completed options object. Include built-in transformers, but let
@@ -14,30 +31,19 @@ const isPrepared = Symbol('isPrepared')
  * that we never modify the object we're given. `pipelines` and `dictionaries`
  * are passed through by reference.
  *
- * The `preparedPipelines` Map holds the pipelines that have been resolved to
- * operations. An existing Map is passed on, so that resolved pipelines may be
- * shared across `mapTransform()` calls. Call this method up front and pass the
- * returned options to several `mapTransform()` calls, to share prepared
- * pipelines intentionally instead of relying on a shared `pipelines` object.
- *
- * The function is idempotent: options we have already prepared are returned
- * as-is, so preparing them again -- or passing them to `mapTransform()` -- is
- * free.
+ * The `neededPipelineIds` Set and `preparedPipelines` Map are cached by options
+ * object identity, so calls with the same options object share prepared
+ * pipelines. The returned options are registered too, so a transformer calling
+ * `mapTransform()` with them shares the same pipelines.
  */
 export function prepareOptions(options: Options): InternalOptions {
-  if (Reflect.get(options, isPrepared)) {
-    return options as InternalOptions
-  }
+  const cache = getPipelineCache(options)
   const preppedOptions = {
     ...options,
     transformers: { ...transformers, ...options.transformers },
     nonvalues: options.nonvalues ?? [undefined],
-    neededPipelineIds: options.neededPipelineIds ?? new Set<string | symbol>(),
-    preparedPipelines: options.preparedPipelines ?? new Map(),
+    ...cache,
   }
-  Object.defineProperty(preppedOptions, isPrepared, {
-    value: true,
-    enumerable: false,
-  })
+  pipelineCaches.set(preppedOptions, cache)
   return preppedOptions
 }

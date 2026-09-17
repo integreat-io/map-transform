@@ -1,11 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import {
-  mapTransformSync,
-  mapTransformAsync,
-  prepareOptions,
-} from '../mapTransform.js'
+import { mapTransformSync, mapTransformAsync } from '../mapTransform.js'
 
 // Setup
 
@@ -454,8 +450,7 @@ test('should handle pipelines that applies themselves', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should apply different pipelines from the same prepared options', () => {
-  const preppedOptions = prepareOptions(options)
+test('should apply different pipelines from the same options object', () => {
   const defA = ['data.entries', { $apply: 'cast_entry' }]
   const defB = { $apply: 'hitsOnly' }
   const data = {
@@ -465,15 +460,14 @@ test('should apply different pipelines from the same prepared options', () => {
   const expectedA = [{ id: 'ent1', title: 'Entry 1', viewCount: 12 }]
   const expectedB = { hits: 1 }
 
-  const retA = mapTransformSync(defA, preppedOptions)(data)
-  const retB = mapTransformSync(defB, preppedOptions)(data)
+  const retA = mapTransformSync(defA, options)(data)
+  const retB = mapTransformSync(defB, options)(data)
 
   assert.deepEqual(retA, expectedA)
   assert.deepEqual(retB, expectedB)
 })
 
-test('should apply different async pipelines from the same prepared options', async () => {
-  const preppedOptions = prepareOptions(options)
+test('should apply different async pipelines from the same options object', async () => {
   const defA = [{ $apply: 'getItemsAsync' }, { $apply: 'cast_entry' }]
   const defB = { $apply: 'hitsOnly' }
   const data = {
@@ -483,8 +477,8 @@ test('should apply different async pipelines from the same prepared options', as
   const expectedA = [{ id: 'ent1', title: 'Entry 1', viewCount: 12 }]
   const expectedB = { hits: 1 }
 
-  const retA = await mapTransformAsync(defA, preppedOptions)(data)
-  const retB = await mapTransformAsync(defB, preppedOptions)(data)
+  const retA = await mapTransformAsync(defA, options)(data)
+  const retB = await mapTransformAsync(defB, options)(data)
 
   assert.deepEqual(retA, expectedA)
   assert.deepEqual(retB, expectedB)

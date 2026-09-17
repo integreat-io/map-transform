@@ -26,18 +26,27 @@ export type SyncDataMapper<T extends InitialState | undefined = State> = (
 export type DataMapper<T extends InitialState | undefined = State> =
   AsyncDataMapper<T> | SyncDataMapper<T>
 
-export type AsyncDataMapperWithState = (
-  data: unknown,
-  state: State,
-) => Promise<unknown>
+// Method syntax makes the params bivariant, so legacy and next types are assignable
+interface AsyncDataMapperWithStateMethod {
+  mapper(data: unknown, state: State): Promise<unknown>
+}
+export type AsyncDataMapperWithState = AsyncDataMapperWithStateMethod['mapper']
 
-export type DataMapperWithState = (data: unknown, state: State) => unknown
+interface DataMapperWithStateMethod {
+  mapper(data: unknown, state: State): unknown
+}
+export type DataMapperWithState = DataMapperWithStateMethod['mapper']
 
-export type AsyncDataMapperWithOptions = (
-  options: Options,
-) => AsyncDataMapperWithState
+interface AsyncDataMapperWithOptionsMethod {
+  mapper(options: Options): AsyncDataMapperWithState
+}
+export type AsyncDataMapperWithOptions =
+  AsyncDataMapperWithOptionsMethod['mapper']
 
-export type DataMapperWithOptions = (options: Options) => DataMapperWithState
+interface DataMapperWithOptionsMethod {
+  mapper(options: Options): DataMapperWithState
+}
+export type DataMapperWithOptions = DataMapperWithOptionsMethod['mapper']
 
 // Operation types
 

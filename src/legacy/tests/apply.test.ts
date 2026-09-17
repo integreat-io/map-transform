@@ -7,7 +7,6 @@ import mapTransform, {
   fwd,
   rev,
   filter,
-  prepareOptions,
 } from '../../index.js'
 import type { AsyncTransformer, Operation, Options } from '../types.js'
 
@@ -640,49 +639,77 @@ test('should not modify the pipelines object passed by the caller', async () => 
   assert.deepEqual(Reflect.ownKeys(pipelines), ['addSuffix', 'unused']) // No pipelines are removed
 })
 
-test('should share prepared pipelines when given options from prepareOptions', async () => {
+test('should share prepared pipelines with the same options object', async () => {
+  let prepareCount = 0
+  const suffix: AsyncTransformer = () => () => {
+    prepareCount++
+    return async (value) => `${value}!`
+  }
   const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
-  const options = prepareOptions({
-    pipelines,
-    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
-  })
+  const options = { pipelines, transformers: { suffix } }
   const defA = { value: ['value', { $apply: 'addSuffix' }] }
   const defB = { title: ['title', { $apply: 'addSuffix' }] }
 
   const mapperA = mapTransform(defA, options)
-  const preparedByA = options.preparedPipelines?.get('addSuffix')
   const mapperB = mapTransform(defB, options)
 
+  assert.equal(prepareCount, 1)
   assert.deepEqual(await mapperA({ value: 'ent1' }), { value: 'ent1!' })
   assert.deepEqual(await mapperB({ title: 'Entry 1' }), { title: 'Entry 1!' })
-  assert.equal(typeof preparedByA, 'function') // The first call prepared the pipeline
-  assert.equal(options.preparedPipelines?.get('addSuffix'), preparedByA) // The second call reused it
-  assert.equal(pipelines.addSuffix, options.pipelines?.addSuffix) // The pipelines object is untouched
+  assert.deepEqual(Reflect.ownKeys(options), ['pipelines', 'transformers']) // The options object is untouched
+  assert.deepEqual(Reflect.ownKeys(pipelines), ['addSuffix']) // The pipelines object is untouched
 })
 
-test('should not share prepared pipelines when options are not prepared up front', async () => {
+test('should pick up transformers added to the same options object before a new call', async () => {
   const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
-  const options = {
-    pipelines,
-    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
+  const transformers: Record<string, AsyncTransformer> = {}
+  const options = { pipelines, transformers }
+  const defA = { value: 'value' }
+  const defB = { value: ['value', { $transform: 'suffix' }] }
+
+  await mapTransform(defA, options)({ value: 'ent1' })
+  transformers.suffix = () => () => async (value) => `${value}!`
+  const ret = await mapTransform(defB, options)({ value: 'ent1' })
+
+  assert.deepEqual(ret, { value: 'ent1!' })
+})
+
+test('should share prepared pipelines with a transformer calling mapTransform() within an $alt with $undefined', async () => {
+  let prepareCount = 0
+  const suffix: AsyncTransformer = () => () => {
+    prepareCount++
+    return async (value) => `${value}!`
   }
-  const def = { value: ['value', { $apply: 'addSuffix' }] }
+  const templateLike: AsyncTransformer = () => (options) => {
+    const inner = mapTransform(['title', { $apply: 'addSuffix' }], options)
+    return async (data, state) => inner(data, state)
+  }
+  const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
+  const options = { pipelines, transformers: { suffix, templateLike } }
+  const def = {
+    value: ['value', { $apply: 'addSuffix' }],
+    title: {
+      $alt: [{ $transform: 'templateLike' }, { $value: 'none' }],
+      $undefined: [undefined, null],
+    },
+  }
+  const data = { value: 'ent1', title: 'Entry 1' }
+  const expected = { value: 'ent1!', title: 'Entry 1!' }
 
-  await mapTransform(def, options)({ value: 'ent1' })
+  const ret = await mapTransform(def, options)(data)
 
-  // The Map is set on the internal options only, so we don't accidentally share it
-  assert.equal(
-    (options as { preparedPipelines?: unknown }).preparedPipelines,
-    undefined,
-  )
+  assert.equal(prepareCount, 1)
+  assert.deepEqual(ret, expected)
 })
 
 test('should prepare pipeline applied within an $alt with $undefined', async () => {
+  let prepareCount = 0
+  const suffix: AsyncTransformer = () => () => {
+    prepareCount++
+    return async (value) => `${value}!`
+  }
   const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
-  const options = prepareOptions({
-    pipelines,
-    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
-  })
+  const options = { pipelines, transformers: { suffix } }
   const def = {
     value: [
       'value',
@@ -696,29 +723,31 @@ test('should prepare pipeline applied within an $alt with $undefined', async () 
   const mapper = mapTransform(def, options)
 
   // The pipeline is prepared up front, even though it is applied within an `$alt`
-  assert.equal(typeof options.preparedPipelines?.get('addSuffix'), 'function')
+  assert.equal(prepareCount, 1)
   assert.deepEqual(await mapper({ value: 'ent1' }), { value: 'ent1!' })
 })
 
 test('should prepare pipeline applied within an $alt without $undefined', async () => {
+  let prepareCount = 0
+  const suffix: AsyncTransformer = () => () => {
+    prepareCount++
+    return async (value) => `${value}!`
+  }
   const pipelines = { addSuffix: [{ $transform: 'suffix' }] }
-  const options = prepareOptions({
-    pipelines,
-    transformers: { suffix: () => () => async (value: unknown) => `${value}!` },
-  })
+  const options = { pipelines, transformers: { suffix } }
   const def = {
     value: ['value', { $alt: [{ $apply: 'addSuffix' }, { $value: 'none' }] }],
   }
 
   const mapper = mapTransform(def, options)
 
-  assert.equal(typeof options.preparedPipelines?.get('addSuffix'), 'function')
+  assert.equal(prepareCount, 1)
   assert.deepEqual(await mapper({ value: 'ent1' }), { value: 'ent1!' })
 })
 
 test('should not let nonvalues from an $alt leak into a shared prepared pipeline', async () => {
   const pipelines = { orDefault: [{ $alt: ['value', { $value: 'fallback' }] }] }
-  const options = prepareOptions({ pipelines }) // Only `undefined` is a nonvalue
+  const options = { pipelines } // Only `undefined` is a nonvalue
   const altDef = {
     out: [
       {
@@ -776,18 +805,18 @@ test('should apply pipeline with a transformer that calls mapTransform() during 
   assert.deepEqual(ret, expected)
 })
 
-test('should apply different pipelines from the same prepared options', async () => {
+test('should apply different pipelines from the same options object', async () => {
   const pipelines = {
     addSuffix: [{ $transform: 'suffix' }],
     addPrefix: [{ $transform: 'prefix' }],
   }
-  const options = prepareOptions({
+  const options = {
     pipelines,
     transformers: {
       suffix: () => () => async (value: unknown) => `${value}!`,
       prefix: () => () => async (value: unknown) => `- ${value}`,
     },
-  })
+  }
   const defA = { value: ['value', { $apply: 'addSuffix' }] }
   const defB = { title: ['title', { $apply: 'addPrefix' }] }
 
@@ -796,6 +825,4 @@ test('should apply different pipelines from the same prepared options', async ()
 
   assert.deepEqual(await mapperA({ value: 'ent1' }), { value: 'ent1!' })
   assert.deepEqual(await mapperB({ title: 'Entry 1' }), { title: '- Entry 1' })
-  assert.equal(typeof options.preparedPipelines?.get('addSuffix'), 'function')
-  assert.equal(typeof options.preparedPipelines?.get('addPrefix'), 'function')
 })

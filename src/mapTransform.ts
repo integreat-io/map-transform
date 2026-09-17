@@ -9,7 +9,7 @@ import { createInternalOptions } from './prepareOptions.js'
 import type { Transformer, AsyncTransformer } from './typesNext.js'
 import type { Mode } from './prepareOptions.js'
 
-export { syncTransformers, asyncTransformers, State }
+export { syncTransformers, asyncTransformers, State, mapTransformAsync }
 export { pathGetter, pathSetter } from './createPathMapper.js'
 export { default as prepareOptions } from './prepareOptions.js'
 
@@ -65,7 +65,7 @@ function preparePipelinesAndStateProps(
  *
  * Use `mapTransformAsync()` if you need to transform data asynchronously.
  */
-export default function mapTransform(
+export function mapTransformSync(
   def: TransformDefinition,
   options: Options = {},
 ): (data: unknown, state?: InitialState) => unknown {
@@ -84,9 +84,9 @@ export default function mapTransform(
  * to transform and a state object. Set `rev: true` on the state object to run
  * the transform pipeline in reverse.
  *
- * Use `mapTransform()` if you don't need to transform data asynchronously.
+ * Use `mapTransformSync()` if you don't need to transform data asynchronously.
  */
-export function mapTransformAsync(
+export default function mapTransformAsync(
   def: TransformDefinition,
   options: Options = {},
 ): (data: unknown, state?: InitialState) => Promise<unknown> {

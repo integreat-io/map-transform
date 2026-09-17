@@ -198,8 +198,10 @@ passing already prepared options to `mapTransform` -- or calling
 `prepareOptions` on them again -- costs nothing.
 
 `map-transform/next` exports its own `prepareOptions` alongside `mapTransform`.
-Options prepared with one API cannot be handed to the other. Note that the sync
-`mapTransform()` and the async `mapTransformAsync()` cache their prepared
+Like in the legacy API, the default export is async, and it is also exported as
+`mapTransformAsync()`, with `mapTransformSync()` as its sync counterpart.
+Options prepared with one API cannot be handed to the other. Note that
+`mapTransformSync()` and the async `mapTransformAsync()` cache their prepared
 pipelines separately, so mixing both on the same prepared options will prepare
 each pipeline twice.
 

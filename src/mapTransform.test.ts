@@ -5,7 +5,8 @@ import type State from './state.js'
 import type { Options } from './prep/index.js'
 import type { Transformer, AsyncTransformer } from './typesNext.js'
 
-import mapTransform, {
+import mapTransformDefault, {
+  mapTransformSync,
   mapTransformAsync,
   prepareOptions,
 } from './mapTransform.js'
@@ -16,7 +17,7 @@ test('should create mapper', () => {
   const def = { id: 'key', title: 'name' }
   const options = {}
 
-  const ret = mapTransform(def, options)
+  const ret = mapTransformSync(def, options)
 
   assert.equal(typeof ret, 'function')
 })
@@ -24,7 +25,7 @@ test('should create mapper', () => {
 test('should create mapper without options', () => {
   const def = { id: 'key', title: 'name' }
 
-  const ret = mapTransform(def)
+  const ret = mapTransformSync(def)
 
   assert.equal(typeof ret, 'function')
 })
@@ -36,7 +37,7 @@ test('should map data with created mapper', () => {
   const options = {}
   const expected = { id: 'ent1', title: 'Entry 1' }
 
-  const ret = mapTransform(def, options)(value, state)
+  const ret = mapTransformSync(def, options)(value, state)
 
   assert.deepEqual(ret, expected)
 })
@@ -53,7 +54,7 @@ test('should prepare needed pipelines', () => {
   const options = { pipelines }
   const expected = { id: 'ent1', title: 'Entry 1', props: { slug: 'ent1' } }
 
-  const ret = mapTransform(def, options)(value, state)
+  const ret = mapTransformSync(def, options)(value, state)
 
   assert.deepEqual(ret, expected)
 })
@@ -80,7 +81,7 @@ test('should not prepare uneeded pipelines', () => {
     pipelines: 2,
   }
 
-  const ret = mapTransform(def, options)(value, state)
+  const ret = mapTransformSync(def, options)(value, state)
 
   assert.deepEqual(ret, expected)
 })
@@ -101,7 +102,7 @@ test('should pass on prepared pipelines to a data mapper in transformer', () => 
   const options = { pipelines, transformers }
   const expected = { id: 'ent1', title: 'Entry 1', props: { slug: 'ent1' } }
 
-  const ret = mapTransform(def, options)(value, state)
+  const ret = mapTransformSync(def, options)(value, state)
 
   assert.deepEqual(ret, expected)
 })
@@ -116,7 +117,7 @@ test('should pass on context to a data mapper in transformer', () => {
   const options = { transformers }
   const expected = 'ent1'
 
-  const ret = mapTransform(def, options)(value, state)
+  const ret = mapTransformSync(def, options)(value, state)
 
   assert.deepEqual(ret, expected)
 })
@@ -140,7 +141,7 @@ test('should include built-in transformers', () => {
   const options = { transformers: { uppercase } }
   const expected = { id: 'ent1', title: 'Entry 1', isSports: true }
 
-  const ret = mapTransform(def, options)(value, state)
+  const ret = mapTransformSync(def, options)(value, state)
 
   assert.deepEqual(ret, expected)
 })
@@ -152,7 +153,7 @@ test('should pass on nonvalues to the run function', () => {
   const options = { nonvalues: [undefined, ''] }
   const expected = { id: 'ent1', title: 'jf' }
 
-  const ret = mapTransform(def, options)(value, state)
+  const ret = mapTransformSync(def, options)(value, state)
 
   assert.deepEqual(ret, expected)
 })
@@ -169,8 +170,8 @@ test('should prepare pipelines once for several calls with prepared options', ()
   const value = { key: 'ent1' }
   const expected = { id: 'ent1' }
 
-  const mapperA = mapTransform(def, options)
-  const mapperB = mapTransform(def, options)
+  const mapperA = mapTransformSync(def, options)
+  const mapperB = mapTransformSync(def, options)
 
   assert.equal(prepareCount, 1)
   assert.deepEqual(mapperA(value), expected)
@@ -189,8 +190,8 @@ test('should prepare pipelines again with unprepared options', () => {
   const value = { key: 'ent1' }
   const expected = { id: 'ent1' }
 
-  const mapperA = mapTransform(def, options)
-  const mapperB = mapTransform(def, options)
+  const mapperA = mapTransformSync(def, options)
+  const mapperB = mapTransformSync(def, options)
 
   assert.equal(prepareCount, 2)
   assert.deepEqual(mapperA(value), expected)
@@ -209,7 +210,7 @@ test('should not share prepared pipelines between sync and async', async () => {
   const value = { key: 'ent1' }
   const expected = { id: 'ent1' }
 
-  const mapperSync = mapTransform(def, options)
+  const mapperSync = mapTransformSync(def, options)
   const mapperAsync = mapTransformAsync(def, options)
 
   assert.equal(prepareCount, 2)
@@ -219,7 +220,7 @@ test('should not share prepared pipelines between sync and async', async () => {
 
 test('should apply pipeline with a transformer that runs map-transform during preparation', () => {
   const templateLike: Transformer = () => (options: Options) => {
-    const inner = mapTransform('title', options)
+    const inner = mapTransformSync('title', options)
     return (value, state) => inner(value, state)
   }
   const pipelines = { entry: [{ $transform: 'templateLike' }] }
@@ -228,7 +229,7 @@ test('should apply pipeline with a transformer that runs map-transform during pr
   const value = { title: 'Entry 1' }
   const expected = { result: 'Entry 1' }
 
-  const ret = mapTransform(def, options)(value)
+  const ret = mapTransformSync(def, options)(value)
 
   assert.deepEqual(ret, expected)
 })
@@ -247,14 +248,14 @@ test('should apply pipeline with a transformer that applies the pipeline under p
   const value = { key: 'ent1', child: { key: 'ent1.1' } }
   const expected = { id: 'ent1', child: { id: 'ent1.1' } }
 
-  const ret = mapTransform(def, options)(value)
+  const ret = mapTransformSync(def, options)(value)
 
   assert.deepEqual(ret, expected)
 })
 
 test('should apply pipeline with a transformer that applies the pipeline under preparation through mapTransform', () => {
   const self: Transformer = () => (options: Options) => {
-    const mapChild = mapTransform({ $apply: 'entry' }, options)
+    const mapChild = mapTransformSync({ $apply: 'entry' }, options)
     return (value) => {
       const { key, child } = value as { key: string; child?: unknown }
       return child ? { id: key, child: mapChild(child) } : { id: key }
@@ -266,14 +267,14 @@ test('should apply pipeline with a transformer that applies the pipeline under p
   const value = { key: 'ent1', child: { key: 'ent1.1' } }
   const expected = { id: 'ent1', child: { id: 'ent1.1' } }
 
-  const ret = mapTransform(def, options)(value)
+  const ret = mapTransformSync(def, options)(value)
 
   assert.deepEqual(ret, expected)
 })
 
 test('should apply pipeline with a transformer that applies the pipeline under preparation through mapTransform with unprepared options', () => {
   const self: Transformer = () => (options: Options) => {
-    const mapChild = mapTransform({ $apply: 'entry' }, options)
+    const mapChild = mapTransformSync({ $apply: 'entry' }, options)
     return (value) => {
       const { key, child } = value as { key: string; child?: unknown }
       return child ? { id: key, child: mapChild(child) } : { id: key }
@@ -285,7 +286,7 @@ test('should apply pipeline with a transformer that applies the pipeline under p
   const value = { key: 'ent1', child: { key: 'ent1.1' } }
   const expected = { id: 'ent1', child: { id: 'ent1.1' } }
 
-  const ret = mapTransform(def, options)(value)
+  const ret = mapTransformSync(def, options)(value)
 
   assert.deepEqual(ret, expected)
 })
@@ -303,6 +304,17 @@ test('should create async mapper', async () => {
   const ret = await mapTransformAsync(def, options)(value, state)
 
   assert.deepEqual(ret, expected)
+})
+
+test('should export the async mapper as default', async () => {
+  const def = { id: 'key', title: 'name' }
+  const value = { key: 'ent1', name: 'Entry 1' }
+  const expected = { id: 'ent1', title: 'Entry 1' }
+
+  const ret = mapTransformDefault(def)(value)
+
+  assert.ok(ret instanceof Promise)
+  assert.deepEqual(await ret, expected)
 })
 
 test('should create async mapper without options', () => {
@@ -417,7 +429,7 @@ test('should prepare the pipeline for both modes when an async run has a transfo
   let prepareCount = 0
   const self: Transformer = () => (options: Options) => {
     prepareCount++
-    const mapChild = mapTransform({ $apply: 'entry' }, options)
+    const mapChild = mapTransformSync({ $apply: 'entry' }, options)
     return (value) => {
       const { key, child } = value as { key: string; child?: unknown }
       return child ? { id: key, child: mapChild(child) } : { id: key }

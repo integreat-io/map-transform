@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { isObject } from '../utils/is.js'
 
-import mapTransformSync, { mapTransformAsync } from '../mapTransform.js'
+import { mapTransformSync, mapTransformAsync } from '../mapTransform.js'
 
 // Setup
 

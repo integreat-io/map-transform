@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import mapTransformSync, { mapTransformAsync } from '../mapTransform.js'
+import { mapTransformSync, mapTransformAsync } from '../mapTransform.js'
 
 // Tests
 

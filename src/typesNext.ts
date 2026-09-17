@@ -1,8 +1,8 @@
 import State, { type InitialState } from './state.js'
 import type { Options } from './prep/index.js'
-import type { TransformDefinition } from './prep/index.js'
+import type { Pipeline, TransformDefinition } from './prep/index.js'
 
-export type { TransformDefinition, Options, InitialState }
+export type { Pipeline, TransformDefinition, Options, InitialState }
 
 // Dictionary types
 

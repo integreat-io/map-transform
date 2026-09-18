@@ -547,3 +547,15 @@ test('should create an array with the array operation when flipped in rev', asyn
 
   assert.deepEqual(ret, expected)
 })
+
+test('should not mutate a sub mutation object shared between props', async () => {
+  const sub = { id: 'key' }
+  const def = { 'items[]': sub, other: ['other', sub] }
+  const data = { key: 9, other: [{ key: 2 }, { key: 3 }] }
+  const expected = { items: [{ id: 9 }], other: { id: [2, 3] } }
+
+  const ret = await mapTransform(def)(data)
+
+  assert.deepEqual(ret, expected)
+  assert.deepEqual(sub, { id: 'key' })
+})

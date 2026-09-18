@@ -579,6 +579,41 @@ test('should iterate pipelines on brackets notation paths', async () => {
   assert.deepEqual(ret.value, expectedValue)
 })
 
+test('should not mutate a sub mutation object shared between props', async () => {
+  const sub = { id: 'headline' }
+  const def = {
+    'articles[]': sub,
+    other: sub,
+  }
+  const expectedValue = {
+    articles: [{ id: 'Entry 1' }, { id: 'Entry 2' }],
+    other: { id: ['Entry 1', 'Entry 2'] },
+  }
+
+  const ret = await props(def)(options)(noopNext)(stateWithArray)
+
+  assert.deepEqual(ret.value, expectedValue)
+  assert.deepEqual(sub, { id: 'headline' })
+})
+
+test('should give the same result when the same def is prepared twice', async () => {
+  const sub = { id: 'headline' }
+  const def = {
+    'articles[]': sub,
+    other: sub,
+  }
+  const expectedValue = {
+    articles: [{ id: 'Entry 1' }, { id: 'Entry 2' }],
+    other: { id: ['Entry 1', 'Entry 2'] },
+  }
+
+  const ret0 = await props(def)(options)(noopNext)(stateWithArray)
+  const ret1 = await props(def)(options)(noopNext)(stateWithArray)
+
+  assert.deepEqual(ret0.value, expectedValue)
+  assert.deepEqual(ret1.value, expectedValue)
+})
+
 test('should not iterate sub pipeline on brackets notation paths', async () => {
   const def = {
     'articles[]': [
@@ -1092,6 +1127,25 @@ test('should reverse map', async () => {
   const ret = await props(def)(options)(noopNext)(state)
 
   assert.deepEqual(ret.value, expectedValue)
+})
+
+test('should not mutate a sub mutation object shared between props in reverse', async () => {
+  const sub = { id: 'headline' }
+  const def = {
+    'articles[]': sub,
+    other: sub,
+  }
+  const state = {
+    context: [{ params: { source: 'news1' } }],
+    value: {
+      articles: [{ id: 'Entry 1' }, { id: 'Entry 2' }],
+    },
+    rev: true,
+  }
+
+  await props(def)(options)(noopNext)(state)
+
+  assert.deepEqual(sub, { id: 'headline' })
 })
 
 test('should skip values with no set in reverse', async () => {

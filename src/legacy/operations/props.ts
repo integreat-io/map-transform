@@ -166,16 +166,14 @@ function createDirectionalOperation(
   }
 }
 
-// NOTE: We mutate the state here to not create too many objects
-function setIterate(transformObject: TransformObject) {
-  transformObject.$iterate = true
-  return transformObject
-}
+const setIterate = (transformObject: TransformObject): TransformObject => ({
+  ...transformObject,
+  $iterate: true,
+})
 
 const createSetPipeline = (options: Options) =>
   function createSetPipeline([prop, pipeline]: [string, TransformDefinition]):
-    | NextStateMapper
-    | undefined {
+    NextStateMapper | undefined {
     // Adjust sub map object
     if (isTransformObject(pipeline)) {
       pipeline = [
@@ -282,9 +280,7 @@ function prepareOperation(def: TransformObject): Operation {
       def.$alwaysApply,
     )
     const runWithIterateWhenNeeded =
-      def.$iterate === true
-        ? iterate(() => () => run)(options)(noopNext)
-        : run
+      def.$iterate === true ? iterate(() => () => run)(options)(noopNext) : run
 
     return (next) =>
       createStateMapper(

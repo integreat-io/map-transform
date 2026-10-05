@@ -161,6 +161,54 @@ test('should not set with alternative paths as default in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should use default value that is a non-value in reverse', () => {
+  const optionsWithNullAsNoValue = { nonvalues: [undefined, null] }
+  const def = {
+    title: { $alt: ['content.heading', { $value: null }] },
+  }
+  const data = {}
+  const expected = { content: { heading: null } }
+
+  const ret = mapTransformSync(def, optionsWithNullAsNoValue)(data, {
+    rev: true,
+  })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should keep non-value when there is no default in reverse', () => {
+  const optionsWithNullAsNoValue = { nonvalues: [undefined, null] }
+  const def = {
+    title: { $alt: ['content.heading', 'content.title'] },
+  }
+  const data = { title: null }
+  const expected = { content: { heading: null } }
+
+  const ret = mapTransformSync(def, optionsWithNullAsNoValue)(data, {
+    rev: true,
+  })
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should only use $value pipelines as default in reverse', () => {
+  const def = {
+    title: {
+      $alt: [
+        'content.heading',
+        { $alt: ['content.title', 'content.headline'] },
+        { $concat: ['content.title', 'content.headline'] },
+      ],
+    },
+  }
+  const data = {}
+  const expected = { content: { heading: undefined } }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should set missing values to undefined when no default', () => {
   const def = {
     $iterate: true,

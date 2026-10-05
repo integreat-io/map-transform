@@ -400,6 +400,169 @@ test('should not use value after set step as default in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
+test('should get the default value the same way as forward in reverse', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [
+        ['name'],
+        [{ type: 'value', value: 'First default' }],
+        [{ type: 'value', value: 'Unreachable default' }],
+      ],
+    },
+  ]
+  const expected = { name: 'First default' }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use default value that is a nonvalue when there is no other default in reverse', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], [{ type: 'value', value: null }]],
+    },
+  ]
+  const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, null] }
+  const expected = { name: null }
+
+  const ret = runPipeline(value, pipeline, stateRevWithNonvalues)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should keep nonvalue when there is no default in reverse', () => {
+  const value = null
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], ['title']],
+    },
+  ]
+  const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, null] }
+  const expected = { name: null }
+
+  const ret = runPipeline(value, pipeline, stateRevWithNonvalues)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should not use pipelines with other steps than value as default in reverse', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [
+        ['name'],
+        [
+          {
+            type: 'transform',
+            id: 'fromTransformer',
+            fn: () => 'From transformer',
+          },
+        ],
+        [{ type: 'alt', pipelines: [['first'], ['second']] }],
+      ],
+    },
+  ]
+  const expected = { name: undefined }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should set real value and not use default in reverse', () => {
+  const value = 'The real name'
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], [{ type: 'value', value: 'Default name' }]],
+    },
+  ]
+  const expected = { name: 'The real name' }
+
+  const ret = runPipeline(value, pipeline, stateRev)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use the last default value when all defaults are nonvalues in reverse', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [
+        ['name'],
+        [{ type: 'value', value: null }],
+        [{ type: 'value', value: '' }],
+      ],
+    },
+  ]
+  const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, null, ''] }
+  const expected = { name: '' }
+
+  const ret = runPipeline(value, pipeline, stateRevWithNonvalues)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should replace nonvalue with default value in reverse', () => {
+  const value = null
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], [{ type: 'value', value: 'Default name' }]],
+    },
+  ]
+  const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, null] }
+  const expected = { name: 'Default name' }
+
+  const ret = runPipeline(value, pipeline, stateRevWithNonvalues)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should keep nonvalue when noDefaults is true in reverse', () => {
+  const value = null
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], [{ type: 'value', value: 'Default name' }]],
+    },
+  ]
+  const stateRevWithNoDefaults = {
+    rev: true,
+    noDefaults: true,
+    nonvalues: [undefined, null],
+  }
+  const expected = { name: null }
+
+  const ret = runPipeline(value, pipeline, stateRevWithNoDefaults)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should not use empty pipeline as default in reverse', () => {
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], [{ type: 'value', value: null }], []],
+    },
+  ]
+  const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, null] }
+  const expected = { name: null }
+
+  const ret = runPipeline(value, pipeline, stateRevWithNonvalues)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should not run alt step in rev when dir is 1 (fwd)', () => {
   const value = 'The real name'
   const pipeline: PreppedPipeline = [
@@ -450,6 +613,39 @@ test('should set a default value with async pipelines', async () => {
   const expected = { name: 'From async' }
 
   const ret = await runPipelineAsync(value, pipeline, stateRev)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should keep nonvalue when there is no default with async pipelines', async () => {
+  const value = null
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], ['title']],
+    },
+  ]
+  const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, null] }
+  const expected = { name: null }
+
+  const ret = await runPipelineAsync(value, pipeline, stateRevWithNonvalues)
+
+  assert.deepEqual(ret, expected)
+})
+
+test('should use default value that is a nonvalue with async pipelines', async () => {
+  const fn = async () => null
+  const value = undefined
+  const pipeline: PreppedPipeline = [
+    {
+      type: 'alt',
+      pipelines: [['name'], [{ type: 'value', value: fn }]],
+    },
+  ]
+  const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, null] }
+  const expected = { name: null }
+
+  const ret = await runPipelineAsync(value, pipeline, stateRevWithNonvalues)
 
   assert.deepEqual(ret, expected)
 })

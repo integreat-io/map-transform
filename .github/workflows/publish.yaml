@@ -1,7 +1,7 @@
 name: Publish Package to NPM
 on:
   release:
-    types: [ published ]
+    types: [published]
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -10,7 +10,7 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v7
         with:
-          node-version: '24.x'
+          node-version: 26
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npm run build

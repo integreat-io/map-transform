@@ -15,7 +15,7 @@ export default function runValueStep(
   if (state.noDefaults && !fixed) {
     return undefined
   } else {
-    return typeof value === 'function' ? value() : value
+    return value
   }
 }
 

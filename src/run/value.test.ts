@@ -39,10 +39,16 @@ test('should return object', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should return value from function', () => {
-  const pipeline = [{ type: 'value' as const, value: () => 'From fn' }]
+test('should return function as value', () => {
+  // Note: This is not a feature that is important to have like this. It's just
+  // a by-product of dropping support for applying values through functions. So
+  // the new behavior is like this – returning the function, but it's really not
+  // a relevant use case for map-transform, and changing this behavior in the
+  // future, if needed, should be okay.
+  const fn = () => 'From fn'
+  const pipeline = [{ type: 'value' as const, value: fn }]
   const value = { id: 'ent1' }
-  const expected = 'From fn'
+  const expected = fn
 
   const ret = runPipeline(value, pipeline, state)
 

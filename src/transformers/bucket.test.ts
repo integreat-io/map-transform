@@ -1,7 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { compare, compareAsync } from './compare.js'
-import { value } from './value.js'
 import State from '../state.js'
 import type { AsyncTransformer } from '../typesNext.js'
 
@@ -22,11 +21,11 @@ const uppercaseAsync: AsyncTransformer = () => () => async (value) =>
   typeof value === 'string' ? value.toUpperCase() : value
 
 const options = {
-  transformers: { value, compare },
+  transformers: { compare },
 }
 
 const optionsAsync = {
-  transformers: { value, compare: compareAsync, uppercase: uppercaseAsync },
+  transformers: { compare: compareAsync, uppercase: uppercaseAsync },
 }
 
 // Tests -- forward

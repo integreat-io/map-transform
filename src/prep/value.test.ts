@@ -36,16 +36,6 @@ test('should support value step with undefined value', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should support value step with value function', () => {
-  const fn = () => 'Hello'
-  const def = { $value: fn }
-  const expected = [{ type: 'value', value: fn, fixed: false }]
-
-  const ret = preparePipline(def, options)
-
-  assert.deepEqual(ret, expected)
-})
-
 test('should prepare fixed value step', () => {
   const def = { $value: 'Hello', fixed: true }
   const expected = [{ type: 'value', value: 'Hello', fixed: true }]

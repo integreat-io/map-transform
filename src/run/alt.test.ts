@@ -602,12 +602,15 @@ test('should use value from async pipelines', async () => {
 })
 
 test('should set a default value with async pipelines', async () => {
-  const fn = async () => 'From async'
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
       type: 'alt',
-      pipelines: [['name'], ['title'], [{ type: 'value', value: fn }]],
+      pipelines: [
+        ['name'],
+        ['title'],
+        [{ type: 'value', value: 'From async' }],
+      ],
     },
   ]
   const expected = { name: 'From async' }
@@ -634,12 +637,11 @@ test('should keep nonvalue when there is no default with async pipelines', async
 })
 
 test('should use default value that is a nonvalue with async pipelines', async () => {
-  const fn = async () => null
   const value = undefined
   const pipeline: PreppedPipeline = [
     {
       type: 'alt',
-      pipelines: [['name'], [{ type: 'value', value: fn }]],
+      pipelines: [['name'], [{ type: 'value', value: null }]],
     },
   ]
   const stateRevWithNonvalues = { rev: true, nonvalues: [undefined, null] }

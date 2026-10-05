@@ -79,21 +79,6 @@ test('should run $alt in reverse', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should run function in $value', () => {
-  const def = {
-    $iterate: true,
-    title: {
-      $alt: ['content.heading', { $value: () => 'Default from function' }],
-    },
-  }
-  const data = [{ content: {} }, { content: { heading: 'From data' } }]
-  const expected = [{ title: 'Default from function' }, { title: 'From data' }]
-
-  const ret = mapTransformSync(def)(data)
-
-  assert.deepEqual(ret, expected)
-})
-
 test('should use alternative path', () => {
   const def = {
     $iterate: true,
@@ -203,6 +188,23 @@ test('should only use $value pipelines as default in reverse', () => {
   }
   const data = {}
   const expected = { content: { heading: undefined } }
+
+  const ret = mapTransformSync(def)(data, { rev: true })
+
+  assert.deepEqual(ret, expected)
+})
+
+test("should use `$transform: 'value'` as default in reverse", () => {
+  const def = {
+    title: {
+      $alt: [
+        'content.heading',
+        { $transform: 'value', value: 'Default heading' },
+      ],
+    },
+  }
+  const data = {}
+  const expected = { content: { heading: 'Default heading' } }
 
   const ret = mapTransformSync(def)(data, { rev: true })
 

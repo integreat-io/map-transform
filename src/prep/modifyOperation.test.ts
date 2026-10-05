@@ -197,6 +197,43 @@ test('should change $lookdown to $transform', () => {
   assert.deepEqual(lookdownStub.args[0][0], expectedProps)
 })
 
+test("should change $transform: 'value' to $value", () => {
+  const def = { $transform: 'value', value: 'Hello' }
+  const options = {}
+  const expected = [{ type: 'value', value: 'Hello', fixed: false }]
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test("should change $transform: 'fixed' to $value with fixed: true", () => {
+  const def = { $transform: 'fixed', value: 'Hello' }
+  const options = {}
+  const expected = [{ type: 'value', value: 'Hello', fixed: true }]
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
+test("should keep other props when changing $transform: 'value' to $value", () => {
+  const def = {
+    $transform: 'value',
+    value: 'Hello',
+    $direction: 'rev',
+    $iterate: true,
+  }
+  const options = {}
+  const expected = [
+    { type: 'value', value: 'Hello', fixed: false, it: true, dir: -1 },
+  ]
+
+  const ret = preparePipeline(def, options)
+
+  assert.deepEqual(ret, expected)
+})
+
 test('should apply modifyOperationObject to operation', () => {
   const modifyOperationObject = (op: Record<string, unknown>) =>
     op.$cast ? { $transform: `cast_${op.$cast}` } : op

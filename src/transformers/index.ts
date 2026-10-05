@@ -1,4 +1,3 @@
-import { value, fixed } from './value.js'
 import { bucket, bucketAsync } from './bucket.js'
 import { compare, compareAsync } from './compare.js'
 import { concat, concatAsync, concatRev, concatRevAsync } from './concat.js'
@@ -19,7 +18,6 @@ export const sync = {
   concat,
   concatRev,
   explode,
-  fixed,
   flatten,
   implode,
   index,
@@ -32,7 +30,6 @@ export const sync = {
   not,
   project,
   sort,
-  value,
 }
 
 export const async = {
@@ -41,7 +38,6 @@ export const async = {
   concat: concatAsync,
   concatRev: concatRevAsync,
   explode,
-  fixed,
   flatten,
   implode,
   index,
@@ -54,5 +50,4 @@ export const async = {
   not: notAsync,
   project,
   sort,
-  value,
 }

@@ -62,6 +62,16 @@ const createFixedValue = ({ $fixed, ...rest }: Record<string, unknown>) => ({
   fixed: true,
 })
 
+const createValueFromTransform = ({
+  $transform,
+  value,
+  ...rest
+}: Record<string, unknown>) => ({
+  ...rest,
+  $value: value,
+  ...($transform === 'fixed' && { fixed: true }),
+})
+
 export default function modifyOperation(
   operation: MutationObject | OperationObject,
   options: Options,
@@ -88,6 +98,11 @@ export default function modifyOperation(
     return createLookdownTransform(operation)
   } else if (Object.prototype.hasOwnProperty.call(operation, '$fixed')) {
     return createFixedValue(operation)
+  } else if (
+    operation.$transform === 'value' ||
+    operation.$transform === 'fixed'
+  ) {
+    return createValueFromTransform(operation)
   } else {
     return operation
   }

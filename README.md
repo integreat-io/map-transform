@@ -231,6 +231,11 @@ from the default export, on purpose:
   arrays. Before, you had to set `$iterate: true`, and without it the entire
   array was passed to the mutation object, giving one object with an array of
   values on every property. Set `$iterate: false` to get that behaviour back.
+- `$value` and `$fixed` no longer call a function value, but return the function
+  as is. Use a transformer for generated values.
+- The `value` and `fixed` transformers are removed, but
+  `{ $transform: 'value' }` and `{ $transform: 'fixed' }` still work as aliases
+  for `$value` and `$fixed`.
 
 ### The mutation object
 

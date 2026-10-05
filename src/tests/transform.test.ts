@@ -278,21 +278,6 @@ test('should use built in fixed function', () => {
   assert.deepEqual(ret, expected)
 })
 
-test('should use built in fixed function with value function', () => {
-  const def = {
-    title: [
-      'content',
-      { $transform: 'fixed', value: () => "I'm from the function!" },
-    ],
-  }
-  const data = { content: { heading: 'The heading' } }
-  const expected = { title: "I'm from the function!" }
-
-  const ret = mapTransformSync(def, options)(data)
-
-  assert.deepEqual(ret, expected)
-})
-
 test('should use built in fixed function in reverse', () => {
   const def = {
     title: ['content', { $transform: 'fixed', value: "I'm always here" }],
@@ -801,14 +786,11 @@ test('should use forward-only transform as mutation property value in forward', 
 })
 
 test('should skip forward-only transform as mutation property value in reverse', () => {
-  // A forward-only transform used as mutation property value. In reverse,
-  // the transform is skipped ($direction: 'fwd'), but the get from 'title'
-  // still runs and the value passes through the merge step.
   const def = {
     title: { $transform: 'fixed', value: "I'm fixed", $direction: 'fwd' },
   }
   const data = { title: 'The heading' }
-  const expected = 'The heading'
+  const expected = {}
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
@@ -830,14 +812,11 @@ test('should run bidirectional transform in reverse', () => {
 })
 
 test('should use fixed transform as mutation property value in reverse', () => {
-  // `fixed` always returns its value regardless of direction.
-  // In reverse, it gets from `title`, but `fixed` ignores input and returns
-  // its fixed value, which is then merged with the target.
   const def = {
     title: { $transform: 'fixed', value: 'Always this' },
   }
   const data = { title: 'Original' }
-  const expected = 'Always this'
+  const expected = {}
 
   const ret = mapTransformSync(def, options)(data, { rev: true })
 
